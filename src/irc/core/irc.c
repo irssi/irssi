@@ -182,7 +182,7 @@ static char *split_nicks(const char *cmd, char **pre, char **nicks, char **post,
 void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 			int nickarg, int max_nicks)
 {
-	char *str, *pre, *post, *nicks;
+	char *pre, *post, *nicks;
 	char **nicklist, **tmp;
 	GString *nickstr;
 	int count;
@@ -190,10 +190,9 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(cmd != NULL);
 
-	str = split_nicks(cmd, &pre, &nicks, &post, nickarg);
+	split_nicks(cmd, &pre, &nicks, &post, nickarg);
 	if (nicks == NULL) {
                 /* no nicks given? */
-		g_free(str);
 		return;
 	}
 
@@ -221,8 +220,6 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 	}
 	g_strfreev(nicklist);
 	g_string_free(nickstr, TRUE);
-
-	g_free(str);
 }
 
 /* Get next parameter */
@@ -248,16 +245,14 @@ char *event_get_param(char **data)
 }
 
 /* Get count parameters from data */
-char *event_get_params(const char *data, int count, ...)
+void event_get_params(const char *data, int count, ...)
 {
-	char **str, *tmp, *duprec, *datad;
+	char **str, *tmp, *datad;
 	gboolean rest;
 	va_list args;
 
-	g_return_val_if_fail(data != NULL, NULL);
-
 	va_start(args, count);
-	duprec = datad = g_strdup(data);
+	datad = g_strdup(data);
 
 	rest = count & PARAM_FLAG_GETREST;
 	count = PARAM_WITHOUT_FLAGS(count);
@@ -273,8 +268,6 @@ char *event_get_params(const char *data, int count, ...)
 		if (str != NULL) *str = tmp;
 	}
 	va_end(args);
-
-	return duprec;
 }
 
 static void irc_server_event(IRC_SERVER_REC *server, const char *line,

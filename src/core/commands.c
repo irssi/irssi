@@ -297,7 +297,7 @@ void command_runsub(const char *cmd, const char *data,
 		    void *server, void *item)
 {
 	const char *newcmd;
-	char *orig, *subcmd, *defcmd, *args;
+	char *subcmd, *defcmd, *args;
 
 	g_return_if_fail(data != NULL);
 
@@ -310,7 +310,7 @@ void command_runsub(const char *cmd, const char *data,
 	}
 
 	/* get command.. */
-	orig = subcmd = g_strdup_printf("command %s %s", cmd, data);
+	subcmd = g_strdup_printf("command %s %s", cmd, data);
 	args = strchr(subcmd+8 + strlen(cmd)+1, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 	while (*args == ' ') args++;
@@ -319,7 +319,6 @@ void command_runsub(const char *cmd, const char *data,
 	newcmd = command_expand(subcmd+8);
 	if (newcmd == NULL) {
                 /* ambiguous command */
-		g_free(orig);
 		return;
 	}
 
@@ -336,7 +335,6 @@ void command_runsub(const char *cmd, const char *data,
 	}
 
 	g_free(subcmd);
-	g_free(orig);
 }
 
 static GSList *optlist_find(GSList *optlist, const char *option)
@@ -664,14 +662,14 @@ get_optional_channel(WI_ITEM_REC *active_item, char **data, int require_name)
 {
         CHANNEL_REC *chanrec;
 	const char *ret;
-	char *tmp, *origtmp, *channel;
+	char *tmp, *channel;
 
 	if (active_item == NULL) {
                 /* no active channel in window, channel required */
 		return cmd_get_param(data);
 	}
 
-	origtmp = tmp = g_strdup(*data);
+	tmp = g_strdup(*data);
 	channel = cmd_get_param(&tmp);
 
 	if (g_strcmp0(channel, "*") == 0 && !require_name) {
@@ -690,7 +688,6 @@ get_optional_channel(WI_ITEM_REC *active_item, char **data, int require_name)
 		ret = chanrec == NULL ? channel : chanrec->name;
 	}
 
-	g_free(origtmp);
         return ret;
 }
 
@@ -851,11 +848,11 @@ static void parse_command(const char *command, int expand_aliases,
 {
         COMMAND_REC *rec;
 	const char *alias, *newcmd;
-	char *cmd, *orig, *args, *oldcmd;
+	char *cmd, *args, *oldcmd;
 
 	g_return_if_fail(command != NULL);
 
-	cmd = orig = g_strconcat("command ", command, NULL);
+	cmd = g_strconcat("command ", command, NULL);
 	args = strchr(cmd+8, ' ');
 	if (args != NULL) *args++ = '\0'; else args = "";
 
@@ -867,7 +864,6 @@ static void parse_command(const char *command, int expand_aliases,
                 alias_runstack_push(cmd+8);
 		eval_special_string(alias, args, server, item);
                 alias_runstack_pop(cmd+8);
-		g_free(orig);
 		return;
 	}
 
@@ -875,14 +871,11 @@ static void parse_command(const char *command, int expand_aliases,
 	newcmd = command_expand(cmd+8);
 	if (newcmd == NULL) {
                 /* ambiguous command */
-		g_free(orig);
 		return;
 	}
 
 	rec = command_find(newcmd);
 	if (rec != NULL && !cmd_protocol_match(rec, server)) {
-		g_free(orig);
-
 		signal_emit("error command", 2,
 			    GINT_TO_POINTER(server == NULL ?
 					    CMDERR_NOT_CONNECTED :
@@ -908,7 +901,6 @@ static void parse_command(const char *command, int expand_aliases,
 	current_command = oldcmd;
 
 	g_free(cmd);
-	g_free(orig);
 }
 
 static void event_command(const char *line, SERVER_REC *server, void *item)

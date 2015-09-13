@@ -45,11 +45,11 @@
 static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			  const char *nick, const char *addr)
 {
-	char *params, *target, *msg, *recoded;
+	char *target, *msg, *recoded;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
+	event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 	if (nick == NULL) nick = server->real_address;
 	if (addr == NULL) addr = "";
 
@@ -68,7 +68,6 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 			    get_visible_target(server, target));
 	}
 
-	g_free(params);
 	g_free(recoded);
 }
 
@@ -89,11 +88,11 @@ static void ctcp_action(IRC_SERVER_REC *server, const char *data,
 static void event_notice(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *addr)
 {
-	char *params, *target, *msg, *recoded;
+	char *target, *msg, *recoded;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
+	event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
 	recoded = recode_in(SERVER(server), msg, target);
 	if (nick == NULL) {
 		nick = server->real_address == NULL ?
@@ -103,39 +102,36 @@ static void event_notice(IRC_SERVER_REC *server, const char *data,
 
 	signal_emit("message irc notice", 5, server, recoded, nick, addr,
 		    get_visible_target(server, target));
-	g_free(params);
 	g_free(recoded);
 }
 
 static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
-	char *params, *channel, *tmp;
+	char *channel, *tmp;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 1, &channel);
+	event_get_params(data, 1, &channel);
 	tmp = strchr(channel, 7); /* ^G does something weird.. */
 	if (tmp != NULL) *tmp = '\0';
 
 	signal_emit("message join", 4, server,
 		    get_visible_target(server, channel), nick, addr);
-	g_free(params);
 }
 
 static void event_part(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
-	char *params, *channel, *reason, *recoded;
+	char *channel, *reason, *recoded;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
-				  &channel, &reason);
+	event_get_params(data, 2 | PARAM_FLAG_GETREST,
+			 &channel, &reason);
 	recoded = recode_in(SERVER(server), reason, channel);
 	signal_emit("message part", 5, server,
 		    get_visible_target(server, channel), nick, addr, recoded);
-	g_free(params);
 	g_free(recoded);
 }
 
@@ -155,28 +151,27 @@ static void event_quit(IRC_SERVER_REC *server, const char *data,
 static void event_kick(IRC_SERVER_REC *server, const char *data,
 		       const char *kicker, const char *addr)
 {
-	char *params, *channel, *nick, *reason, *recoded;
+	char *channel, *nick, *reason, *recoded;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
-				  &channel, &nick, &reason);
+	event_get_params(data, 3 | PARAM_FLAG_GETREST,
+			 &channel, &nick, &reason);
 	recoded = recode_in(SERVER(server), reason, channel);
 	signal_emit("message kick", 6,
 		    server, get_visible_target(server, channel),
 		    nick, kicker, addr, recoded);
-	g_free(params);
 	g_free(recoded);
 }
 
 static void event_kill(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
-	char *params, *path, *reason;
+	char *path, *reason;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+	event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  NULL, &path);
 	reason = strstr(path, " (");
 	if (reason == NULL || reason[strlen(reason)-1] != ')') {
@@ -197,81 +192,73 @@ static void event_kill(IRC_SERVER_REC *server, const char *data,
 		printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_KILL_SERVER,
 			    nick, reason, path);
 	}
-
-	g_free(params);
 }
 
 static void event_nick(IRC_SERVER_REC *server, const char *data,
 		       const char *sender, const char *addr)
 {
-	char *params, *newnick;
+	char *newnick;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 1, &newnick);
+	event_get_params(data, 1, &newnick);
 
 	/* NOTE: server->nick was already changed in irc/core/irc-nicklist.c */
 	signal_emit(g_ascii_strcasecmp(newnick, server->nick) == 0 ?
 		    "message own_nick" : "message nick", 4,
 		    server, newnick, sender, addr);
-
-	g_free(params);
 }
 
 static void event_mode(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
-	char *params, *channel, *mode;
+	char *channel, *mode;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
-				  &channel, &mode);
+	event_get_params(data, 2 | PARAM_FLAG_GETREST,
+			 &channel, &mode);
 
 	signal_emit("message irc mode", 5,
 		    server, get_visible_target(server, channel),
 		    nick, addr, g_strchomp(mode));
-	g_free(params);
 }
 
 static void event_pong(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
-	char *params, *host, *reply;
+	char *host, *reply;
 
 	g_return_if_fail(data != NULL);
 	if (nick == NULL) nick = server->real_address;
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &host, &reply);
+	event_get_params(data, 2 | PARAM_FLAG_GETREST, &host, &reply);
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_PONG, host, reply);
-	g_free(params);
 }
 
 static void event_invite(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *addr)
 {
-	char *params, *channel;
+	char *channel;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &channel);
+	event_get_params(data, 2, NULL, &channel);
 	signal_emit("message invite", 4,
 		    server, get_visible_target(server, channel), nick, addr);
-	g_free(params);
 }
 
 static void event_topic(IRC_SERVER_REC *server, const char *data,
 			const char *nick, const char *addr)
 {
-	char *params, *channel, *topic, *recoded;
+	char *channel, *topic, *recoded;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
+	event_get_params(data, 2 | PARAM_FLAG_GETREST,
 				  &channel, &topic);
 	recoded = recode_in(SERVER(server), topic, channel);
 	signal_emit("message topic", 5, server,
 		    get_visible_target(server, channel), recoded, nick, addr);
-	g_free(params);
 	g_free(recoded);
 }
 
@@ -344,13 +331,12 @@ static void event_connected(IRC_SERVER_REC *server)
 
 static void event_nickfind_whois(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick, *user, *host, *realname;
+	char *nick, *user, *host, *realname;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 6, NULL, &nick, &user, &host, NULL, &realname);
+	event_get_params(data, 6, NULL, &nick, &user, &host, NULL, &realname);
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_YOUR_NICK_OWNED, nick, user, host, realname);
-	g_free(params);
 }
 
 static void event_ban_type_changed(void *ban_typep)
@@ -394,19 +380,18 @@ static void event_ban_type_changed(void *ban_typep)
 
 static void sig_whois_event_not_found(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick;
+	char *nick;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &nick);
+	event_get_params(data, 2, NULL, &nick);
 	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_NOT_FOUND, nick);
-	g_free(params);
 }
 
 static void sig_whowas_event_end(IRC_SERVER_REC *server, const char *data,
 				 const char *sender, const char *addr)
 {
-	char *params, *nick;
+	char *nick;
 
 	g_return_if_fail(data != NULL);
 
@@ -415,9 +400,8 @@ static void sig_whowas_event_end(IRC_SERVER_REC *server, const char *data,
 		return;
 	}
 
-	params = event_get_params(data, 2, NULL, &nick);
+	event_get_params(data, 2, NULL, &nick);
 	printformat(server, nick, MSGLEVEL_CRAP, IRCTXT_WHOIS_NOT_FOUND, nick);
-	g_free(params);
 }
 
 static void event_received(IRC_SERVER_REC *server, const char *data,

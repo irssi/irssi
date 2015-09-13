@@ -452,11 +452,11 @@ static void event_whois(IRC_SERVER_REC *server, const char *data,
 
 static void sig_whois_try_whowas(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *nick;
+	char *nick;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &nick);
+	event_get_params(data, 2, NULL, &nick);
 
 	server->whowas_found = FALSE;
 	server_redirect_event(server, "whowas", 1, nick, -1, NULL,
@@ -464,8 +464,6 @@ static void sig_whois_try_whowas(IRC_SERVER_REC *server, const char *data)
 			      "event 369", "whowas event end",
 			      "event 406", "event empty", NULL);
 	irc_send_cmdv(server, "WHOWAS %s 1", nick);
-
-	g_free(params);
 }
 
 static void event_end_of_whois(IRC_SERVER_REC *server, const char *data,

@@ -149,19 +149,17 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	if (g_strcmp0(cmd, "PING") == 0) {
 		/* Reply to PING, if the target parameter is either
 		   proxy_adress, our own nick or empty. */
-		char *params, *origin, *target;
+		char *origin, *target;
 
-		params = event_get_params(args, 2, &origin, &target);
+		event_get_params(args, 2, &origin, &target);
 		if (*target == '\0' ||
 		    g_ascii_strcasecmp(target, client->proxy_address) == 0 ||
 		    g_ascii_strcasecmp(target, client->nick) == 0) {
 			proxy_outdata(client, ":%s PONG %s :%s\r\n",
 				      client->proxy_address,
                                       client->proxy_address, origin);
-			g_free(params);
 			return;
 		}
-		g_free(params);
 	}
 
 	if (g_strcmp0(cmd, "PROXY") == 0) {
@@ -254,9 +252,9 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 		g_free(slist);
 	} else if (g_strcmp0(cmd, "PRIVMSG") == 0) {
 		/* send the message to other clients as well */
-		char *params, *target, *msg;
+		char *target, *msg;
 
-		params = event_get_params(args, 2 | PARAM_FLAG_GETREST,
+		event_get_params(args, 2 | PARAM_FLAG_GETREST,
 					  &target, &msg);
 		proxy_outserver_all_except(client, "PRIVMSG %s", args);
 
@@ -282,7 +280,6 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 				    client->server, msg+1, p, target);
 		}
 		ignore_next = FALSE;
-		g_free(params);
 	} else if (g_strcmp0(cmd, "PING") == 0) {
 		proxy_redirect_event(client, "ping", 1, NULL, TRUE);
 	} else if (g_strcmp0(cmd, "AWAY") == 0) {

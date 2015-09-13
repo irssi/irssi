@@ -114,11 +114,11 @@ static int channel_rejoin(IRC_SERVER_REC *server, const char *channel)
 static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
 {
 	CHANNEL_REC *chanrec;
-	char *params, *channel, *p;
+	char *channel, *p;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, NULL, &channel);
+	event_get_params(data, 3, NULL, NULL, &channel);
 	p = strchr(channel, ' ');
 	if (p != NULL) *p = '\0';
 
@@ -137,18 +137,16 @@ static void event_duplicate_channel(IRC_SERVER_REC *server, const char *data)
 			}
 		}
 	}
-
-	g_free(params);
 }
 
 static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 {
-	char *params, *channel;
+	char *channel;
 	IRC_CHANNEL_REC *chanrec;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &channel);
+	event_get_params(data, 2, NULL, &channel);
 	if (server_ischannel(SERVER(server), channel)) {
 		chanrec = irc_channel_find(server, channel);
 		if (chanrec != NULL && chanrec->joined) {
@@ -162,8 +160,6 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 			}
 		}
 	}
-
-	g_free(params);
 }
 
 /* join ok/failed - remove from rejoins list. this happens always after join

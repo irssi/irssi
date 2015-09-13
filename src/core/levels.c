@@ -87,7 +87,7 @@ int level_get(const char *level)
 
 int level2bits(const char *level, int *errorp)
 {
-	char *orig, *str, *ptr;
+	char *str, *ptr;
 	int ret, singlelevel, negative;
 
 	if (errorp != NULL)
@@ -98,7 +98,7 @@ int level2bits(const char *level, int *errorp)
 	if (*level == '\0')
 		return 0;
 
-	orig = str = g_strdup(level);
+	str = g_strdup(level);
 
 	ret = 0;
 	for (ptr = str; ; str++) {
@@ -122,7 +122,6 @@ int level2bits(const char *level, int *errorp)
 
        		ptr = str;
 	}
-	g_free(orig);
 
 	return ret;
 }

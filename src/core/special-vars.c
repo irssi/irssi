@@ -540,7 +540,7 @@ void eval_special_string(const char *cmd, const char *data,
 			 SERVER_REC *server, void *item)
 {
 	const char *cmdchars;
-	char *orig, *str, *start, *ret;
+	char *str, *start, *ret;
 	int arg_used, arg_used_ever;
 	GSList *commands;
 
@@ -549,7 +549,7 @@ void eval_special_string(const char *cmd, const char *data,
 	cmdchars = settings_get_str("cmdchars");
 
 	/* get a list of all the commands to run */
-	orig = start = str = g_strdup(cmd);
+	start = str = g_strdup(cmd);
 	do {
 		if (is_split_char(str, start)) {
 			*str++ = '\0';
@@ -604,7 +604,6 @@ void eval_special_string(const char *cmd, const char *data,
 		g_free(ret);
 		commands = g_slist_remove(commands, commands->data);
 	}
-	g_free(orig);
 }
 
 void special_history_func_set(SPECIAL_HISTORY_FUNC func)
