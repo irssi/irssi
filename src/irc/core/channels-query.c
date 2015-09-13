@@ -398,11 +398,11 @@ static void event_channel_mode(IRC_SERVER_REC *server, const char *data,
 			       const char *nick)
 {
 	IRC_CHANNEL_REC *chanrec;
-	char *params, *channel, *mode;
+	char *channel, *mode;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3 | PARAM_FLAG_GETREST,
+	event_get_params(data, 3 | PARAM_FLAG_GETREST,
 				  NULL, &channel, &mode);
 	chanrec = irc_channel_find(server, channel);
 	if (chanrec != NULL) {
@@ -414,20 +414,18 @@ static void event_channel_mode(IRC_SERVER_REC *server, const char *data,
 		parse_channel_modes(chanrec, nick, mode, FALSE);
 		channel_got_query(chanrec, CHANNEL_QUERY_MODE);
 	}
-
-	g_free(params);
 }
 
 static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 {
         SERVER_QUERY_REC *rec;
         GSList *tmp, *next;
-	char *params, *channel, **channels;
+	char *channel, **channels;
         int failed, multiple;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &channel);
+	event_get_params(data, 2, NULL, &channel);
 	multiple = strchr(channel, ',') != NULL;
 	channels = g_strsplit(channel, ",", -1);
 
@@ -462,24 +460,20 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 		   send them again separately */
                 query_current_error(server);
 	}
-
-        g_free(params);
 }
 
 static void event_end_of_banlist(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
-	char *params, *channel;
+	char *channel;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &channel);
+	event_get_params(data, 2, NULL, &channel);
 	chanrec = irc_channel_find(server, channel);
 
 	if (chanrec != NULL)
 		channel_got_query(chanrec, CHANNEL_QUERY_BMODE);
-
-	g_free(params);
 }
 
 void channels_query_init(void)

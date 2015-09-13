@@ -496,10 +496,10 @@ unsigned int g_istr_hash(gconstpointer v)
 /* Find `mask' from `data', you can use * and ? wildcards. */
 int match_wildcards(const char *cmask, const char *data)
 {
-	char *mask, *newmask, *p1, *p2;
+	char *mask, *p1, *p2;
 	int ret;
 
-	newmask = mask = g_strdup(cmask);
+	mask = g_strdup(cmask);
 	for (; *mask != '\0' && *data != '\0'; mask++) {
 		if (*mask != '*') {
 			if (*mask != '?' && i_toupper(*mask) != i_toupper(*data))
@@ -533,7 +533,6 @@ int match_wildcards(const char *cmask, const char *data)
 	while (*mask == '*') mask++;
 
 	ret = data != NULL && *data == '\0' && *mask == '\0';
-	g_free(newmask);
 
 	return ret;
 }

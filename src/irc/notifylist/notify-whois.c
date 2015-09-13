@@ -32,19 +32,18 @@ static char *last_notify_nick;
 
 static void event_whois(IRC_SERVER_REC *server, const char *data)
 {
-        char *params, *nick, *user, *host, *realname;
+        char *nick, *user, *host, *realname;
 	NOTIFY_NICK_REC *nickrec;
 	NOTIFYLIST_REC *notify;
 
 	g_return_if_fail(data != NULL);
 	g_return_if_fail(server != NULL);
 
-	params = event_get_params(data, 6, NULL, &nick, &user, &host, NULL, &realname);
+	event_get_params(data, 6, NULL, &nick, &user, &host, NULL, &realname);
 
 	notify = notifylist_find(nick, server->connrec->chatnet);
 	if (notify != NULL && !mask_match(SERVER(server), notify->mask, nick, user, host)) {
 		/* user or host didn't match */
-		g_free(params);
 		return;
 	}
 
@@ -64,25 +63,22 @@ static void event_whois(IRC_SERVER_REC *server, const char *data)
 		nickrec->away = FALSE;
 		nickrec->host_ok = TRUE;
 	}
-	g_free(params);
 }
 
 static void event_whois_away(IRC_SERVER_REC *server, const char *data)
 {
 	NOTIFY_NICK_REC *nickrec;
-	char *params, *nick, *awaymsg;
+	char *nick, *awaymsg;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 3, NULL, &nick, &awaymsg);
+	event_get_params(data, 3, NULL, &nick, &awaymsg);
 
 	nickrec = notify_nick_find(server, nick);
 	if (nickrec != NULL) {
 		nickrec->awaymsg = g_strdup(awaymsg);
                 nickrec->away = TRUE;
 	}
-
-	g_free(params);
 }
 
 /* All WHOIS replies got, now announce all the changes at once. */

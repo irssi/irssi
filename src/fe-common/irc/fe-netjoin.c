@@ -395,7 +395,7 @@ static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 		     const char *sender, const char *addr, const char *data)
 {
 	NETJOIN_REC *rec;
-	char *params, *mode, *nicks;
+	char *mode, *nicks;
 	char **nicklist, **nick, type, prefix;
 	int show;
 
@@ -403,8 +403,8 @@ static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 	if (!server_ischannel(SERVER(server), channel) || addr != NULL)
 		return;
 
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,
-				  &mode, &nicks);
+	event_get_params(data, 2 | PARAM_FLAG_GETREST,
+			 &mode, &nicks);
 
 	/* parse server mode changes - hide operator status changes and
 	   show them in the netjoin message instead as @ before the nick */
@@ -435,7 +435,6 @@ static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 	if (!show) signal_stop();
 
 	g_strfreev(nicklist);
-	g_free(params);
 }
 
 static void read_settings(void)

@@ -74,14 +74,10 @@ static void dcc_connected(CHAT_DCC_REC *dcc)
 
 static void dcc_closed(CHAT_DCC_REC *dcc)
 {
-	char *sender;
-
         if (!IS_DCC_CHAT(dcc)) return;
 
-	sender = g_strconcat("=", dcc->id, NULL);
 	printformat(dcc->server, NULL, MSGLEVEL_DCC,
 		    IRCTXT_DCC_CHAT_DISCONNECTED, dcc->id);
-	g_free(sender);
 }
 
 static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)

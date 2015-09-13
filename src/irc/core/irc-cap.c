@@ -83,12 +83,13 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 {
 	GSList *tmp;
 	GString *cmd;
-	char *params, *evt, *list, **caps;
+	char *evt, *list, **caps;
 	int i, caps_length, disable, avail_caps;
 
-	params = event_get_params(args, 3, NULL, &evt, &list);
-	if (params == NULL)
-		return;
+	if(args == NULL)
+	  return;
+
+	event_get_params(args, 3, NULL, &evt, &list);
 
 	/* Strip the trailing whitespaces before splitting the string, some servers send responses with
 	 * superfluous whitespaces that g_strsplit the interprets as tokens */
@@ -166,7 +167,6 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 	}
 
 	g_strfreev(caps);
-	g_free(params);
 }
 
 static void event_invalid_cap (IRC_SERVER_REC *server, const char *data, const char *from)
