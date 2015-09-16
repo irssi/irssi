@@ -502,6 +502,9 @@ static void terminfo_input_init(TERM_REC *term)
 	memcpy(&term->tio, &term->old_tio, sizeof(term->tio));
 
 	term->tio.c_lflag &= ~(ICANON | ECHO); /* CBREAK, no ECHO */
+        /* Disable the ICRNL flag to disambiguate ^J and Enter, also disable the
+         * software flow control to leave ^Q and ^S ready to be bound */
+	term->tio.c_iflag &= ~(ICRNL | IXON | IXOFF); 
 	term->tio.c_cc[VMIN] = 1; /* read() is satisfied after 1 char */
 	term->tio.c_cc[VTIME] = 0; /* No timer */
 
