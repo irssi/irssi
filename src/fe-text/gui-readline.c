@@ -61,6 +61,7 @@ static int paste_detect_time, paste_verify_line_count;
 static char *paste_entry;
 static int paste_entry_pos;
 static GArray *paste_buffer;
+static GArray *paste_buffer_rest;
 
 static char *paste_old_prompt;
 static int paste_prompt, paste_line_count;
@@ -330,6 +331,12 @@ static void paste_flush(int send)
 	if (send)
 		paste_send();
 	g_array_set_size(paste_buffer, 0);
+
+	/* re-add anything that may have been after the bracketed paste end */
+	if (paste_buffer_rest->len) {
+		g_array_append_vals(paste_buffer, paste_buffer_rest->data, paste_buffer_rest->len);
+		g_array_set_size(paste_buffer_rest, 0);
+	}
 
 	gui_entry_set_prompt(active_entry,
 			     paste_old_prompt == NULL ? "" : paste_old_prompt);
@@ -643,6 +650,26 @@ static gboolean paste_timeout(gpointer data)
 	return FALSE;
 }
 
+static void paste_bracketed_end(int i, gboolean rest)
+{
+	/* if there's stuff after the end bracket, save it for later */
+	if (rest) {
+		unichar *start = ((unichar *) paste_buffer->data) + i + G_N_ELEMENTS(bp_end);
+		int len = paste_buffer->len - G_N_ELEMENTS(bp_end);
+
+		g_array_set_size(paste_buffer_rest, 0);
+		g_array_append_vals(paste_buffer_rest, start, len);
+	}
+
+	/* remove the rest, including the trailing sequence chars */
+	g_array_set_size(paste_buffer, i);
+
+	/* decide what to do with the buffer */
+	paste_timeout(NULL);
+
+	paste_bracketed_mode = FALSE;
+}
+
 static void sig_input(void)
 {
 	if (!active_entry) {
@@ -676,13 +703,7 @@ static void sig_input(void)
 
 			for (i = 0; i <= len; i++, ptr++) {
 				if (ptr[0] == bp_end[0] && !memcmp(ptr, bp_end, sizeof(bp_end))) {
-					/* remove the trailing sequence chars */
-					g_array_set_size(paste_buffer, i);
-
-					/* decide what to do with the buffer */
-					paste_timeout(NULL);
-
-					paste_bracketed_mode = FALSE;
+					paste_bracketed_end(i, i != len);
 					break;
 				}
 			}
@@ -993,6 +1014,7 @@ void gui_readline_init(void)
 	paste_entry = NULL;
 	paste_entry_pos = 0;
 	paste_buffer = g_array_new(FALSE, FALSE, sizeof(unichar));
+	paste_buffer_rest = g_array_new(FALSE, FALSE, sizeof(unichar));
         paste_old_prompt = NULL;
 	paste_timeout_id = -1;
 	paste_bracketed_mode = FALSE;
@@ -1228,6 +1250,7 @@ void gui_readline_deinit(void)
 	key_unbind("stop_irc", (SIGNAL_FUNC) key_sig_stop);
 	keyboard_destroy(keyboard);
         g_array_free(paste_buffer, TRUE);
+        g_array_free(paste_buffer_rest, TRUE);
 
         key_configure_thaw();
 
