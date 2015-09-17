@@ -665,42 +665,54 @@ static void sig_input(void)
 
 		/* use the bracketed paste mode to detect when the user pastes
 		 * some text into the entry */
-		if (paste_use_bracketed_mode != FALSE && paste_buffer->len > 12) {
-			/* try to find the start/end sequence, we know that we
-			 * either find those at the start/end of the buffer or
-			 * we don't find those at all. */
-			int seq_start = !memcmp(paste_buffer->data, bp_start, sizeof(bp_start)),
-			    seq_end = !memcmp(paste_buffer->data + paste_buffer->len * g_array_get_element_size(paste_buffer) - sizeof(bp_end), bp_end, sizeof(bp_end));
+		if (paste_bracketed_mode) {
+			int i;
+			int len = paste_buffer->len - G_N_ELEMENTS(bp_end);
+			unichar *ptr = (unichar *) paste_buffer->data;
 
-			if (seq_start) {
-				paste_bracketed_mode = TRUE;
-				/* remove the leading sequence chars */
-				g_array_remove_range(paste_buffer, 0, 6);
+			if (len <= 0) {
+				return;
 			}
 
-			if (seq_end) {
-				paste_bracketed_mode = FALSE;
-				/* remove the trailing sequence chars */
-				g_array_set_size(paste_buffer, paste_buffer->len - 6);
-				/* decide what to do with the buffer */
-				paste_timeout(NULL);
+			for (i = 0; i <= len; i++, ptr++) {
+				if (ptr[0] == bp_end[0] && !memcmp(ptr, bp_end, sizeof(bp_end))) {
+					/* remove the trailing sequence chars */
+					g_array_set_size(paste_buffer, i);
+
+					/* decide what to do with the buffer */
+					paste_timeout(NULL);
+
+					paste_bracketed_mode = FALSE;
+					break;
+				}
 			}
 		}
 		else if (paste_detect_time > 0 && paste_buffer->len >= 3) {
 			if (paste_timeout_id != -1)
 				g_source_remove(paste_timeout_id);
 			paste_timeout_id = g_timeout_add(paste_detect_time, paste_timeout, NULL);
-		} else {
+		} else if (!paste_bracketed_mode) {
 			int i;
 
 			for (i = 0; i < paste_buffer->len; i++) {
 				unichar key = g_array_index(paste_buffer, unichar, i);
 				signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
+
+				if (paste_bracketed_mode) {
+					/* just enabled by the signal, remove what was processed so far */
+					g_array_remove_range(paste_buffer, 0, i + 1);
+					return;
+				}
 			}
 			g_array_set_size(paste_buffer, 0);
 			paste_line_count = 0;
 		}
 	}
+}
+
+static void key_paste_start(void)
+{
+	paste_bracketed_mode = TRUE;
 }
 
 time_t get_idle_time(void)
@@ -1060,6 +1072,8 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "meta2-5F", "cend", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-1;5F", "cend", (SIGNAL_FUNC) key_combo);
 
+	key_bind("paste_start", "Bracketed paste start", "meta2-200~", "paste_start", (SIGNAL_FUNC) key_paste_start);
+
 	/* cursor movement */
 	key_bind("backward_character", "Move the cursor a character backward", "left", NULL, (SIGNAL_FUNC) key_backward_character);
 	key_bind("forward_character", "Move the cursor a character forward", "right", NULL, (SIGNAL_FUNC) key_forward_character);
@@ -1154,6 +1168,8 @@ void gui_readline_deinit(void)
         input_listen_deinit();
 
         key_configure_freeze();
+
+	key_unbind("paste_start", (SIGNAL_FUNC) key_paste_start);
 
 	key_unbind("backward_character", (SIGNAL_FUNC) key_backward_character);
 	key_unbind("forward_character", (SIGNAL_FUNC) key_forward_character);
