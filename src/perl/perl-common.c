@@ -301,7 +301,8 @@ void perl_connect_fill_hash(HV *hv, SERVER_CONNECT_REC *conn)
 	(void) hv_store(hv, "no_autojoin_channels", 20, newSViv(conn->no_autojoin_channels), 0);
 	(void) hv_store(hv, "no_autosendcmd", 14, newSViv(conn->no_autosendcmd), 0);
 	(void) hv_store(hv, "unix_socket", 11, newSViv(conn->unix_socket), 0);
-	(void) hv_store(hv, "use_ssl", 7, newSViv(conn->use_ssl), 0);
+	(void) hv_store(hv, "use_ssl", 7, newSViv(conn->use_tls), 0);
+	(void) hv_store(hv, "use_tls", 7, newSViv(conn->use_tls), 0);
 	(void) hv_store(hv, "no_connect", 10, newSViv(conn->no_connect), 0);
 }
 

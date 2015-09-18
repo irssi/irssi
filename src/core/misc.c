@@ -930,3 +930,23 @@ char **strsplit_len(const char *str, int len, gboolean onspace)
 
 	return ret;
 }
+
+char *binary_to_hex(unsigned char *buffer, size_t size)
+{
+	static const char hex[] = "0123456789ABCDEF";
+	char *result = NULL;
+	int i;
+
+	if (buffer == NULL || size == 0)
+		return NULL;
+
+	result = g_malloc(2 * size + size);
+
+	for (i = 0; i < size; i++) {
+		result[i * 3 + 0] = hex[(buffer[i] >> 4) & 0xf];
+		result[i * 3 + 1] = hex[(buffer[i] >> 0) & 0xf];
+		result[i * 3 + 2] = i == size - 1 ? '\0' : ':';
+	}
+
+	return result;
+}

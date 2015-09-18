@@ -88,6 +88,9 @@ void fe_server_deinit(void);
 void fe_settings_init(void);
 void fe_settings_deinit(void);
 
+void fe_tls_init(void);
+void fe_tls_deinit(void);
+
 void window_commands_init(void);
 void window_commands_deinit(void);
 
@@ -161,21 +164,24 @@ void fe_common_core_init(void)
 	g_get_charset(&str);
 	settings_add_str("lookandfeel", "term_charset", str);
 	themes_init();
-        theme_register(fecommon_core_formats);
+	theme_register(fecommon_core_formats);
 
 	command_history_init();
 	completion_init();
 	keyboard_init();
 	printtext_init();
 	formats_init();
-        fe_exec_init();
-        fe_expandos_init();
+#ifndef WIN32
+	fe_exec_init();
+#endif
+	fe_expandos_init();
 	fe_help_init();
 	fe_ignore_init();
 	fe_log_init();
 	fe_modules_init();
 	fe_server_init();
 	fe_settings_init();
+	fe_tls_init();
 	windows_init();
 	window_activity_init();
 	window_commands_init();
@@ -183,8 +189,8 @@ void fe_common_core_init(void)
 	windows_layout_init();
 	fe_core_commands_init();
 
-        fe_channels_init();
-        fe_queries_init();
+	fe_channels_init();
+	fe_queries_init();
 
 	fe_messages_init();
 	hilight_text_init();
@@ -193,10 +199,10 @@ void fe_common_core_init(void)
 
 	settings_check();
 
-        signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
-        signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
-        signal_add_first("channel created", (SIGNAL_FUNC) sig_channel_created);
-        signal_add_last("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
+	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+	signal_add_first("channel created", (SIGNAL_FUNC) sig_channel_created);
+	signal_add_last("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
 	module_register("core", "fe");
 }
@@ -209,14 +215,17 @@ void fe_common_core_deinit(void)
 	keyboard_deinit();
 	printtext_deinit();
 	formats_deinit();
-        fe_exec_deinit();
-        fe_expandos_deinit();
+#ifndef WIN32
+	fe_exec_deinit();
+#endif
+	fe_expandos_deinit();
 	fe_help_deinit();
 	fe_ignore_deinit();
 	fe_log_deinit();
 	fe_modules_deinit();
 	fe_server_deinit();
 	fe_settings_deinit();
+	fe_tls_deinit();
 	windows_deinit();
 	window_activity_deinit();
 	window_commands_deinit();
@@ -224,21 +233,21 @@ void fe_common_core_deinit(void)
 	windows_layout_deinit();
 	fe_core_commands_deinit();
 
-        fe_channels_deinit();
-        fe_queries_deinit();
+	fe_channels_deinit();
+	fe_queries_deinit();
 
 	fe_messages_deinit();
 	fe_ignore_messages_deinit();
 	fe_recode_deinit();
 
-        theme_unregister();
+	theme_unregister();
 	themes_deinit();
 
-        signal_remove("setup changed", (SIGNAL_FUNC) sig_setup_changed);
-        signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
-        signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
-        signal_remove("channel created", (SIGNAL_FUNC) sig_channel_created);
-        signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
+	signal_remove("setup changed", (SIGNAL_FUNC) sig_setup_changed);
+	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+	signal_remove("channel created", (SIGNAL_FUNC) sig_channel_created);
+	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 }
 
 void glog_func(const char *log_domain, GLogLevelFlags log_level,

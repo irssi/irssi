@@ -23,12 +23,14 @@ char *nick;
 char *username;
 char *realname;
 
-char *ssl_cert;
-char *ssl_pkey;
-char *ssl_pass;
-char *ssl_cafile;
-char *ssl_capath;
-char *ssl_ciphers;
+char *tls_cert;
+char *tls_pkey;
+char *tls_pass;
+char *tls_cafile;
+char *tls_capath;
+char *tls_ciphers;
+char *tls_pinned_cert;
+char *tls_pinned_pubkey;
 
 GIOChannel *connect_handle; /* connect using this handle */
 
@@ -38,8 +40,8 @@ unsigned int reconnecting:1; /* we're trying to reconnect any connection */
 unsigned int no_autojoin_channels:1; /* don't autojoin any channels */
 unsigned int no_autosendcmd:1; /* don't execute autosendcmd */
 unsigned int unix_socket:1; /* Connect using named unix socket */
-unsigned int use_ssl:1; /* this connection uses SSL */
-unsigned int ssl_verify:1;
+unsigned int use_tls:1; /* this connection uses TLS */
+unsigned int tls_verify:1;
 unsigned int no_connect:1; /* don't connect() at all, it's done by plugin */
 char *channels;
 char *away_reason;
