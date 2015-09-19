@@ -149,6 +149,18 @@ static int config_write_node(CONFIG_REC *rec, CONFIG_NODE *node, int line_feeds)
 		if (config_write_word(rec, node->value, TRUE) == -1)
 			return -1;
 		break;
+	case NODE_TYPE_INCLUDE: {
+		CONFIG_INCLUDE *inc = node->value;
+		if (config_write_str(rec, "include ") == -1)
+			return -1;
+
+		if (config_write_word(rec, inc->original_path, TRUE) == -1)
+			return -1;
+
+		config_write(inc->rec, NULL, -1);
+
+		break;
+	}
 	case NODE_TYPE_BLOCK:
 		/* key = { */
 		if (node->key != NULL) {
@@ -217,6 +229,11 @@ static int config_node_get_length(CONFIG_REC *rec, CONFIG_NODE *node)
 		/* "value, " */
 		len = 2 + strlen(node->value);
 		break;
+	case NODE_TYPE_INCLUDE: {
+		CONFIG_INCLUDE *inc = node->value;
+		len = strlen("include \"\"") + strlen(inc->rec->fname);
+		break;
+	}
 	case NODE_TYPE_BLOCK:
 	case NODE_TYPE_LIST:
 		/* "{ list }; " */

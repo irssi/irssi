@@ -20,6 +20,15 @@
 
 #include "module.h"
 
+static void config_rec_increase_modifycounter(CONFIG_REC *rec)
+{
+	g_return_if_fail(rec != NULL);
+
+	/* handle CONFIG_RECs which are includes of other configs */
+	if (rec->root_rec)
+		rec->root_rec->modifycounter++;
+}
+
 static void cache_remove(CONFIG_REC *rec, CONFIG_NODE *node)
 {
 	char *path;
@@ -39,7 +48,7 @@ void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node)
 	if (parent == NULL)
                 parent = rec->mainnode;
 
-	rec->modifycounter++;
+	config_rec_increase_modifycounter(rec);
 	cache_remove(rec, node);
 	parent->value = g_slist_remove(parent->value, node);
 
@@ -49,6 +58,16 @@ void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node)
 	case NODE_TYPE_COMMENT:
 		g_free_not_null(node->value);
 		break;
+	case NODE_TYPE_INCLUDE: {
+		CONFIG_INCLUDE *inc = node->value;
+		if (inc) {
+			g_hash_table_remove(inc->rec->root_rec->includes, inc->original_path);
+			config_close(inc->rec);
+			g_free_not_null(inc->original_path);
+			g_free(inc);
+		}
+		break;
+	}
 	case NODE_TYPE_BLOCK:
 	case NODE_TYPE_LIST:
 		while (node->value != NULL)
@@ -87,6 +106,79 @@ void config_nodes_remove_all(CONFIG_REC *rec)
 		config_node_remove(rec, rec->mainnode, ((GSList *) rec->mainnode->value)->data);
 }
 
+void config_node_set_include(CONFIG_REC *rec, CONFIG_NODE *parent, const char *fname)
+{
+	CONFIG_NODE *node;
+	CONFIG_INCLUDE *inc;
+	CONFIG_REC *root_rec;
+	char *full_path = NULL;
+
+	g_return_if_fail(rec != NULL);
+	g_return_if_fail(parent != NULL);
+
+	if (!fname || !*fname) {
+		config_error(rec, "Included filename is empty.\n");
+		return;
+	}
+
+	/* if the parent rec has no root_rec, it is the root */
+	root_rec = rec->root_rec ? rec->root_rec : rec;
+	if (!root_rec->includes) {
+		root_rec->includes = g_hash_table_new_full(g_str_hash, g_str_equal,
+		                                           g_free, NULL);
+		if (!root_rec->includes)
+			return;
+	}
+
+	if (g_hash_table_contains(root_rec->includes, fname)) {
+		config_error(rec, "'%s' has already been included.\n", fname);
+		return;
+	}
+
+	if (!g_path_is_absolute(fname)) {
+		gchar *dirname = g_path_get_dirname(rec->fname);
+		if (!dirname) {
+			config_error(rec, "g_path_get_dirname failed.\n");
+			return;
+		}
+		full_path = g_build_filename(dirname, fname, NULL);
+		g_free(dirname);
+	}
+
+	node = g_new0(CONFIG_NODE, 1);
+	if (!node) {
+		return;
+	}
+	node->type = NODE_TYPE_INCLUDE;
+
+	inc = g_new0(CONFIG_INCLUDE, 1);
+	if (!inc) {
+		config_node_remove(rec, parent, node);
+		return;
+	}
+	node->value = inc;
+	inc->original_path = g_strdup(fname);
+
+	inc->rec = config_open(full_path ? full_path : fname, 0660);
+	if (!inc->rec) {
+		config_error(rec, "Unable to open '%s': %s.\n", fname,
+		             strerror(errno));
+		config_node_remove(rec, parent, node);
+		return;
+	}
+	g_free_not_null(full_path);
+	inc->rec->root_rec = root_rec;
+	g_hash_table_add(root_rec->includes, g_strdup(fname));
+
+	if (config_parse(inc->rec) != 0) {
+		config_node_remove(rec, parent, node);
+		return;
+	}
+
+	parent->value = g_slist_append(parent->value, node);
+	config_rec_increase_modifycounter(rec);
+}
+
 void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value)
 {
 	CONFIG_NODE *node;
@@ -123,7 +215,7 @@ void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, 
 	}
 
 	node->value = g_strdup(value);
-	rec->modifycounter++;
+	config_rec_increase_modifycounter(rec);
 }
 
 void config_node_set_int(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value)

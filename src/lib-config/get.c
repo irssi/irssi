@@ -33,6 +33,14 @@ CONFIG_NODE *config_node_find(CONFIG_NODE *parent, const char *key)
 
 		if (node->key != NULL && g_ascii_strcasecmp(node->key, key) == 0)
 			return node;
+
+		/* the primary children of an include node should also be searched */
+		if (node->type == NODE_TYPE_INCLUDE) {
+			CONFIG_INCLUDE *inc = node->value;
+			node = config_node_find(inc->rec->mainnode, key);
+			if (node)
+				return node;
+		}
 	}
 
 	return NULL;

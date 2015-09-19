@@ -2,25 +2,38 @@
 #define __ICONFIG_H
 
 enum {
-        NODE_TYPE_KEY,
-        NODE_TYPE_VALUE,
-        NODE_TYPE_BLOCK,
-        NODE_TYPE_LIST,
-	NODE_TYPE_COMMENT
+	NODE_TYPE_KEY,
+	NODE_TYPE_VALUE,
+	NODE_TYPE_INCLUDE,
+	NODE_TYPE_BLOCK,
+	NODE_TYPE_LIST,
+	NODE_TYPE_COMMENT,
+
+	NODE_TYPE_COUNT
 };
 
 #define has_node_value(a) \
-	((a)->type == NODE_TYPE_KEY || (a)->type == NODE_TYPE_VALUE)
+	((a)->type == NODE_TYPE_KEY || (a)->type == NODE_TYPE_VALUE || \
+	 (a)->type == NODE_TYPE_INCLUDE)
+
 #define is_node_list(a) \
         ((a)->type == NODE_TYPE_BLOCK || (a)->type == NODE_TYPE_LIST)
 
 typedef struct _CONFIG_NODE CONFIG_NODE;
 typedef struct _CONFIG_REC CONFIG_REC;
+typedef struct _CONFIG_INCLUDE CONFIG_INCLUDE;
 
 struct _CONFIG_NODE {
 	int type;
         char *key;
 	void *value;
+};
+
+struct _CONFIG_INCLUDE {
+	/* the user probably specified a relative path from the root config, store
+	   it for writing back, but set the rec->fname to the absolute path */
+	char *original_path;
+	CONFIG_REC *rec;
 };
 
 /* a = { x=y; y=z; }
@@ -44,12 +57,27 @@ struct _CONFIG_NODE {
    also in comments so they won't be forgotten when the config file is
    written.
 
+   Include nodes have key=NULL, the path value is stored in CONFIG_INCLUDE's
+   original_path member as it's usually converted to an absolute path. All of
+   the include node's modifications and caches are stored in the 'root' config
+   and a write of the root config causes all included configs to be written
+   whether a modification has been made in them or not. A list of included
+   file names is maintained in the root rec to prevent circular inclusions.
+   It could eventually be better to keep a list of GFiles and use g_file_equal
+   for the comparison, but right now it doesn't even cover symbolic links.
+
 */
 
 struct _CONFIG_REC {
+	/* used for updating the root config's modifycounter from included configs */
+	CONFIG_REC *root_rec;
+	/* this list is only maintained in the root_rec, it's to prevent circular
+	   inclusions */
+	GHashTable *includes;
 	char *fname;
 	int create_mode;
-	int modifycounter; /* increase every time something is changed */
+	/* use config_rec_increase_modifycounter every time something changes */
+	int modifycounter;
 
 	char *last_error;
 	CONFIG_NODE *mainnode;
@@ -144,6 +172,9 @@ int config_node_get_bool(CONFIG_NODE *parent, const char *key, int def);
 void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value);
 void config_node_set_int(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
 void config_node_set_bool(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
+/* if a relative path is specified then you can access the absolute path using
+   node->value->fname. the key is set to the specified include path */
+void config_node_set_include(CONFIG_REC *rec, CONFIG_NODE *parent, const char *fname);
 
 /* Remove one node from block/list. */
 void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node);

@@ -43,10 +43,16 @@ static unsigned int g_istr_hash(gconstpointer v)
 	return h /* % M */;
 }
 
-int config_error(CONFIG_REC *rec, const char *msg)
+int config_error(CONFIG_REC *rec, const char *msg, ...)
 {
+	va_list vl;
+
 	g_free_and_null(rec->last_error);
-	rec->last_error = g_strdup(msg);
+
+	va_start(vl, msg);
+	rec->last_error = g_strdup_vprintf(msg, vl);
+	va_end(vl);
+
 	return -1;
 }
 
@@ -133,6 +139,7 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 	GTokenType last_char;
 	int print_warning;
 	char *key;
+	int key_is_include = FALSE;
 
 	g_return_val_if_fail(rec != NULL, G_TOKEN_ERROR);
 	g_return_val_if_fail(node != NULL, G_TOKEN_ERROR);
@@ -147,12 +154,23 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 	    (rec->scanner->token == G_TOKEN_STRING)) {
 		key = g_strdup(rec->scanner->value.v_string);
 
-                config_parse_warn_missing(rec, node, '=', TRUE);
+		if (g_ascii_strcasecmp(key, "include") == 0)
+			key_is_include = TRUE;
+		else
+			config_parse_warn_missing(rec, node, '=', TRUE);
+
 		config_parse_get_token(rec->scanner, node);
 	}
 
  	switch (rec->scanner->token) {
 	case G_TOKEN_STRING:
+		if (key_is_include) {
+			g_free_not_null(key);
+			config_node_set_include(rec, node, rec->scanner->value.v_string);
+			config_parse_warn_missing(rec, node, last_char, TRUE);
+			return G_TOKEN_NONE;
+		}
+
 		/* value */
 		config_node_set_str(rec, node, key, rec->scanner->value.v_string);
 		g_free_not_null(key);
@@ -332,6 +350,8 @@ void config_close(CONFIG_REC *rec)
 	g_hash_table_destroy(rec->cache_nodes);
 	g_free_not_null(rec->last_error);
 	g_free_not_null(rec->fname);
+	if (rec->includes)
+		g_hash_table_destroy(rec->includes);
 	g_free(rec);
 }
 
