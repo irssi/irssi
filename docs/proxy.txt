@@ -12,6 +12,11 @@ In irssi, say:
 
   /LOAD proxy
 
+If you want the proxy to be loaded automatically at startup, add the
+load command to ~/.irssi/startup:
+
+  echo "load proxy" >> ~/.irssi/startup
+
 You really should set some password for the proxy with:
 
   /SET irssiproxy_password secret
@@ -24,3 +29,20 @@ something like:
 There we have 3 different irc networks answering in 3 ports. Note that
 you'll have to make the correct /IRCNET ADD and /SERVER ADD commands to
 make it work properly.
+
+By default, the proxy binds to all available interfaces. To make it
+only listen on (for example) the loopback address:
+
+  /SET irssiproxy_bind 127.0.0.1
+
+Note that bind address changes won't take effect until the proxy is
+disabled and then reenabled.
+
+Once everything is set up, you can enable / disable the proxy:
+
+  /TOGGLE irssiproxy
+
+When the proxy is configured and running, the following command will
+show all the currently connected clients:
+
+  /IRSSIPROXY status

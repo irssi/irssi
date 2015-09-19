@@ -149,6 +149,7 @@ static void perl_client_fill_hash(HV *hv, CLIENT_REC *client)
 {
 	(void) hv_store(hv, "nick", 4, new_pv(client->nick), 0);
 	(void) hv_store(hv, "host", 4, new_pv(client->host), 0);
+	(void) hv_store(hv, "port", 4, newSViv(client->port), 0);
 	(void) hv_store(hv, "proxy_address", 13, new_pv(client->proxy_address), 0);
 	(void) hv_store(hv, "server", 6, iobject_bless(client->server), 0);
 	(void) hv_store(hv, "pass_sent", 9, newSViv(client->pass_sent), 0);
