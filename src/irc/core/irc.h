@@ -22,12 +22,6 @@ typedef struct _REDIRECT_REC REDIRECT_REC;
 #define isnickflag(server, a) \
 	(server->prefix[(int)(unsigned char) a] != '\0')
 
-#define ischannel(a) \
-	((a) == '#' || /* normal */ \
-	(a) == '&' || /* local */ \
-	(a) == '!' || /* secure */ \
-	(a) == '+') /* modeless */
-
 #define IS_IRC_ITEM(rec) (IS_IRC_CHANNEL(rec) || IS_IRC_QUERY(rec))
 #define IRC_PROTOCOL (chat_protocol_lookup("IRC"))
 

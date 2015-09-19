@@ -49,7 +49,7 @@ static void ctcp_default_msg(IRC_SERVER_REC *server, const char *data,
                 data = p+1;
 	}
 
-	printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
+	printformat(server, server_ischannel(SERVER(server), target) ? target : nick, MSGLEVEL_CTCPS,
 		    IRCTXT_CTCP_REQUESTED_UNKNOWN,
 		    nick, addr, cmd, data, target);
         g_free(cmd);
@@ -113,8 +113,8 @@ static void ctcp_default_reply(IRC_SERVER_REC *server, const char *data,
 		ctcpdata = ptr+1;
 	}
 
-	printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
-		    ischannel(*target) ? IRCTXT_CTCP_REPLY_CHANNEL :
+	printformat(server, server_ischannel(SERVER(server), target) ? target : nick, MSGLEVEL_CTCPS,
+		    server_ischannel(SERVER(server), target) ? IRCTXT_CTCP_REPLY_CHANNEL :
 		    IRCTXT_CTCP_REPLY, ctcp, nick, ctcpdata, target);
 	g_free(ctcp);
 }
@@ -137,7 +137,7 @@ static void ctcp_ping_reply(IRC_SERVER_REC *server, const char *data,
 
         g_get_current_time(&tv);
 	usecs = get_timeval_diff(&tv, &tv2);
-        printformat(server, ischannel(*target) ? target : nick, MSGLEVEL_CTCPS,
+        printformat(server, server_ischannel(SERVER(server), target) ? target : nick, MSGLEVEL_CTCPS,
                     IRCTXT_CTCP_PING_REPLY, nick, usecs/1000, usecs%1000);
 }
 

@@ -63,7 +63,7 @@ static void event_privmsg(SERVER_REC *server, const char *data,
 
 	g_return_if_fail(data != NULL);
 
-	if (nick == NULL || address == NULL || ischannel(*data) ||
+	if (nick == NULL || address == NULL || server_ischannel(server, data) ||
 	    !settings_get_bool("query_track_nick_changes"))
                 return;
 

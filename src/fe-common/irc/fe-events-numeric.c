@@ -400,7 +400,7 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &target);
-	if (!ischannel(*target)) {
+	if (!server_ischannel(SERVER(server), target)) {
 		/* nick unavailable */
 		printformat(server, NULL, MSGLEVEL_CRAP,
 			    IRCTXT_NICK_UNAVAILABLE, target);
@@ -583,7 +583,7 @@ static void print_event_received(IRC_SERVER_REC *server, const char *data,
 		return;
 	ptr++;
 
-	if (ischannel(*data)) /* directed at channel */
+	if (server_ischannel(SERVER(server), data)) /* directed at channel */
 		target = g_strndup(data, (int)(ptr - data - 1));
 	else if (!target_param || *ptr == ':' || (ptr2 = strchr(ptr, ' ')) == NULL)
 		target = NULL;

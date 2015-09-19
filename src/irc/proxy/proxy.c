@@ -23,11 +23,60 @@
 #include "settings.h"
 #include "levels.h"
 
+#include "fe-common/core/printtext.h"
+
+/* SYNTAX: IRSSIPROXY STATUS */
+static void cmd_irssiproxy_status(const char *data, IRC_SERVER_REC *server)
+{
+	if (!settings_get_bool("irssiproxy")) {
+		printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
+			  "Proxy is currently disabled");
+		return;
+	}
+
+	GSList *tmp;
+
+	printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
+		  "Proxy: Currently connected clients: %d",
+		  g_slist_length(proxy_clients));
+
+	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
+		CLIENT_REC *rec = tmp->data;
+
+		printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
+			  "  %s:%d connect%s to %d (%s)",
+			  rec->host, rec->port,
+			  rec->connected ? "ed" : "ing",
+			  rec->listen->port, rec->listen->ircnet);
+	}
+}
+
+/* SYNTAX: IRSSIPROXY */
+static void cmd_irssiproxy(const char *data, IRC_SERVER_REC *server, void *item)
+{
+	if (*data == '\0') {
+		cmd_irssiproxy_status(data, server);
+		return;
+	}
+
+	command_runsub("irssiproxy", data, server, item);
+}
+
+static void irc_proxy_setup_changed(void)
+{
+	if (settings_get_bool("irssiproxy")) {
+		proxy_listen_init();
+	} else {
+		proxy_listen_deinit();
+	}
+}
+
 void irc_proxy_init(void)
 {
 	settings_add_str("irssiproxy", "irssiproxy_ports", "");
 	settings_add_str("irssiproxy", "irssiproxy_password", "");
 	settings_add_str("irssiproxy", "irssiproxy_bind", "");
+	settings_add_bool("irssiproxy", "irssiproxy", TRUE);
 
 	if (*settings_get_str("irssiproxy_password") == '\0') {
 		/* no password - bad idea! */
@@ -43,7 +92,14 @@ void irc_proxy_init(void)
 			    "... to set them.");
 	}
 
-	proxy_listen_init();
+	command_bind("irssiproxy", NULL, (SIGNAL_FUNC) cmd_irssiproxy);
+	command_bind("irssiproxy status", NULL, (SIGNAL_FUNC) cmd_irssiproxy_status);
+
+	signal_add_first("setup changed", (SIGNAL_FUNC) irc_proxy_setup_changed);
+
+	if (settings_get_bool("irssiproxy")) {
+		proxy_listen_init();
+	}
 	settings_check();
         module_register("proxy", "irc");
 }
