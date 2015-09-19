@@ -36,6 +36,7 @@
 
 #include "fe-queries.h"
 #include "window-items.h"
+#include "fe-irc-channels.h"
 
 static void sig_message_own_public(SERVER_REC *server, const char *msg,
 				   const char *target, const char *origtarget)
