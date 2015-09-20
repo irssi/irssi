@@ -22,6 +22,7 @@ if echo "${VERSION}" | grep -q -- -head; then
     # Because the git tag won't yet include the next release we modify the git
     # describe output using the version defined from configure.ac.
     version="${new_version}-$(echo "${git_version}" | sed 's/^.*-[0-9]\+-//')"
+    echo "#undef PACKAGE_VERSION"
     echo "#define PACKAGE_VERSION \"${version}\""
   fi
 fi
