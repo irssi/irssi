@@ -170,8 +170,11 @@ static void cmd_part(const char *data, IRC_SERVER_REC *server,
 
 	if (*msg != '\0')
 		recoded = recode_out(SERVER(server), msg, channame);
-	irc_send_cmdv(server, ! recoded ? "PART %s" : "PART %s :%s",
-		      channame, recoded);
+
+	if (recoded == NULL)
+		irc_send_cmdv(server, "PART %s", channame);
+	else
+		irc_send_cmdv(server, "PART %s :%s", channame, recoded);
 
 	g_free(recoded);
 	cmd_params_free(free_arg);
@@ -219,8 +222,12 @@ static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *ite
 
 	if (*topic != '\0' || g_hash_table_lookup(optlist, "delete") != NULL)
 		recoded = recode_out(SERVER(server), topic, channame);
-	irc_send_cmdv(server, recoded == NULL ? "TOPIC %s" : "TOPIC %s :%s",
-		      channame, recoded);
+
+	if (recoded == NULL)
+		irc_send_cmdv(server, "TOPIC %s", channame);
+	else
+		irc_send_cmdv(server, "TOPIC %s :%s", channame, recoded);
+
 	g_free(recoded);
 
 	cmd_params_free(free_arg);
@@ -279,14 +286,14 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server,
 	char *channel, *rest;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &channel, &rest))
 		return;
 
 	if (g_strcmp0(channel, "*") == 0 || *channel == '\0') {
 		if (!IS_IRC_CHANNEL(item))
-                        cmd_param_error(CMDERR_NOT_JOINED);
+			cmd_param_error(CMDERR_NOT_JOINED);
 
 		channel = IRC_CHANNEL(item)->name;
 	}
@@ -295,8 +302,11 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server,
 		*channel = '\0';
 	}
 
-	irc_send_cmdv(server, *rest == '\0' ? "WHO %s" : "WHO %s %s",
-		      channel, rest);
+	if (rest[0] == '\0')
+		irc_send_cmdv(server, "WHO %s", channel);
+	else
+		irc_send_cmdv(server, "WHO %s %s", channel, rest);
+
 	cmd_params_free(free_arg);
 }
 
@@ -502,8 +512,11 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 	if (free_nick) g_free(nicks_redir);
 
 	server->whowas_found = FALSE;
-	irc_send_cmdv(server, *rest == '\0' ? "WHOWAS %s" :
-		      "WHOWAS %s %s", nicks, rest);
+
+	if (rest[0] == '\0')
+		irc_send_cmdv(server, "WHOWAS %s", nicks);
+	else
+		irc_send_cmdv(server, "WHOWAS %s %s", nicks, rest);
 
 	cmd_params_free(free_arg);
 }
@@ -913,9 +926,12 @@ static void cmd_unsilence(const char *data, IRC_SERVER_REC *server)
 
 static void command_self(const char *data, IRC_SERVER_REC *server)
 {
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
-	irc_send_cmdv(server, *data == '\0' ? "%s" : "%s %s", current_command, data);
+	if (data[0] == '\0')
+		irc_send_cmdv(server, "%s", current_command);
+	else
+		irc_send_cmdv(server, "%s %s", current_command, data);
 }
 
 static void command_1self(const char *data, IRC_SERVER_REC *server)
