@@ -1,3 +1,23 @@
+/*
+    fe-sasl.c : irssi
+
+    Copyright (C) 2015 The Lemon Man
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
 #include "module.h"
 #include "misc.h"
 #include "settings.h"
@@ -8,20 +28,20 @@
 
 #define SASL_TIMEOUT (20 * 1000) // ms
 
-static gboolean sasl_timeout (IRC_SERVER_REC *server)
+static gboolean sasl_timeout(IRC_SERVER_REC *server)
 {
 	/* The authentication timed out, we can't do much beside terminating it */
-	g_critical("The authentication timed out, try increasing the timeout and check your connection "
-	           "to the network.");
 	irc_send_cmd_now(server, "AUTHENTICATE *");
 	cap_finish_negotiation(server);
 
 	server->sasl_timeout = -1;
 
+	signal_emit("server sasl failure", 2, server, "The authentication timed out");
+
 	return FALSE;
 }
 
-static void sasl_start (IRC_SERVER_REC *server, const char *data, const char *from)
+static void sasl_start(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	IRC_SERVER_CONNECT_REC *conn;
 
@@ -39,7 +59,7 @@ static void sasl_start (IRC_SERVER_REC *server, const char *data, const char *fr
 	server->sasl_timeout = g_timeout_add(SASL_TIMEOUT, (GSourceFunc) sasl_timeout, server);
 }
 
-static void sasl_fail (IRC_SERVER_REC *server, const char *data, const char *from)
+static void sasl_fail(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	char *params, *error;
 
@@ -51,7 +71,7 @@ static void sasl_fail (IRC_SERVER_REC *server, const char *data, const char *fro
 
 	params = event_get_params(data, 2, NULL, &error);
 
-	g_critical("Authentication failed with reason \"%s\"", error);
+	signal_emit("server sasl fail", 2, server, error);
 
 	/* Terminate the negotiation */
 	cap_finish_negotiation(server);
@@ -59,30 +79,33 @@ static void sasl_fail (IRC_SERVER_REC *server, const char *data, const char *fro
 	g_free(params);
 }
 
-static void sasl_already (IRC_SERVER_REC *server, const char *data, const char *from)
+static void sasl_already(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	if (server->sasl_timeout != -1) {
 		g_source_remove(server->sasl_timeout);
 		server->sasl_timeout = -1;
 	}
+
+	signal_emit("server sasl success", 1, server);
 
 	/* We're already authenticated, do nothing */
 	cap_finish_negotiation(server);
 }
 
-static void sasl_success (IRC_SERVER_REC *server, const char *data, const char *from)
+static void sasl_success(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	if (server->sasl_timeout != -1) {
 		g_source_remove(server->sasl_timeout);
 		server->sasl_timeout = -1;
 	}
 
+	signal_emit("server sasl success", 1, server);
+
 	/* The authentication succeeded, time to finish the CAP negotiation */
-	g_warning("SASL authentication succeeded");
 	cap_finish_negotiation(server);
 }
 
-static void sasl_step (IRC_SERVER_REC *server, const char *data, const char *from)
+static void sasl_step(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	IRC_SERVER_CONNECT_REC *conn;
 	GString *req;

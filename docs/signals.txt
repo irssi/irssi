@@ -136,6 +136,10 @@ irc-cap.c
  "server cap nak "<cmd>, SERVER_REC
  "server cap end", SERVER_REC
 
+sasl.c
+ "server sasl failure", SERVER_REC, char *reason
+ "server sasl success", SERVER_REC
+
 irc.c:
 
  "server event", SERVER_REC, char *data, char *sender_nick, char *sender_address

@@ -18,17 +18,31 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef __SASL_H
-#define __SASL_H
+#include "module.h"
+#include "module-formats.h"
+#include "signals.h"
+#include "levels.h"
 
-enum {
-	SASL_MECHANISM_NONE = 0,
-	SASL_MECHANISM_PLAIN,
-	SASL_MECHANISM_EXTERNAL,
-	SASL_MECHANISM_MAX
-};
+#include "printtext.h"
 
-void sasl_init(void);
-void sasl_deinit(void);
+static void sig_sasl_success(IRC_SERVER_REC *server)
+{
+	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_SASL_SUCCESS);
+}
 
-#endif
+static void sig_sasl_failure(IRC_SERVER_REC *server, const char *reason)
+{
+	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_SASL_ERROR, reason);
+}
+
+void fe_sasl_init(void)
+{
+	signal_add("server sasl success", (SIGNAL_FUNC) sig_sasl_success);
+	signal_add("server sasl failure", (SIGNAL_FUNC) sig_sasl_failure);
+}
+
+void fe_sasl_deinit(void)
+{
+	signal_remove("server sasl success", (SIGNAL_FUNC) sig_sasl_success);
+	signal_remove("server sasl failure", (SIGNAL_FUNC) sig_sasl_failure);
+}

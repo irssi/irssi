@@ -44,6 +44,8 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "setupserver_header", "%#Server               Port  Network    Settings", 0 },
 	{ "setupserver_line", "%#%|$[!20]0 $[5]1 $[10]2 $3", 4, { 0, 1, 0, 0 } },
 	{ "setupserver_footer", "", 0 },
+	{ "sasl_success", "SASL authentication succeeded", 0 },
+	{ "sasl_error", "Cannot authenticate via SASL ($0)", 1, { 0 } },
 
 	/* ---- */
 	{ NULL, "Channels", 0 },

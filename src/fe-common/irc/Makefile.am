@@ -26,6 +26,7 @@ real_sources = \
 	fe-netsplit.c \
 	fe-common-irc.c \
 	fe-whois.c \
+	fe-sasl.c \
 	irc-completion.c \
 	module-formats.c 
 

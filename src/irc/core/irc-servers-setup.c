@@ -93,7 +93,7 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 				conn->sasl_username = ircnet->sasl_username;
 				conn->sasl_password = ircnet->sasl_password;
 			} else
-				g_warning("The fields sasl_username and sasl_password are either undefined or empty");
+				g_warning("The fields sasl_username and sasl_password are either missing or empty");
 		}
 		else if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "external")) {
 				conn->sasl_mechanism = SASL_MECHANISM_EXTERNAL;
