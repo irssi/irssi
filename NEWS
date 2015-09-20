@@ -1,4 +1,6 @@
 v0.8.18-head 2014-XX-YY  The Irssi team <staff@irssi.org>
+	+ Garbage Collection support has been removed. This will hardly have any
+	  effect for anyone given that it has been unsupported for several years.
 	+ Disable SSLv3 due to the POODLE vulnerability.
 	+ Try to split long lines on spaces to avoid words being splitted. Adds
 	  a new option: 'split_line_on_space' which defaults to on.

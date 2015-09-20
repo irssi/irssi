@@ -83,15 +83,6 @@ if test "x$prefix" != "xNONE"; then
 	perl_prefix_note=yes
 fi
 
-AC_ARG_WITH(gc,
-[  --with-gc               Use garbage collector],
-	if test x$withval = xno; then
-		want_gc=no
-	else
-		want_gc=yes
-	fi,
-	want_gc=no)
-
 AC_ARG_WITH(perl-staticlib,
 [  --with-perl-staticlib   Specify that we want to link perl libraries
                           statically in irssi, default is no],
@@ -320,28 +311,6 @@ if test "$enable_ssl" = "yes"; then
     AC_DEFINE(HAVE_OPENSSL,, Build with OpenSSL support)
     LIBS="$LIBS $SSL_LIBS"
   fi
-fi
-
-dnl **
-dnl ** Garbage Collector
-dnl **
-have_gc=no
-if test "x$want_gc" = xyes; then
-  AC_CHECK_LIB(gc, GC_malloc, [
-    AC_CHECK_HEADER(gc/gc.h, [
-      AC_DEFINE(HAVE_GC_GC_H)
-      AC_DEFINE(USE_GC)
-      LIBS="$LIBS -lgc"
-      have_gc=yes
-    ], [
-      AC_CHECK_HEADER(gc.h, [
-	AC_DEFINE(HAVE_GC_H)
-	AC_DEFINE(USE_GC)
-	LIBS="$LIBS -lgc"
-	have_gc=yes
-      ])
-    ])
-  ])
 fi
 
 dnl **
@@ -782,7 +751,6 @@ if test "x$have_openssl" = "xno" -a "x$enable_ssl" = "xyes"; then
   fi
 fi
 echo "Building with 64bit DCC support .. : $offt_64bit"
-echo "Building with garbage collector .. : $have_gc"
 echo "Building with DANE support ....... : $have_dane"
 echo "Building with true color support.. : $want_truecolor"
 
