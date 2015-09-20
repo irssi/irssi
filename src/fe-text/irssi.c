@@ -286,22 +286,6 @@ static void winsock_init(void)
 }
 #endif
 
-#ifdef USE_GC
-#ifdef HAVE_GC_H
-#  include <gc.h>
-#else
-#  include <gc/gc.h>
-#endif
-
-GMemVTable gc_mem_table = {
-	GC_malloc,
-	GC_realloc,
-	GC_free,
-
-	NULL, NULL, NULL
-};
-#endif
-
 int main(int argc, char **argv)
 {
 	static int version = 0;
@@ -311,10 +295,6 @@ int main(int argc, char **argv)
 		{ NULL }
 	};
 	int loglev;
-
-#ifdef USE_GC
-	g_mem_set_vtable(&gc_mem_table);
-#endif
 
 	core_register_options();
 	fe_common_core_register_options();
@@ -369,9 +349,6 @@ int main(int argc, char **argv)
 	/* Does the same as g_main_run(main_loop), except we
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
-#ifdef USE_GC
-		GC_collect_a_little();
-#endif
 		if (!dummy) term_refresh_freeze();
 		g_main_iteration(TRUE);
                 if (!dummy) term_refresh_thaw();
