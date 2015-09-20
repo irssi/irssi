@@ -212,8 +212,12 @@ void irc_send_cmd_split(IRC_SERVER_REC *server, const char *cmd,
 		count = 0;
 		if (nickstr->len > 0)
 			g_string_truncate(nickstr, nickstr->len-1);
-		irc_send_cmdv(server, post == NULL ? "%s %s" : "%s %s %s",
-			      pre, nickstr->str, post);
+
+		if (post == NULL)
+			irc_send_cmdv(server, "%s %s", pre, nickstr->str);
+		else
+			irc_send_cmdv(server, "%s %s %s", pre, nickstr->str, post);
+
 		g_string_truncate(nickstr, 0);
 
 		if (*tmp == NULL || tmp[1] == NULL)
