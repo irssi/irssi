@@ -27,6 +27,7 @@
 #include "irc-channels.h"
 #include "irc-queries.h"
 #include "irc-cap.h"
+#include "sasl.h"
 
 #include "irc-servers-setup.h"
 #include "channels-setup.h"
@@ -119,6 +120,7 @@ void irc_core_init(void)
 	netsplit_init();
 	irc_expandos_init();
 	cap_init();
+	sasl_init();
 
 	settings_check();
 	module_register("core", "irc");
@@ -128,6 +130,7 @@ void irc_core_deinit(void)
 {
 	signal_emit("chat protocol deinit", 1, chat_protocol_find("IRC"));
 
+	sasl_deinit();
 	cap_deinit();
 	irc_expandos_deinit();
 	netsplit_deinit();
@@ -140,7 +143,7 @@ void irc_core_deinit(void)
 	irc_irc_deinit();
 	irc_servers_deinit();
 	irc_chatnets_deinit();
-        irc_session_deinit();
+	irc_session_deinit();
 
 	chat_protocol_unregister("IRC");
 }
