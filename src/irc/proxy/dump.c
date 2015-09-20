@@ -186,7 +186,7 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 	}
 	g_slist_free(nicks);
 
-	g_string_append_c(str, '\r\n');
+	g_string_append(str, "\r\n");
 	proxy_outdata(client, "%s", str->str);
 	g_string_free(str, TRUE);
 
