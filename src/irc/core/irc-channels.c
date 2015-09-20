@@ -146,11 +146,13 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 				continue;
 		}
 		if (outchans->len > 0) {
-			g_string_truncate(outchans, outchans->len-1);
-			g_string_truncate(outkeys, outkeys->len-1);
-			irc_send_cmdv(IRC_SERVER(server),
-				      use_keys ? "JOIN %s %s" : "JOIN %s",
-				      outchans->str, outkeys->str);
+			g_string_truncate(outchans, outchans->len - 1);
+			g_string_truncate(outkeys, outkeys->len - 1);
+
+			if (use_keys)
+				irc_send_cmdv(IRC_SERVER(server), "JOIN %s %s", outchans->str, outkeys->str);
+			else
+				irc_send_cmdv(IRC_SERVER(server), "JOIN %s", outchans->str);
 		}
 		cmdlen = 0;
 		g_string_truncate(outchans,0);

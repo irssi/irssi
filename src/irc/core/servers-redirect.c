@@ -433,9 +433,11 @@ static void redirect_abort(IRC_SERVER_REC *server, REDIRECT_REC *rec)
 
 	if (rec->aborted || !rec->destroyed) {
 		/* emit the failure signal */
-		str = g_strdup_printf(rec->failure_signal != NULL ?
-				      "FAILED %s: %s" : "FAILED %s",
-				      rec->cmd->name, rec->failure_signal);
+		if (rec->failure_signal != NULL)
+			str = g_strdup_printf("FAILED %s: %s", rec->cmd->name, rec->failure_signal);
+		else
+			str = g_strdup_printf("FAILED %s", rec->cmd->name);
+
 		rawlog_redirect(server->rawlog, str);
 		g_free(str);
 

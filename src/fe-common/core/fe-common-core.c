@@ -326,8 +326,11 @@ static void autoconnect_servers(void)
 
 	if (autocon_server != NULL) {
 		/* connect to specified server */
-		str = g_strdup_printf(autocon_password == NULL ? "%s %d" : "%s %d %s",
-				      autocon_server, autocon_port, autocon_password);
+		if (autocon_password == NULL)
+			str = g_strdup_printf("%s %d", autocon_server, autocon_port);
+		else
+			str = g_strdup_printf("%s %d %s", autocon_server, autocon_port, autocon_password);
+
 		signal_emit("command connect", 1, str);
 		g_free(str);
 		return;
