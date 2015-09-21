@@ -56,7 +56,7 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 {
 	IRC_SERVER_REC *ircserver;
 	const char *username;
-	char hostname[100];
+	char hostname[HOST_NAME_MAX];
 
 	ircserver = IRC_SERVER(server);
 
@@ -72,8 +72,34 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 		username = ircserver->connrec->username;
 
 	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
-		strcpy(hostname, "??");
+		strcpy(hostname, "(none)");
 	return g_strconcat(username, "@", hostname, NULL);;
+}
+
+/* your hostname address (host) */
+static char *expando_hostname(SERVER_REC *server, void *item, int *free_ret)
+{
+	IRC_SERVER_REC *ircserver;
+	char hostname[HOST_NAME_MAX];
+	char **list;
+	char *hostname_split;
+
+	ircserver = IRC_SERVER(server);
+
+	*free_ret = TRUE;
+
+	/* prefer the _real_ /userhost reply */
+	if (ircserver != NULL && ircserver->userhost != NULL) {
+		list = g_strsplit(ircserver->userhost, "@", -1);
+		hostname_split = g_strdup(list[1]);
+		g_strfreev(list);
+		return hostname_split;
+	}
+
+	/* haven't received userhost reply yet. guess something */
+	if (gethostname(hostname, sizeof(hostname)) != 0 || *hostname == '\0')
+		strcpy(hostname, "(none)");
+	return g_strdup(hostname);
 }
 
 /* user mode in active server */
@@ -136,6 +162,9 @@ void irc_expandos_init(void)
 	expando_create("X", expando_userhost,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("x", expando_hostname,
+		       "window changed", EXPANDO_ARG_NONE,
+		       "window server changed", EXPANDO_ARG_WINDOW, NULL);
 	expando_create("usermode", expando_usermode,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window server changed", EXPANDO_ARG_WINDOW,
@@ -164,6 +193,7 @@ void irc_expandos_deinit(void)
 	expando_destroy("H", expando_server_numeric);
 	expando_destroy("S", expando_servername);
 	expando_destroy("X", expando_userhost);
+	expando_destroy("x", expando_hostname);
 	expando_destroy("usermode", expando_usermode);
 	expando_destroy("cumode", expando_cumode);
 
