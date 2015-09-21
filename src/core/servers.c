@@ -710,7 +710,6 @@ static void sig_chat_protocol_deinit(CHAT_PROTOCOL_REC *proto)
 
 void servers_init(void)
 {
-	settings_add_bool("server", "resolve_prefer_ipv6", FALSE);
 	settings_add_bool("server", "resolve_reverse_lookup", FALSE);
 	lookup_servers = servers = NULL;
 

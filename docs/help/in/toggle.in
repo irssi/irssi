@@ -15,7 +15,7 @@
 
 %9Examples:%9
 
-    /TOGGLE resolve_prefer_ipv6
+    /TOGGLE resolve_reverse_lookup
     /TOGGLE channels_rejoin_unavailable ON
 
 %9See also:%9 SET
