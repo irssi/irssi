@@ -67,8 +67,7 @@ void server_connect_failed(SERVER_REC *server, const char *msg);
 void server_change_nick(SERVER_REC *server, const char *nick);
 
 /* Update own IPv4 and IPv6 records */
-void server_connect_own_ip_save(SERVER_CONNECT_REC *conn,
-				IPADDR *ip4, IPADDR *ip6);
+void server_connect_own_ip_save(SERVER_CONNECT_REC *conn, IPADDR *ip);
 
 /* `optlist' should contain only one unknown key - the server tag.
    returns NULL if there was unknown -option */

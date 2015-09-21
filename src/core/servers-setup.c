@@ -33,32 +33,22 @@ GSList *setupservers;
 
 static char *old_source_host;
 int source_host_ok; /* Use source_host_ip .. */
-IPADDR *source_host_ip4, *source_host_ip6; /* Resolved address */
+IPADDR source_host_ip; /* Resolved address */
 
-static void save_ips(IPADDR *ip4, IPADDR *ip6,
-		     IPADDR **save_ip4, IPADDR **save_ip6)
+static void save_ips(IPADDR *ip, IPADDR **save_ip)
 {
-	if (ip4->family == 0)
-		g_free_and_null(*save_ip4);
+	if (ip->family == 0)
+		g_free_and_null(*save_ip);
 	else {
-                if (*save_ip4 == NULL)
-			*save_ip4 = g_new(IPADDR, 1);
-		memcpy(*save_ip4, ip4, sizeof(IPADDR));
-	}
-
-	if (ip6->family == 0)
-		g_free_and_null(*save_ip6);
-	else {
-                if (*save_ip6 == NULL)
-			*save_ip6 = g_new(IPADDR, 1);
-		memcpy(*save_ip6, ip6, sizeof(IPADDR));
+                if (*save_ip == NULL)
+			*save_ip = g_new(IPADDR, 1);
+		memcpy(*save_ip, ip, sizeof(IPADDR));
 	}
 }
 
 static void get_source_host_ip(void)
 {
         const char *hostname;
-	IPADDR ip4, ip6;
 
 	if (source_host_ok)
 		return;
@@ -66,28 +56,21 @@ static void get_source_host_ip(void)
 	/* FIXME: This will block! */
         hostname = settings_get_str("hostname");
 	source_host_ok = *hostname != '\0' &&
-		net_gethostbyname(hostname, &ip4, &ip6) == 0;
-
-	if (source_host_ok)
-		save_ips(&ip4, &ip6, &source_host_ip4, &source_host_ip6);
-	else {
-                g_free_and_null(source_host_ip4);
-                g_free_and_null(source_host_ip6);
-	}
+		net_gethostbyname(hostname, &source_host_ip) == 0;
 }
 
 static void conn_set_ip(SERVER_CONNECT_REC *conn, const char *own_host,
-			IPADDR **own_ip4, IPADDR **own_ip6)
+			IPADDR **own_ip)
 {
-	IPADDR ip4, ip6;
+	IPADDR ip;
 
-	if (*own_ip4 == NULL && *own_ip6 == NULL) {
+	if (*own_ip == NULL) {
 		/* resolve the IP */
-		if (net_gethostbyname(own_host, &ip4, &ip6) == 0)
-                        save_ips(&ip4, &ip6, own_ip4, own_ip6);
+		if (net_gethostbyname(own_host, &ip) == 0)
+                        save_ips(&ip, own_ip);
 	}
 
-	server_connect_own_ip_save(conn, *own_ip4, *own_ip6);
+	server_connect_own_ip_save(conn, *own_ip);
 }
 
 /* Fill information to connection from server setup record */
@@ -98,8 +81,7 @@ void server_setup_fill_reconn(SERVER_CONNECT_REC *conn,
 	g_return_if_fail(IS_SERVER_SETUP(sserver));
 
 	if (sserver->own_host != NULL) {
-		conn_set_ip(conn, sserver->own_host,
-			    &sserver->own_ip4, &sserver->own_ip6);
+		conn_set_ip(conn, sserver->own_host, &sserver->own_ip);
 	}
 
 	if (sserver->chatnet != NULL && conn->chatnet == NULL)
@@ -139,13 +121,9 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 	}
 
 	/* source IP */
-	if (source_host_ip4 != NULL) {
-		conn->own_ip4 = g_new(IPADDR, 1);
-		memcpy(conn->own_ip4, source_host_ip4, sizeof(IPADDR));
-	}
-	if (source_host_ip6 != NULL) {
-		conn->own_ip6 = g_new(IPADDR, 1);
-		memcpy(conn->own_ip6, source_host_ip6, sizeof(IPADDR));
+	if (source_host_ok) {
+		conn->own_ip = g_new(IPADDR, 1);
+		memcpy(conn->own_ip, &source_host_ip, sizeof(IPADDR));
 	}
 
 	signal_emit("server setup fill connect", 1, conn);
@@ -206,8 +184,7 @@ static void server_setup_fill_chatnet(SERVER_CONNECT_REC *conn,
 		conn->realname = g_strdup(chatnet->realname);;
 	}
 	if (chatnet->own_host != NULL) {
-		conn_set_ip(conn, chatnet->own_host,
-			    &chatnet->own_ip4, &chatnet->own_ip6);
+		conn_set_ip(conn, chatnet->own_host, &chatnet->own_ip);
 	}
 
 	signal_emit("server setup fill chatnet", 2, conn, chatnet);
@@ -481,8 +458,7 @@ static void server_setup_destroy(SERVER_SETUP_REC *rec)
 	signal_emit("server setup destroyed", 1, rec);
 
 	g_free_not_null(rec->own_host);
-	g_free_not_null(rec->own_ip4);
-	g_free_not_null(rec->own_ip6);
+	g_free_not_null(rec->own_ip);
 	g_free_not_null(rec->chatnet);
 	g_free_not_null(rec->password);
 	g_free_not_null(rec->ssl_cert);
@@ -556,7 +532,6 @@ void servers_setup_init(void)
 	settings_add_str("proxy", "proxy_password", "");
 
         setupservers = NULL;
-	source_host_ip4 = source_host_ip6 = NULL;
         old_source_host = NULL;
 	read_settings();
 
@@ -567,8 +542,6 @@ void servers_setup_init(void)
 
 void servers_setup_deinit(void)
 {
-	g_free_not_null(source_host_ip4);
-	g_free_not_null(source_host_ip6);
 	g_free_not_null(old_source_host);
 
 	while (setupservers != NULL)

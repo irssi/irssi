@@ -218,7 +218,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		return;
 
 	if (ip != NULL) {
-		own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
+		own_ip = server->connrec->own_ip;
 		port = server->connrec->proxy != NULL ?
 			server->connrec->proxy_port : server->connrec->port;
 		handle = server->connrec->use_ssl ?
@@ -280,30 +280,15 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	server->connect_pipe[0] = NULL;
 	server->connect_pipe[1] = NULL;
 
-	/* figure out if we should use IPv4 or v6 address */
-	if (iprec.error != 0) {
-                /* error */
-		ip = NULL;
-	} else if (server->connrec->family == AF_INET) {
-		/* force IPv4 connection */
-		ip = iprec.ip4.family == 0 ? NULL : &iprec.ip4;
-		servername = iprec.host4;
-	} else if (server->connrec->family == AF_INET6) {
-		/* force IPv6 connection */
-		ip = iprec.ip6.family == 0 ? NULL : &iprec.ip6;
-		servername = iprec.host6;
-	} else {
-		/* pick the one that was found, or if both do it like
-		   /SET resolve_prefer_ipv6 says. */
-		if (iprec.ip4.family == 0 ||
-		    (iprec.ip6.family != 0 &&
-		     settings_get_bool("resolve_prefer_ipv6"))) {
-			ip = &iprec.ip6;
-			servername = iprec.host6;
-		} else {
-			ip = &iprec.ip4;
-			servername = iprec.host4;
-		}
+	ip = NULL;
+
+	if (iprec.error == 0) {
+	    // FIXME : REMOVE THIS BEFORE MERGE
+	    if (server->connrec->family)
+		g_assert(server->connrec->family == iprec.ip.family);
+
+	    ip = &iprec.ip;
+	    servername = iprec.host;
 	}
 
 	if (ip != NULL) {
@@ -337,8 +322,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	}
 
 	g_free(iprec.errorstr);
-	g_free(iprec.host4);
-	g_free(iprec.host6);
+	g_free(iprec.host);
 }
 
 SERVER_REC *server_connect(SERVER_CONNECT_REC *conn)
@@ -623,8 +607,7 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->address);
 	g_free_not_null(conn->chatnet);
 
-	g_free_not_null(conn->own_ip4);
-	g_free_not_null(conn->own_ip6);
+	g_free_not_null(conn->own_ip);
 
         g_free_not_null(conn->password);
         g_free_not_null(conn->nick);
@@ -654,26 +637,15 @@ void server_change_nick(SERVER_REC *server, const char *nick)
 }
 
 /* Update own IPv4 and IPv6 records */
-void server_connect_own_ip_save(SERVER_CONNECT_REC *conn,
-				IPADDR *ip4, IPADDR *ip6)
+void server_connect_own_ip_save(SERVER_CONNECT_REC *conn, IPADDR *ip)
 {
-	if (ip4 == NULL || ip4->family == 0)
-		g_free_and_null(conn->own_ip4);
-	if (ip6 == NULL || ip6->family == 0)
-		g_free_and_null(conn->own_ip6);
+	if (ip == NULL || ip->family == 0)
+		g_free_and_null(conn->own_ip);
 
-	if (ip4 != NULL && ip4->family != 0) {
-		/* IPv4 address was found */
-		if (conn->own_ip4 == NULL)
-			conn->own_ip4 = g_new0(IPADDR, 1);
-		memcpy(conn->own_ip4, ip4, sizeof(IPADDR));
-	}
-
-	if (ip6 != NULL && ip6->family != 0) {
-		/* IPv6 address was found */
-		if (conn->own_ip6 == NULL)
-			conn->own_ip6 = g_new0(IPADDR, 1);
-		memcpy(conn->own_ip6, ip6, sizeof(IPADDR));
+	if (ip != NULL && ip->family != 0) {
+		if (conn->own_ip == NULL)
+			conn->own_ip = g_new0(IPADDR, 1);
+		memcpy(conn->own_ip, ip, sizeof(IPADDR));
 	}
 }
 
