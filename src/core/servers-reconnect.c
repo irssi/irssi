@@ -177,9 +177,13 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 	dest->username = g_strdup(src->username);
 	dest->realname = g_strdup(src->realname);
 
-	if (src->own_ip != NULL) {
-		dest->own_ip = g_new(IPADDR, 1);
-		memcpy(dest->own_ip, src->own_ip, sizeof(IPADDR));
+	if (src->own_ip4 != NULL) {
+		dest->own_ip4 = g_new(IPADDR, 1);
+		memcpy(dest->own_ip4, src->own_ip4, sizeof(IPADDR));
+	}
+	if (src->own_ip6 != NULL) {
+		dest->own_ip6 = g_new(IPADDR, 1);
+		memcpy(dest->own_ip6, src->own_ip6, sizeof(IPADDR));
 	}
 
 	dest->channels = g_strdup(src->channels);

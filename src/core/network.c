@@ -137,14 +137,35 @@ static int sin_get_port(union sockaddr_union *so)
 /* Connect to socket */
 GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 {
-	IPADDR ip;
+	IPADDR ip4, ip6, *ip;
 
 	g_return_val_if_fail(addr != NULL, NULL);
 
-	if (net_gethostbyname(addr, &ip) == -1)
+	if (net_gethostbyname(addr, &ip4, &ip6) == -1)
 		return NULL;
 
-	return net_connect_ip(&ip, port, my_ip);
+	if (my_ip == NULL) {
+                /* prefer IPv4 addresses */
+		ip = ip4.family != 0 ? &ip4 : &ip6;
+	} else if (IPADDR_IS_V6(my_ip)) {
+                /* my_ip is IPv6 address, use it if possible */
+		if (ip6.family != 0)
+			ip = &ip6;
+		else {
+			my_ip = NULL;
+                        ip = &ip4;
+		}
+	} else {
+                /* my_ip is IPv4 address, use it if possible */
+		if (ip4.family != 0)
+			ip = &ip4;
+		else {
+			my_ip = NULL;
+                        ip = &ip6;
+		}
+	}
+
+	return net_connect_ip(ip, port, my_ip);
 }
 
 /* Connect to socket with ip address */
@@ -392,35 +413,82 @@ int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port)
 /* Get IP addresses for host, both IPv4 and IPv6 if possible.
    If ip->family is 0, the address wasn't found.
    Returns 0 = ok, others = error code for net_gethosterror() */
-int net_gethostbyname(const char *addr, IPADDR *ip)
+int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 {
+#ifdef HAVE_IPV6
 	union sockaddr_union *so;
-	struct addrinfo hints, *ailist;
-	int ret;
+	struct addrinfo hints, *ai, *ailist;
+	int ret, count_v4, count_v6, use_v4, use_v6;
+#else
+	struct hostent *hp;
+	int count;
+#endif
 
 	g_return_val_if_fail(addr != NULL, -1);
 
-	memset(ip, 0, sizeof(IPADDR));
+	memset(ip4, 0, sizeof(IPADDR));
+	memset(ip6, 0, sizeof(IPADDR));
 
+#ifdef HAVE_IPV6
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_socktype = SOCK_STREAM;
-#ifdef HAVE_IPV6
-	hints.ai_family = AF_UNSPEC;
-#else
-	hints.ai_family = AF_INET;
-#endif
-	hints.ai_flags = (AI_V4MAPPED | AI_ADDRCONFIG);
 
 	/* save error to host_error for later use */
 	ret = getaddrinfo(addr, NULL, &hints, &ailist);
 	if (ret != 0)
 		return ret;
 
-	so = (const union sockaddr_union *)ailist->ai_addr;
-	sin_get_ip(so, ip);
+	/* count IPs */
+        count_v4 = count_v6 = 0;
+	for (ai = ailist; ai != NULL; ai = ai->ai_next) {
+		if (ai->ai_family == AF_INET)
+			count_v4++;
+		else if (ai->ai_family == AF_INET6)
+			count_v6++;
+	}
+
+	if (count_v4 == 0 && count_v6 == 0)
+		return HOST_NOT_FOUND; /* shouldn't happen? */
+
+	/* if there are multiple addresses, return random one */
+	use_v4 = count_v4 <= 1 ? 0 : rand() % count_v4;
+	use_v6 = count_v6 <= 1 ? 0 : rand() % count_v6;
+
+	count_v4 = count_v6 = 0;
+	for (ai = ailist; ai != NULL; ai = ai->ai_next) {
+		so = (union sockaddr_union *) ai->ai_addr;
+
+		if (ai->ai_family == AF_INET) {
+			if (use_v4 == count_v4)
+				sin_get_ip(so, ip4);
+                        count_v4++;
+		} else if (ai->ai_family == AF_INET6) {
+			if (use_v6 == count_v6)
+				sin_get_ip(so, ip6);
+			count_v6++;
+		}
+	}
 	freeaddrinfo(ailist);
+	return 0;
+#else
+	hp = gethostbyname(addr);
+	if (hp == NULL)
+		return h_errno;
+
+	/* count IPs */
+	count = 0;
+	while (hp->h_addr_list[count] != NULL)
+		count++;
+
+	if (count == 0)
+		return HOST_NOT_FOUND; /* shouldn't happen? */
+
+	/* if there are multiple addresses, return random one */
+	ip4->family = AF_INET;
+	memcpy(&ip4->ip, hp->h_addr_list[rand() % count], 4);
 
 	return 0;
+#endif
 }
 
 /* Get name for host, *name should be g_free()'d unless it's NULL.

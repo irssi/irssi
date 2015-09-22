@@ -264,12 +264,12 @@ GIOChannel *dcc_connect_ip(IPADDR *ip, int port)
 	}
 
 	if (own_ip == NULL)
-		own_ip = &source_host_ip;
+		own_ip = IPADDR_IS_V6(ip) ? source_host_ip6 : source_host_ip4;
 
 	handle = net_connect_ip(ip, port, own_ip);
 	if (handle == NULL && errno == EADDRNOTAVAIL && own_ip != NULL) {
 		/* dcc_own_ip is external address */
-		own_ip = &source_host_ip;
+		own_ip = IPADDR_IS_V6(ip) ? source_host_ip6 : source_host_ip4;
 		handle = net_connect_ip(ip, port, own_ip);
 	}
 	return handle;
