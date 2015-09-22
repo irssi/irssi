@@ -56,7 +56,7 @@ const char *fe_channel_skip_prefix(IRC_SERVER_REC *server, const char *target)
 
 	/* Exit early if target doesn't name a channel */
 	if (server_ischannel(SERVER(server), target) == FALSE)
-		return FALSE;
+		return target;
 
 	statusmsg = g_hash_table_lookup(server->isupport, "statusmsg");
 

@@ -56,11 +56,13 @@ static void event_privmsg(IRC_SERVER_REC *server, const char *data,
 
 	if (fe_channel_is_opchannel(server, target)) {
 		/* Hybrid 6 feature, send msg to all ops in channel */
-		target = (char *)fe_channel_skip_prefix(server, target);
-		recoded = recode_in(SERVER(server), msg, target);
+		const char *cleantarget = fe_channel_skip_prefix(server, target);
+		recoded = recode_in(SERVER(server), msg, cleantarget);
+
+		/* pass the original target to the signal, with the @+ here
+		 * the other one is only needed for recode_in*/
 		signal_emit("message irc op_public", 5,
-			    server, recoded, nick, addr,
-			    get_visible_target(server, target));
+			    server, recoded, nick, addr, target);
 	} else {
 		recoded = recode_in(SERVER(server), msg, server_ischannel(SERVER(server), target) ? target : nick);
 		signal_emit(server_ischannel(SERVER(server), target) ?

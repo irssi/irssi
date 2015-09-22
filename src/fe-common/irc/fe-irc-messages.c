@@ -37,6 +37,7 @@
 #include "fe-queries.h"
 #include "window-items.h"
 #include "fe-irc-channels.h"
+#include "fe-irc-server.h"
 
 static void sig_message_own_public(SERVER_REC *server, const char *msg,
 				   const char *target, const char *origtarget)
@@ -70,18 +71,28 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 				      const char *nick, const char *address,
 				      const char *target)
 {
-	char *nickmode, *optarget;
+	char *nickmode, *optarget, *prefix;
+	const char *cleantarget;
+
+	/* only skip here so the difference can be stored in prefix */
+	cleantarget = fe_channel_skip_prefix(IRC_SERVER(server), target);
+	prefix = g_strndup(target, cleantarget - target);
+
+	/* and clean the rest here */
+	cleantarget = get_visible_target(IRC_SERVER(server), cleantarget);
 
 	nickmode = channel_get_nickmode(channel_find(server, target),
 					nick);
 
-        optarget = g_strconcat("@", target, NULL);
-	printformat_module("fe-common/core", server, target,
+	optarget = g_strconcat(prefix, cleantarget, NULL);
+
+	printformat_module("fe-common/core", server, cleantarget,
 			   MSGLEVEL_PUBLIC,
 			   TXT_PUBMSG_CHANNEL,
 			   nick, optarget, msg, nickmode);
 	g_free(nickmode);
-        g_free(optarget);
+	g_free(optarget);
+	g_free(prefix);
 }
 
 static void sig_message_own_wall(SERVER_REC *server, const char *msg,
@@ -92,7 +103,8 @@ static void sig_message_own_wall(SERVER_REC *server, const char *msg,
 	nickmode = channel_get_nickmode(channel_find(server, target),
 					server->nick);
 
-        optarget = g_strconcat("@", target, NULL);
+	/* this is always @, skip_prefix is not needed here */
+	optarget = g_strconcat("@", target, NULL);
 	printformat_module("fe-common/core", server, target,
 			   MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT |
 			   MSGLEVEL_NO_ACT,
