@@ -4,12 +4,12 @@
 #include "network.h"
 
 typedef struct {
-	IPADDR ip4, ip6; /* resolved ip addresses */
+	IPADDR ip; /* resolved ip address */
 	int error; /* error, 0 = no error, -1 = error: */
 	int errlen; /* error text length */
 	char *errorstr; /* error string - dynamically allocated, you'll
 	                   need to free() it yourself unless it's NULL */
-	char *host4, *host6; /* dito */
+	char *host; /* dito */
 } RESOLVED_IP_REC;
 
 typedef struct {

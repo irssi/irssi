@@ -103,15 +103,12 @@ int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
 	srand(time(NULL));
 
         memset(&rec, 0, sizeof(rec));
-	rec.error = net_gethostbyname(addr, &rec.ip4, &rec.ip6);
+	rec.error = net_gethostbyname(addr, &rec.ip);
 	if (rec.error == 0) {
 		errorstr = NULL;
 		if (reverse_lookup) {
 			/* reverse lookup the IP, ignore any error */
-			if (rec.ip4.family != 0)
-				net_gethostbyaddr(&rec.ip4, &rec.host4);
-			if (rec.ip6.family != 0)
-				net_gethostbyaddr(&rec.ip6, &rec.host6);
+			net_gethostbyaddr(&rec.ip, &rec.host);
 		}
 	} else {
 		errorstr = net_gethosterror(rec.error);
@@ -122,18 +119,11 @@ int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
 	if (rec.errlen != 0)
 		g_io_channel_write_block(pipe, (void *) errorstr, rec.errlen);
 	else {
-		if (rec.host4) {
-			len = strlen(rec.host4) + 1;
+		if (rec.host) {
+			len = strlen(rec.host) + 1;
 			g_io_channel_write_block(pipe, (void *) &len,
 						       sizeof(int));
-			g_io_channel_write_block(pipe, (void *) rec.host4,
-						       len);
-		}
-		if (rec.host6) {
-			len = strlen(rec.host6) + 1;
-			g_io_channel_write_block(pipe, (void *) &len,
-						       sizeof(int));
-			g_io_channel_write_block(pipe, (void *) rec.host6,
+			g_io_channel_write_block(pipe, (void *) rec.host,
 						       len);
 		}
 	}
@@ -154,8 +144,7 @@ int net_gethostbyname_return(GIOChannel *pipe, RESOLVED_IP_REC *rec)
 
 	rec->error = -1;
 	rec->errorstr = NULL;
-	rec->host4 = NULL;
-	rec->host6 = NULL;
+	rec->host = NULL;
 
 #ifndef WIN32
 	fcntl(g_io_channel_unix_get_fd(pipe), F_SETFL, O_NONBLOCK);
@@ -174,15 +163,10 @@ int net_gethostbyname_return(GIOChannel *pipe, RESOLVED_IP_REC *rec)
 		rec->errorstr = g_malloc0(rec->errlen+1);
                 g_io_channel_read_block(pipe, rec->errorstr, rec->errlen);
 	} else {
-		if (rec->host4) {
+		if (rec->host) {
 			g_io_channel_read_block(pipe, &len, sizeof(int));
-			rec->host4 = g_malloc0(len);
-			g_io_channel_read_block(pipe, rec->host4, len);
-		}
-		if (rec->host6) {
-			g_io_channel_read_block(pipe, &len, sizeof(int));
-			rec->host6 = g_malloc0(len);
-			g_io_channel_read_block(pipe, rec->host6, len);
+			rec->host = g_malloc0(len);
+			g_io_channel_read_block(pipe, rec->host, len);
 		}
 	}
 
@@ -227,7 +211,6 @@ static void simple_readpipe(SIMPLE_THREAD_REC *rec, GIOChannel *pipe)
 {
 	RESOLVED_IP_REC iprec;
 	GIOChannel *handle;
-	IPADDR *ip;
 
 	g_return_if_fail(rec != NULL);
 
@@ -241,9 +224,8 @@ static void simple_readpipe(SIMPLE_THREAD_REC *rec, GIOChannel *pipe)
 	g_io_channel_shutdown(rec->pipes[1], TRUE, NULL);
 	g_io_channel_unref(rec->pipes[1]);
 
-	ip = iprec.ip4.family != 0 ? &iprec.ip4 : &iprec.ip6;
 	handle = iprec.error == -1 ? NULL :
-		net_connect_ip(ip, rec->port, rec->my_ip);
+		net_connect_ip(&iprec.ip, rec->port, rec->my_ip);
 
 	g_free_not_null(rec->my_ip);
 
