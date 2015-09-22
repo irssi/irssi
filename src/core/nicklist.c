@@ -577,7 +577,12 @@ int nick_match_msg_everywhere(CHANNEL_REC *channel, const char *msg, const char 
 	g_return_val_if_fail(nick != NULL, FALSE);
 	g_return_val_if_fail(msg != NULL, FALSE);
 
-	return stristr_full(msg, nick);
+	char *ret = stristr_full(msg, nick);
+
+	if (ret != NULL)
+		return TRUE;
+
+	return FALSE;
 }
 
 void nicklist_init(void)
