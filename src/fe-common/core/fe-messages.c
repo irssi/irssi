@@ -183,7 +183,9 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
                 nickrec = nicklist_find(chanrec, nick);
 
 	for_me = !settings_get_bool("hilight_nick_matches") ? FALSE :
-		nick_match_msg(chanrec, msg, server->nick);
+		!settings_get_bool("hilight_nick_matches_everywhere") ?
+		nick_match_msg(chanrec, msg, server->nick) :
+		nick_match_msg_everywhere(chanrec, msg, server->nick);
 	hilight = for_me ? NULL :
 		hilight_match_nick(server, target, nick, address, MSGLEVEL_PUBLIC, msg);
 	color = (hilight == NULL) ? NULL : hilight_get_color(hilight);
@@ -694,6 +696,7 @@ void fe_messages_init(void)
 				      (GCompareFunc) g_direct_equal);
 
 	settings_add_bool("lookandfeel", "hilight_nick_matches", TRUE);
+	settings_add_bool("lookandfeel", "hilight_nick_matches_everywhere", FALSE);
 	settings_add_bool("lookandfeel", "emphasis", TRUE);
 	settings_add_bool("lookandfeel", "emphasis_replace", FALSE);
 	settings_add_bool("lookandfeel", "emphasis_multiword", FALSE);

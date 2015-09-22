@@ -55,6 +55,7 @@ int nicklist_compare(NICK_REC *p1, NICK_REC *p2, const char *nick_prefix);
 
 /* Check is `msg' is meant for `nick'. */
 int nick_match_msg(CHANNEL_REC *channel, const char *msg, const char *nick);
+int nick_match_msg_everywhere(CHANNEL_REC *channel, const char *msg, const char *nick);
 
 void nicklist_init(void);
 void nicklist_deinit(void);
