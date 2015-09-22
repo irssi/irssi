@@ -21,7 +21,6 @@
 #include "module.h"
 #include "signals.h"
 #include "misc.h"
-#include "settings.h"
 
 #include "servers.h"
 #include "channels.h"
@@ -577,12 +576,7 @@ int nick_match_msg_everywhere(CHANNEL_REC *channel, const char *msg, const char 
 	g_return_val_if_fail(nick != NULL, FALSE);
 	g_return_val_if_fail(msg != NULL, FALSE);
 
-	char *ret = stristr_full(msg, nick);
-
-	if (ret != NULL)
-		return TRUE;
-
-	return FALSE;
+	return stristr_full(msg, nick) != NULL;
 }
 
 void nicklist_init(void)
