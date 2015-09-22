@@ -81,7 +81,7 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 	/* and clean the rest here */
 	cleantarget = get_visible_target(IRC_SERVER(server), cleantarget);
 
-	nickmode = channel_get_nickmode(channel_find(server, target),
+	nickmode = channel_get_nickmode(channel_find(server, cleantarget),
 					nick);
 
 	optarget = g_strconcat(prefix, cleantarget, NULL);
