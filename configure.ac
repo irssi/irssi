@@ -261,7 +261,7 @@ for try in 1 2; do
     echo "*** trying without -lgmodule"
     glib_modules=
   fi
-  AM_PATH_GLIB_2_0(2.6.0,,, $glib_modules)
+  AM_PATH_GLIB_2_0(2.16.0,,, $glib_modules)
   if test "$GLIB_LIBS"; then
     if test $glib_modules = gmodule; then
       AC_DEFINE(HAVE_GMODULE)
