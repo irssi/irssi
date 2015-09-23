@@ -26,7 +26,7 @@ typedef void (*NET_HOST_CALLBACK) (RESOLVED_NAME_REC *, void *);
 
 /* nonblocking gethostbyname(), PID of the resolver child is returned. */
 int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
-			       int reverse_lookup);
+			       int family, int reverse_lookup);
 /* Get host's name, call func when finished */
 int net_gethostbyaddr_nonblock(IPADDR *ip, NET_HOST_CALLBACK func, void *data);
 /* get the resolved IP address. returns -1 if some error occurred with read() */

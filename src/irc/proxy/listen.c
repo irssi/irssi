@@ -593,7 +593,7 @@ static void add_listen(const char *ircnet, int port)
 	/* bind to specific host/ip? */
 	my_ip = NULL;
 	if (*settings_get_str("irssiproxy_bind") != '\0') {
-		if (net_gethostbyname(settings_get_str("irssiproxy_bind"), &ip) != 0) {
+		if (net_gethostbyname(settings_get_str("irssiproxy_bind"), &ip, 0) != 0) {
 			printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 				  "Proxy: can not resolve '%s' - aborting",
 				  settings_get_str("irssiproxy_bind"));

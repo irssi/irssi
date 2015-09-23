@@ -71,7 +71,7 @@ int net_transmit(GIOChannel *handle, const char *data, int len);
 /* Get IP addresses for host, both IPv4 and IPv6 if possible.
    If ip->family is 0, the address wasn't found.
    Returns 0 = ok, others = error code for net_gethosterror() */
-int net_gethostbyname(const char *addr, IPADDR *ip);
+int net_gethostbyname(const char *addr, IPADDR *ip, int family);
 /* Get name for host, *name should be g_free()'d unless it's NULL.
    Return values are the same as with net_gethostbyname() */
 int net_gethostbyaddr(IPADDR *ip, char **name);

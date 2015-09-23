@@ -73,7 +73,7 @@ static int g_io_channel_read_block(GIOChannel *channel, void *data, int len)
 /* nonblocking gethostbyname(), ip (IPADDR) + error (int, 0 = not error) is
    written to pipe when found PID of the resolver child is returned */
 int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
-			       int reverse_lookup)
+			       int family, int reverse_lookup)
 {
 	RESOLVED_IP_REC rec;
 	const char *errorstr;
@@ -103,7 +103,7 @@ int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
 	srand(time(NULL));
 
         memset(&rec, 0, sizeof(rec));
-	rec.error = net_gethostbyname(addr, &rec.ip);
+	rec.error = net_gethostbyname(addr, &rec.ip, family);
 	if (rec.error == 0) {
 		errorstr = NULL;
 		if (reverse_lookup) {
@@ -267,7 +267,7 @@ int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip,
 	rec->pipes[1] = g_io_channel_new(fd[1]);
 
 	/* start nonblocking host name lookup */
-	net_gethostbyname_nonblock(server, rec->pipes[1], 0);
+	net_gethostbyname_nonblock(server, rec->pipes[1], 0, 0);
 	rec->tag = g_input_add(rec->pipes[0], G_INPUT_READ,
 			       (GInputFunction) simple_readpipe, rec);
 

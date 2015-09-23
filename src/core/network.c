@@ -141,7 +141,8 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 
 	g_return_val_if_fail(addr != NULL, NULL);
 
-	if (net_gethostbyname(addr, &ip) == -1)
+	// XXX : should we use the my_ip->family instead ?
+	if (net_gethostbyname(addr, &ip, 0) == -1)
 		return NULL;
 
 	return net_connect_ip(&ip, port, my_ip);
@@ -392,9 +393,9 @@ int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port)
 /* Get IP addresses for host, both IPv4 and IPv6 if possible.
    If ip->family is 0, the address wasn't found.
    Returns 0 = ok, others = error code for net_gethosterror() */
-int net_gethostbyname(const char *addr, IPADDR *ip)
+int net_gethostbyname(const char *addr, IPADDR *ip, int family)
 {
-	union sockaddr_union *so;
+	const union sockaddr_union *so;
 	struct addrinfo hints, *ailist;
 	int ret;
 
@@ -405,7 +406,7 @@ int net_gethostbyname(const char *addr, IPADDR *ip)
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_socktype = SOCK_STREAM;
 #ifdef HAVE_IPV6
-	hints.ai_family = AF_UNSPEC;
+	hints.ai_family = (family == 0) ? AF_UNSPEC : family;
 #else
 	hints.ai_family = AF_INET;
 #endif

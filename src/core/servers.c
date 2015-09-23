@@ -283,12 +283,14 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 	ip = NULL;
 
 	if (iprec.error == 0) {
-	    // FIXME : REMOVE THIS BEFORE MERGE
-	    if (server->connrec->family)
-		g_assert(server->connrec->family == iprec.ip.family);
-
-	    ip = &iprec.ip;
-	    servername = iprec.host;
+	    /* we've resolved the server address, now check whether the version
+	     * of the one returned by the system matches the one required by the
+	     * user by using -{4,6} or by specifying the "family" parameter for
+	     * the server */
+	    if (server->connrec->family == 0 || server->connrec->family == iprec.ip.family) {
+		ip = &iprec.ip;
+		servername = iprec.host;
+	    }
 	}
 
 	if (ip != NULL) {
@@ -407,6 +409,7 @@ int server_start_connect(SERVER_REC *server)
 		server->connect_pid =
 			net_gethostbyname_nonblock(connect_address,
 						   server->connect_pipe[1],
+						   server->connrec->family,
 						   settings_get_bool("resolve_reverse_lookup"));
 		server->connect_tag =
 			g_input_add(server->connect_pipe[0], G_INPUT_READ,
