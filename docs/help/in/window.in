@@ -5,49 +5,49 @@
 
 %9Parameters:%9
 
-    LOG:          Modifies the logging status.
-    LOGFILE:      Modifies the location to the log file.
-    NEW:          Creates a new window.
-    CLOSE:        Closes a window.
-    REFNUM:       Go to the window with the given number.
-    GOTO:         Go to the window with the given nickname, channel or number.
-    NEXT:         Go to the next window.
-    LAST:         Go to the last window.
-    PREVIOUS:     Go to the previous window.
-    LEVEL:        Modifies the text levels to display in the window.
-    IMMORTAL:     Modifies the window mortality status.
-    SERVER:       Set the active server of the window.
-    ITEM PREV:    Go to the previous item in the window.
-    ITEM NEXT:    Go to the next item in the window.
-    ITEM GOTO:    Go to the specified nickname, channel or window item number.
-    ITEM MOVE:    Move the active window item to another window.
-    NUMBER:       Move the active window to another position.
-    NAME:         Give the window a name.
-    HISTORY:      Clears the window history buffer.
-    MOVE PREV:    Move the window down.
-    MOVE NEXT:    Move the window up.
-    MOVE FIRST:   Move the window to the first position.
-    MOVE LAST:    Move the window to the last position.
-    MOVE:         Move the window.
-    LIST:         List all the windows.
-    THEME:        Applies a theme to the windows.
-    GROW:         Increase the window size when using split windows.
-    SHRINK:       Decrease the window size when using split windows.
-    SIZE:         Modify the window size when using split windows.
-    BALANCE:      Balance the window locations when using split windows.
-    HIDE:         Hide the window when using split windows.
-    SHOW:         Show the window when using split windows.
-    UP:           Go to the window above when using split windows.
-    DOWN:         Go to the window below when using split windows.
-    LEFT:         Go to the previous window.
-    RIGHT:        Go to the next window.
-    STICK:        Make the window sticky.
-    MOVE LEFT:    Move the window to the previous location.
-    MOVE RIGHT:   Move the window to the next location.
-    MOVE UP:      Move the window up when using split windows.
-    MOVE DOWN:    Move the window down when using split windows.
+    LOG:          %|Turn on or off logging of the active window, optionally specifying the log file to use.
+    LOGFILE:      %|Sets the location of the log file to use for window logging without starting to log.
+    NEW:          %|Creates a new hidden or split window.
+    CLOSE:        %|Closes the current window, the specified one or all windows in the given range.
+    REFNUM:       %|Go to the window with the given number.
+    GOTO:         %|Go to the window with activity, with the given nickname, channel or with the specified number.
+    NEXT:         %|Go to the next window numerically.
+    LAST:         %|Go to the previously active window.
+    PREVIOUS:     %|Go to the previous window numerically.
+    LEVEL:        %|Changes the text levels to display in the window, or query the current level.
+    IMMORTAL:     %|Modifies or queries the window mortality status. Immortal windows have an extra protection against WINDOW CLOSE.
+    SERVER:       %|Change the active server of the window or the server stickyness. If the server is sticky, it cannot be cycled with next_window_item/previous_window_item
+    ITEM PREV:    %|Make the previous item in this window active.
+    ITEM NEXT:    %|Make the next item in this window active.
+    ITEM GOTO:    %|Change to the query with the specified nickname, channel with the given name or window item number.
+    ITEM MOVE:    %|Move the active window item to another window, or move the channel or query item specified by their name to the current window.
+    NUMBER:       %|Change the active window number to the specified number, swapping the window already in that place if required. With -sticky, protect the window number from renumbering done by windows_auto_renumber. (To re-set the sticky attribute, use WINDOW NUMBER again without -sticky.)
+    NAME:         %|Change or clear the window name. Window names must be unique.
+    HISTORY:      %|Set or clear a specific named history to use for this window. All windows with the same named history will share a history.
+    MOVE PREV:    %|Move the window to the place of the numerically previous window. At the first position, move the window to the end and renumber the consecutive block that it was part of.
+    MOVE NEXT:    %|Move the window to the place of the numerically next window. At the last position, move the window to the first position and renumber the consecutive block at first position (if any)
+    MOVE FIRST:   %|Move the window to the first position. Any windows inbetween are moved to their numerically next positions.
+    MOVE LAST:    %|Move the window to the last position. Any windows inbetween are moved to their numerically previous positions.
+    MOVE:         %|Move the window to the specified number or the first number that is in use when moving the window in the direction of the specified position. Any windows inbetween are shifted towards the old position of the window (unused positions remain empty)
+    LIST:         %|List all the windows.
+    THEME:        %|Applies or removes a per-window theme.
+    GROW:         %|Increase the size of the active split window by the specified number of lines.
+    SHRINK:       %|Decrease the size of the active split window by the specified number of lines.
+    SIZE:         %|Set the current split window size to the specified numer of lines.
+    BALANCE:      %|Balance the heights of all split windows.
+    HIDE:         %|Hides the current split window, or the split window specified by number or item name.
+    SHOW:         %|Show the window specified by number or item name as a new split windows. It is made sticky when autostick_split_windows is turned on.
+    UP:           %|Set the split window above the current one active. At the top, wraps to the bottom.
+    DOWN:         %|Set the split window below the current one active. At the bottom, wraps to the top.
+    LEFT:         %|Go to the previous window numerically that is part of the current sticky group (or not part of any sticky group).
+    RIGHT:        %|Go to the next window numerically that is part of the current sticky group (or not part of any sticky group).
+    STICK:        %|Make the currently active window sticky, or stick the window specified by number to the currently visible split window. Or turn off stickyness of the currently active window or the window specified by number.
+    MOVE LEFT:    %|Move the window to the numerically previous location inside the current sticky group.
+    MOVE RIGHT:   %|Move the window to the numerically next location inside the current sticky group.
+    MOVE UP:      %|Move the current window to the sticky group of the split window above. If no sticky group remains, the split window collapses.
+    MOVE DOWN:    %|Move the current window to the sticky group of the split window below. If no sticky group remains, the split window collapses.
 
-   Add the required arguments for the given command.
+   %|Add the required arguments for the given command. Without arguments, the details (size, immortality, levels, server, name and sticky group) of the currently active window are displayed. If used with a number as argument, same as WINDOW REFNUM.
 
 %9Description:%9
 
