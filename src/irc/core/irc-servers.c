@@ -228,6 +228,8 @@ static void server_init(IRC_SERVER_REC *server)
 	if (conn->sasl_mechanism != SASL_MECHANISM_NONE)
 		cap_toggle(server, "sasl", TRUE);
 
+	cap_toggle(server, "multi-prefix", TRUE);
+
 	irc_send_cmd_now(server, "CAP LS");
 
 	if (conn->password != NULL && *conn->password != '\0') {
