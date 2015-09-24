@@ -67,18 +67,12 @@ struct _IRC_SERVER_REC {
 	unsigned int nick_collision:1; /* We're just now being killed because of nick collision */
 	unsigned int motd_got:1; /* We've received MOTD */
 	unsigned int isupport_sent:1; /* Server has sent us an isupport reply */
+	unsigned int cap_complete:1; /* We've done the initial CAP negotiation */
 
 	int max_kicks_in_cmd; /* max. number of people to kick with one /KICK command */
 	int max_modes_in_cmd; /* max. number of mode changes in one /MODE command */
 	int max_whois_in_cmd; /* max. number of nicks in one /WHOIS command */
 	int max_msgs_in_cmd; /* max. number of targets in one /MSG */
-
-	GSList *cap_supported; /* A list of caps supported by the server */
-	GSList *cap_active;    /* A list of caps active for this session */
-	GSList *cap_queue;     /* A list of caps to request on connection */ 
-	int cap_complete:1;    /* We've done the initial CAP negotiation */
-
-	guint sasl_timeout; /* Holds the source id of the running timeout */
 
 	/* Command sending queue */
 	int cmdcount; /* number of commands in `cmdqueue'. Can be more than
@@ -115,6 +109,12 @@ struct _IRC_SERVER_REC {
 	char prefix[256];
 
 	int (*nick_comp_func)(const char *, const char *); /* Function for comparing nicknames on this server */
+
+	GSList *cap_supported; /* A list of caps supported by the server */
+	GSList *cap_active;    /* A list of caps active for this session */
+	GSList *cap_queue;     /* A list of caps to request on connection */
+
+	guint sasl_timeout; /* Holds the source id of the running timeout */
 };
 
 SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn);
