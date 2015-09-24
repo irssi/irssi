@@ -267,7 +267,7 @@ int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip,
 	rec->pipes[1] = g_io_channel_new(fd[1]);
 
 	/* start nonblocking host name lookup */
-	net_gethostbyname_nonblock(server, rec->pipes[1], 0, 0);
+	net_gethostbyname_nonblock(server, rec->pipes[1], AF_UNSPEC, 0);
 	rec->tag = g_input_add(rec->pipes[0], G_INPUT_READ,
 			       (GInputFunction) simple_readpipe, rec);
 

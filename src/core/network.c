@@ -142,7 +142,7 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 	g_return_val_if_fail(addr != NULL, NULL);
 
 	// XXX : should we use the my_ip->family instead ?
-	if (net_gethostbyname(addr, &ip, 0) == -1)
+	if (net_gethostbyname(addr, &ip, AF_UNSPEC) == -1)
 		return NULL;
 
 	return net_connect_ip(&ip, port, my_ip);
@@ -406,7 +406,7 @@ int net_gethostbyname(const char *addr, IPADDR *ip, int family)
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_socktype = SOCK_STREAM;
 #ifdef HAVE_IPV6
-	hints.ai_family = (family == 0) ? AF_UNSPEC : family;
+	hints.ai_family = family;
 #else
 	hints.ai_family = AF_INET;
 #endif
