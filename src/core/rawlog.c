@@ -32,6 +32,7 @@
 static int rawlog_lines;
 static int signal_rawlog;
 static int log_file_create_mode;
+static int log_dir_create_mode;
 
 RAWLOG_REC *rawlog_create(void)
 {
@@ -145,8 +146,12 @@ void rawlog_close(RAWLOG_REC *rawlog)
 
 void rawlog_save(RAWLOG_REC *rawlog, const char *fname)
 {
-	char *path;
+	char *path, *dir;
 	int f;
+
+        dir = g_path_get_dirname(fname);
+        mkpath(dir, log_dir_create_mode);
+        g_free(dir);
 
 	path = convert_home(fname);
 	f = open(path, O_WRONLY | O_APPEND | O_CREAT, log_file_create_mode);
@@ -165,6 +170,11 @@ static void read_settings(void)
 {
 	rawlog_set_size(settings_get_int("rawlog_lines"));
 	log_file_create_mode = octal2dec(settings_get_int("log_create_mode"));
+        log_dir_create_mode = log_file_create_mode;
+        if (log_file_create_mode & 0400) log_dir_create_mode |= 0100;
+        if (log_file_create_mode & 0040) log_dir_create_mode |= 0010;
+        if (log_file_create_mode & 0004) log_dir_create_mode |= 0001;
+
 }
 
 static void cmd_rawlog(const char *data, SERVER_REC *server, void *item)
