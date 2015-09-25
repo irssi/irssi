@@ -685,7 +685,7 @@ static void paste_bracketed_middle()
 	int len = paste_buffer->len - marklen;
 	unichar *ptr = (unichar *) paste_buffer->data;
 
-	if (len <= 0) {
+	if (len < 0) {
 		return;
 	}
 
@@ -702,10 +702,8 @@ static void paste_bracketed_middle()
 				len -= marklen * 2;
 
 				/* go one step back */
-				if (i > 0) {
-					i--;
-					ptr--;
-				}
+				i--;
+				ptr--;
 				continue;
 			}
 			paste_bracketed_end(i, i != len);
