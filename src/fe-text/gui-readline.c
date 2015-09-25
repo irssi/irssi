@@ -710,13 +710,12 @@ static void sig_input(void)
 			}
 
 			for (i = 0; i <= len; i++, ptr++) {
-				if (ptr[0] == bp_end[0] && !memcmp(ptr, bp_end, sizeof(bp_end))) {
+				if (ptr[0] == bp_end[0] && memcmp(ptr, bp_end, sizeof(bp_end)) == 0) {
 					paste_bracketed_end(i, i != len);
 					break;
 				}
 			}
-		}
-		else if (paste_detect_time > 0 && paste_buffer->len >= 3) {
+		} else if (paste_detect_time > 0 && paste_buffer->len >= 3) {
 			if (paste_timeout_id != -1)
 				g_source_remove(paste_timeout_id);
 			paste_timeout_id = g_timeout_add(paste_detect_time, paste_timeout, NULL);
