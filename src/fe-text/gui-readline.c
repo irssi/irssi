@@ -655,7 +655,7 @@ static void paste_bracketed_end(int i, gboolean rest)
 	/* if there's stuff after the end bracket, save it for later */
 	if (rest) {
 		unichar *start = ((unichar *) paste_buffer->data) + i + G_N_ELEMENTS(bp_end);
-		int len = paste_buffer->len - G_N_ELEMENTS(bp_end);
+		int len = paste_buffer->len - i - G_N_ELEMENTS(bp_end);
 
 		g_array_set_size(paste_buffer_rest, 0);
 		g_array_append_vals(paste_buffer_rest, start, len);
