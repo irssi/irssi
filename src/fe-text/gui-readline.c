@@ -69,6 +69,7 @@ static int paste_join_multiline;
 static int paste_timeout_id;
 static int paste_use_bracketed_mode;
 static int paste_bracketed_mode;
+static int paste_was_bracketed_mode;
 
 /* Terminal sequences that surround the input when the terminal has the
  * bracketed paste mode active. Fror more details see
@@ -258,9 +259,16 @@ static void paste_buffer_join_lines(GArray *buf)
 	g_array_set_size(buf, dest - arr);
 }
 
+static void paste_send_line(char *text)
+{
+	/* we need to get the current history every time because it might change between calls */
+	command_history_add(command_history_current(active_win), text);
+
+	signal_emit("send command", 3, text, active_win->active_server, active_win->active);
+}
+
 static void paste_send(void)
 {
-	HISTORY_REC *history;
 	unichar *arr;
 	GString *str;
 	char out[10], *text;
@@ -285,11 +293,7 @@ static void paste_send(void)
 		}
 
 		text = gui_entry_get_text(active_entry);
-		history = command_history_current(active_win);
-		command_history_add(history, text);
-
-		signal_emit("send command", 3, text,
-			    active_win->active_server, active_win->active);
+		paste_send_line(text);
 		g_free(text);
 	}
 
@@ -297,12 +301,7 @@ static void paste_send(void)
 	str = g_string_new(NULL);
 	for (; i < paste_buffer->len; i++) {
 		if (arr[i] == '\r' || arr[i] == '\n') {
-			history = command_history_current(active_win);
-			command_history_add(history, str->str);
-
-			signal_emit("send command", 3, str->str,
-				    active_win->active_server,
-				    active_win->active);
+			paste_send_line(str->str);
 			g_string_truncate(str, 0);
 		} else if (active_entry->utf8) {
 			out[g_unichar_to_utf8(arr[i], out)] = '\0';
@@ -316,7 +315,14 @@ static void paste_send(void)
 		}
 	}
 
-	gui_entry_set_text(active_entry, str->str);
+	if (paste_was_bracketed_mode) {
+		/* the text before the bracket end should be sent along with the rest */
+		paste_send_line(str->str);
+		gui_entry_set_text(active_entry, "");
+	} else {
+		gui_entry_set_text(active_entry, str->str);
+	}
+
 	g_string_free(str, TRUE);
 }
 
@@ -632,6 +638,8 @@ static void key_delete_to_next_space(void)
 
 static gboolean paste_timeout(gpointer data)
 {
+	paste_was_bracketed_mode = paste_bracketed_mode;
+
 	if (paste_line_count == 0) {
 		int i;
 
