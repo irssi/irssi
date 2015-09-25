@@ -678,6 +678,24 @@ static void paste_bracketed_end(int i, gboolean rest)
 	paste_bracketed_mode = FALSE;
 }
 
+static void paste_bracketed_middle()
+{
+	int i;
+	int len = paste_buffer->len - G_N_ELEMENTS(bp_end);
+	unichar *ptr = (unichar *) paste_buffer->data;
+
+	if (len <= 0) {
+		return;
+	}
+
+	for (i = 0; i <= len; i++, ptr++) {
+		if (ptr[0] == bp_end[0] && memcmp(ptr, bp_end, sizeof(bp_end)) == 0) {
+			paste_bracketed_end(i, i != len);
+			break;
+		}
+	}
+}
+
 static void sig_input(void)
 {
 	if (!active_entry) {
@@ -701,20 +719,8 @@ static void sig_input(void)
 		/* use the bracketed paste mode to detect when the user pastes
 		 * some text into the entry */
 		if (paste_bracketed_mode) {
-			int i;
-			int len = paste_buffer->len - G_N_ELEMENTS(bp_end);
-			unichar *ptr = (unichar *) paste_buffer->data;
+			paste_bracketed_middle();
 
-			if (len <= 0) {
-				return;
-			}
-
-			for (i = 0; i <= len; i++, ptr++) {
-				if (ptr[0] == bp_end[0] && memcmp(ptr, bp_end, sizeof(bp_end)) == 0) {
-					paste_bracketed_end(i, i != len);
-					break;
-				}
-			}
 		} else if (paste_detect_time > 0 && paste_buffer->len >= 3) {
 			if (paste_timeout_id != -1)
 				g_source_remove(paste_timeout_id);
@@ -729,6 +735,9 @@ static void sig_input(void)
 				if (paste_bracketed_mode) {
 					/* just enabled by the signal, remove what was processed so far */
 					g_array_remove_range(paste_buffer, 0, i + 1);
+
+					/* handle single-line / small pastes here */
+					paste_bracketed_middle();
 					return;
 				}
 			}
