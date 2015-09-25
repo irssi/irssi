@@ -681,7 +681,8 @@ static void paste_bracketed_end(int i, gboolean rest)
 static void paste_bracketed_middle()
 {
 	int i;
-	int len = paste_buffer->len - G_N_ELEMENTS(bp_end);
+	int marklen = G_N_ELEMENTS(bp_end);
+	int len = paste_buffer->len - marklen;
 	unichar *ptr = (unichar *) paste_buffer->data;
 
 	if (len <= 0) {
@@ -690,6 +691,23 @@ static void paste_bracketed_middle()
 
 	for (i = 0; i <= len; i++, ptr++) {
 		if (ptr[0] == bp_end[0] && memcmp(ptr, bp_end, sizeof(bp_end)) == 0) {
+
+			/* if there are at least 6 bytes after the end,
+			 * check for another start marker right afterwards */
+			if (i <= (len - marklen) &&
+			    memcmp(ptr + marklen, bp_start, sizeof(bp_start)) == 0) {
+
+				/* remove both markers*/
+				g_array_remove_range(paste_buffer, i, marklen * 2);
+				len -= marklen * 2;
+
+				/* go one step back */
+				if (i > 0) {
+					i--;
+					ptr--;
+				}
+				continue;
+			}
 			paste_bracketed_end(i, i != len);
 			break;
 		}
