@@ -81,7 +81,7 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 	if (ircnet->max_query_chans > 0)
 		conn->max_query_chans = ircnet->max_query_chans;
 
-	/* Validate the SASL parameters filled by sig_chatnet_read() */
+	/* Validate the SASL parameters filled by sig_chatnet_read() or cmd_network_add */
 	conn->sasl_mechanism = SASL_MECHANISM_NONE;
 
 	if (ircnet->sasl_mechanism != NULL) {

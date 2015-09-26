@@ -49,9 +49,9 @@ static void sig_chatnet_read(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 	rec->max_modes = config_node_get_int(node, "max_modes", 0);
 	rec->max_whois = config_node_get_int(node, "max_whois", 0);
 
-	rec->sasl_mechanism = config_node_get_str(node, "sasl_mechanism", NULL);
-	rec->sasl_username = config_node_get_str(node, "sasl_username", NULL);
-	rec->sasl_password = config_node_get_str(node, "sasl_password", NULL);
+	rec->sasl_mechanism = g_strdup(config_node_get_str(node, "sasl_mechanism", NULL));
+	rec->sasl_username = g_strdup(config_node_get_str(node, "sasl_username", NULL));
+	rec->sasl_password = g_strdup(config_node_get_str(node, "sasl_password", NULL));
 }
 
 static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
@@ -88,8 +88,12 @@ static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 
 static void sig_chatnet_destroyed(IRC_CHATNET_REC *rec)
 {
-	if (IS_IRC_CHATNET(rec))
+	if (IS_IRC_CHATNET(rec)) {
 		g_free(rec->usermode);
+		g_free(rec->sasl_mechanism);
+		g_free(rec->sasl_username);
+		g_free(rec->sasl_password);
+	}
 }
 
 
