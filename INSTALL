@@ -94,6 +94,10 @@ things that can go wrong:
  - If configure complains that it doesn't find some perl stuff, you're
    probably missing libperl.so or libperl.a. In debian, you'll need to do
    apt-get install libperl-dev
+ - For unprivileged home directory installations, using the local::lib CPAN
+   module is recommended. Read its docs, bootstrap it if needed, ensure that
+   the environment variables are set before running the configure script, and
+   append "--with-perl-lib=site" to the configure parameters to use it.
 
 You can verify that the perl module is loaded and working with "/LOAD"
 command. It should print something like:
