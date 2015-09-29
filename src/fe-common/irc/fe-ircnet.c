@@ -56,7 +56,12 @@ static void cmd_network_list(void)
 			g_string_append_printf(str, "autosendcmd: %s, ", rec->autosendcmd);
 		if (rec->usermode != NULL)
 			g_string_append_printf(str, "usermode: %s, ", rec->usermode);
-
+		if (rec->sasl_mechanism != NULL)
+			g_string_append_printf(str, "sasl_mechanism: %s, ", rec->sasl_mechanism);
+		if (rec->sasl_username != NULL)
+			g_string_append_printf(str, "sasl_username: %s, ", rec->sasl_username);
+		if (rec->sasl_password != NULL)
+			g_string_append_printf(str, "sasl_password: (pass), ");
 		if (rec->cmd_queue_speed > 0)
 			g_string_append_printf(str, "cmdspeed: %d, ", rec->cmd_queue_speed);
 		if (rec->max_cmds_at_once > 0)
