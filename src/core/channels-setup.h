@@ -21,6 +21,9 @@ void channels_setup_deinit(void);
 void channel_setup_create(CHANNEL_SETUP_REC *channel);
 void channel_setup_remove(CHANNEL_SETUP_REC *channel);
 
+/* Remove channels attached to chatnet */
+void channel_setup_remove_chatnet(const char *chatnet);
+
 CHANNEL_SETUP_REC *channel_setup_find(const char *channel,
 				      const char *chatnet);
 

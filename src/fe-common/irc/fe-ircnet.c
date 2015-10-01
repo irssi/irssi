@@ -29,6 +29,8 @@
 #include "irc-servers.h"
 #include "irc-chatnets.h"
 #include "printtext.h"
+#include "servers-setup.h"
+#include "channels-setup.h"
 
 static void cmd_network_list(void)
 {
@@ -176,8 +178,6 @@ static void cmd_network_add(const char *data)
 static void cmd_network_remove(const char *data)
 {
 	IRC_CHATNET_REC *rec;
-	GSList *servers;
-	GSList *tmp;
 
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -185,10 +185,8 @@ static void cmd_network_remove(const char *data)
 	if (rec == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETWORK_NOT_FOUND, data);
 	else {
-		servers = server_setup_find_chatnet(data);
-
-		for (tmp = servers; tmp != NULL; tmp = tmp->next)
-			server_setup_remove((SERVER_SETUP_REC *) tmp->data);
+		server_setup_remove_chatnet(data);
+		channel_setup_remove_chatnet(data);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETWORK_REMOVED, data);
 		chatnet_remove(CHATNET(rec));
 	}

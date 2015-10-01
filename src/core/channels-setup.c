@@ -86,6 +86,21 @@ static void channel_setup_destroy(CHANNEL_SETUP_REC *channel)
 	g_free(channel);
 }
 
+void channel_setup_remove_chatnet(const char *chatnet)
+{
+	GSList *tmp, *next;
+
+	g_return_if_fail(chatnet != NULL);
+
+	for (tmp = setupchannels; tmp != NULL; tmp = next) {
+		CHANNEL_SETUP_REC *rec = tmp->data;
+
+		next = tmp->next;
+		if (g_ascii_strcasecmp(rec->chatnet, chatnet) == 0)
+			channel_setup_remove(rec);
+	}
+}
+
 void channel_setup_remove(CHANNEL_SETUP_REC *channel)
 {
         channel_config_remove(channel);

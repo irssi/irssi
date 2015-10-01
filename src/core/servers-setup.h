@@ -36,12 +36,11 @@ server_create_conn(int chat_type, const char *dest, int port,
 SERVER_SETUP_REC *server_setup_find(const char *address, int port,
 				    const char *chatnet);
 
-/* Find all servers matching chatnet.
-   Return a list of SERVER_SETUP_REC */
-GSList *server_setup_find_chatnet(const char *chatnet);
-
 void server_setup_add(SERVER_SETUP_REC *rec);
 void server_setup_remove(SERVER_SETUP_REC *rec);
+
+/* Remove servers attached to chatne */
+void server_setup_remove_chatnet(const char *chatnet);
 
 void servers_setup_init(void);
 void servers_setup_deinit(void);
