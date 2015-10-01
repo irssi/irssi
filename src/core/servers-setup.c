@@ -333,6 +333,24 @@ server_create_conn(int chat_type, const char *dest, int port,
 				chatnet, password, nick);
 }
 
+GSList *server_setup_find_chatnet(const char *chatnet)
+{
+	GSList *servers;
+	GSList *tmp;
+
+	g_return_val_if_fail(chatnet != NULL, NULL);
+
+	servers = NULL;
+	for (tmp = setupservers; tmp != NULL; tmp = tmp->next) {
+		SERVER_SETUP_REC *rec = tmp->data;
+
+		if (g_ascii_strcasecmp(rec->chatnet, chatnet) == 0)
+			servers = g_slist_append(servers, rec);
+	}
+
+	return servers;
+}
+
 /* Find matching server from setup. Try to find record with a same port,
    but fallback to any server with the same address. */
 SERVER_SETUP_REC *server_setup_find(const char *address, int port,
