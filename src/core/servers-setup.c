@@ -509,7 +509,7 @@ void server_setup_remove_chatnet(const char *chatnet)
 {
 	GSList *tmp, *next;
 
-	g_return_val_if_fail(chatnet != NULL, NULL);
+	g_return_if_fail(chatnet != NULL);
 
 	for (tmp = setupservers; tmp != NULL; tmp = next) {
 		SERVER_SETUP_REC *rec = tmp->data;
