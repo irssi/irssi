@@ -27,6 +27,10 @@
 #include "irc-channels.h"
 #include "nicklist.h"
 
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 255
+#endif
+
 static char *last_join;
 
 /* last person to join a channel you are on */
@@ -56,7 +60,7 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 {
 	IRC_SERVER_REC *ircserver;
 	const char *username;
-	char hostname[HOST_NAME_MAX];
+	char hostname[HOST_NAME_MAX + 1];
 
 	ircserver = IRC_SERVER(server);
 
@@ -80,7 +84,7 @@ static char *expando_userhost(SERVER_REC *server, void *item, int *free_ret)
 static char *expando_hostname(SERVER_REC *server, void *item, int *free_ret)
 {
 	IRC_SERVER_REC *ircserver;
-	char hostname[HOST_NAME_MAX];
+	char hostname[HOST_NAME_MAX + 1];
 	char **list;
 	char *hostname_split;
 
