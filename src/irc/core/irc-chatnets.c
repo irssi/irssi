@@ -35,10 +35,13 @@ void ircnet_create(IRC_CHATNET_REC *rec)
 
 static void sig_chatnet_read(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 {
+	char *value;
+
 	if (!IS_IRC_CHATNET(rec))
 		return;
 
-	rec->usermode = g_strdup(config_node_get_str(node, "usermode", NULL));
+	value = config_node_get_str(node, "usermode", NULL);
+	rec->usermode = (value != NULL && *value != '\0') ? g_strdup(value) : NULL;
 
 	rec->max_cmds_at_once = config_node_get_int(node, "cmdmax", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmdspeed", 0);
