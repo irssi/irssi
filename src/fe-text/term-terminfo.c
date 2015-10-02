@@ -543,18 +543,8 @@ int term_addstr(TERM_WINDOW *window, const char *str)
 		len += unichar_isprint(tmp) ? mk_wcwidth(tmp) : 1;
 		ptr = g_utf8_next_char(ptr);
 	    }
-	} else {
-	    while (*ptr != '\0') {
-		if (is_big5(ptr[0], ptr[1])) {
-		    tmp = ptr[0] << 8 | ptr[1];
-		    ptr += 2;
-		} else {
-		    tmp = *ptr;
-		    ptr += 1;
-		}
-		len += (tmp > 0xff) ? 2 : 1; 
-	    }
-	}
+	} else
+	    len = raw_len;
 
         term_printed_text(len);
 
