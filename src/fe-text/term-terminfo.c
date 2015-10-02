@@ -522,15 +522,60 @@ void term_add_unichar(TERM_WINDOW *window, unichar chr)
 	}
 }
 
-void term_addstr(TERM_WINDOW *window, const char *str)
+int term_addstr(TERM_WINDOW *window, const char *str)
 {
-	int len;
+	int i, len, raw_len;
+	unichar *tmp;
+	const char *ptr;
 
 	if (vcmove) term_move_real();
-	len = strlen(str); /* FIXME utf8 or big5 */
+
+	raw_len = strlen(str);
+
+	/* The string length depends on the terminal encoding */
+	switch (term_type) {
+	case TERM_TYPE_BIG5:
+		len = strlen_big5((const unsigned char *)str);
+		break;
+	case TERM_TYPE_UTF8:
+		len = g_utf8_strlen(str, -1);
+		break;
+	default:
+		len = strlen(str);
+		break;
+	}
+
+	tmp = calloc(len, sizeof(unichar));
+	if (tmp == NULL)
+	    return 0;
+
+	switch (term_type) {
+	case TERM_TYPE_BIG5:
+	    big5_to_unichars(str, tmp);
+	    break;
+	case TERM_TYPE_UTF8:
+	    ptr = str;
+	    for (i = 0; i < len; i++) {
+		tmp[i] = g_utf8_get_char(ptr);
+		ptr = g_utf8_next_char(ptr);
+	    }
+	    break;
+	default:
+	    for (i = 0; i < len; i++)
+		tmp[i] = str[i];
+	}
+
+	for (len = i = 0; i < len; i++)
+	    len += unichar_isprint(tmp[i]) ? mk_wcwidth(tmp[i]) : 1;
+
+	free(tmp);
+
         term_printed_text(len);
 
-	fwrite(str, 1, len, window->term->out);
+	/* Use strlen() here since we need the number of raw bytes */
+	fwrite(str, 1, raw_len, window->term->out);
+
+	return len;
 }
 
 void term_clrtoeol(TERM_WINDOW *window)
