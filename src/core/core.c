@@ -161,7 +161,7 @@ static char *fix_path(const char *str)
 		char *tmp_str = new_str;
 		char *current_dir = g_get_current_dir();
 
-		new_str = g_build_path(G_DIR_SEPARATOR_S, current_dir, tmp_str);
+		new_str = g_build_path(G_DIR_SEPARATOR_S, current_dir, tmp_str, NULL);
 
 		g_free(current_dir);
 		g_free(tmp_str);
