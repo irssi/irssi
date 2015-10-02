@@ -20,7 +20,7 @@ before_install:
 install: true
 
 script:
-    - ./autogen.sh --with-proxy --with-bot --with-perl=module --prefix=$HOME/irssi-build --enable-silent-rules
+    - ./autogen.sh --with-proxy --with-bot --with-perl=module --prefix=$HOME/irssi-build
     - cat config.log
     - make
     - make install
