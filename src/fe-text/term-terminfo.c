@@ -524,51 +524,37 @@ void term_add_unichar(TERM_WINDOW *window, unichar chr)
 
 int term_addstr(TERM_WINDOW *window, const char *str)
 {
-	int i, len, raw_len;
-	unichar *tmp;
+	int len, raw_len;
+	unichar tmp;
 	const char *ptr;
 
 	if (vcmove) term_move_real();
 
+	len = 0;
 	raw_len = strlen(str);
 
 	/* The string length depends on the terminal encoding */
-	switch (term_type) {
-	case TERM_TYPE_BIG5:
-		len = strlen_big5((const unsigned char *)str);
-		break;
-	case TERM_TYPE_UTF8:
-		len = g_utf8_strlen(str, -1);
-		break;
-	default:
-		len = strlen(str);
-		break;
-	}
 
-	tmp = calloc(len, sizeof(unichar));
-	if (tmp == NULL)
-	    return 0;
+	ptr = str;
 
-	switch (term_type) {
-	case TERM_TYPE_BIG5:
-	    big5_to_unichars(str, tmp);
-	    break;
-	case TERM_TYPE_UTF8:
-	    ptr = str;
-	    for (i = 0; i < len; i++) {
-		tmp[i] = g_utf8_get_char(ptr);
+	if (term_type != TERM_TYPE_BIG5) {
+	    while (*ptr != '\0') {
+		tmp = g_utf8_get_char(ptr);
+		len += unichar_isprint(tmp) ? mk_wcwidth(tmp) : 1;
 		ptr = g_utf8_next_char(ptr);
 	    }
-	    break;
-	default:
-	    for (i = 0; i < len; i++)
-		tmp[i] = str[i];
+	} else {
+	    while (*ptr != '\0') {
+		if (is_big5(ptr[0], ptr[1])) {
+		    tmp = ptr[0] << 8 | ptr[1];
+		    ptr += 2;
+		} else {
+		    tmp = *ptr;
+		    ptr += 1;
+		}
+		len += (tmp > 0xff) ? 2 : 1; 
+	    }
 	}
-
-	for (len = i = 0; i < len; i++)
-	    len += unichar_isprint(tmp[i]) ? mk_wcwidth(tmp[i]) : 1;
-
-	free(tmp);
 
         term_printed_text(len);
 
