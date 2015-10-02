@@ -156,11 +156,17 @@ static void sig_init_finished(void)
 static char *fix_path(const char *str)
 {
 	char *new_str = convert_home(str);
+
 	if (!g_path_is_absolute(new_str)) {
 		char *tmp_str = new_str;
-		new_str = g_strdup_printf("%s/%s", g_get_current_dir(), tmp_str);
+		char *current_dir = g_get_current_dir();
+
+		new_str = g_build_path(G_DIR_SEPARATOR_S, current_dir, tmp_str);
+
+		g_free(current_dir);
 		g_free(tmp_str);
 	}
+
 	return new_str;
 }
 
