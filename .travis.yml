@@ -23,7 +23,8 @@ before_install:
     - cd irssi-*
 
 install:
-    - ./configure --with-proxy --with-bot --with-perl=module --prefix=$HOME/irssi-build
+    - ./autogen.sh --with-proxy --with-bot --with-perl=module --with-otr=no --prefix=$HOME/irssi-build
+    - cat config.log
     - make CFLAGS="-Wall -Werror"
     - make install
 
