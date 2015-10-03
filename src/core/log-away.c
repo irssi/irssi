@@ -24,6 +24,7 @@
 #include "log.h"
 #include "servers.h"
 #include "settings.h"
+#include "write-buffer.h"
 
 static LOG_REC *awaylog;
 static int away_filepos;
