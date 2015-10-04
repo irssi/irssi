@@ -537,14 +537,14 @@ int term_addstr(TERM_WINDOW *window, const char *str)
 
 	ptr = str;
 
-	if (term_type != TERM_TYPE_BIG5) {
-	    while (*ptr != '\0') {
-		tmp = g_utf8_get_char(ptr);
-		len += unichar_isprint(tmp) ? mk_wcwidth(tmp) : 1;
-		ptr = g_utf8_next_char(ptr);
-	    }
+	if (term_type == TERM_TYPE_UTF8) {
+		while (*ptr != '\0') {
+			tmp = g_utf8_get_char(ptr);
+			len += unichar_isprint(tmp) ? mk_wcwidth(tmp) : 1;
+			ptr = g_utf8_next_char(ptr);
+		}
 	} else
-	    len = raw_len;
+		len = raw_len;
 
         term_printed_text(len);
 
