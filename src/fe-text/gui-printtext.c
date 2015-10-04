@@ -220,16 +220,15 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	get_colors(flags, &fg, &bg, &attr);
 
 	if (window == NULL) {
-                g_return_if_fail(next_xpos != -1);
+		g_return_if_fail(next_xpos != -1);
 
 		term_set_color2(root_window, attr, fg, bg);
 
 		term_move(root_window, next_xpos, next_ypos);
 		if (flags & GUI_PRINT_FLAG_CLRTOEOL)
 			term_clrtoeol(root_window);
-		term_addstr(root_window, str);
-		next_xpos += strlen(str); /* FIXME utf8 or big5 */
-                return;
+		next_xpos += term_addstr(root_window, str);
+		return;
 	}
 
 	lineinfo.level = dest == NULL ? 0 : dest->level;
