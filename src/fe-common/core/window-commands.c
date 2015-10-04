@@ -883,6 +883,7 @@ void window_commands_init(void)
 	command_set_options("window number", "sticky");
 	command_set_options("window server", "sticky unsticky");
 	command_set_options("window theme", "delete");
+	command_set_options("window history", "clear");
 }
 
 void window_commands_deinit(void)

@@ -104,6 +104,18 @@ HISTORY_REC *command_history_current(WINDOW_REC *window)
 	return global_history;
 }
 
+void command_history_clear(WINDOW_REC *window)
+{
+	if (window_history) {
+		if (command_history_destroy(window->history))
+			window->history = command_history_create(NULL);
+	}
+	else {
+		if (command_history_destroy(global_history))
+			global_history = command_history_create(NULL);
+	}
+}
+
 const char *command_history_prev(WINDOW_REC *window, const char *text)
 {
 	HISTORY_REC *history;
@@ -178,12 +190,12 @@ HISTORY_REC *command_history_create(const char *name)
 	return rec;
 }
 
-void command_history_destroy(HISTORY_REC *history)
+bool command_history_destroy(HISTORY_REC *history)
 {
-	g_return_if_fail(history != NULL);
+	g_return_val_if_fail(history != NULL, FALSE);
 
 	/* history->refcount should be 0 here, or somthing is wrong... */
-	g_return_if_fail(history->refcount == 0);
+	g_return_val_if_fail(history->refcount == 0, FALSE);
 
 	histories = g_slist_remove(histories, history);
 
@@ -192,6 +204,8 @@ void command_history_destroy(HISTORY_REC *history)
 
 	g_free_not_null(history->name);
 	g_free(history);
+
+	return TRUE;
 }
 
 void command_history_link(const char *name)
