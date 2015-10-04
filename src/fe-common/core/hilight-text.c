@@ -488,7 +488,7 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 		g_string_append(options, "-nick ");
 	else if (rec->word)
 		g_string_append(options, "-word ");
-	else
+	else if (rec->line)
 		g_string_append(options, "-line ");
 
 	if (rec->nickmask) g_string_append(options, "-mask ");
