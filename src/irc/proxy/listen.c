@@ -708,7 +708,8 @@ static void read_settings(void)
 	LISTEN_REC *rec;
 	GSList *remove_listens = NULL;
 	GSList *add_listens = NULL;
-	char **ports, **tmp, *ircnet, *port, *sslfile;
+	char **ports, **tmp, *ircnet, *port;
+	char *sslfile = NULL;
 	int portnum;
 
 	remove_listens = g_slist_copy(proxy_listens);
