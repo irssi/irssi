@@ -33,6 +33,7 @@
 #include "window-items.h"
 #include "windows-layout.h"
 #include "printtext.h"
+#include "command-history.h"
 
 static void window_print_binds(WINDOW_REC *win)
 {
@@ -615,10 +616,23 @@ static void cmd_window_name(const char *data)
 	}
 }
 
-/* SYNTAX: WINDOW HISTORY <name> */
+/* SYNTAX: WINDOW HISTORY [-clear] <name> */
 void cmd_window_history(const char *data)
 {
-	window_set_history(active_win, data);
+        GHashTable *optlist;
+        char *name;
+        void *free_arg;
+
+        if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+                            "window history", &optlist, &name))
+                return;
+
+        if (*name == '\0' && g_hash_table_lookup(optlist, "clear") != NULL)
+		command_history_clear(active_win);
+	else if (*name != '\0')
+		window_set_history(active_win, name);
+
+	cmd_params_free(free_arg);
 }
 
 /* we're moving the first window to last - move the first contiguous block

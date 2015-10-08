@@ -190,7 +190,7 @@ HISTORY_REC *command_history_create(const char *name)
 	return rec;
 }
 
-bool command_history_destroy(HISTORY_REC *history)
+int command_history_destroy(HISTORY_REC *history)
 {
 	g_return_val_if_fail(history != NULL, FALSE);
 
