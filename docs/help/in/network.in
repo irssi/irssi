@@ -7,7 +7,7 @@
 
     LIST:            Displays the list of configured networks.
     ADD:             Adds a network to your configuration.
-    MODIFY:          Modifies a network in your configuration.
+    MODIFY:          Alias for ADD. Modifies a network in your configuration.
     REMOVE:          Removes a network from your configuration.
 
     -nick:           Specifies the nickname to use.

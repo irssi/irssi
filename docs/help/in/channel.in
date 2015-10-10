@@ -7,7 +7,7 @@
 
     LIST:       Displays the list of configured channels.
     ADD:        Adds a channel to your configuration.
-    MODIFY:     Modifies a channel in your configuration.
+    MODIFY:     Alias for ADD. Modifies a channel in your configuration.
     REMOVE:     Removes a channel from your configuration.
 
     -auto:      Automatically join the channel.
