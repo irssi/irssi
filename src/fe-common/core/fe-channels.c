@@ -248,6 +248,8 @@ static void cmd_channel(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 
 /* SYNTAX: CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
                        <channel> <network> [<password>] */
+/* SYNTAX: CHANNEL MODIFY [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
+                          <channel> <network> [<password>] */
 static void cmd_channel_add(const char *data)
 {
 	GHashTable *optlist;

@@ -7,6 +7,7 @@
 
     LIST:            Displays the list of configured networks.
     ADD:             Adds a network to your configuration.
+    MODIFY:          Modifies a network in your configuration.
     REMOVE:          Removes a network from your configuration.
 
     -nick:           Specifies the nickname to use.
@@ -47,9 +48,6 @@
     Displays, adds, modifies or removes the network configuration of IRC
     networks.
 
-    When using the ADD parameter on a network that already exists, the
-    configuration will be merged with each other.
-
     We recommend using 'WAIT 2000' between the automated commands in order to
     prevent you from being kicked from the network due to flooding commands.
 
@@ -59,6 +57,7 @@
     /NETWORK ADD -usermode +iw -nick mike -realname 'The one and only mike!' -host staff.irssi.org Freenode
     /NETWORK ADD -autosendcmd '^MSG NickServ identify WzerT8zq' Freenode
     /NETWORK ADD -autosendcmd '^MSG Q@CServe.quakenet.org AUTH mike WzerT8zq; WAIT 2000; OPER mike WzerT8zq; WAIT 2000; MODE mike +kXP' Quakenet
+    /NETWORK MODIFY -usermode +gi EFnet
     /NETWORK REMOVE Freenode
 
 %9See also:%9 CHANNEL, CONNECT, SERVER

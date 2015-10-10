@@ -7,6 +7,7 @@
 
     LIST:       Displays the list of configured channels.
     ADD:        Adds a channel to your configuration.
+    MODIFY:     Modifies a channel in your configuration.
     REMOVE:     Removes a channel from your configuration.
 
     -auto:      Automatically join the channel.
@@ -36,6 +37,7 @@
     /CHANNEL ADD -auto #basementcat Quakenet secret_lair
     /CHANNEL ADD -auto -bots '*!@*.irssi.org *!bot@irssi.org' -botcmd 'msg $0 op WzerTrzq' #hideout Freenode
     /CHANNEL ADD -auto -bots 'Q!TheQBot@CServe.quakenet.org' -botcmd '^MSG Q op #irssi' #irssi Quakenet
+    /CHANNEL MODIFY -noauto #irssi Freenode
     /CHANNEL REMOVE #hideout Freenode
 
 %9Special Example:%9

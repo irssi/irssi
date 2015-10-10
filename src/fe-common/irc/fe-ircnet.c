@@ -95,6 +95,13 @@ static void cmd_network_list(void)
                        [-cmdmax <count>] [-sasl_mechanism <mechanism>]
                        [-sasl_username <username>] [-sasl_password <password>]
                        <name> */
+/* SYNTAX: NETWORK MODIFY [-nick <nick>] [-user <user>] [-realname <name>]
+                          [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
+                          [-querychans <count>] [-whois <count>] [-msgs <count>]
+                          [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
+                          [-cmdmax <count>] [-sasl_mechanism <mechanism>]
+                          [-sasl_username <username>] [-sasl_password <password>]
+                          <name> */
 static void cmd_network_add(const char *data)
 {
 	GHashTable *optlist;
