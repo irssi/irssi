@@ -387,6 +387,7 @@ void fe_server_init(void)
 {
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
 	command_bind("server connect", NULL, (SIGNAL_FUNC) cmd_server_connect);
+	command_bind("server modify", NULL, (SIGNAL_FUNC) cmd_server_add);
 	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
 	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
@@ -411,6 +412,7 @@ void fe_server_deinit(void)
 {
 	command_unbind("server", (SIGNAL_FUNC) cmd_server);
 	command_unbind("server connect", (SIGNAL_FUNC) cmd_server_connect);
+	command_unbind("server modify", (SIGNAL_FUNC) cmd_server_add);
 	command_unbind("server add", (SIGNAL_FUNC) cmd_server_add);
 	command_unbind("server remove", (SIGNAL_FUNC) cmd_server_remove);
 	command_unbind("server", (SIGNAL_FUNC) server_command);

@@ -621,6 +621,7 @@ void fe_channels_init(void)
 
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
+	command_bind("channel modify", NULL, (SIGNAL_FUNC) cmd_channel_add);
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);
@@ -642,6 +643,7 @@ void fe_channels_deinit(void)
 
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
+	command_unbind("channel modify", (SIGNAL_FUNC) cmd_channel_add);
 	command_unbind("channel add", (SIGNAL_FUNC) cmd_channel_add);
 	command_unbind("channel remove", (SIGNAL_FUNC) cmd_channel_remove);
 	command_unbind("channel list", (SIGNAL_FUNC) cmd_channel_list);
