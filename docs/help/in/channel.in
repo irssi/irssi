@@ -26,6 +26,9 @@
     Adds, removes or displays the configuration of channels; this method is
     used to automate and simplify your workflow.
 
+    /CHANNEL ADD modifies a channel if it already exists in the configuration.
+    /CHANNEL MODIFY is an alias for /CHANNEL ADD to make the distinction more clear.
+
     You can use the ADDALLCHANS command, which is a default alias, to add all
     the channels you are present on into the configuration.
 

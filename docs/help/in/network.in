@@ -48,6 +48,9 @@
     Displays, adds, modifies or removes the network configuration of IRC
     networks.
 
+    /NETWORK ADD modifies a network if it already exists in the configuration.
+    /NETWORK MODIFY is an alias for /NETWORK ADD to make the distinction more clear.
+
     We recommend using 'WAIT 2000' between the automated commands in order to
     prevent you from being kicked from the network due to flooding commands.
 

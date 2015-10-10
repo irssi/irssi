@@ -46,8 +46,8 @@
     Displays, adds, modifies or removes the network configuration of IRC 
     servers.
 
-    When using the ADD parameter on a server that already exists, the
-    configuration will be merged with each other.
+    /SERVER ADD modifies a server if it already exists in the configuration.
+    /SERVER MODIFY is an alias for /SERVER ADD to make the distinction more clear.
 
     When using the command without any of the given parameters, it will
     connect to the specified server; the server in the active window will be
