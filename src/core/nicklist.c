@@ -571,6 +571,14 @@ int nick_match_msg(CHANNEL_REC *channel, const char *msg, const char *nick)
 	}
 }
 
+int nick_match_msg_everywhere(CHANNEL_REC *channel, const char *msg, const char *nick)
+{
+	g_return_val_if_fail(nick != NULL, FALSE);
+	g_return_val_if_fail(msg != NULL, FALSE);
+
+	return stristr_full(msg, nick) != NULL;
+}
+
 void nicklist_init(void)
 {
 	signal_add_first("channel created", (SIGNAL_FUNC) sig_channel_created);

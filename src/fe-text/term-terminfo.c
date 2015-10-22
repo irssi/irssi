@@ -522,15 +522,36 @@ void term_add_unichar(TERM_WINDOW *window, unichar chr)
 	}
 }
 
-void term_addstr(TERM_WINDOW *window, const char *str)
+int term_addstr(TERM_WINDOW *window, const char *str)
 {
-	int len;
+	int len, raw_len;
+	unichar tmp;
+	const char *ptr;
 
 	if (vcmove) term_move_real();
-	len = strlen(str); /* FIXME utf8 or big5 */
+
+	len = 0;
+	raw_len = strlen(str);
+
+	/* The string length depends on the terminal encoding */
+
+	ptr = str;
+
+	if (term_type == TERM_TYPE_UTF8) {
+		while (*ptr != '\0') {
+			tmp = g_utf8_get_char(ptr);
+			len += unichar_isprint(tmp) ? mk_wcwidth(tmp) : 1;
+			ptr = g_utf8_next_char(ptr);
+		}
+	} else
+		len = raw_len;
+
         term_printed_text(len);
 
-	fwrite(str, 1, len, window->term->out);
+	/* Use strlen() here since we need the number of raw bytes */
+	fwrite(str, 1, raw_len, window->term->out);
+
+	return len;
 }
 
 void term_clrtoeol(TERM_WINDOW *window)

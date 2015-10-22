@@ -237,7 +237,7 @@ static void paste_buffer_join_lines(GArray *buf)
 			last_lf = FALSE;
 			if (++line_len >= 400 && last_lf_pos != NULL) {
 				memmove(last_lf_pos+1, last_lf_pos,
-					dest - last_lf_pos);
+					(dest - last_lf_pos) * sizeof(unichar));
 				*last_lf_pos = '\n'; last_lf_pos = NULL;
 				line_len = 0;
 				dest++;

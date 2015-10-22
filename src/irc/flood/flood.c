@@ -250,7 +250,7 @@ static void flood_privmsg(IRC_SERVER_REC *server, const char *data,
 
 	params = event_get_params(data, 2, &target, &text);
 
-	level = ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS;
+	level = server_ischannel(SERVER(server), target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS;
 	if (addr != NULL && !ignore_check(SERVER(server), nick, addr, target, text, level))
 		flood_newmsg(server, level, nick, addr, target);
 
@@ -287,7 +287,7 @@ static void flood_ctcp(IRC_SERVER_REC *server, const char *data,
 		return;
 
 	level = g_ascii_strncasecmp(data, "ACTION ", 7) != 0 ? MSGLEVEL_CTCPS :
-		(ischannel(*target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
+		(server_ischannel(SERVER(server), target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
 	if (!ignore_check(SERVER(server), nick, addr, target, data, level))
 		flood_newmsg(server, level, nick, addr, target);
 }

@@ -3,9 +3,6 @@
 #undef HAVE_SOCKS_H
 #undef HAVE_STATIC_PERL
 #undef HAVE_GMODULE
-#undef HAVE_GC_H
-#undef HAVE_GC_GC_H
-#undef USE_GC
 
 /* macros/curses checks */
 #undef HAS_CURSES

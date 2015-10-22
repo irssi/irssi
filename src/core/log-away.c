@@ -24,6 +24,7 @@
 #include "log.h"
 #include "servers.h"
 #include "settings.h"
+#include "write-buffer.h"
 
 static LOG_REC *awaylog;
 static int away_filepos;
@@ -62,6 +63,9 @@ static void awaylog_open(void)
 		return;
 	}
 
+	/* Flush the dirty buffers to disk before acquiring the file position */
+	write_buffer_flush();
+
 	awaylog = log;
 	away_filepos = lseek(log->handle, 0, SEEK_CUR);
 	away_msgs = 0;
@@ -82,6 +86,9 @@ static void awaylog_close(void)
 	}
 
 	if (awaylog == log) awaylog = NULL;
+
+	/* Flush the dirty buffers to disk before showing the away log */
+	write_buffer_flush();
 
 	signal_emit("awaylog show", 3, log, GINT_TO_POINTER(away_msgs),
 		    GINT_TO_POINTER(away_filepos));

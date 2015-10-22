@@ -32,6 +32,12 @@
                      additional commands to the server.
     -cmdmax:         Specifies the maximum number of commands to perform before
                      starting the internal flood protection.
+    -sasl_mechanism  Specifies the mechanism to use for the SASL authentication.
+                     At the moment irssi only supports the 'plain' and the
+                     'external' mechanisms.
+    -sasl_username   Specifies the username to use during the SASL authentication.
+    -sasl_password   Specifies the password to use during the SASL authentication.
+
 
     The name of the network to add, edit or remove; if no parameter is given,
     the list of networks will be displayed.

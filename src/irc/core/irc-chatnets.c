@@ -35,10 +35,13 @@ void ircnet_create(IRC_CHATNET_REC *rec)
 
 static void sig_chatnet_read(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 {
+	char *value;
+
 	if (!IS_IRC_CHATNET(rec))
 		return;
 
-	rec->usermode = g_strdup(config_node_get_str(node, "usermode", NULL));
+	value = config_node_get_str(node, "usermode", NULL);
+	rec->usermode = (value != NULL && *value != '\0') ? g_strdup(value) : NULL;
 
 	rec->max_cmds_at_once = config_node_get_int(node, "cmdmax", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmdspeed", 0);
@@ -48,6 +51,10 @@ static void sig_chatnet_read(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 	rec->max_msgs = config_node_get_int(node, "max_msgs", 0);
 	rec->max_modes = config_node_get_int(node, "max_modes", 0);
 	rec->max_whois = config_node_get_int(node, "max_whois", 0);
+
+	rec->sasl_mechanism = g_strdup(config_node_get_str(node, "sasl_mechanism", NULL));
+	rec->sasl_username = g_strdup(config_node_get_str(node, "sasl_username", NULL));
+	rec->sasl_password = g_strdup(config_node_get_str(node, "sasl_password", NULL));
 }
 
 static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
@@ -56,7 +63,7 @@ static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 		return;
 
 	if (rec->usermode != NULL)
-                iconfig_node_set_str(node, "usermode", rec->usermode);
+		iconfig_node_set_str(node, "usermode", rec->usermode);
 
 	if (rec->max_cmds_at_once > 0)
 		iconfig_node_set_int(node, "cmdmax", rec->max_cmds_at_once);
@@ -73,12 +80,23 @@ static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 		iconfig_node_set_int(node, "max_modes", rec->max_modes);
 	if (rec->max_whois > 0)
 		iconfig_node_set_int(node, "max_whois", rec->max_whois);
+
+	if (rec->sasl_mechanism != NULL)
+		iconfig_node_set_str(node, "sasl_mechanism", rec->sasl_mechanism);
+	if (rec->sasl_username != NULL)
+		iconfig_node_set_str(node, "sasl_username", rec->sasl_username);
+	if (rec->sasl_password != NULL)
+		iconfig_node_set_str(node, "sasl_password", rec->sasl_password);
 }
 
 static void sig_chatnet_destroyed(IRC_CHATNET_REC *rec)
 {
-	if (IS_IRC_CHATNET(rec))
-                g_free(rec->usermode);
+	if (IS_IRC_CHATNET(rec)) {
+		g_free(rec->usermode);
+		g_free(rec->sasl_mechanism);
+		g_free(rec->sasl_username);
+		g_free(rec->sasl_password);
+	}
 }
 
 

@@ -420,8 +420,8 @@ static void cmd_reconnect(const char *data, SERVER_REC *server)
 			cmd_param_error(CMDERR_NOT_CONNECTED);
                 rec = reconnects->data;
 	} else {
-		if (g_ascii_strncasecmp(data, "RECON-", 6) == 0)
-			data += 6;
+		if (g_ascii_strncasecmp(tag, "RECON-", 6) == 0)
+			tag += 6;
 
 		tagnum = atoi(tag);
 		rec = tagnum <= 0 ? NULL : reconnect_find_tag(tagnum);

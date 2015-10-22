@@ -400,7 +400,7 @@ static void msg_mode(IRC_SERVER_REC *server, const char *channel,
 	int show;
 
 	g_return_if_fail(data != NULL);
-	if (!ischannel(*channel) || addr != NULL)
+	if (!server_ischannel(SERVER(server), channel) || addr != NULL)
 		return;
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST,

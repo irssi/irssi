@@ -28,6 +28,7 @@
 #include "irc-chatnets.h"
 #include "irc-servers-setup.h"
 #include "irc-servers.h"
+#include "sasl.h"
 
 /* Fill information to connection from server setup record */
 static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
@@ -47,12 +48,18 @@ static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
 
 static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn)
 {
+	const char *value;
+
 	if (!IS_IRC_SERVER_CONNECT(conn))
 		return;
 
-	conn->alternate_nick = *settings_get_str("alternate_nick") != '\0' ?
-		g_strdup(settings_get_str("alternate_nick")) : NULL;
-        conn->usermode = g_strdup(settings_get_str("usermode"));
+	value = settings_get_str("alternate_nick");
+	conn->alternate_nick = (value != NULL && *value != '\0') ?
+		g_strdup(value) : NULL;
+
+	value = settings_get_str("usermode");
+	conn->usermode = (value != NULL && *value != '\0') ?
+		g_strdup(value) : NULL;
 }
 
 static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
@@ -79,6 +86,29 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 		conn->cmd_queue_speed = ircnet->cmd_queue_speed;
 	if (ircnet->max_query_chans > 0)
 		conn->max_query_chans = ircnet->max_query_chans;
+
+	/* Validate the SASL parameters filled by sig_chatnet_read() or cmd_network_add */
+	conn->sasl_mechanism = SASL_MECHANISM_NONE;
+
+	if (ircnet->sasl_mechanism != NULL) {
+		if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "plain")) {
+			/* The PLAIN method needs both the username and the password */
+			if (ircnet->sasl_username != NULL && *ircnet->sasl_username &&
+			    ircnet->sasl_password != NULL && *ircnet->sasl_password) {
+				conn->sasl_mechanism = SASL_MECHANISM_PLAIN;
+				conn->sasl_username = ircnet->sasl_username;
+				conn->sasl_password = ircnet->sasl_password;
+			} else
+				g_warning("The fields sasl_username and sasl_password are either missing or empty");
+		}
+		else if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "external")) {
+				conn->sasl_mechanism = SASL_MECHANISM_EXTERNAL;
+				conn->sasl_username = NULL;
+				conn->sasl_password = NULL;
+		}
+		else
+			g_warning("Unsupported SASL mechanism \"%s\" selected", ircnet->sasl_mechanism);
+	}
 }
 
 static void init_userinfo(void)

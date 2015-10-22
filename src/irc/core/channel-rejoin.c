@@ -149,7 +149,7 @@ static void event_target_unavailable(IRC_SERVER_REC *server, const char *data)
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, NULL, &channel);
-	if (ischannel(*channel)) {
+	if (server_ischannel(SERVER(server), channel)) {
 		chanrec = irc_channel_find(server, channel);
 		if (chanrec != NULL && chanrec->joined) {
 			/* dalnet event - can't change nick while

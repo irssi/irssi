@@ -1,3 +1,4 @@
+sudo: false
 language: perl
 perl:
     - "5.20-shrplib"
@@ -7,28 +8,19 @@ env:
     - CC=clang
     - CC=gcc
 
+addons:
+    apt:
+        packages:
+            - libperl-dev
+            - elinks
+
 before_install:
-    - sudo apt-get update -qq
     - perl -V
-    - sudo apt-get build-dep -qq irssi
-    - sudo apt-get install -qq lynx
 
 install: true
 
 script:
-    - ./autogen.sh --with-proxy --with-bot --with-perl=module
+    - ./autogen.sh --with-proxy --with-bot --with-perl=module --prefix=$HOME/irssi-build
     - cat config.log
     - make
-    - sudo make install
-
-notifications:
-    irc:
-        channels:
-            - "irc.freenode.net#irssi"
-        template:
-            - "%{repository} (%{commit}: %{author}): %{message}"
-            - "Build details : %{build_url}"
-        on_success: always
-        on_failure: always
-        use_notice: true
-        skip_join: true
+    - make install

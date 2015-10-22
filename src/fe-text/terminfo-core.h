@@ -88,6 +88,10 @@ struct _TERM_REC {
 
 	/* Beep */
         char *TI_bel;
+
+	/* Keyboard-transmit mode */
+	const char *TI_smkx;
+	const char *TI_rmkx;
 };
 
 extern TERM_REC *current_term;
