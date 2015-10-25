@@ -106,14 +106,14 @@ HISTORY_REC *command_history_current(WINDOW_REC *window)
 
 void command_history_clear(WINDOW_REC *window)
 {
-	if (window_history) {
-		if (command_history_destroy(window->history))
-			window->history = command_history_create(NULL);
-	}
-	else {
-		if (command_history_destroy(global_history))
-			global_history = command_history_create(NULL);
-	}
+        if (window_history) {
+                if (command_history_destroy(window->history))
+                        window->history = command_history_create(NULL);
+        }
+        else {
+                if (command_history_destroy(global_history))
+                        global_history = command_history_create(NULL);
+        }
 }
 
 const char *command_history_prev(WINDOW_REC *window, const char *text)

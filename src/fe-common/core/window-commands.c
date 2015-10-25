@@ -628,11 +628,11 @@ void cmd_window_history(const char *data)
                 return;
 
         if (*name == '\0' && g_hash_table_lookup(optlist, "clear") != NULL)
-		command_history_clear(active_win);
-	else if (*name != '\0')
-		window_set_history(active_win, name);
+                command_history_clear(active_win);
+        else if (*name != '\0')
+                window_set_history(active_win, name);
 
-	cmd_params_free(free_arg);
+        cmd_params_free(free_arg);
 }
 
 /* we're moving the first window to last - move the first contiguous block
