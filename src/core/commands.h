@@ -168,4 +168,6 @@ void commands_remove_module(const char *module);
 void commands_init(void);
 void commands_deinit(void);
 
+extern int sandbox;
+
 #endif

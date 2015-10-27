@@ -553,6 +553,9 @@ static void cmd_exec(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
         char *args;
 	void *free_arg;
 
+	if (sandbox)
+		return;
+
 	g_return_if_fail(data != NULL);
 
 	if (cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |

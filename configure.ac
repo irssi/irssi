@@ -140,6 +140,15 @@ AC_ARG_WITH(perl,
 	fi,
 	want_perl=static)
 
+AC_ARG_ENABLE(seccomp,
+[  --disable-seccomp,      Disable seccomp support],
+	if test x$enableval = xno; then
+		want_seccomp=yes
+	else
+		want_seccomp=no
+	fi,
+	want_seccomp=yes)
+
 AC_ARG_ENABLE(ipv6,
 [  --disable-ipv6          Disable IPv6 support],
 	if test x$enableval = xno; then
@@ -578,6 +587,30 @@ AC_SUBST(COMMON_NOUI_LIBS)
 AC_SUBST(COMMON_LIBS)
 
 dnl **
+dnl ** Seccomp support
+dnl **
+
+have_seccomp=no
+if test "x$want_seccomp" = "xyes"; then
+	have_caps=no
+	AC_CHECK_LIB(cap, cap_init,
+	[
+		have_caps=yes
+	], [], [])
+
+	AC_CHECK_LIB(seccomp, seccomp_init,
+	[
+		have_seccomp=yes
+		AC_DEFINE(HAVE_SECCOMP)
+		LIBS="$LIBS -lseccomp -lcap"
+	], [], [-lcap])
+
+	if test x$have_cap = xno; then
+		AC_ERROR([Capability support is required to build Irssi with Seccomp support enabled.])
+	fi
+fi
+
+dnl **
 dnl ** IPv6 support
 dnl **
 
@@ -741,6 +774,7 @@ echo "Install prefix ................... : $prefix"
 
 echo
 
+echo "Building with seccomp support .... : $have_seccomp"
 echo "Building with IPv6 support ....... : $have_ipv6"
 echo "Building with SSL support ........ : $have_openssl"
 if test "x$have_openssl" = "xno" -a "x$enable_ssl" = "xyes"; then

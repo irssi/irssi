@@ -28,6 +28,7 @@
 #include "settings.h"
 #include "session.h"
 #include "servers.h"
+#include "sandbox.h"
 
 #include "printtext.h"
 #include "fe-common-core.h"
@@ -74,10 +75,19 @@ void mainwindow_activity_deinit(void);
 void mainwindows_layout_init(void);
 void mainwindows_layout_deinit(void);
 
+#ifdef HAVE_SECCOMP
+void create_namespaces(void);
+void drop_privileges(void);
+void enforce_resource_limits(void);
+void enforce_seccomp_sandbox(void);
+#endif
+
 void term_dummy_init(void);
 void term_dummy_deinit(void);
 
 static int dirty, full_redraw, dummy;
+
+int sandbox = 0;
 
 static GMainLoop *main_loop;
 int quitting;
@@ -292,6 +302,7 @@ int main(int argc, char **argv)
 	static GOptionEntry options[] = {
 		{ "dummy", 'd', 0, G_OPTION_ARG_NONE, &dummy, "Use the dummy terminal mode", NULL },
 		{ "version", 'v', 0, G_OPTION_ARG_NONE, &version, "Display irssi version", NULL },
+		{ "sandbox", 's', 0, G_OPTION_ARG_NONE, &sandbox, "Enable the sandbox", NULL },
 		{ NULL }
 	};
 	int loglev;
@@ -305,6 +316,18 @@ int main(int argc, char **argv)
 		printf(PACKAGE_TARNAME" " PACKAGE_VERSION" (%d %04d)\n",
 		       IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
 		return 0;
+	}
+
+	if (sandbox) {
+#ifdef HAVE_SECCOMP
+		create_namespaces();
+		drop_privileges();
+		enforce_resource_limits();
+		enable_seccomp_sandbox();
+#else
+		fprintf(stderr, "This build does not support sandboxing\n");
+		return 1;
+#endif
 	}
 
 	srand(time(NULL));
