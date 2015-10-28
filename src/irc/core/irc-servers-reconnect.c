@@ -48,6 +48,9 @@ static void sig_server_connect_copy(SERVER_CONNECT_REC **dest,
 	rec->max_whois = src->max_whois;
 	rec->usermode = g_strdup(src->usermode);
 	rec->alternate_nick = g_strdup(src->alternate_nick);
+	rec->sasl_mechanism = src->sasl_mechanism;
+	rec->sasl_username = src->sasl_username;
+	rec->sasl_password = src->sasl_password;
 	*dest = (SERVER_CONNECT_REC *) rec;
 }
 
