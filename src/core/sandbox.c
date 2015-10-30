@@ -205,7 +205,7 @@ void enable_seccomp_sandbox(void)
 
 	/* setsockopt */
 	struct setsockopt_struct_t {
-		int sockfd;
+		int minsockfd;
 		int level;
 		int optname;
 		socklen_t optlen;
@@ -216,7 +216,7 @@ void enable_seccomp_sandbox(void)
 	};
 	for (i = 0; i < 2; i++) {
 		rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(setsockopt), 4,
-			SCMP_A0(SCMP_CMP_EQ, setsockopt_struct[i].sockfd),
+			SCMP_A0(SCMP_CMP_GE, setsockopt_struct[i].minsockfd),
 			SCMP_A1(SCMP_CMP_EQ, setsockopt_struct[i].level),
 			SCMP_A2(SCMP_CMP_EQ, setsockopt_struct[i].optname),
 			SCMP_A4(SCMP_CMP_EQ, setsockopt_struct[i].optlen));
@@ -230,7 +230,7 @@ void enable_seccomp_sandbox(void)
 
 	/* getsockopt */
 	struct getsockopt_struct_t {
-		int sockfd;
+		int minsockfd;
 		int level;
 		int optname;
 	};
@@ -240,7 +240,7 @@ void enable_seccomp_sandbox(void)
 	};
 	for (i = 0; i < 2; i++) {
 		rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getsockopt), 3,
-			SCMP_A0(SCMP_CMP_EQ, getsockopt_struct[i].sockfd),
+			SCMP_A0(SCMP_CMP_EQ, getsockopt_struct[i].minsockfd),
 			SCMP_A1(SCMP_CMP_EQ, getsockopt_struct[i].level),
 			SCMP_A2(SCMP_CMP_EQ, getsockopt_struct[i].optname));
 		if (rc < 0)
@@ -330,7 +330,14 @@ void enable_seccomp_sandbox(void)
 	if (rc < 0)
 		goto fail;
 
-	/* mprotect */
+	/*
+	 * mprotect
+	 *
+	 * Although this filter prevents making non-executable pages executable
+	 * again, there is nothing stopping an attacker from using mmap to load
+	 * an arbitrary executable file with PROT_READ|PROT_EXEC in the first
+	 * place
+	 */
 	const int mprotect_prot_array[3] = {
 		PROT_NONE,
 		PROT_READ,
@@ -396,8 +403,7 @@ void enable_seccomp_sandbox(void)
 		goto fail;
 
 	/* madvise */
-	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(madvise), 2,
-		SCMP_A1(SCMP_CMP_EQ, 8368128),
+	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(madvise), 1,
 		SCMP_A2(SCMP_CMP_EQ, MADV_DONTNEED));
 	if (rc < 0)
 		goto fail;
@@ -641,28 +647,15 @@ void enable_seccomp_sandbox(void)
 		goto fail;
 
 	/* read */
-	struct read_struct_t {
-		int fd;
-		size_t count;
-	};
-	const struct read_struct_t read_struct[6] = {
-		{ 0, 256  },
-		{ 3, 16   },
-		{ 3, 512  },
-		{ 3, 832  },
-		{ 3, 4000 },
-		{ 3, 4096 }
-	};
-	for (i = 0; i < 6; i++) {
-		rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 2,
-			SCMP_A0(SCMP_CMP_EQ, read_struct[i].fd),
-			SCMP_A2(SCMP_CMP_EQ, read_struct[i].count));
-		if (rc < 0)
-			goto fail;
-	}
+	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 2,
+		SCMP_A0(SCMP_CMP_EQ, 0),
+		SCMP_A2(SCMP_CMP_EQ, 256));
+	if (rc < 0)
+		goto fail;
 
-	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 1,
-		SCMP_A1(SCMP_CMP_GE, 4));
+	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 2,
+		SCMP_A0(SCMP_CMP_GE, 3),
+		SCMP_A2(SCMP_CMP_LE, 16384));
 	if (rc < 0)
 		goto fail;
 
@@ -748,7 +741,7 @@ void enable_seccomp_sandbox(void)
 	if (rc < 0)
 		goto fail;
 
-	rc = seccomp_syscall_priority(ctx, SCMP_SYS(poll), 200);
+	rc = seccomp_syscall_priority(ctx, SCMP_SYS(select), 200);
 	if (rc < 0)
 		goto fail;
 
