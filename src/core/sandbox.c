@@ -193,6 +193,29 @@ void enable_seccomp_sandbox(void)
 			goto fail;
 	}
 
+#ifdef __i386__
+	/* if we are on a 32 bit architecture, we need to use socketcall */
+	const int socketcall_calls[7] = {
+		SYS_SOCKET,
+		SYS_CONNECT,
+		SYS_GETPEERNAME,
+		SYS_GETSOCKOPT,
+		SYS_SETSOCKOPT,
+		SYS_SENDTO,
+		SYS_RECVFROM
+	};
+	for (i = 0; i < 7; i++) {
+		rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socketcall), 1,
+			SCMP_A0(SCMP_CMP_EQ, socketcall_calls[i]));
+		if (rc < 0)
+			goto fail;
+	}
+
+	rc = seccomp_syscall_priority(ctx, SCMP_SYS(socketcall), 50);
+	if (rc < 0)
+		goto fail;
+#endif
+
 	/* mkdir */
 	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mkdir), 1,
 		SCMP_A1(SCMP_CMP_EQ, 0700)); /* src/core/settings.c:828 */
@@ -203,6 +226,7 @@ void enable_seccomp_sandbox(void)
 	if (rc < 0)
 		goto fail;
 
+#ifndef __i386__
 	/* setsockopt */
 	struct setsockopt_struct_t {
 		int minsockfd;
@@ -250,6 +274,7 @@ void enable_seccomp_sandbox(void)
 	rc = seccomp_syscall_priority(ctx, SCMP_SYS(getsockopt), 50);
 	if (rc < 0)
 		goto fail;
+#endif
 
 	/* ioctl */
 	const int ioctl_array[3] = {
@@ -412,6 +437,7 @@ void enable_seccomp_sandbox(void)
 	if (rc < 0)
 		goto fail;
 
+#ifndef __i386__
 	/* socket */
 	struct socket_struct_t {
 		int domain;
@@ -455,6 +481,7 @@ void enable_seccomp_sandbox(void)
 	rc = seccomp_syscall_priority(ctx, SCMP_SYS(getpeername), 50);
 	if (rc < 0)
 		goto fail;
+#endif
 
 	/* futex */
 	struct futex_struct_t {
@@ -578,6 +605,7 @@ void enable_seccomp_sandbox(void)
 	if (rc < 0)
 		goto fail;
 
+#ifndef __i386__
 	/* sendto */
 	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(sendto), 4,
 		SCMP_A0(SCMP_CMP_GE, 4),
@@ -604,6 +632,7 @@ void enable_seccomp_sandbox(void)
 	rc = seccomp_syscall_priority(ctx, SCMP_SYS(recvfrom), 70);
 	if (rc < 0)
 		goto fail;
+#endif
 
 	/* access */
 	const int access_mode_array[3] = {

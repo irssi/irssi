@@ -79,7 +79,7 @@ void mainwindows_layout_deinit(void);
 void create_namespaces(void);
 void drop_privileges(void);
 void enforce_resource_limits(void);
-void enforce_seccomp_sandbox(void);
+void enable_seccomp_sandbox(void);
 #endif
 
 void term_dummy_init(void);
