@@ -22,6 +22,7 @@
 #include <linux/futex.h>
 #include <linux/in.h>
 #include <linux/prctl.h>
+#include <linux/sched.h>
 #include <seccomp.h>
 #include <signal.h>
 #include <stdio.h>
@@ -162,10 +163,9 @@ void enable_seccomp_sandbox(void)
 	}
 
 	/* syscalls without argument filtering */
-	const int noarg_whitelist[20] = {
+	const int noarg_whitelist[19] = {
 		SCMP_SYS(brk),
 		SCMP_SYS(chdir),
-		SCMP_SYS(clone),
 		SCMP_SYS(close),
 		SCMP_SYS(exit_group),
 		SCMP_SYS(fstat),
@@ -183,7 +183,7 @@ void enable_seccomp_sandbox(void)
 		SCMP_SYS(umask),
 		SCMP_SYS(uname)
 	};
-	for (i = 0; i < 20; i++) {
+	for (i = 0; i < 19; i++) {
 		rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, noarg_whitelist[i], 0);
 		if (rc < 0)
 			goto fail;
@@ -215,6 +215,25 @@ void enable_seccomp_sandbox(void)
 	if (rc < 0)
 		goto fail;
 #endif
+
+	/* clone */
+	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 3,
+		SCMP_A0(SCMP_CMP_EQ, CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD),
+		SCMP_A1(SCMP_CMP_EQ, 0),
+		SCMP_A2(SCMP_CMP_EQ, 0));
+	if (rc < 0)
+		goto fail;
+
+	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(clone), 1,
+		SCMP_A0(SCMP_CMP_EQ, CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|
+				     CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|
+				     CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID));
+	if (rc < 0)
+		goto fail;
+
+	rc = seccomp_syscall_priority(ctx, SCMP_SYS(clone), 50);
+	if (rc < 0)
+		goto fail;
 
 	/* mkdir */
 	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mkdir), 1,
