@@ -59,7 +59,7 @@ static SETTINGS_REC *settings_get(const char *key, SettingType type)
 		g_warning("settings_get(%s) : not found", key);
 		return NULL;
 	}
-	if (type != -1 && rec->type != type) {
+	if (type != SETTING_TYPE_ANY && rec->type != type) {
 		g_warning("settings_get(%s) : invalid type", key);
 		return NULL;
 	}
@@ -85,7 +85,7 @@ settings_get_str_type(const char *key, SettingType type)
 
 const char *settings_get_str(const char *key)
 {
-	return settings_get_str_type(key, -1);
+	return settings_get_str_type(key, SETTING_TYPE_ANY);
 }
 
 int settings_get_int(const char *key)
@@ -163,6 +163,7 @@ char *settings_get_print(SETTINGS_REC *rec)
 	case SETTING_TYPE_TIME:
 	case SETTING_TYPE_LEVEL:
 	case SETTING_TYPE_SIZE:
+	case SETTING_TYPE_ANY:
 		value = g_strdup(settings_get_str(rec->key));
 		break;
 	}
@@ -380,10 +381,10 @@ SettingType settings_get_type(const char *key)
 {
 	SETTINGS_REC *rec;
 
-	g_return_val_if_fail(key != NULL, -1);
+	g_return_val_if_fail(key != NULL, SETTING_TYPE_ANY);
 
 	rec = g_hash_table_lookup(settings, key);
-	return rec == NULL ? -1 : rec->type;
+	return rec == NULL ? SETTING_TYPE_ANY : rec->type;
 }
 
 /* Get the record of the setting */
