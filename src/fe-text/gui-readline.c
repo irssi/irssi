@@ -68,6 +68,8 @@ static int paste_timeout_id;
 
 static void sig_input(void);
 
+static int key_repeated = FALSE;
+
 void input_listen_init(int handle)
 {
 	readtag = g_input_add_poll(handle,
@@ -361,6 +363,7 @@ static void sig_gui_key_pressed(gpointer keyp)
 	int ret;
 
 	key = GPOINTER_TO_INT(keyp);
+	key_repeated = key == prev_key;
 
 	if (redir != NULL && redir->flags & ENTRY_REDIRECT_FLAG_HOTKEY) {
 		handle_key_redirect(key);
@@ -596,7 +599,7 @@ static void key_backspace(void)
 
 static void key_delete_previous_word(void)
 {
-	gui_entry_erase_word(active_entry, FALSE);
+	gui_entry_erase_word(active_entry, FALSE, key_repeated);
 }
 
 static void key_delete_next_word(void)
@@ -606,7 +609,7 @@ static void key_delete_next_word(void)
 
 static void key_delete_to_previous_space(void)
 {
-	gui_entry_erase_word(active_entry, TRUE);
+	gui_entry_erase_word(active_entry, TRUE, key_repeated);
 }
 
 static void key_delete_to_next_space(void)
