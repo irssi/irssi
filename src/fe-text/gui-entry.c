@@ -35,21 +35,21 @@ static unichar i_toupper(unichar c)
 {
 	if (term_type == TERM_TYPE_UTF8)
 		return g_unichar_toupper(c);
-	return c <= 255 ? toupper(c) : c;
+	return (c >= 0 && c <= 255) ? toupper(c) : c;
 }
 
 static unichar i_tolower(unichar c)
 {
 	if (term_type == TERM_TYPE_UTF8)
 		return g_unichar_tolower(c);
-	return c <= 255 ? tolower(c) : c;
+	return (c >= 0 && c <= 255) ? tolower(c) : c;
 }
 
 static int i_isalnum(unichar c)
 {
 	if (term_type == TERM_TYPE_UTF8)
 		return (g_unichar_isalnum(c) || mk_wcwidth(c) == 0);
-	return c <= 255 ? isalnum(c) : 0;
+	return (c >= 0 && c <= 255) ? isalnum(c) : 0;
 }
 
 GUI_ENTRY_REC *active_entry;
@@ -555,16 +555,31 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, int update_cutbuffer)
 		return;
 
 	if (update_cutbuffer) {
-		/* put erased text to cutbuffer */
-		if (entry->cutbuffer_len < size) {
-			g_free(entry->cutbuffer);
-			entry->cutbuffer = g_new(unichar, size+1);
-		}
+		if (entry->cutbuffer_len && update_cutbuffer == CUTBUFFER_PREPEND) {
+			int cutbuffer_new_size = entry->cutbuffer_len + size;
+			unichar *tmpcutbuffer = entry->cutbuffer;
+			entry->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
 
-		entry->cutbuffer_len = size;
-		entry->cutbuffer[size] = '\0';
-		memcpy(entry->cutbuffer, entry->text + entry->pos - size,
-		       size * sizeof(unichar));
+			memcpy(entry->cutbuffer, entry->text + entry->pos - size,
+					size * sizeof(unichar));
+			memcpy(entry->cutbuffer + size, tmpcutbuffer,
+
+			entry->cutbuffer_len * sizeof(unichar));
+			entry->cutbuffer_len = cutbuffer_new_size;
+			entry->cutbuffer[cutbuffer_new_size] = '\0';
+
+			g_free(tmpcutbuffer);
+                 } else if (update_cutbuffer) {
+			/* put erased text to cutbuffer */
+			if (entry->cutbuffer_len < size) {
+				g_free(entry->cutbuffer);
+				entry->cutbuffer = g_new(unichar, size+1);
+			}
+			entry->cutbuffer_len = size;
+			entry->cutbuffer[size] = '\0';
+			memcpy(entry->cutbuffer, entry->text + entry->pos - size,
+			size * sizeof(unichar));
+		}
 	}
 
 	if (entry->utf8)
@@ -601,7 +616,7 @@ void gui_entry_erase_cell(GUI_ENTRY_REC *entry)
 	gui_entry_draw(entry);
 }
 
-void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space)
+void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space, int repeat)
 {
 	int to;
 
@@ -624,7 +639,8 @@ void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space)
 	}
 	if (to > 0) to++;
 
-        gui_entry_erase(entry, entry->pos-to, TRUE);
+        gui_entry_erase(entry, entry->pos-to,
+			repeat ? CUTBUFFER_PREPEND : TRUE);
 }
 
 void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space)

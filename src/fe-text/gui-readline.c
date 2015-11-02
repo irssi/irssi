@@ -44,7 +44,7 @@ typedef void (*ENTRY_REDIRECT_ENTRY_FUNC) (const char *line, void *data, SERVER_
 
 typedef struct {
 	SIGNAL_FUNC func;
-        int flags;
+	int flags;
 	void *data;
 } ENTRY_REDIRECT_REC;
 
@@ -68,6 +68,8 @@ static int paste_timeout_id;
 
 static void sig_input(void);
 
+static int key_repeated = FALSE;
+
 void input_listen_init(int handle)
 {
 	readtag = g_input_add_poll(handle,
@@ -78,7 +80,7 @@ void input_listen_init(int handle)
 void input_listen_deinit(void)
 {
 	g_source_remove(readtag);
-        readtag = -1;
+	readtag = -1;
 }
 
 static void handle_key_redirect(int key)
@@ -101,7 +103,7 @@ static void handle_entry_redirect(const char *line)
 	ENTRY_REDIRECT_ENTRY_FUNC func;
 	void *data;
 
-        gui_entry_set_hidden(active_entry, FALSE);
+	gui_entry_set_hidden(active_entry, FALSE);
 
 	func = (ENTRY_REDIRECT_ENTRY_FUNC) redir->func;
 	data = redir->data;
@@ -111,7 +113,7 @@ static void handle_entry_redirect(const char *line)
 
 	if (func != NULL) {
 		func(line, data, active_win->active_server,
-		     active_win->active);
+			active_win->active);
 	}
 }
 
@@ -361,6 +363,7 @@ static void sig_gui_key_pressed(gpointer keyp)
 	int ret;
 
 	key = GPOINTER_TO_INT(keyp);
+	key_repeated = key == prev_key;
 
 	if (redir != NULL && redir->flags & ENTRY_REDIRECT_FLAG_HOTKEY) {
 		handle_key_redirect(key);
@@ -596,7 +599,7 @@ static void key_backspace(void)
 
 static void key_delete_previous_word(void)
 {
-	gui_entry_erase_word(active_entry, FALSE);
+	gui_entry_erase_word(active_entry, FALSE, key_repeated);
 }
 
 static void key_delete_next_word(void)
@@ -606,7 +609,7 @@ static void key_delete_next_word(void)
 
 static void key_delete_to_previous_space(void)
 {
-	gui_entry_erase_word(active_entry, TRUE);
+	gui_entry_erase_word(active_entry, TRUE, key_repeated);
 }
 
 static void key_delete_to_next_space(void)
@@ -1019,8 +1022,6 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "meta2-8;5~", "cend", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-5F", "cend", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-1;5F", "cend", (SIGNAL_FUNC) key_combo);
-
-	key_bind("key", NULL, "meta-O-M", "return", (SIGNAL_FUNC) key_combo);
 
 	/* cursor movement */
 	key_bind("backward_character", "Move the cursor a character backward", "left", NULL, (SIGNAL_FUNC) key_backward_character);

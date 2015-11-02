@@ -1,6 +1,8 @@
 #ifndef __GUI_ENTRY_H
 #define __GUI_ENTRY_H
 
+#define CUTBUFFER_PREPEND 42
+
 typedef struct {
 	int text_len, text_alloc; /* as shorts, not chars */
 	unichar *text;
@@ -43,7 +45,7 @@ char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry);
 void gui_entry_erase_to(GUI_ENTRY_REC *entry, int pos, int update_cutbuffer);
 void gui_entry_erase(GUI_ENTRY_REC *entry, int size, int update_cutbuffer);
 void gui_entry_erase_cell(GUI_ENTRY_REC *entry);
-void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space);
+void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space, int repeat);
 void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space);
 
 void gui_entry_transpose_chars(GUI_ENTRY_REC *entry);
