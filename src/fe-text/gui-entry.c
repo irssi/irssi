@@ -35,21 +35,21 @@ static unichar i_toupper(unichar c)
 {
 	if (term_type == TERM_TYPE_UTF8)
 		return g_unichar_toupper(c);
-	return (c >= 0 && c <= 255) ? toupper(c) : c;
+	return c <= 255 ? toupper(c) : c;
 }
 
 static unichar i_tolower(unichar c)
 {
 	if (term_type == TERM_TYPE_UTF8)
 		return g_unichar_tolower(c);
-	return (c >= 0 && c <= 255) ? tolower(c) : c;
+	return c <= 255 ? tolower(c) : c;
 }
 
 static int i_isalnum(unichar c)
 {
 	if (term_type == TERM_TYPE_UTF8)
 		return (g_unichar_isalnum(c) || mk_wcwidth(c) == 0);
-	return (c >= 0 && c <= 255) ? isalnum(c) : 0;
+	return c <= 255 ? isalnum(c) : 0;
 }
 
 GUI_ENTRY_REC *active_entry;

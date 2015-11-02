@@ -126,7 +126,7 @@ static void cmd_set(char *data)
 			/* change the setting */
 			switch (rec->type) {
 			case SETTING_TYPE_BOOLEAN:
-                                if (clear)
+				if (clear)
 					settings_set_bool(key, FALSE);
 				else if (set_default)
 					settings_set_bool(key, rec->default_value.v_bool);
@@ -149,32 +149,30 @@ static void cmd_set(char *data)
 			case SETTING_TYPE_TIME:
 				if (!settings_set_time(key, clear ? "0" :
 						       set_default ? rec->default_value.v_string : value))
-					printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-						    TXT_INVALID_TIME);
+					printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_INVALID_TIME);
 				break;
 			case SETTING_TYPE_LEVEL:
 				if (!settings_set_level(key, clear ? "" :
 							set_default ? rec->default_value.v_string : value))
-					printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-						    TXT_INVALID_LEVEL);
+					printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_INVALID_LEVEL);
 				break;
 			case SETTING_TYPE_SIZE:
 				if (!settings_set_size(key, clear ? "0" :
 						       set_default ? rec->default_value.v_string : value))
-					printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-						    TXT_INVALID_SIZE);
+					printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_INVALID_SIZE);
+				break;
+			case SETTING_TYPE_ANY:
+				/* Unpossible! */
 				break;
 			}
 			signal_emit("setup changed", 0);
-			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-				    TXT_SET_TITLE, rec->section);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_SET_TITLE, rec->section);
 			set_print(rec);
 		} else
-			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-				    TXT_SET_UNKNOWN, key);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_SET_UNKNOWN, key);
 	}
 
-        cmd_params_free(free_arg);
+	cmd_params_free(free_arg);
 }
 
 /* SYNTAX: TOGGLE <key> [on|off|toggle] */
@@ -187,20 +185,21 @@ static void cmd_toggle(const char *data)
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &key, &value))
 		return;
 
-        if (*key == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*key == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	type = settings_get_type(key);
-        if (type == -1)
+	if (type == SETTING_TYPE_ANY)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_SET_UNKNOWN, key);
 	else if (type != SETTING_TYPE_BOOLEAN)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_SET_NOT_BOOLEAN, key);
 	else {
 		set_boolean(key, *value != '\0' ? value : "TOGGLE");
-                set_print(settings_get_record(key));
+		set_print(settings_get_record(key));
 		signal_emit("setup changed", 0);
 	}
 
-        cmd_params_free(free_arg);
+	cmd_params_free(free_arg);
 }
 
 static int config_key_compare(CONFIG_NODE *node1, CONFIG_NODE *node2)
