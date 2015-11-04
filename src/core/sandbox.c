@@ -41,8 +41,8 @@
 
 #include "sandbox.h"
 
-#define IRSSI_NEEDS_RDTSC
-#define IRSSI_NEEDS_CAPS
+#define	IRSSI_NEEDS_RDTSC
+#undef	IRSSI_NEEDS_CAPS
 
 /*
  * TODO:
@@ -53,6 +53,14 @@
  *	- add support tame() on OpenBSD, and Capsicum on FreeBSD
 */
 
+struct _cap_struct {
+	struct __user_cap_header_struct head;
+	union {
+		struct __user_cap_data_struct set;
+		uint32_t flag[3];
+	} u[2];
+};
+
 void create_namespaces(void)
 {
 	/* TODO */
@@ -62,6 +70,7 @@ void drop_privileges(void)
 {
 	int tsc_state;
 	size_t i;
+	uint32_t *raw_data;
 	cap_t cap;
 	cap_flag_value_t value;
 
@@ -91,12 +100,20 @@ void drop_privileges(void)
 
 	/* drop any dangerous capabilities the process is running with
 	 * https://forums.grsecurity.net/viewtopic.php?f=7&t=2522 */
-	/* FIXME why does cap_get_proc() fail? */
 #ifndef IRSSI_NEEDS_CAPS
 	cap = cap_get_proc();
 	if (cap == NULL) {
-		fprintf(stderr, "Could not initialize capabilities (cap_get_proc failed)\n");
-		exit(1);
+		raw_data = malloc(sizeof(uint32_t) + sizeof(*cap));
+		*raw_data = 0xCA90D0; /* CAP_T_MAGIC */
+		cap = (cap_t)(raw_data + 1);
+		memset(cap, 0, sizeof(*cap));
+		cap->header.version = 0x20080522; /* capability version 3 */
+
+		if (capget(&cap->head, &cap->u[0].set) < 0) {
+			cap_free(cap);
+			fprintf(stderr, "Could not initialize capabilities (capget failed)\n");
+			exit(1);
+		}
 	}
 
 	if (cap_clear(cap) < 0) {
@@ -283,7 +300,7 @@ void enable_seccomp_sandbox(void)
 	};
 	for (i = 0; i < 2; i++) {
 		rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getsockopt), 3,
-			SCMP_A0(SCMP_CMP_EQ, getsockopt_struct[i].minsockfd),
+			SCMP_A0(SCMP_CMP_GE, getsockopt_struct[i].minsockfd),
 			SCMP_A1(SCMP_CMP_EQ, getsockopt_struct[i].level),
 			SCMP_A2(SCMP_CMP_EQ, getsockopt_struct[i].optname));
 		if (rc < 0)
@@ -413,7 +430,7 @@ void enable_seccomp_sandbox(void)
 		rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mmap), 4,
 			SCMP_A2(SCMP_CMP_EQ, mmap_anon_struct[i].prot),
 			SCMP_A3(SCMP_CMP_EQ, mmap_anon_struct[i].flags),
-			SCMP_A4(SCMP_CMP_EQ, 0xffffffff),
+			SCMP_A4(SCMP_CMP_EQ, (unsigned)-1),
 			SCMP_A5(SCMP_CMP_EQ, 0));
 		if (rc < 0)
 			goto fail;
@@ -428,7 +445,7 @@ void enable_seccomp_sandbox(void)
 		rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mmap), 4,
 			SCMP_A2(SCMP_CMP_EQ, mmap_noanon_struct[i].prot),
 			SCMP_A3(SCMP_CMP_EQ, mmap_noanon_struct[i].flags),
-			SCMP_A4(SCMP_CMP_NE, 0xffffffff),
+			SCMP_A4(SCMP_CMP_NE, (unsigned)-1),
 			SCMP_A5(SCMP_CMP_EQ, 0));
 		if (rc < 0)
 			goto fail;
@@ -437,7 +454,7 @@ void enable_seccomp_sandbox(void)
 	rc = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mmap), 4,
 		SCMP_A2(SCMP_CMP_EQ, PROT_READ|PROT_WRITE),
 		SCMP_A3(SCMP_CMP_EQ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE),
-		SCMP_A4(SCMP_CMP_NE, 0xffffffff),
+		SCMP_A4(SCMP_CMP_NE, (unsigned)-1),
 		SCMP_A5(SCMP_CMP_NE, 0)); /* NE 0, so can't be in the struct */
 	if (rc < 0)
 		goto fail;
