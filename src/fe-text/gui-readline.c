@@ -1126,6 +1126,8 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "meta2-5F", "cend", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-1;5F", "cend", (SIGNAL_FUNC) key_combo);
 
+	key_bind("key", NULL, "meta-O-M", "return", (SIGNAL_FUNC) key_combo);
+
 	key_bind("paste_start", "Bracketed paste start", "meta2-200~", "paste_start", (SIGNAL_FUNC) key_paste_start);
 
 	/* cursor movement */

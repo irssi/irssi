@@ -28,6 +28,8 @@
 #include "irc-channels.h"
 #include "irc-nicklist.h"
 
+#include "sasl.h"
+
 struct _isupport_data { CONFIG_REC *config; CONFIG_NODE *node; };
 
 static void session_isupport_foreach(char *key, char *value, struct _isupport_data *data)
@@ -65,6 +67,10 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "away_reason", server->away_reason);
 	config_node_set_bool(config, node, "emode_known", server->emode_known);
 
+	config_node_set_int(config, node, "sasl_mechanism", server->connrec->sasl_mechanism);
+	config_node_set_str(config, node, "sasl_username", server->connrec->sasl_username);
+	config_node_set_str(config, node, "sasl_password", server->connrec->sasl_password);
+
 	config_node_set_bool(config, node, "isupport_sent", server->isupport_sent);
 	isupport = config_node_section(config, node, "isupport", NODE_TYPE_BLOCK);
         isupport_data.config = config;
@@ -89,6 +95,15 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	server->away_reason = g_strdup(config_node_get_str(node, "away_reason", NULL));
 	server->emode_known = config_node_get_bool(node, "emode_known", FALSE);
 	server->isupport_sent = config_node_get_bool(node, "isupport_sent", FALSE);
+
+	server->connrec->sasl_mechanism = config_node_get_int(node, "sasl_mechanism", SASL_MECHANISM_NONE);
+	/* The fields below might have been filled when loading the chatnet
+	 * description from the config and we favor the content that's been saved
+	 * in the session file over that. */
+	g_free(server->connrec->sasl_username);
+	server->connrec->sasl_username = g_strdup(config_node_get_str(node, "sasl_username", NULL));
+	g_free(server->connrec->sasl_password);
+	server->connrec->sasl_password = g_strdup(config_node_get_str(node, "sasl_password", NULL));
 
 	if (server->isupport == NULL) {
 		server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,

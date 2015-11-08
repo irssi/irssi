@@ -31,6 +31,8 @@
 #include "fe-windows.h"
 #include "printtext.h"
 
+#define MAX_EXPAND_RECURSION 100
+
 GSList *keyinfos;
 static GHashTable *keys, *default_keys;
 
@@ -171,7 +173,7 @@ KEYINFO_REC *key_info_find(const char *id)
 	return NULL;
 }
 
-static int expand_key(const char *key, GSList **out);
+static int expand_key(const char *key, GSList **out, int *limit);
 
 #define expand_out_char(out, c) \
 	{ \
@@ -188,12 +190,16 @@ static int expand_key(const char *key, GSList **out);
 	  g_slist_free(out); out = NULL; \
 	}
 
-static int expand_combo(const char *start, const char *end, GSList **out)
+static int expand_combo(const char *start, const char *end, GSList **out, int *limit)
 {
         KEY_REC *rec;
 	KEYINFO_REC *info;
         GSList *tmp, *tmp2, *list, *copy, *newout;
 	char *str, *p;
+
+	if ((*limit)-- < 0) {
+		return FALSE;
+	}
 
 	if (start == end) {
 		/* single key */
@@ -229,7 +235,7 @@ static int expand_combo(const char *start, const char *end, GSList **out)
                 /* only one way to generate the combo, good */
                 rec = list->data;
 		g_slist_free(list);
-		return expand_key(rec->key, out);
+		return expand_key(rec->key, out, limit);
 	}
 
 	/* multiple ways to generate the combo -
@@ -244,7 +250,11 @@ static int expand_combo(const char *start, const char *end, GSList **out)
                         copy = g_slist_append(copy, g_string_new(str->str));
 		}
 
-		if (!expand_key(rec->key, &copy)) {
+		if (!expand_key(rec->key, &copy, limit)) {
+			if (*limit < 0) {
+				return FALSE;
+			}
+
 			/* illegal key combo, remove from list */
                         expand_out_free(copy);
 		} else {
@@ -254,7 +264,11 @@ static int expand_combo(const char *start, const char *end, GSList **out)
 
         rec = list->data;
 	g_slist_free(list);
-	if (!expand_key(rec->key, out)) {
+	if (!expand_key(rec->key, out, limit)) {
+		if (*limit < 0) {
+			return FALSE;
+		}
+
 		/* illegal key combo, remove from list */
 		expand_out_free(*out);
 	}
@@ -264,11 +278,15 @@ static int expand_combo(const char *start, const char *end, GSList **out)
 }
 
 /* Expand key code - returns TRUE if successful. */
-static int expand_key(const char *key, GSList **out)
+static int expand_key(const char *key, GSList **out, int *limit)
 {
 	GSList *tmp;
 	const char *start;
 	int last_hyphen;
+
+	if ((*limit)-- < 0) {
+		return FALSE;
+	}
 
 	/* meta-^W^Gf -> ^[-^W-^G-f */
         start = NULL; last_hyphen = TRUE;
@@ -279,7 +297,7 @@ static int expand_key(const char *key, GSList **out)
 				continue;
 			}
 
-			if (!expand_combo(start, key-1, out))
+			if (!expand_combo(start, key-1, out, limit))
                                 return FALSE;
 			expand_out_char(*out, '-');
                         start = NULL;
@@ -332,7 +350,7 @@ static int expand_key(const char *key, GSList **out)
 	}
 
 	if (start != NULL)
-		return expand_combo(start, key-1, out);
+		return expand_combo(start, key-1, out, limit);
 
 	for (tmp = *out; tmp != NULL; tmp = tmp->next) {
 		GString *str = tmp->data;
@@ -346,12 +364,13 @@ static int expand_key(const char *key, GSList **out)
 static void key_states_scan_key(const char *key, KEY_REC *rec)
 {
 	GSList *tmp, *out;
+	int limit = MAX_EXPAND_RECURSION;
 
 	if (g_strcmp0(rec->info->id, "key") == 0)
 		return;
 
         out = g_slist_append(NULL, g_string_new(NULL));
-	if (expand_key(key, &out)) {
+	if (expand_key(key, &out, &limit)) {
 		for (tmp = out; tmp != NULL; tmp = tmp->next) {
 			GString *str = tmp->data;
 

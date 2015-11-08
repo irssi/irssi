@@ -362,8 +362,7 @@ static GList *completion_get_settings(const char *key, SettingType type)
 	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
 		SETTINGS_REC *rec = tmp->data;
 
-		if ((type == -1 || rec->type == type) &&
-		    g_ascii_strncasecmp(rec->key, key, len) == 0)
+		if ((type == SETTING_TYPE_ANY || rec->type == type) && g_ascii_strncasecmp(rec->key, key, len) == 0)
 			complist = g_list_insert_sorted(complist, g_strdup(rec->key), (GCompareFunc) g_istr_cmp);
 	}
 	g_slist_free(sets);
@@ -682,7 +681,7 @@ static void sig_complete_set(GList **list, WINDOW_REC *window,
 
 	if (*line == '\0' ||
 	    !g_strcmp0("-clear", line) || !g_strcmp0("-default", line))
-		*list = completion_get_settings(word, -1);
+		*list = completion_get_settings(word, SETTING_TYPE_ANY);
 	else if (*line != '\0' && *word == '\0') {
 		SETTINGS_REC *rec = settings_get_record(line);
 		if (rec != NULL) {
