@@ -996,11 +996,10 @@ char **strsplit_len(const char *str, int len, gboolean onspace)
 	char **ret = g_new(char *, 1);
 	int n;
 	int split_offset = 0;
-	size_t remaining_len = strlen(str);
 
 	for (n = 0; *str != '\0'; n++) {
-		split_offset = MIN(len, remaining_len);
-		if (onspace && remaining_len > len) {
+		split_offset = MIN(len, strlen(str));
+		if (onspace && strlen(str) > len) {
 			/*
 			 * Try to find a space to split on and leave
 			 * the space on the previous line.
@@ -1017,7 +1016,6 @@ char **strsplit_len(const char *str, int len, gboolean onspace)
 		ret = g_renew(char *, ret, n + 2);
 
 		str += split_offset;
-		remaining_len -= split_offset;
 	}
 	ret[n] = NULL;
 
