@@ -995,10 +995,10 @@ char **strsplit_len(const char *str, int len, gboolean onspace)
 {
 	char **ret = g_new(char *, 1);
 	int n;
-	int split_offset = 0;
+	int offset;
 
-	for (n = 0; *str != '\0'; n++) {
-		split_offset = MIN(len, strlen(str));
+	for (n = 0; *str != '\0'; n++, str += offset) {
+		offset = MIN(len, strlen(str));
 		if (onspace && strlen(str) > len) {
 			/*
 			 * Try to find a space to split on and leave
@@ -1007,15 +1007,13 @@ char **strsplit_len(const char *str, int len, gboolean onspace)
 			int i;
 			for (i = len - 1; i > 0; i--) {
 				if (str[i] == ' ') {
-					split_offset = i;
+					offset = i;
 					break;
 				}
 			}
 		}
-		ret[n] = g_strndup(str, split_offset);
+		ret[n] = g_strndup(str, offset);
 		ret = g_renew(char *, ret, n + 2);
-
-		str += split_offset;
 	}
 	ret[n] = NULL;
 
