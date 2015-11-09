@@ -174,8 +174,8 @@ static void cmd_dcc_send(const char *data, IRC_SERVER_REC *server,
 	int queue, mode, passive;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST, "dcc send",
-			    &optlist, &nick, &fileargs))
+			    PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS, 
+			    "dcc send", &optlist, &nick, &fileargs))
 		return;
 
 	chat = item_get_dcc(item);

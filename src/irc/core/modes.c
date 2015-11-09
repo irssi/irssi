@@ -835,10 +835,10 @@ static void cmd_mode(const char *data, IRC_SERVER_REC *server,
 
 	if (*data == '+' || *data == '-') {
 		target = "*";
-		if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_GETREST, &mode))
+		if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS, &mode))
 			return;
 	} else {
-		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &mode))
+		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS, &target, &mode))
 			return;
 	}
 

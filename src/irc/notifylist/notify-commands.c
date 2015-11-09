@@ -36,7 +36,8 @@ static void cmd_notify(gchar *data)
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
+	if (!cmd_get_params(data, &free_arg,
+			    2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS,
 			    "notify", &optlist, &mask, &ircnets))
 		return;
 	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
