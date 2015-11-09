@@ -505,6 +505,21 @@ void server_setup_add(SERVER_SETUP_REC *rec)
 	signal_emit("server setup updated", 1, rec);
 }
 
+void server_setup_remove_chatnet(const char *chatnet)
+{
+	GSList *tmp, *next;
+
+	g_return_if_fail(chatnet != NULL);
+
+	for (tmp = setupservers; tmp != NULL; tmp = next) {
+		SERVER_SETUP_REC *rec = tmp->data;
+
+		next = tmp->next;
+		if (g_ascii_strcasecmp(rec->chatnet, chatnet) == 0)
+			server_setup_remove(rec);
+	}
+}
+
 void server_setup_remove(SERVER_SETUP_REC *rec)
 {
 	server_setup_remove_config(rec);
