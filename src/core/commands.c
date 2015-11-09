@@ -751,7 +751,7 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 
 				/* strip the trailing whitespace */
 				if (count & PARAM_FLAG_STRIP_TRAILING_WS) {
-					arg = g_strchomp (arg);
+					arg = g_strchomp(arg);
 				}
 			} else {
 				arg = (count & PARAM_FLAG_NOQUOTES) ?
