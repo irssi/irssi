@@ -22,6 +22,12 @@ typedef struct {
 	unsigned int utf8:1;
 } GUI_ENTRY_REC;
 
+typedef enum {
+	CUTBUFFER_UPDATE_NOOP,
+	CUTBUFFER_UPDATE_REPLACE,
+	CUTBUFFER_UPDATE_PREPEND
+} CUTBUFFER_UPDATE_OP;
+
 extern GUI_ENTRY_REC *active_entry;
 
 GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width, int utf8);
@@ -42,10 +48,10 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str);
 void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr);
 
 char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry);
-void gui_entry_erase_to(GUI_ENTRY_REC *entry, int pos, int update_cutbuffer);
-void gui_entry_erase(GUI_ENTRY_REC *entry, int size, int update_cutbuffer);
+void gui_entry_erase_to(GUI_ENTRY_REC *entry, int pos, CUTBUFFER_UPDATE_OP update_cutbuffer);
+void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_cutbuffer);
 void gui_entry_erase_cell(GUI_ENTRY_REC *entry);
-void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space, int repeat);
+void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space, CUTBUFFER_UPDATE_OP cutbuffer_op);
 void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space);
 
 void gui_entry_transpose_chars(GUI_ENTRY_REC *entry);
@@ -61,5 +67,6 @@ void gui_entry_move_pos(GUI_ENTRY_REC *entry, int pos);
 void gui_entry_move_words(GUI_ENTRY_REC *entry, int count, int to_space);
 
 void gui_entry_redraw(GUI_ENTRY_REC *entry);
+
 
 #endif
