@@ -1,8 +1,6 @@
 #ifndef __GUI_ENTRY_H
 #define __GUI_ENTRY_H
 
-#define CUTBUFFER_PREPEND 42
-
 typedef struct {
 	int text_len, text_alloc; /* as shorts, not chars */
 	unichar *text;
