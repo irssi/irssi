@@ -68,8 +68,6 @@ static int paste_timeout_id;
 
 static void sig_input(void);
 
-static int key_repeated = FALSE;
-
 void input_listen_init(int handle)
 {
 	readtag = g_input_add_poll(handle,
@@ -363,7 +361,6 @@ static void sig_gui_key_pressed(gpointer keyp)
 	int ret;
 
 	key = GPOINTER_TO_INT(keyp);
-	key_repeated = key == prev_key;
 
 	if (redir != NULL && redir->flags & ENTRY_REDIRECT_FLAG_HOTKEY) {
 		handle_key_redirect(key);
