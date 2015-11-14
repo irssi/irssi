@@ -564,8 +564,8 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 				memcpy(entry->cutbuffer, entry->text + entry->pos - size,
 						size * sizeof(unichar));
 				memcpy(entry->cutbuffer + size, tmpcutbuffer,
+						entry->cutbuffer_len * sizeof(unichar));
 
-				entry->cutbuffer_len * sizeof(unichar));
 				entry->cutbuffer_len = cutbuffer_new_size;
 				entry->cutbuffer[cutbuffer_new_size] = '\0';
 
@@ -646,6 +646,7 @@ void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space, CUTBUFFER_UPDATE_O
 	}
 	if (to > 0) to++;
 
+	gui_entry_erase(entry, entry->pos-to, TRUE);
 }
 
 void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space)
