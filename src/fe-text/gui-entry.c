@@ -646,7 +646,7 @@ void gui_entry_erase_word(GUI_ENTRY_REC *entry, int to_space, CUTBUFFER_UPDATE_O
 	}
 	if (to > 0) to++;
 
-	gui_entry_erase(entry, entry->pos-to, TRUE);
+	gui_entry_erase(entry, entry->pos-to, CUTBUFFER_UPDATE_REPLACE);
 }
 
 void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space)
