@@ -267,7 +267,8 @@ static void cmd_list(const char *data, IRC_SERVER_REC *server,
         CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST, "list", &optlist, &str))
+			    PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS, 
+			    "list", &optlist, &str))
 		return;
 
 	if (*str == '\0' && g_hash_table_lookup(optlist, "yes") == NULL &&
@@ -288,7 +289,8 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server,
 
 	CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &channel, &rest))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | 
+			    PARAM_FLAG_STRIP_TRAILING_WS, &channel, &rest))
 		return;
 
 	if (g_strcmp0(channel, "*") == 0 || *channel == '\0') {
@@ -320,7 +322,8 @@ static void cmd_names(const char *data, IRC_SERVER_REC *server,
         CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST, "names", &optlist, &channel))
+			    PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS,
+			    "names", &optlist, &channel))
 		return;
 
 	if (g_strcmp0(channel, "*") == 0 || *channel == '\0') {
@@ -501,7 +504,8 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &nicks, &rest))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS,
+			    &nicks, &rest))
 		return;
 	if (*nicks == '\0') nicks = server->nick;
 

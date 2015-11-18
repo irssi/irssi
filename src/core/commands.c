@@ -748,6 +748,11 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 			if (cnt == 0 && count & PARAM_FLAG_GETREST) {
 				/* get rest */
 				arg = datad;
+
+				/* strip the trailing whitespace */
+				if (count & PARAM_FLAG_STRIP_TRAILING_WS) {
+					arg = g_strchomp(arg);
+				}
 			} else {
 				arg = (count & PARAM_FLAG_NOQUOTES) ?
 					cmd_get_param(&datad) :

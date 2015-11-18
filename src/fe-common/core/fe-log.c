@@ -87,8 +87,9 @@ static void cmd_log_open(const char *data)
 	int level;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_OPTIONS,
-			    "log open", &optlist, &fname, &levels))
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_STRIP_TRAILING_WS, "log open", &optlist, 
+			    &fname, &levels))
 		return;
 	if (*fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
