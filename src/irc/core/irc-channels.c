@@ -174,6 +174,13 @@ static CHANNEL_REC *irc_channel_find_server(SERVER_REC *server,
 					    const char *channel)
 {
 	GSList *tmp;
+	char *fmt_channel;
+
+	/* if 'channel' has no leading # this lookup is going to fail, add a
+	 * octothorpe in front of it to handle this case. */
+	fmt_channel = server_ischannel(SERVER(server), channel) ?
+	    g_strdup(channel) :
+	    g_strdup_printf("#%s", channel);
 
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
@@ -182,12 +189,18 @@ static CHANNEL_REC *irc_channel_find_server(SERVER_REC *server,
                         continue;
 
 		/* check both !ABCDEchannel and !channel */
-		if (IRC_SERVER(server)->nick_comp_func(channel, rec->name) == 0)
+		if (IRC_SERVER(server)->nick_comp_func(fmt_channel, rec->name) == 0) {
+			g_free(fmt_channel);
 			return rec;
+		}
 
-		if (IRC_SERVER(server)->nick_comp_func(channel, rec->visible_name) == 0)
+		if (IRC_SERVER(server)->nick_comp_func(fmt_channel, rec->visible_name) == 0) {
+			g_free(fmt_channel);
 			return rec;
+		}
 	}
+
+	g_free(fmt_channel);
 
 	return NULL;
 }
