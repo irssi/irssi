@@ -177,7 +177,7 @@ static void paste_buffer_join_lines(GArray *buf)
 	if (buf->len == 0)
 		return;
 
-	arr = (unichar *) paste_buffer->data;
+	arr = (unichar *)buf->data;
 
 	/* first line */
 	if (IS_WHITE(arr[0]))
