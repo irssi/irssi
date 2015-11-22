@@ -97,8 +97,8 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 		match_wildcards((rec)->mask, nick)))
 
 #define ignore_match_server(rec, server) \
-	((rec)->servertag == NULL || \
-	g_ascii_strcasecmp((server)->tag, (rec)->servertag) == 0)
+	((rec)->servertag == NULL || ((server) != NULL && \
+		g_ascii_strcasecmp((server)->tag, (rec)->servertag) == 0))
 
 #define ignore_match_channel(rec, channel) \
 	((rec)->channels == NULL || ((channel) != NULL && \
@@ -135,7 +135,6 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
         char *nickmask;
         int len, best_mask, best_match, best_patt;
 
-	g_return_val_if_fail(server != NULL, 0);
         if (nick == NULL) nick = "";
 
 	chanrec = server == NULL || channel == NULL ? NULL :
