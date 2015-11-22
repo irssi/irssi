@@ -147,7 +147,6 @@ static void window_next_page(void)
 
 static void paste_buffer_join_lines(GArray *buf)
 {
-#define IS_WHITE(c) ((c) == ' ' || (c) == '\t')
 	unsigned int i, count, indent, line_len;
 	unichar *arr, *dest, *last_lf_pos;
 	int last_lf;
@@ -180,12 +179,12 @@ static void paste_buffer_join_lines(GArray *buf)
 	arr = (unichar *)buf->data;
 
 	/* first line */
-	if (IS_WHITE(arr[0]))
+	if (isblank(arr[0]))
 		return;
 
 	/* find the first beginning of indented line */
 	for (i = 1; i < buf->len; i++) {
-		if (arr[i-1] == '\n' && IS_WHITE(arr[i]))
+		if (arr[i-1] == '\n' && isblank(arr[i]))
 			break;
 	}
 	if (i == buf->len)
@@ -193,7 +192,7 @@ static void paste_buffer_join_lines(GArray *buf)
 
 	/* get how much indentation we have.. */
 	for (indent = 0; i < buf->len; i++, indent++) {
-		if (!IS_WHITE(arr[i]))
+		if (!isblank(arr[i]))
 			break;
 	}
 	if (i == buf->len)
@@ -203,7 +202,7 @@ static void paste_buffer_join_lines(GArray *buf)
 	count = indent; last_lf = TRUE;
 	for (; i < buf->len; i++) {
 		if (last_lf) {
-			if (IS_WHITE(arr[i]))
+			if (isblank(arr[i]))
 				count++;
 			else {
 				last_lf = FALSE;
@@ -220,11 +219,11 @@ static void paste_buffer_join_lines(GArray *buf)
 	   get longer than 400 chars */
 	dest = arr; last_lf = TRUE; last_lf_pos = NULL; line_len = 0;
 	for (i = 0; i < buf->len; i++) {
-		if (last_lf && IS_WHITE(arr[i])) {
+		if (last_lf && isblank(arr[i])) {
 			/* whitespace, ignore */
 		} else if (arr[i] == '\n') {
 			if (!last_lf && i+1 != buf->len &&
-			    IS_WHITE(arr[i+1])) {
+			    isblank(arr[i+1])) {
 				last_lf_pos = dest;
 				*dest++ = ' ';
 			} else {
