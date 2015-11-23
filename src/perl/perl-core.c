@@ -466,3 +466,8 @@ void perl_core_deinit(void)
 	signal_remove("script error", (SIGNAL_FUNC) sig_script_error);
 	PERL_SYS_TERM();
 }
+
+void perl_core_abicheck(int *version)
+{
+	*version = IRSSI_ABI_VERSION;
+}

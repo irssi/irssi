@@ -414,6 +414,13 @@ static char *expando_releasetime(SERVER_REC *server, void *item, int *free_ret)
 	return g_strdup_printf("%04d", IRSSI_VERSION_TIME);
 }
 
+/* client abi */
+static char *expando_abiversion(SERVER_REC *server, void *item, int *free_ret)
+{
+        *free_ret = TRUE;
+	return g_strdup_printf("%d", IRSSI_ABI_VERSION);
+}
+
 /* current working directory */
 static char *expando_workdir(SERVER_REC *server, void *item, int *free_ret)
 {
@@ -657,6 +664,8 @@ void expandos_init(void)
 	expando_create("V", expando_releasedate,
 		       "", EXPANDO_NEVER, NULL);
 	expando_create("versiontime", expando_releasetime,
+		       "", EXPANDO_NEVER, NULL);
+	expando_create("abiversion", expando_abiversion,
 		       "", EXPANDO_NEVER, NULL);
 	expando_create("W", expando_workdir, NULL);
 	expando_create("Y", expando_realname,
