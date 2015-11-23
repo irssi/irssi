@@ -26,6 +26,7 @@
 #include "signals.h"
 #include "misc.h"
 #include "settings.h"
+#include "irssi-version.h"
 
 #include "perl-core.h"
 #include "perl-common.h"
@@ -465,4 +466,9 @@ void perl_core_deinit(void)
 
 	signal_remove("script error", (SIGNAL_FUNC) sig_script_error);
 	PERL_SYS_TERM();
+}
+
+char *perl_core_abicheck(void)
+{
+	return g_strdup_printf("%d.%d", IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
 }

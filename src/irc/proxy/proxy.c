@@ -22,6 +22,7 @@
 #include "signals.h"
 #include "settings.h"
 #include "levels.h"
+#include "irssi-version.h"
 
 #include "fe-common/core/printtext.h"
 
@@ -107,4 +108,9 @@ void irc_proxy_init(void)
 void irc_proxy_deinit(void)
 {
 	proxy_listen_deinit();
+}
+
+char *irc_proxy_abicheck(void)
+{
+	return g_strdup_printf("%d.%d", IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
 }

@@ -27,6 +27,8 @@
 #include "commands.h"
 #include "misc.h"
 
+#include "irssi-version.h"
+
 #ifdef HAVE_GMODULE
 
 /* Returns the module name without path, "lib" prefix or ".so" suffix */
@@ -160,11 +162,14 @@ static int module_load_name(const char *path, const char *rootmodule,
 {
 	void (*module_init) (void);
 	void (*module_deinit) (void);
+	char *(*module_version) (void);
 	GModule *gmodule;
         MODULE_REC *module;
 	MODULE_FILE_REC *rec;
+	gpointer value_version = NULL;
 	gpointer value1, value2 = NULL;
-	char *initfunc, *deinitfunc;
+	char *versionfunc, *initfunc, *deinitfunc;
+	char *module_versionstr, *irssi_versionstr;
         int found;
 
 	gmodule = module_open(path, &found);
@@ -175,6 +180,30 @@ static int module_load_name(const char *path, const char *rootmodule,
 		}
 		return found ? 0 : -1;
 	}
+
+	/* get the module's irssi abi version string and bail out on mismatch */
+	versionfunc = module_get_func(rootmodule, submodule, "abicheck");
+	if (!g_module_symbol(gmodule, versionfunc, &value_version)) {
+		g_free(versionfunc);
+		module_error(MODULE_ERROR_VERSION_MISMATCH, "0",
+			     rootmodule, submodule);
+		g_module_close(gmodule);
+		return 0;
+	}
+	g_free(versionfunc);
+	module_version = value_version;
+	module_versionstr = module_version();
+	irssi_versionstr = g_strdup_printf("%d.%d", IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
+	if (g_strcmp0(module_versionstr, irssi_versionstr) != 0) {
+		module_error(MODULE_ERROR_VERSION_MISMATCH, module_versionstr,
+			     rootmodule, submodule);
+		g_free(irssi_versionstr);
+		g_free(module_versionstr);
+		g_module_close(gmodule);
+		return 0;
+	}
+	g_free(irssi_versionstr);
+	g_free(module_versionstr);
 
 	/* get the module's init() and deinit() functions */
 	initfunc = module_get_func(rootmodule, submodule, "init");
