@@ -1,0 +1,367 @@
+
+EFnet Oper Guide
+Last update: 02-21-2002
+Written and maintained by Riedel
+E-Mail: dennisv@vuurwerk.nl
+
+ 1.  Commands you should know about
+ 2.  The client of your choice
+ 3.  Your primary responsibilities
+ 4.  Re-routing
+ 4.1 Re-routing other servers and remote connects
+ 5.  Kills and klines
+ 6.  Kill and K-Line requests
+ 7.  Happy birthday!
+ 8.  Security
+ 9.  Know who your friends are
+10.  The TCM bot
+11.  Services 
+12.  G-Lines
+
+
+1. Commands you should know about
+
+  This is no longer covered here. IRCD-hybrid is changing too rapidly, so
+  this section would be outdated in no time ;) For an up-to-date version,
+  please download the latest hybrid at www.ircd-hybrid.org.
+
+
+2. The client of your choice
+
+  There are many IRC clients around for a wide variety of operating systems.
+  Being an IRC Operator doesn't *require* you to use a UNIX client, however
+  I personally prefer UNIX-based clients. If you're familiar with UNIX and
+  use UNIX for opering, I suggest ircII / epic. There are a lot of scripts
+  available for those two clients, and it's not that hard to write scripts
+  yourself to suite your needs. It is important that you know how to operate
+  your client, and familiarize yourself with the options and features. For
+  whatever client you chose this goes for any of them: You should be in
+  control of your client, instead of the client being in control of you.
+
+Resources :
+
+  www.mirc.co.uk	- mIRC (MS-Windows)
+  www.irchelp.org	- a variety of clients and scripts
+  ftp.blackened.com	- several UNIX based clients available
+
+
+3. Your primary responsibilities
+
+  As an IRC Operator, you're responsible for maintaining the server on a
+  real-time basis. You represent your server, and you represent the network.
+  Irresponsible / rude / offensive / stupid behavior may discredit your server
+  and the network. You should focus on the task you were chosen for...
+  maintainance.  Sounds simple, no? It means getting rid of users that abuse
+  the service, enforcing the server's policy and keeping the server linked.
+  Users will ask you questions, and expect you to know all the answers.. after
+  all, you're the oper!
+
+  Be prepared for users trying to fool you, sweet talk you into things you
+  don't want, lie and deceive. Most users are handling in good faith...
+  however, the abusers have learned how to manipulate opers. They have studied
+  the alien creature 'oper' for ages like biologists study animals. Be
+  paranoid, be curious and be suspicious. I can't stress the importancy of that
+  often enough.
+
+  Second priority has the network. You were not chosen to maintain the network
+  but you were chosen to maintain the server. However, you may want to be able
+  to reroute servers. If you see something broken, don't be afraid to fix it.
+  If you do, be sure you fix things and don't make it worse. Before you
+  step into routing, be sure you've familiarized yourself with the network's
+  topology, and be confident enough to perform such actions. (re)routing is
+  covered in the next chapter.
+
+  Opers on the network depend on a trusting relationship. You can usually take
+  the word from an oper. Other opers are considered -trusted-, however, there
+  are exceptions. Sometimes even opers lie to opers to get things done. Don't
+  be afraid to ask for proof of a certain statement, such as logs.
+  This doesn't mean you distrust the oper in question, but -you- and you alone
+  are responsible for your actions. You call the shots on your server, unless
+  your admin says otherwise.
+
+
+4. Re-routing
+
+  Re-routing is not hard, and it's not scary but it is important that you do it
+  right. The commands you'll use are SQUIT and CONNECT. First, a very simple
+  example. Let's say your server, irc.yourserver.com is lagged to it's uplink,
+  irc.uplink.com and you want to reroute your server. You have to think about
+  where you want your server to be linked, and you have to time your reroute.
+  An example topology :
+               
+irc.yourserver.com ---- irc.uplink.com
+                        |      |      \
+                        B      C      D
+                       / \
+                      E   F
+                         / \
+                        G   H --- O
+                      / | \ | \
+                     I  J K L  M
+                                \
+                                 N
+
+  In this case, you're uplinked by irc.uplink.com
+  irc.uplink.com also hubs B, C and D. Server B functions as hub for E and F;
+  F hubs G and H; H hubs L, M and O. G hubs I, J and K. M hubs N.
+  Your server is allowed to connect to server B, F and G. So you consider the
+  servers you're able to connect to. Is the lag caused by a server that uplinks
+  irc.uplink.com ? Use /stats ? irc.uplink.com to determine lag to the other
+  servers. If irc.uplink.com does not respond, the lag is to your uplink. If
+  so, you cannot be sure about the state of the other uplinks, so you'd have to
+  get on a remote server and determine lag by using /stats ? and /trace. For
+  example, you could connect to server N, and /trace yournick. Yournick, being
+  the nick on your server. You'll see which route it takes, and what the
+  problem server is. Example /trace output :
+
+S:[SERVER-N       ] V:[2.8/hybrid] U:[SERVER-M            ]
+S:[SERVER-M       ] V:[2.8/hybrid] U:[SERVER-H            ]
+S:[SERVER-H       ] V:[2.8/hybrid] U:[SERVER-F            ]
+S:[SERVER-F       ] V:[2.8/hybrid] U:[SERVER-B            ]
+S:[SERVER-B       ] V:[2.8/hybrid] U:[irc.uplink.com      ]
+S:[irc.uplink.com ] V:[2.8/hybrid] U:[irc.yourserver.com  ]
+
+  The trace doesn't complete... server-b announces irc.uplink.com, and
+  irc.uplink.com announces your server. Your server should return something
+  like :
+
+S:[irc.yourserver.] OPER [yournick!user@yourhost]
+
+  If it doesn't, we know the lag is only between yourserver and uplink.
+  Usually if there is lag between your server and your uplink, the send-queue
+  rises. This is not always the case. Sometimes your server can write perfectly
+  to your uplink, but not reverse. That is called one sided lag.
+
+  We pick server B to link to. It means we have to SQUIT and CONNECT.
+  To unlink from irc.uplink.com and connect to SERVER_B we'd type:
+  /quote SQUIT irc.uplink.com :reroute
+  /connect SERVER_B
+
+  we *DON'T* SQUIT irc.yourserver.com... and I'll try to explain why:
+  If we wanted to remove hub M from the network, and with it N, we'd issue
+  a SQUIT M. An SQUIT follows a path, relays the SQUIT request to each server
+  in that path. Finally it reaches server H, which is the hub for M. Server H
+  sees the SQUIT and drops the link to M.
+
+  Now a different situation, we want to separate yourserver, uplink, C and D
+  from the rest of the network, in order to reroute. We'd have to SQUIT server
+  B, since we want the -uplink- of server B (being irc.uplink.com) to drop the
+  link to server B.
+
+  If you'd SQUIT irc.yourserver.com, you ask yourserver.com to drop the link to
+  itself, which is impossible. If you SQUIT irc.uplink.com, you ask yourserver
+  to drop the link to uplink, which is what we want to do.
+
+  After the SQUIT and CONNECT, the new situation looks like this :
+
+                        irc.uplink.com
+                        |      |      \
+  irc.yourserver.com -- B      C      D
+                       / \
+                      E   F
+                         / \
+                        G   H --- O
+                      / | \ | \
+                     I  J K L  M
+                                \
+                                 N
+
+  If yourserver is a Hub, it makes the situation more complex, since your
+  actions have more impact.
+
+
+4.1 - Re-routing other servers and remote connects
+
+Example topology :
+
+                        irc.uplink.com
+                        |      |      \
+  irc.yourserver.com -- B      C      D
+                       / \
+                      E   F
+                         / \
+                        G   H --- O
+                      / | \ | \
+                     I  J K L  M
+                                \
+                                 N
+
+  Let's say, hub H is way lagged to F, but G to F is fine... we want to reroute
+  H, and stick H to G.
+
+  We'd do :
+
+  /quote SQUIT serverh :re-routing you babe
+  /connect serverh 6667 serverg
+
+  A global wallops will be sent :
+  !serverg! Remote CONNECT serverh 6667 from ItsMe
+
+  When re-routing, always give the server some time to prevent nick collides.
+  When there is lag, people will connect to another server. When you SQUIT and
+  CONNECT to fast, a lot of those clients will be collided. Also, stick to your
+  territory. How enthusiastic you may be, you cannot route the world. If you're
+  an oper on the US side, stick to the US side when re-routing. Needless to
+  say, if you're EU, keep it to EU ;)
+
+
+5. Kills and klines
+
+  As an oper, you're given the incredible power *cough* of KILL and KLINE.
+  /kill nick reason  disconnects a client from IRC with the specified reason.
+  A /quote kline *evil@*.dude.org :reason here  bans the user from your server.
+  Abusive kills and klines may draw attacks to your server, so always consider
+  if a kline or kill is deserved. If the server gets attacked after a valid
+  kill or kline, well.. tough luck. You should never be 'afraid' to kline
+  anyone on your server. If it's a good reason, make it so. Even if you know
+  it may cause the server to be attacked. Maybe good to think about is this:
+  - if /ignore solves the problem rather than a kick, /ignore
+  - kick if a ban is unneeded
+  - ban if a /kill is unwarranted for
+  - kill rather than kline if that solves the problem
+  - kline when a server ban is really needed.
+
+  You kline a user when you absolutely don't want this user to use the service
+  your server is providing.
+
+  Crosskills (killing users on another server) are another issue. Some admins
+  don't care if users get /kill'ed off their server, for any reason or no
+  reason at all... and other admins are very anal about it. A good way to go
+  (IMO) is to issue a KILL if there is an absolute need for the target user to
+  be disconnected. If there are active opers on that server, let them handle
+  it.  They'll be upset if you /kill a user off their server, without
+  contacting them.  /stats p irc.server.here shows the active opers on a
+  particular server. Some opers have multiple o-lines and are not watching all
+  sessions. If you can't find an active oper on a server, you can 
+  /quote operwall a request for opers from that server.
+
+  Ghost KILLs are another story, an often misunderstood one.
+  When you see a /KILL from an oper with the reason 'ghosted' they usually
+  KILL a client that's about to ping timeout. That is not what a ghost is!
+  To quote Dianora: "a ghost happens because a client misses being killed when
+  it should be. Its a race condition due to nick chasing". In other words,
+  Server X thinks client A has been KILLed, while server Y missed the KILL
+  for that client.
+
+
+6. Kill and K-Line requests
+
+  As previously mentioned, if an oper from another server contacts you and
+  requests a kill or a kline for a local client with a good reason, you can
+  usually trust this request. Opers depend on a trusting relationship. However,
+  since you're responsible for the kill or kline, it is not rude to ask for
+  proof. It depends on the oper making the request how thats interpreted, but
+  the way they respond to asking for proof tells more about them than about
+  you.
+
+  The more and longer you oper, how better you get to know the other opers.
+  You know who is honest, you'll know who are lying and deceiving. Before
+  you acquire this knowledge, you can merely rely on common sense and
+  instincts.  You'll probably make mistakes occasionally, and thats nothing to
+  be ashamed of.  Opers are - despite contrary believes - human.
+
+  Users occasionally will ask you to kill or kline a user/bot too. Some
+  requests are straight-forward and clear, others require you to be cautious. I
+  recommend to always investigate such requests, and when you're confident the
+  request is valid, issue the kill or kline.
+
+
+7. Happy birthday!
+
+  It is a custom on EFnet to birthday /kill opers of whom it is his/her
+  birthday.  Not all opers like this, but typically those opers don't let
+  others know about their birthday. You'll notice that the KILLS say a lot
+  about who likes who and who is friends with who.  Whether you want to
+  participate, is entirely up to you.
+
+
+8. Security
+
+  As with any privilege, you have to handle it cautiously and responsibly.
+  Be sure that your o/O line doesn't get compromised! Oper only from secure
+  hosts. You and only you should know your password. Don't share your oper
+  account, and make your oper password a UNIQUE one. If your o/O line gets
+  compromised, nasty things may/will happen. Imagine an oper with crosskill
+  capabilities who's operline gets 'hacked'... the results are often
+  disastrous and you will lose respect and trust from others. It can cause
+  your oper privileges to be revoked, or even the server to be (temporarily)
+  delinked.
+
+
+9. Know who your friends are
+
+  As an oper you will get a lot of users that want to be 'friends' with you.
+  Users offer you free* access to their *nix servers, ops in channels,
+  unlimited leech access to the biggest and fastest warez sites *gasp* and
+  more. They want favors in return. They say they don't but they truly want
+  something in return. They -expect- something in return. You could either
+  don't respond to such offers, or use them. The last option creates an even
+  more distorted image of opers and doesn't do any good for the user <-> oper
+  relationship.  Your *real* friends are usually the persons who were your
+  friends _before_ you acquired the extra privileges.
+
+
+10. The TCM Bot
+
+  A TCM bot can be a valuable tool for opers. It keeps record of all connected
+  clients, flags clients with multiple connections and has all sorts of other
+  useful commands. There are three different kind of TCM's in use on EFnet,
+  being OOMon, TCM-Dianora and TCM-Hybrid. Every one of them requires you to
+  log in to be able to access the privileged commands. On OOMon you DCC chat
+  the TCM bot and do '.auth yournick yourpass' where yournick is your oper
+  name in your o/O line. In TCM-Dianora and TCM-Hybrid you register with:
+  '.register yourpass', where yourpass is your password ;)
+  All TCM commands start with a period. If you forget the period, the text goes
+  into the 'partyline', where it is echoed to all connected opers.
+
+  Resources :	http://toast.blackened.com/oomon/help
+		http://www.db.net/~db/tcm.html
+
+
+11. Services
+
+  A recent addition to EFNet is Channel Fixer, aka ChanFix. This is an
+  automated service that re-ops clients on opless channels. There are a few
+  restrictions.  First, the channel has to be of significant size for ChanFix
+  to store it in its database. Second, it only logs static addresses.
+
+  How does it work? Periodically it stores information about the channel state
+  in its database, for every channel in there. On every 'run', a channel
+  operator gets one point. These scores make a top-5 of 'most frequent opped
+  clients'.  When a channel becomes opless, ChanFix will join and op the top-5
+  opped clients CURRENTLY IN THE CHANNEL.
+
+  Chanfix can be invoked manually by server administrators. /msg ChanFix
+  chanfix #channel is the command to do it. ChanFix will join, and treat the
+  channel as if it were opless. It lowers TS by one (resulting in a deop of
+  the entire channel) and re-ops the top-5 clients currently in the channel.
+  The Channel Fixer won't log or actively fix channels when there's a split of
+  significant size.  Needless to say, the chanfix command must be used with
+  caution.
+
+
+12. G-Lines
+
+  Oh yes! A G-Line section. Currently, a part of EFNet (EU-EFnet) has G-Lines
+  enabled. This was decided by the EU admin community and is now mandatory
+  within EU-EFnet. In order for a G-Line to be activated, three opers from
+  three different servers need to issue the _exact_ same G-Line. The reason
+  is not counted.
+
+  G-Lines work best when the EU side of EFNet is not fragmented. G-Lines
+  will, however, propogate through a Hybrid 6 hub (but not a CSr hub) even
+  if the hub server has G-Lines disabled. This propogation allows two halves
+  of EU-EFnet to have concurrent G-Lines set even when split by US hub servers.
+
+
+  Questions / Comments / Suggestions are welcome.
+  You can e-mail me: dennisv@vuurwerk.nl
+
+Best regards,
+--
+Dennis "Riedel" Vink       ___~___  Email - dennisv@vuurwerk.nl
+Unix System Administrator  \  |  /  Phone - +31 23 5111111
+Vuurwerk Internet           '|.|'   PGP   - 0xD68A7AAB
+
+And on the seventh day, He exited from append mode.
+
