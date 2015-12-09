@@ -398,10 +398,11 @@ void term_gets(GArray *buffer, int *line_count)
 
 	for (;;) {
 #ifdef WIDEC_CURSES
-		if (get_wch(&key) == ERR)
+        gboolean failed = (get_wch(&key) == ERR);
 #else
-		if ((key = getch()) == ERR)
+        gboolean failed = ((key = getch()) == ERR);
 #endif
+        if (failed)
 			break;
 #ifdef KEY_RESIZE
 		if (key == KEY_RESIZE)
