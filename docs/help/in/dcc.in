@@ -38,8 +38,8 @@
     /DCC CHAT mike
     /DCC GET bob 'summer vacation.mkv'
     /DCC SEND sarah documents/resume.pdf
-    /DCC CLOSE mike
-    /DCC CLOSE bob 'summer vacation.mkv'
+    /DCC CLOSE get mike
+    /DCC CLOSE send bob 'summer vacation.mkv'
 
 %9See also:%9 CD
 
