@@ -7,6 +7,13 @@
 #include "irc.h"
 #include "irc-servers.h"
 
+#include <openssl/rsa.h>
+#include <openssl/crypto.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 typedef struct {
 	int port;
 	char *ircnet;
@@ -15,6 +22,8 @@ typedef struct {
 	GIOChannel *handle;
 
 	GSList *clients;
+	unsigned int use_ssl;
+	SSL_CTX *ssl_ctx;
 } LISTEN_REC;
 
 typedef struct {
@@ -29,6 +38,7 @@ typedef struct {
 	unsigned int user_sent:1;
 	unsigned int connected:1;
 	unsigned int want_ctcp:1;
+	SSL *ssl;
 } CLIENT_REC;
 
 #endif
