@@ -83,7 +83,6 @@ static void sig_reload_config(int signo)
 
 static void read_settings(void)
 {
-#ifndef WIN32
 	static int signals[] = {
 		SIGINT, SIGQUIT, SIGTERM,
 		SIGALRM, SIGUSR1, SIGUSR2
@@ -123,7 +122,6 @@ static void read_settings(void)
 		if (setrlimit(RLIMIT_CORE, &rlimit) == -1)
                         settings_set_bool("override_coredump_limit", FALSE);
 	}
-#endif
 #endif
 }
 
@@ -225,9 +223,7 @@ void core_init(void)
 	client_start_time = time(NULL);
 
 	modules_init();
-#ifndef WIN32
 	pidwait_init();
-#endif
 
 	net_disconnect_init();
 	signals_init();
@@ -303,9 +299,7 @@ void core_deinit(void)
 	signals_deinit();
 	net_disconnect_deinit();
 
-#ifndef WIN32
 	pidwait_deinit();
-#endif
 	modules_deinit();
 
 	g_free(irssi_dir);

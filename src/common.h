@@ -34,9 +34,6 @@
 #  include <dirent.h>
 #endif
 #include <fcntl.h>
-#ifdef WIN32
-#  include <win32-compat.h>
-#endif
 
 #include <glib.h>
 #ifdef HAVE_GMODULE

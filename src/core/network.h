@@ -6,12 +6,10 @@
 #endif
 
 #include <sys/types.h>
-#ifndef WIN32
 #  include <sys/socket.h>
 #  include <netinet/in.h>
 #  include <netdb.h>
 #  include <arpa/inet.h>
-#endif
 
 #ifndef AF_INET6
 #  ifdef PF_INET6

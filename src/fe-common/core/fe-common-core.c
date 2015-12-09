@@ -168,9 +168,7 @@ void fe_common_core_init(void)
 	keyboard_init();
 	printtext_init();
 	formats_init();
-#ifndef WIN32
         fe_exec_init();
-#endif
         fe_expandos_init();
 	fe_help_init();
 	fe_ignore_init();
@@ -211,9 +209,7 @@ void fe_common_core_deinit(void)
 	keyboard_deinit();
 	printtext_deinit();
 	formats_deinit();
-#ifndef WIN32
         fe_exec_deinit();
-#endif
         fe_expandos_deinit();
 	fe_help_deinit();
 	fe_ignore_deinit();
