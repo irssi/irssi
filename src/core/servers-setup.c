@@ -423,17 +423,41 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	return rec;
 }
 
+static int compare_server_setup (CONFIG_NODE *node, SERVER_SETUP_REC *server)
+{
+	char *address, *chatnet;
+	int port;
+
+	address = config_node_get_str(node, "address", NULL);
+	chatnet = config_node_get_str(node, "chatnet", NULL);
+	port = config_node_get_int(node, "port", 0);
+
+	if (address == NULL || chatnet == NULL)
+		return 1;
+
+	if (strcmp(address, server->address) || strcmp(chatnet, server->chatnet)
+	    || port != server->port)
+		return 1;
+
+	return 0;
+}
+
 static void server_setup_save(SERVER_SETUP_REC *rec)
 {
-	CONFIG_NODE *parentnode, *node;
-	int index;
+	CONFIG_NODE *parent_node, *node;
+	GSList *config_node;
 
-	index = g_slist_index(setupservers, rec);
+	parent_node = iconfig_node_traverse("(servers", TRUE);
 
-	parentnode = iconfig_node_traverse("(servers", TRUE);
-	node = config_node_nth(parentnode, index);
-	if (node == NULL)
-		node = iconfig_node_section(parentnode, NULL, NODE_TYPE_BLOCK);
+	/* Try to find this channel in the configuration */
+	config_node = g_slist_find_custom(parent_node->value, rec,
+					  (GCompareFunc)compare_server_setup);
+	if (config_node != NULL)
+		/* Let's update this server record */
+		node = config_node->data;
+	else
+		/* Create a brand-new server record */
+		node = iconfig_node_section(parent_node, NULL, NODE_TYPE_BLOCK);
 
         iconfig_node_clear(node);
 	iconfig_node_set_str(node, "address", rec->address);
@@ -465,14 +489,21 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 
 static void server_setup_remove_config(SERVER_SETUP_REC *rec)
 {
-	CONFIG_NODE *node;
-	int index;
+	CONFIG_NODE *parent_node;
+	GSList *config_node;
 
-	node = iconfig_node_traverse("servers", FALSE);
-	if (node != NULL) {
-		index = g_slist_index(setupservers, rec);
-		iconfig_node_list_remove(node, index);
-	}
+	parent_node = iconfig_node_traverse("servers", FALSE);
+
+	if (parent_node == NULL)
+		return;
+
+	/* Try to find this server in the configuration */
+	config_node = g_slist_find_custom(parent_node->value, rec,
+					  (GCompareFunc)compare_server_setup);
+
+	if (config_node != NULL)
+		/* Delete the server from the configuration */
+		iconfig_node_remove(parent_node, config_node->data);
 }
 
 static void server_setup_destroy(SERVER_SETUP_REC *rec)

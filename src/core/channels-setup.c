@@ -40,25 +40,28 @@ static int compare_channel_setup (CONFIG_NODE *node, CHANNEL_SETUP_REC *channel)
 	if (name == NULL || chatnet == NULL)
 		return 1;
 
-	return !!strcmp(name, channel->name) | !!strcmp(chatnet, channel->chatnet);
+	if (strcmp(name, channel->name) || strcmp(chatnet, channel->chatnet))
+		return 1;
+
+	return 0;
 }
 
 static void channel_setup_save(CHANNEL_SETUP_REC *channel)
 {
-	CONFIG_NODE *parentnode, *node;
+	CONFIG_NODE *parent_node, *node;
 	GSList *config_node;
 
-	parentnode = iconfig_node_traverse("(channels", TRUE);
+	parent_node = iconfig_node_traverse("(channels", TRUE);
 
 	/* Try to find this channel in the configuration */
-	config_node = g_slist_find_custom(parentnode->value, channel,
+	config_node = g_slist_find_custom(parent_node->value, channel,
 					  (GCompareFunc)compare_channel_setup);
 	if (config_node != NULL)
 		/* Let's update this channel record */
 		node = config_node->data;
 	else
 		/* Create a brand-new channel record */
-		node = iconfig_node_section(parentnode, NULL, NODE_TYPE_BLOCK);
+		node = iconfig_node_section(parent_node, NULL, NODE_TYPE_BLOCK);
 
         iconfig_node_clear(node);
 	iconfig_node_set_str(node, "name", channel->name);
@@ -83,21 +86,21 @@ void channel_setup_create(CHANNEL_SETUP_REC *channel)
 
 static void channel_config_remove(CHANNEL_SETUP_REC *channel)
 {
-	CONFIG_NODE *parentnode;
+	CONFIG_NODE *parent_node;
 	GSList *config_node;
 
-	parentnode = iconfig_node_traverse("channels", FALSE);
+	parent_node = iconfig_node_traverse("channels", FALSE);
 
-	if (parentnode == NULL)
+	if (parent_node == NULL)
 		return;
 
 	/* Try to find this channel in the configuration */
-	config_node = g_slist_find_custom(parentnode->value, channel,
+	config_node = g_slist_find_custom(parent_node->value, channel,
 					  (GCompareFunc)compare_channel_setup);
 
 	if (config_node != NULL)
 		/* Delete the channel from the configuration */
-		iconfig_node_remove(parentnode, config_node->data);
+		iconfig_node_remove(parent_node, config_node->data);
 }
 
 static void channel_setup_destroy(CHANNEL_SETUP_REC *channel)
