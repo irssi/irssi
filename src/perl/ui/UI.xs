@@ -64,6 +64,19 @@ static void perl_text_dest_fill_hash(HV *hv, TEXT_DEST_REC *dest)
 	(void) hv_store(hv, "hilight_color", 13, new_pv(dest->hilight_color), 0);
 }
 
+static void perl_exec_fill_hash(HV *hv, EXEC_WI_REC *item)
+{
+	g_return_if_fail(hv != NULL);
+	g_return_if_fail(item != NULL);
+
+	perl_window_item_fill_hash(hv, (WI_ITEM_REC *) item);
+	/* we don't bless to Process here to avoid infinite recursion
+	   in the simplistic script binding */
+	if (item->process != NULL) {
+		(void) hv_store(hv, "process_id", 10, newSViv(item->process->id), 0);
+	}
+}
+
 static PLAIN_OBJECT_INIT_REC fe_plains[] = {
 	{ "Irssi::UI::Process", (PERL_OBJECT_FUNC) perl_process_fill_hash },
 	{ "Irssi::UI::Window", (PERL_OBJECT_FUNC) perl_window_fill_hash },
@@ -94,6 +107,10 @@ CODE:
 	initialized = TRUE;
 
         irssi_add_plains(fe_plains);
+        /* window items: fe-exec */
+        irssi_add_object(module_get_uniq_id_str("WINDOW ITEM TYPE", "EXEC"),
+			 0, "Irssi::UI::Exec",
+                         (PERL_OBJECT_FUNC) perl_exec_fill_hash);
         perl_themes_init();
 
 void
