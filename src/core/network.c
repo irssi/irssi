@@ -45,11 +45,7 @@ union sockaddr_union {
 GIOChannel *g_io_channel_new(int handle)
 {
 	GIOChannel *chan;
-#ifdef WIN32
-	chan = g_io_channel_win32_new_socket(handle);
-#else
 	chan = g_io_channel_unix_new(handle);
-#endif
 	g_io_channel_set_encoding(chan, NULL, NULL);
 	g_io_channel_set_buffered(chan, FALSE);
 	return chan;
@@ -188,9 +184,7 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 		return NULL;
 
 	/* set socket options */
-#ifndef WIN32
 	fcntl(handle, F_SETFL, O_NONBLOCK);
-#endif
 	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt));
 
@@ -211,11 +205,7 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	sin_set_port(&so, port);
 	ret = connect(handle, &so.sa, SIZEOF_SOCKADDR(so));
 
-#ifndef WIN32
 	if (ret < 0 && errno != EINPROGRESS)
-#else
-	if (ret < 0 && WSAGetLastError() != WSAEWOULDBLOCK)
-#endif
 	{
 		int old_errno = errno;
 		close(handle);
@@ -238,9 +228,7 @@ GIOChannel *net_connect_unix(const char *path)
 		return NULL;
 
 	/* set socket options */
-#ifndef WIN32
 	fcntl(handle, F_SETFL, O_NONBLOCK);
-#endif
 
 	/* connect */
 	memset(&sa, 0, sizeof(sa));
@@ -297,9 +285,7 @@ GIOChannel *net_listen(IPADDR *my_ip, int *port)
 		return NULL;
 
 	/* set socket options */
-#ifndef WIN32
 	fcntl(handle, F_SETFL, O_NONBLOCK);
-#endif
 	setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	setsockopt(handle, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof(opt));
 
@@ -342,9 +328,7 @@ GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port)
 	if (addr != NULL) sin_get_ip(&so, addr);
 	if (port != NULL) *port = sin_get_port(&so);
 
-#ifndef WIN32
 	fcntl(ret, F_SETFL, O_NONBLOCK);
-#endif
 	return g_io_channel_new(ret);
 }
 

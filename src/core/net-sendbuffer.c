@@ -160,13 +160,9 @@ void net_sendbuffer_flush(NET_SENDBUF_REC *rec)
 
         /* set the socket blocking while doing this */
 	handle = g_io_channel_unix_get_fd(rec->handle);
-#ifndef WIN32
 	fcntl(handle, F_SETFL, 0);
-#endif
 	while (!buffer_send(rec)) ;
-#ifndef WIN32
 	fcntl(handle, F_SETFL, O_NONBLOCK);
-#endif
 }
 
 /* Returns the socket handle */
