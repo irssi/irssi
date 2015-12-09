@@ -109,6 +109,16 @@ void gui_printtext(int xpos, int ypos, const char *str)
 	next_xpos = next_ypos = -1;
 }
 
+void gui_printtext_internal(int xpos, int ypos, const char *str)
+{
+	next_xpos = xpos;
+	next_ypos = ypos;
+
+	printtext_gui_internal(str);
+
+	next_xpos = next_ypos = -1;
+}
+
 void gui_printtext_after_time(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str, time_t time)
 {
 	GUI_WINDOW_REC *gui;

@@ -26,6 +26,7 @@
 #include "gui-entry.h"
 #include "gui-printtext.h"
 #include "term.h"
+#include "recode.h"
 
 #undef i_toupper
 #undef i_tolower
@@ -345,6 +346,33 @@ void gui_entry_set_active(GUI_ENTRY_REC *entry)
 	}
 }
 
+/* Return screen length of plain string */
+static int scrlen_str(const char *str)
+{
+	int len = 0;
+	char *stripped;
+	g_return_val_if_fail(str != NULL, 0);
+
+	str = stripped = strip_codes(str);
+	if (is_utf8() && g_utf8_validate(str, -1, NULL)) {
+
+		while (*str != '\0') {
+			gunichar c;
+
+			c = g_utf8_get_char(str);
+			str = g_utf8_next_char(str);
+
+			len += unichar_isprint(c) ? mk_wcwidth(c) : 1;
+		}
+
+	} else {
+		len = strlen(str);
+	}
+
+	g_free(stripped);
+	return len;
+}
+
 void gui_entry_set_prompt(GUI_ENTRY_REC *entry, const char *str)
 {
 	int oldlen;
@@ -355,11 +383,11 @@ void gui_entry_set_prompt(GUI_ENTRY_REC *entry, const char *str)
 	if (str != NULL) {
 		g_free_not_null(entry->prompt);
 		entry->prompt = g_strdup(str);
-		entry->promptlen = format_get_length(str);
+		entry->promptlen = scrlen_str(str);
 	}
 
         if (entry->prompt != NULL)
-		gui_printtext(entry->xpos, entry->ypos, entry->prompt);
+		gui_printtext_internal(entry->xpos, entry->ypos, entry->prompt);
 
 	if (entry->promptlen != oldlen) {
 		gui_entry_fix_cursor(entry);
