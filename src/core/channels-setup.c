@@ -30,7 +30,7 @@
 
 GSList *setupchannels;
 
-static int compare_channel_name (CONFIG_NODE *node, CHANNEL_SETUP_REC *channel)
+static int compare_channel_setup (CONFIG_NODE *node, CHANNEL_SETUP_REC *channel)
 {
 	char *name, *chatnet;
 
@@ -52,7 +52,7 @@ static void channel_setup_save(CHANNEL_SETUP_REC *channel)
 
 	/* Try to find this channel in the configuration */
 	config_node = g_slist_find_custom(parentnode->value, channel,
-					  (GCompareFunc)compare_channel_name);
+					  (GCompareFunc)compare_channel_setup);
 	if (config_node != NULL)
 		/* Let's update this channel record */
 		node = config_node->data;
@@ -93,7 +93,7 @@ static void channel_config_remove(CHANNEL_SETUP_REC *channel)
 
 	/* Try to find this channel in the configuration */
 	config_node = g_slist_find_custom(parentnode->value, channel,
-					  (GCompareFunc)compare_channel_name);
+					  (GCompareFunc)compare_channel_setup);
 
 	if (config_node != NULL)
 		/* Delete the channel from the configuration */
