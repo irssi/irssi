@@ -30,17 +30,36 @@
 
 GSList *setupchannels;
 
+static int compare_channel_setup (CONFIG_NODE *node, CHANNEL_SETUP_REC *channel)
+{
+	char *name, *chatnet;
+
+	name = config_node_get_str(node, "name", NULL);
+	chatnet = config_node_get_str(node, "chatnet", NULL);
+
+	if (g_strcmp0(name, channel->name) != 0 || 
+	    g_strcmp0(chatnet, channel->chatnet) != 0)
+		return 1;
+
+	return 0;
+}
+
 static void channel_setup_save(CHANNEL_SETUP_REC *channel)
 {
-	CONFIG_NODE *parentnode, *node;
-	int index;
+	CONFIG_NODE *parent_node, *node;
+	GSList *config_node;
 
-	index = g_slist_index(setupchannels, channel);
+	parent_node = iconfig_node_traverse("(channels", TRUE);
 
-	parentnode = iconfig_node_traverse("(channels", TRUE);
-	node = config_node_nth(parentnode, index);
-	if (node == NULL)
-		node = iconfig_node_section(parentnode, NULL, NODE_TYPE_BLOCK);
+	/* Try to find this channel in the configuration */
+	config_node = g_slist_find_custom(parent_node->value, channel,
+					  (GCompareFunc)compare_channel_setup);
+	if (config_node != NULL)
+		/* Let's update this channel record */
+		node = config_node->data;
+	else
+		/* Create a brand-new channel record */
+		node = iconfig_node_section(parent_node, NULL, NODE_TYPE_BLOCK);
 
         iconfig_node_clear(node);
 	iconfig_node_set_str(node, "name", channel->name);
@@ -65,10 +84,21 @@ void channel_setup_create(CHANNEL_SETUP_REC *channel)
 
 static void channel_config_remove(CHANNEL_SETUP_REC *channel)
 {
-	CONFIG_NODE *node;
+	CONFIG_NODE *parent_node;
+	GSList *config_node;
 
-	node = iconfig_node_traverse("channels", FALSE);
-	if (node != NULL) iconfig_node_list_remove(node, g_slist_index(setupchannels, channel));
+	parent_node = iconfig_node_traverse("channels", FALSE);
+
+	if (parent_node == NULL)
+		return;
+
+	/* Try to find this channel in the configuration */
+	config_node = g_slist_find_custom(parent_node->value, channel,
+					  (GCompareFunc)compare_channel_setup);
+
+	if (config_node != NULL)
+		/* Delete the channel from the configuration */
+		iconfig_node_remove(parent_node, config_node->data);
 }
 
 static void channel_setup_destroy(CHANNEL_SETUP_REC *channel)
