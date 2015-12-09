@@ -432,11 +432,9 @@ static int compare_server_setup (CONFIG_NODE *node, SERVER_SETUP_REC *server)
 	chatnet = config_node_get_str(node, "chatnet", NULL);
 	port = config_node_get_int(node, "port", 0);
 
-	if (address == NULL || chatnet == NULL)
-		return 1;
-
-	if (strcmp(address, server->address) || strcmp(chatnet, server->chatnet)
-	    || port != server->port)
+	if (g_strcmp0(address, server->address) != 0 ||
+	    g_strcmp0(chatnet, server->chatnet) != 0 ||
+	    port != server->port)
 		return 1;
 
 	return 0;
