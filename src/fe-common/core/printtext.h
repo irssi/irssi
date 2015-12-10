@@ -23,6 +23,7 @@ void printtext_dest(TEXT_DEST_REC *dest, const char *text, ...);
 /* only GUI should call these - used for printing text to somewhere else
    than windows */
 void printtext_gui(const char *text);
+void printtext_gui_internal(const char *str);
 void printformat_module_gui(const char *module, int formatnum, ...);
 void printformat_module_gui_args(const char *module, int formatnum, va_list va);
 

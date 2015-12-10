@@ -112,7 +112,8 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			/* Check whether the cap is supported by the server */
 			for (tmp = server->cap_queue; tmp != NULL; tmp = tmp->next) {
 				if (gslist_find_string(server->cap_supported, tmp->data)) {
-					g_string_append_c(cmd, ' ');
+					if (avail_caps > 0)
+						g_string_append_c(cmd, ' ');
 					g_string_append(cmd, tmp->data);
 
 					avail_caps++;

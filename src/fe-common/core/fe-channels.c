@@ -122,7 +122,8 @@ static void cmd_join(const char *data, SERVER_REC *server)
 	void *free_arg;
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_STRIP_TRAILING_WS,
 			    "join", &optlist, &pdata))
 		return;
 

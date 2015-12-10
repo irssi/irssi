@@ -246,8 +246,8 @@ static void cmd_ban(const char *data, IRC_SERVER_REC *server,
 
         CMD_IRC_SERVER(server);
 
-	if (!cmd_get_params(data, &free_arg, 2 |
-			    PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN | 
+			    PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS,
 			    item, &channel, &nicks))
 		return;
 

@@ -55,30 +55,6 @@ NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
 	return rec;
 }
 
-#define isnickchar(a) \
-	(i_isalnum(a) || (a) == '`' || (a) == '-' || (a) == '_' || \
-	(a) == '[' || (a) == ']' || (a) == '{' || (a) == '}' || \
-	(a) == '|' || (a) == '\\' || (a) == '^')
-
-/* Remove all "extra" characters from `nick'. Like _nick_ -> nick */
-char *irc_nick_strip(const char *nick)
-{
-	char *stripped, *spos;
-
-	g_return_val_if_fail(nick != NULL, NULL);
-
-	spos = stripped = g_strdup(nick);
-	while (isnickchar(*nick)) {
-		if (i_isalnum(*nick))
-			*spos++ = *nick;
-		nick++;
-	}
-	if ((unsigned char) *nick >= 128)
-		*spos++ = *nick; /* just add it so that nicks won't match.. */
-	*spos = '\0';
-	return stripped;
-}
-
 int irc_nickcmp_rfc1459(const char *m, const char *n)
 {
 	while (*m != '\0' && *n != '\0') {

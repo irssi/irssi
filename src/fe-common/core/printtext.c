@@ -413,6 +413,18 @@ void printtext_gui(const char *text)
 	g_free(str);
 }
 
+/* Like printtext_gui(), but don't expand % codes. */
+void printtext_gui_internal(const char *str)
+{
+	TEXT_DEST_REC dest;
+
+	g_return_if_fail(str != NULL);
+
+        memset(&dest, 0, sizeof(dest));
+
+	format_send_to_gui(&dest, str);
+}
+
 static void msg_beep_check(TEXT_DEST_REC *dest)
 {
 	if (dest->level != 0 && (dest->level & MSGLEVEL_NO_ACT) == 0 &&

@@ -271,20 +271,6 @@ static void check_files(void)
 	}
 }
 
-#ifdef WIN32
-static void winsock_init(void)
-{
-	WORD wVersionRequested;
-	WSADATA wsaData;
-
-	wVersionRequested = MAKEWORD(2, 2);
-
-	if (WSAStartup(wVersionRequested, &wsaData) != 0) {
-		printf("Error initializing winsock\n");
-		exit(1);
-	}
-}
-#endif
 
 int main(int argc, char **argv)
 {
@@ -315,9 +301,6 @@ int main(int argc, char **argv)
 
 	check_files();
 
-#ifdef WIN32
-        winsock_init();
-#endif
 #ifdef HAVE_SOCKS
 	SOCKSinit(argv[0]);
 #endif

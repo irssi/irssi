@@ -87,8 +87,9 @@ static void cmd_log_open(const char *data)
 	int level;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_OPTIONS,
-			    "log open", &optlist, &fname, &levels))
+			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_OPTIONS |
+			    PARAM_FLAG_STRIP_TRAILING_WS, "log open", &optlist, 
+			    &fname, &levels))
 		return;
 	if (*fname == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -616,7 +617,7 @@ static void sig_window_item_remove(WINDOW_REC *window, WI_ITEM_REC *item)
 static void sig_log_locked(LOG_REC *log)
 {
 	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-		    TXT_LOG_LOCKED, log->fname);
+		    TXT_LOG_LOCKED, log->real_fname);
 }
 
 static void sig_log_create_failed(LOG_REC *log)
@@ -656,11 +657,11 @@ static void sig_awaylog_show(LOG_REC *log, gpointer pmsgs, gpointer pfilepos)
 	filepos = GPOINTER_TO_INT(pfilepos);
 
 	if (msgs == 0)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_NO_AWAY_MSGS, log->fname);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_NO_AWAY_MSGS, log->real_fname);
 	else {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_AWAY_MSGS, log->fname, msgs);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_LOG_AWAY_MSGS, log->real_fname, msgs);
 
-                str = g_strdup_printf("\"%s\" %d", log->fname, filepos);
+                str = g_strdup_printf("\"%s\" %d", log->real_fname, filepos);
 		signal_emit("command cat", 1, str);
 		g_free(str);
 	}

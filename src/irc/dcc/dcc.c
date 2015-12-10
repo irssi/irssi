@@ -496,8 +496,8 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
-			    &typestr, &nick, &arg))
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_STRIP_TRAILING_WS, &typestr, &nick, &arg))
 		return;
 
 	if (*nick == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);

@@ -152,6 +152,8 @@ int command_have_option(const char *cmd, const char *option);
 #define PARAM_FLAG_OPTCHAN 0x00010000
 /* optional channel in first argument, but don't treat "*" as current channel */
 #define PARAM_FLAG_OPTCHAN_NAME (0x00020000|PARAM_FLAG_OPTCHAN)
+/* strip the trailing whitespace */
+#define PARAM_FLAG_STRIP_TRAILING_WS 0x00040000
 
 char *cmd_get_param(char **data);
 char *cmd_get_quoted_param(char **data);

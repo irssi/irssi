@@ -47,4 +47,8 @@ sub eval_file {
   $data = qq{\n#line 1 "$filename"\n$data};
 
   eval_data($data, $id);
+
+  if (exists ${"Irssi::Script::${id}::"}{IRSSI} && ${"Irssi::Script::${id}::"}{IRSSI}{name} =~ /cap.sasl/ && ${"Irssi::Script::${id}::VERSION"} < 2) {
+    die "cap_sasl has been unloaded from Irssi ".Irssi::version()." because it conflicts with the built-in SASL support. See /help network for configuring SASL or read the ChangeLog for more information.";
+  }
 }
