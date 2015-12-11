@@ -29,6 +29,7 @@ char *ssl_pass;
 char *ssl_cafile;
 char *ssl_capath;
 char *ssl_ciphers;
+char *ssl_current_cipher; /* cipher selected during handshake */
 
 GIOChannel *connect_handle; /* connect using this handle */
 
