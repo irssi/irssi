@@ -659,6 +659,7 @@ AC_OUTPUT
 dnl ** for building from objdir
 old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
 if test "x$old_dir" != "x$whole_dir"; then
+	$LN_S $srcdir/irssi-version.h irssi-version.h
 	if test "x$want_perl" != "xno"; then
 		subdirfiles=""
 		for i in $whole_dir/src/perl/common $whole_dir/src/perl/irc $whole_dir/src/perl/ui $whole_dir/src/perl/textui; do
