@@ -660,6 +660,8 @@ static gboolean paste_timeout(gpointer data)
 
 static void paste_bracketed_end(int i, gboolean rest)
 {
+	unichar last_char;
+
 	/* if there's stuff after the end bracket, save it for later */
 	if (rest) {
 		unichar *start = ((unichar *) paste_buffer->data) + i + G_N_ELEMENTS(bp_end);
@@ -671,6 +673,14 @@ static void paste_bracketed_end(int i, gboolean rest)
 
 	/* remove the rest, including the trailing sequence chars */
 	g_array_set_size(paste_buffer, i);
+
+	last_char = g_array_index(paste_buffer, unichar, i - 1);
+
+	if (paste_line_count > 0 && last_char != '\n' && last_char != '\r') {
+		/* there are newlines, but there's also stuff after the newline
+		 * adjust line count to reflect this */
+		paste_line_count++;
+	}
 
 	/* decide what to do with the buffer */
 	paste_timeout(NULL);
