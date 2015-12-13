@@ -11,6 +11,8 @@ Irssi staff (current maintainers) <staff@irssi.org>:
   Jilles Tjoelker (jilles)
   Alexander Færøy (ahf)
   Jase Thew (bazerka)
+  dequis (dx)
+  Ailin Nemui (Nei)
 
 Former developers:
 
@@ -24,6 +26,7 @@ Large feature patches by:
   Heikki Orsila : DCC SEND queueing
   Mark Trumbull : DCC SERVER
   Francesco Fracassi : Passive DCC
+  Giuseppe (The Lemon Man)
 
 Other patches (grep for "patch" in ChangeLog) by:
 
@@ -78,6 +81,20 @@ Other patches (grep for "patch" in ChangeLog) by:
   Ismael Luceno
   Thomas Karpiniec
   Svante Kvarnström
-  Ailin Nemui (Nei)
   Tom Feist (shabble)
-  Sebastian Thorarensen
+  Sebastian Thorarensen (Sebban)
+  Hans Nielsen
+  Jari Matilainen (vague)
+  Thibault B (isundil)
+  kyak
+  Vesa Pirila (Lohhari)
+  Haw Loeung
+  François Revol (mmuman)
+  blha303
+  Guillaume Brogi (guiniol)
+  Adam-
+  Robert C Jensen
+  Paul Johnson
+  mauke
+  KindOne
+  Fabian Kurz
