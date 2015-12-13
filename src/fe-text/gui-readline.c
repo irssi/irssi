@@ -339,7 +339,7 @@ static void paste_flush(int send)
 	g_array_set_size(paste_buffer, 0);
 
 	/* re-add anything that may have been after the bracketed paste end */
-	if (paste_buffer_rest->len) {
+	if (paste_buffer_rest->len > 0) {
 		g_array_append_vals(paste_buffer, paste_buffer_rest->data, paste_buffer_rest->len);
 		g_array_set_size(paste_buffer_rest, 0);
 	}
