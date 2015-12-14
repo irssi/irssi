@@ -416,6 +416,8 @@ void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
 	dest->server_tag = server != NULL ? SERVER(server)->tag : server_tag;
 	dest->target = target;
 	dest->level = level;
+	dest->match_beg = 0;
+	dest->match_end = 0;
 	dest->window = window != NULL ? window :
 		window_find_closest(server, target, level);
 }

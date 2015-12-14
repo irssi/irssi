@@ -7,7 +7,7 @@
 
 #include "formats.h"
 
-typedef struct _HILIGHT_REC HILIGHT_REC;
+//typedef struct _HILIGHT_REC HILIGHT_REC;
 
 struct _HILIGHT_REC {
 	char *text;
