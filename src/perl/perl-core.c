@@ -125,7 +125,7 @@ void perl_scripts_init(void)
 
 	perl_parse(my_perl, xs_init, G_N_ELEMENTS(perl_args), perl_args, NULL);
 #if PERL_STATIC_LIBS == 1
-	perl_eval_pv("Irssi::Core::boot_Irssi_Core();", TRUE);
+	perl_eval_pv("Irssi::Core::->boot_Irssi_Core(0.9);", TRUE);
 #endif
 
         perl_common_start();

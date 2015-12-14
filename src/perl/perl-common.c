@@ -246,10 +246,7 @@ char *perl_get_use_list(void)
 
 void irssi_callXS(void (*subaddr)(pTHX_ CV* cv), CV *cv, SV **mark)
 {
-	dSP;
-
 	PUSHMARK(mark);
-	PUTBACK;
 
 	(*subaddr)(aTHX_ cv);
 }
