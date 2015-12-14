@@ -37,6 +37,7 @@
 #include "gui-windows.h"
 #include "utf8.h"
 
+#include <string.h>
 #include <signal.h>
 
 typedef void (*ENTRY_REDIRECT_KEY_FUNC) (int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
@@ -60,11 +61,21 @@ static int paste_detect_time, paste_verify_line_count;
 static char *paste_entry;
 static int paste_entry_pos;
 static GArray *paste_buffer;
+static GArray *paste_buffer_rest;
 
 static char *paste_old_prompt;
 static int paste_prompt, paste_line_count;
 static int paste_join_multiline;
 static int paste_timeout_id;
+static int paste_use_bracketed_mode;
+static int paste_bracketed_mode;
+static int paste_was_bracketed_mode;
+
+/* Terminal sequences that surround the input when the terminal has the
+ * bracketed paste mode active. Fror more details see
+ * https://cirw.in/blog/bracketed-paste */
+static const unichar bp_start[] = { 0x1b, '[', '2', '0', '0', '~' };
+static const unichar bp_end[]   = { 0x1b, '[', '2', '0', '1', '~' };
 
 static void sig_input(void);
 
@@ -247,9 +258,16 @@ static void paste_buffer_join_lines(GArray *buf)
 	g_array_set_size(buf, dest - arr);
 }
 
+static void paste_send_line(char *text)
+{
+	/* we need to get the current history every time because it might change between calls */
+	command_history_add(command_history_current(active_win), text);
+
+	signal_emit("send command", 3, text, active_win->active_server, active_win->active);
+}
+
 static void paste_send(void)
 {
-	HISTORY_REC *history;
 	unichar *arr;
 	GString *str;
 	char out[10], *text;
@@ -274,11 +292,7 @@ static void paste_send(void)
 		}
 
 		text = gui_entry_get_text(active_entry);
-		history = command_history_current(active_win);
-		command_history_add(history, text);
-
-		signal_emit("send command", 3, text,
-			    active_win->active_server, active_win->active);
+		paste_send_line(text);
 		g_free(text);
 	}
 
@@ -286,12 +300,7 @@ static void paste_send(void)
 	str = g_string_new(NULL);
 	for (; i < paste_buffer->len; i++) {
 		if (arr[i] == '\r' || arr[i] == '\n') {
-			history = command_history_current(active_win);
-			command_history_add(history, str->str);
-
-			signal_emit("send command", 3, str->str,
-				    active_win->active_server,
-				    active_win->active);
+			paste_send_line(str->str);
 			g_string_truncate(str, 0);
 		} else if (active_entry->utf8) {
 			out[g_unichar_to_utf8(arr[i], out)] = '\0';
@@ -305,7 +314,14 @@ static void paste_send(void)
 		}
 	}
 
-	gui_entry_set_text(active_entry, str->str);
+	if (paste_was_bracketed_mode) {
+		/* the text before the bracket end should be sent along with the rest */
+		paste_send_line(str->str);
+		gui_entry_set_text(active_entry, "");
+	} else {
+		gui_entry_set_text(active_entry, str->str);
+	}
+
 	g_string_free(str, TRUE);
 }
 
@@ -320,6 +336,12 @@ static void paste_flush(int send)
 	if (send)
 		paste_send();
 	g_array_set_size(paste_buffer, 0);
+
+	/* re-add anything that may have been after the bracketed paste end */
+	if (paste_buffer_rest->len > 0) {
+		g_array_append_vals(paste_buffer, paste_buffer_rest->data, paste_buffer_rest->len);
+		g_array_set_size(paste_buffer_rest, 0);
+	}
 
 	gui_entry_set_prompt(active_entry,
 			     paste_old_prompt == NULL ? "" : paste_old_prompt);
@@ -615,6 +637,8 @@ static void key_delete_to_next_space(void)
 
 static gboolean paste_timeout(gpointer data)
 {
+	paste_was_bracketed_mode = paste_bracketed_mode;
+
 	if (paste_line_count == 0) {
 		int i;
 
@@ -633,6 +657,70 @@ static gboolean paste_timeout(gpointer data)
 	return FALSE;
 }
 
+static void paste_bracketed_end(int i, gboolean rest)
+{
+	unichar last_char;
+
+	/* if there's stuff after the end bracket, save it for later */
+	if (rest) {
+		unichar *start = ((unichar *) paste_buffer->data) + i + G_N_ELEMENTS(bp_end);
+		int len = paste_buffer->len - i - G_N_ELEMENTS(bp_end);
+
+		g_array_set_size(paste_buffer_rest, 0);
+		g_array_append_vals(paste_buffer_rest, start, len);
+	}
+
+	/* remove the rest, including the trailing sequence chars */
+	g_array_set_size(paste_buffer, i);
+
+	last_char = g_array_index(paste_buffer, unichar, i - 1);
+
+	if (paste_line_count > 0 && last_char != '\n' && last_char != '\r') {
+		/* there are newlines, but there's also stuff after the newline
+		 * adjust line count to reflect this */
+		paste_line_count++;
+	}
+
+	/* decide what to do with the buffer */
+	paste_timeout(NULL);
+
+	paste_bracketed_mode = FALSE;
+}
+
+static void paste_bracketed_middle()
+{
+	int i;
+	int marklen = G_N_ELEMENTS(bp_end);
+	int len = paste_buffer->len - marklen;
+	unichar *ptr = (unichar *) paste_buffer->data;
+
+	if (len < 0) {
+		return;
+	}
+
+	for (i = 0; i <= len; i++, ptr++) {
+		if (ptr[0] == bp_end[0] && memcmp(ptr, bp_end, sizeof(bp_end)) == 0) {
+
+			/* if there are at least 6 bytes after the end,
+			 * check for another start marker right afterwards */
+			if (i <= (len - marklen) &&
+			    memcmp(ptr + marklen, bp_start, sizeof(bp_start)) == 0) {
+
+				/* remove both markers*/
+				g_array_remove_range(paste_buffer, i, marklen * 2);
+				len -= marklen * 2;
+
+				/* go one step back */
+				i--;
+				ptr--;
+				continue;
+			}
+			paste_bracketed_end(i, i != len);
+			break;
+		}
+	}
+}
+
 static void sig_input(void)
 {
 	if (!active_entry) {
@@ -646,26 +734,47 @@ static void sig_input(void)
 		unichar key;
 		term_gets(buffer, &line_count);
 		key = g_array_index(buffer, unichar, 0);
+		/* Either Ctrl-k or Ctrl-c is pressed */
 		if (key == 11 || key == 3)
 			paste_flush(key == 11);
 		g_array_free(buffer, TRUE);
 	} else {
 		term_gets(paste_buffer, &paste_line_count);
-		if (paste_detect_time > 0 && paste_buffer->len >= 3) {
+
+		/* use the bracketed paste mode to detect when the user pastes
+		 * some text into the entry */
+		if (paste_bracketed_mode) {
+			paste_bracketed_middle();
+
+		} else if (!paste_use_bracketed_mode && paste_detect_time > 0 && paste_buffer->len >= 3) {
 			if (paste_timeout_id != -1)
 				g_source_remove(paste_timeout_id);
 			paste_timeout_id = g_timeout_add(paste_detect_time, paste_timeout, NULL);
-		} else {
+		} else if (!paste_bracketed_mode) {
 			int i;
 
 			for (i = 0; i < paste_buffer->len; i++) {
 				unichar key = g_array_index(paste_buffer, unichar, i);
 				signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
+
+				if (paste_bracketed_mode) {
+					/* just enabled by the signal, remove what was processed so far */
+					g_array_remove_range(paste_buffer, 0, i + 1);
+
+					/* handle single-line / small pastes here */
+					paste_bracketed_middle();
+					return;
+				}
 			}
 			g_array_set_size(paste_buffer, 0);
 			paste_line_count = 0;
 		}
 	}
+}
+
+static void key_paste_start(void)
+{
+	paste_bracketed_mode = TRUE;
 }
 
 time_t get_idle_time(void)
@@ -929,6 +1038,10 @@ static void setup_changed(void)
 
 	paste_verify_line_count = settings_get_int("paste_verify_line_count");
 	paste_join_multiline = settings_get_bool("paste_join_multiline");
+	paste_use_bracketed_mode = settings_get_bool("paste_use_bracketed_mode");
+
+	/* Enable the bracketed paste mode on demand */
+	term_set_bracketed_paste_mode(paste_use_bracketed_mode);
 }
 
 void gui_readline_init(void)
@@ -942,13 +1055,16 @@ void gui_readline_init(void)
 	paste_entry = NULL;
 	paste_entry_pos = 0;
 	paste_buffer = g_array_new(FALSE, FALSE, sizeof(unichar));
+	paste_buffer_rest = g_array_new(FALSE, FALSE, sizeof(unichar));
         paste_old_prompt = NULL;
 	paste_timeout_id = -1;
+	paste_bracketed_mode = FALSE;
 	g_get_current_time(&last_keypress);
         input_listen_init(STDIN_FILENO);
 
 	settings_add_str("history", "scroll_page_count", "/2");
 	settings_add_time("misc", "paste_detect_time", "5msecs");
+	settings_add_bool("misc", "paste_use_bracketed_mode", FALSE);
 	/* NOTE: function keys can generate at least 5 characters long
 	   keycodes. this must be larger to allow them to work. */
 	settings_add_int("misc", "paste_verify_line_count", 5);
@@ -1020,6 +1136,8 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "meta2-1;5F", "cend", (SIGNAL_FUNC) key_combo);
 
 	key_bind("key", NULL, "meta-O-M", "return", (SIGNAL_FUNC) key_combo);
+
+	key_bind("paste_start", "Bracketed paste start", "meta2-200~", "paste_start", (SIGNAL_FUNC) key_paste_start);
 
 	/* cursor movement */
 	key_bind("backward_character", "Move the cursor a character backward", "left", NULL, (SIGNAL_FUNC) key_backward_character);
@@ -1116,6 +1234,8 @@ void gui_readline_deinit(void)
 
         key_configure_freeze();
 
+	key_unbind("paste_start", (SIGNAL_FUNC) key_paste_start);
+
 	key_unbind("backward_character", (SIGNAL_FUNC) key_backward_character);
 	key_unbind("forward_character", (SIGNAL_FUNC) key_forward_character);
  	key_unbind("backward_word", (SIGNAL_FUNC) key_backward_word);
@@ -1173,6 +1293,7 @@ void gui_readline_deinit(void)
 	key_unbind("stop_irc", (SIGNAL_FUNC) key_sig_stop);
 	keyboard_destroy(keyboard);
         g_array_free(paste_buffer, TRUE);
+        g_array_free(paste_buffer_rest, TRUE);
 
         key_configure_thaw();
 

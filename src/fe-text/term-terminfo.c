@@ -710,3 +710,11 @@ void term_gets(GArray *buffer, int *line_count)
 		}
 	}
 }
+
+void term_set_bracketed_paste_mode(int enable)
+{
+	if (enable)
+		tputs("\e[?2004h", 0, term_putchar);
+	else
+		tputs("\e[?2004l", 0, term_putchar);
+}
