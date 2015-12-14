@@ -45,7 +45,6 @@ struct _FORMAT_REC {
 #define PRINT_FLAG_SET_SERVERTAG	0x0010
 #define PRINT_FLAG_UNSET_SERVERTAG	0x0020
 
-// FIXME: sould use better
 typedef struct _HILIGHT_REC HILIGHT_REC;
 
 typedef struct _TEXT_DEST_REC {
