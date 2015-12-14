@@ -10,7 +10,7 @@ INSTALL file for information about perl problems.
  ---------------
 
 Scripts are run with /SCRIPT LOAD command, or the default /RUN alias.
-"/SCRIPT" shows list of running script, and /SCRIPT UNLOAD can unload
+"/SCRIPT" shows list of running scripts, and /SCRIPT UNLOAD can unload
 scripts.
 
 Scripts should be placed to ~/.irssi/scripts/ or
