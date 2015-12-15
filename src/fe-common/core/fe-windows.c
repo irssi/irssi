@@ -229,9 +229,14 @@ void window_set_history(WINDOW_REC *window, const char *name)
 	else
 		window->history_name = g_strdup(name);
 
-	signal_emit("window history changed", 1, window, oldname);
+	signal_emit("window history changed", 2, window, oldname);
 
 	g_free_not_null(oldname);
+}
+
+void window_clear_history(WINDOW_REC *window, const char *name)
+{
+	signal_emit("window history cleared", 2, window, name);
 }
 
 void window_set_level(WINDOW_REC *window, int level)

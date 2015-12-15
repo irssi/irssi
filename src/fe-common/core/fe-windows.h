@@ -66,6 +66,7 @@ void window_change_server(WINDOW_REC *window, void *server);
 void window_set_refnum(WINDOW_REC *window, int refnum);
 void window_set_name(WINDOW_REC *window, const char *name);
 void window_set_history(WINDOW_REC *window, const char *name);
+void window_clear_history(WINDOW_REC *window, const char *name);
 void window_set_level(WINDOW_REC *window, int level);
 void window_set_immortal(WINDOW_REC *window, int immortal);
 
