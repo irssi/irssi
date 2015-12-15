@@ -278,3 +278,8 @@ void fe_perl_deinit(void)
 
         perl_core_print_script_error(TRUE);
 }
+
+void fe_perl_abicheck(int *version)
+{
+	*version = IRSSI_ABI_VERSION;
+}
