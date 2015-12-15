@@ -33,6 +33,7 @@
 static HISTORY_REC *global_history;
 static int window_history;
 static GSList *histories;
+static HISTORY_REC *last_cleared_history;
 
 void command_history_add(HISTORY_REC *history, const char *text)
 {
@@ -40,6 +41,13 @@ void command_history_add(HISTORY_REC *history, const char *text)
 
 	g_return_if_fail(history != NULL);
 	g_return_if_fail(text != NULL);
+
+	if (last_cleared_history == history) {
+		last_cleared_history = NULL;
+		return; /* ignore this history addition, we just
+			   cleared it */
+	}
+	last_cleared_history = NULL;
 
 	link = g_list_last(history->list);
 	if (link != NULL && g_strcmp0(link->data, text) == 0)
@@ -94,12 +102,12 @@ HISTORY_REC *command_history_current(WINDOW_REC *window)
 	if (window == NULL)
 		return global_history;
 
-	if (window_history)
-		return window->history;
-
 	rec = command_history_find_name(window->history_name);
 	if (rec != NULL)
 		return rec;
+
+	if (window_history)
+		return window->history;
 
 	return global_history;
 }
@@ -178,6 +186,18 @@ HISTORY_REC *command_history_create(const char *name)
 	return rec;
 }
 
+void command_history_clear(HISTORY_REC *history)
+{
+	g_return_if_fail(history != NULL);
+
+	command_history_clear_pos_func(history, NULL);
+	g_list_foreach(history->list, (GFunc) g_free, NULL);
+	g_list_free(history->list);
+	history->list = NULL;
+	history->lines = 0;
+	last_cleared_history = history;
+}
+
 void command_history_destroy(HISTORY_REC *history)
 {
 	g_return_if_fail(history != NULL);
@@ -186,9 +206,8 @@ void command_history_destroy(HISTORY_REC *history)
 	g_return_if_fail(history->refcount == 0);
 
 	histories = g_slist_remove(histories, history);
-
-	g_list_foreach(history->list, (GFunc) g_free, NULL);
-	g_list_free(history->list);
+	command_history_clear(history);
+	last_cleared_history = NULL; /* was destroyed */
 
 	g_free_not_null(history->name);
 	g_free(history);
@@ -227,6 +246,18 @@ static void sig_window_destroyed(WINDOW_REC *window)
 	command_history_unlink(window->history_name);
 	command_history_destroy(window->history);
 	g_free_not_null(window->history_name);
+}
+
+static void sig_window_history_cleared(WINDOW_REC *window, const char *name) {
+	HISTORY_REC *history;
+
+	if (name == NULL || *name == '\0') {
+		history = command_history_current(window);
+	} else {
+		history = command_history_find_name(name);
+	}
+
+	command_history_clear(history);
 }
 
 static void sig_window_history_changed(WINDOW_REC *window, const char *oldname)
@@ -279,6 +310,7 @@ void command_history_init(void)
 	signal_add("window created", (SIGNAL_FUNC) sig_window_created);
 	signal_add("window destroyed", (SIGNAL_FUNC) sig_window_destroyed);
 	signal_add("window history changed", (SIGNAL_FUNC) sig_window_history_changed);
+	signal_add_last("window history cleared", (SIGNAL_FUNC) sig_window_history_cleared);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
@@ -287,6 +319,7 @@ void command_history_deinit(void)
 	signal_remove("window created", (SIGNAL_FUNC) sig_window_created);
 	signal_remove("window destroyed", (SIGNAL_FUNC) sig_window_destroyed);
 	signal_remove("window history changed", (SIGNAL_FUNC) sig_window_history_changed);
+	signal_remove("window history cleared", (SIGNAL_FUNC) sig_window_history_cleared);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_history_destroy(global_history);
