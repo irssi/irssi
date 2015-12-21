@@ -1,4 +1,4 @@
-v0.8.18-rc1 2015-12-15  The Irssi team <staff@irssi.org>
+v0.8.18-beta1 2015-12-15  The Irssi team <staff@irssi.org>
 	* Modules will now require to define a
 	      void MODULENAME ## _abicheck(int *version)
 	  method to ensure that they are compiled against the correct Irssi
