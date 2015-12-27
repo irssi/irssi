@@ -52,11 +52,10 @@ typedef struct _TEXT_DEST_REC {
 	SERVER_REC *server;
         const char *server_tag; /* if server is non-NULL, must be server->tag */
 	const char *target;
+	const char *nick;
+	const char *address;
 	int level;
 
-	HILIGHT_REC *hilight;
-	int match_beg;
-	int match_end;
 	int hilight_priority;
 	char *hilight_color;
         int flags;
