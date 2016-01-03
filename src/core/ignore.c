@@ -186,7 +186,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
         return ignore_check_replies(chanrec, text, level);
 }
 
-IGNORE_REC *ignore_find(const char *servertag, const char *mask, const char *pattern,
+IGNORE_REC *ignore_find_full(const char *servertag, const char *mask, const char *pattern,
 		char **channels, const int flags)
 {
 	GSList *tmp;
@@ -255,6 +255,16 @@ IGNORE_REC *ignore_find(const char *servertag, const char *mask, const char *pat
 	}
 
 	return NULL;
+}
+
+IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels)
+{
+	return ignore_find_full(servertag, mask, NULL, channels, 0);
+}
+
+IGNORE_REC *ignore_find_noact(const char *servertag, const char *mask, char **channels, int noact)
+{
+	return ignore_find_full(servertag, mask, NULL, channels, IGNORE_FIND_NOACT);
 }
 
 static void ignore_set_config(IGNORE_REC *rec)
