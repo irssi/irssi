@@ -66,7 +66,7 @@ static void sig_flood(IRC_SERVER_REC *server, const char *nick, const char *host
 
         mask = g_strdup_printf("%s!%s", nick, host);
 	if (level & check_level) {
-		rec = ignore_find(server->tag, mask, NULL);
+		rec = ignore_find(server->tag, mask, NULL, NULL, 0);
 		if (rec == NULL)
 			autoignore_add(server, mask, level);
 		else

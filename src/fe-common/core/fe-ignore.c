@@ -158,8 +158,8 @@ static void cmd_ignore(const char *data)
 	channels = (chanarg == NULL || *chanarg == '\0') ? NULL :
 		g_strsplit(chanarg, ",", -1);
 
-	rec = patternarg != NULL ? NULL: ignore_find_noact(servertag, mask, channels,
-			(level & MSGLEVEL_NO_ACT));
+	rec = ignore_find(servertag, mask, patternarg, channels,
+			  IGNORE_FIND_PATTERN | ((level & MSGLEVEL_NO_ACT) ? IGNORE_FIND_NOACT : 0));
 	new_ignore = rec == NULL;
 
 	if (rec == NULL) {
@@ -237,9 +237,9 @@ static void cmd_unignore(const char *data)
 			chans[0] = mask;
 			mask = NULL;
 		}
-		rec = ignore_find_noact("*", mask, (char **) chans, 0);
+		rec = ignore_find("*", mask, NULL, (char **) chans, 0);
 		if (rec == NULL) {
-			rec = ignore_find_noact("*", mask, (char **) chans, 1);
+			rec = ignore_find("*", mask, NULL, (char **) chans, IGNORE_FIND_NOACT);
 		}
 	}
 

@@ -31,8 +31,13 @@ extern GSList *ignores;
 int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level);
 
-IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels);
-IGNORE_REC *ignore_find_noact(const char *servertag, const char *mask, char **channels, int noact);
+enum {
+	IGNORE_FIND_PATTERN = 0x01, // Match the pattern
+	IGNORE_FIND_NOACT   = 0x02, // Exclude the targets with NOACT level
+};
+
+IGNORE_REC *ignore_find(const char *servertag, const char *mask, const char *pattern,
+		char **channels, const int flags);
 
 void ignore_add_rec(IGNORE_REC *rec);
 void ignore_update_rec(IGNORE_REC *rec);
