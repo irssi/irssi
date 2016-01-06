@@ -681,8 +681,8 @@ static void read_settings(void)
 	while (add_listens != NULL) {
 		rec = add_listens->data;
 		add_listen(rec->ircnet, rec->port);
+		add_listens = g_slist_remove(add_listens, rec);
 		g_free(rec);
-		add_listens = g_slist_remove(add_listens, add_listens->data);
 	}
 
 	g_strfreev(ports);
