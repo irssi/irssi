@@ -61,16 +61,16 @@ static int knockout_tag;
 
 /* SYNTAX: NOTICE <targets> <message> */
 static void cmd_notice(const char *data, IRC_SERVER_REC *server,
-		       WI_ITEM_REC *item)
+                       WI_ITEM_REC *item)
 {
 	const char *target, *msg;
 	char *recoded;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
-			    &target, &msg))
+	                    &target, &msg))
 		return;
 	if (g_strcmp0(target, "*") == 0)
 		target = item == NULL ? NULL : window_item_get_target(item);
@@ -88,16 +88,16 @@ static void cmd_notice(const char *data, IRC_SERVER_REC *server,
 
 /* SYNTAX: CTCP <targets> <ctcp command> [<ctcp data>] */
 static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
-		     WI_ITEM_REC *item)
+                     WI_ITEM_REC *item)
 {
 	const char *target;
 	char *ctcpcmd, *ctcpdata;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
-			    &target, &ctcpcmd, &ctcpdata))
+	                    &target, &ctcpcmd, &ctcpdata))
 		return;
 	if (g_strcmp0(target, "*") == 0)
 		target = item == NULL ? NULL : window_item_get_target(item);
@@ -122,16 +122,16 @@ static void cmd_ctcp(const char *data, IRC_SERVER_REC *server,
 
 /* SYNTAX: NCTCP <targets> <ctcp command> [<ctcp data>] */
 static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
-		      WI_ITEM_REC *item)
+                      WI_ITEM_REC *item)
 {
 	const char *target;
 	char *ctcpcmd, *ctcpdata, *recoded;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
-			    &target, &ctcpcmd, &ctcpdata))
+	                    &target, &ctcpcmd, &ctcpdata))
 		return;
 	if (g_strcmp0(target, "*") == 0)
 		target = item == NULL ? NULL : window_item_get_target(item);
@@ -150,22 +150,22 @@ static void cmd_nctcp(const char *data, IRC_SERVER_REC *server,
 
 /* SYNTAX: PART [<channels>] [<message>] */
 static void cmd_part(const char *data, IRC_SERVER_REC *server,
-		     WI_ITEM_REC *item)
+                     WI_ITEM_REC *item)
 {
 	char *channame, *msg;
 	char *recoded = NULL;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
-			    PARAM_FLAG_OPTCHAN, item, &channame, &msg))
+	                    PARAM_FLAG_OPTCHAN, item, &channame, &msg))
 		return;
 	if (*channame == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*msg == '\0') msg = (char *) settings_get_str("part_message");
 
-        if (server->cmdcount > MAX_COMMANDS_ON_PART_UNTIL_PURGE)
+	if (server->cmdcount > MAX_COMMANDS_ON_PART_UNTIL_PURGE)
 		irc_server_purge_output(server, channame);
 
 	if (*msg != '\0')
@@ -186,11 +186,11 @@ static void cmd_kick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	char *channame, *nicks, *reason, *recoded;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST |
-			    PARAM_FLAG_OPTCHAN, item,
-			    &channame, &nicks, &reason))
+	                    PARAM_FLAG_OPTCHAN, item,
+	                    &channame, &nicks, &reason))
 		return;
 
 	if (*channame == '\0' || *nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -213,11 +213,11 @@ static void cmd_topic(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *ite
 	char *recoded = NULL;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
-			    PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
-			    item, "topic", &optlist, &channame, &topic))
+	                    PARAM_FLAG_OPTIONS | PARAM_FLAG_GETREST,
+	                    item, "topic", &optlist, &channame, &topic))
 		return;
 
 	if (*topic != '\0' || g_hash_table_lookup(optlist, "delete") != NULL)
@@ -239,7 +239,7 @@ static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *it
 	char *nick, *channame;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2, &nick, &channame))
 		return;
@@ -258,17 +258,17 @@ static void cmd_invite(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *it
 
 /* SYNTAX: LIST [-yes] [<channel>] */
 static void cmd_list(const char *data, IRC_SERVER_REC *server,
-		     WI_ITEM_REC *item)
+                     WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	char *str;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS, 
-			    "list", &optlist, &str))
+	                    PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS, 
+	                    "list", &optlist, &str))
 		return;
 
 	if (*str == '\0' && g_hash_table_lookup(optlist, "yes") == NULL &&
@@ -282,7 +282,7 @@ static void cmd_list(const char *data, IRC_SERVER_REC *server,
 
 /* SYNTAX: WHO [<nicks> | <channels> | **] */
 static void cmd_who(const char *data, IRC_SERVER_REC *server,
-		    WI_ITEM_REC *item)
+                    WI_ITEM_REC *item)
 {
 	char *channel, *rest;
 	void *free_arg;
@@ -290,7 +290,7 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server,
 	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | 
-			    PARAM_FLAG_STRIP_TRAILING_WS, &channel, &rest))
+	                    PARAM_FLAG_STRIP_TRAILING_WS, &channel, &rest))
 		return;
 
 	if (g_strcmp0(channel, "*") == 0 || *channel == '\0') {
@@ -313,29 +313,29 @@ static void cmd_who(const char *data, IRC_SERVER_REC *server,
 }
 
 static void cmd_names(const char *data, IRC_SERVER_REC *server,
-		      WI_ITEM_REC *item)
+                      WI_ITEM_REC *item)
 {
-        GHashTable *optlist;
+	GHashTable *optlist;
 	char *channel;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS,
-			    "names", &optlist, &channel))
+	                    PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS,
+	                    "names", &optlist, &channel))
 		return;
 
 	if (g_strcmp0(channel, "*") == 0 || *channel == '\0') {
 		if (!IS_IRC_CHANNEL(item))
-                        cmd_param_error(CMDERR_NOT_JOINED);
+			cmd_param_error(CMDERR_NOT_JOINED);
 
 		channel = IRC_CHANNEL(item)->name;
 	}
 
 	if (g_strcmp0(channel, "**") == 0) {
 		/* ** displays all nicks.. */
-                irc_send_cmd(server, "NAMES");
+		irc_send_cmd(server, "NAMES");
 	} else {
 		irc_send_cmdv(server, "NAMES %s", channel);
 	}
@@ -346,12 +346,12 @@ static void cmd_names(const char *data, IRC_SERVER_REC *server,
 /* SYNTAX: NICK <new nick> */
 static void cmd_nick(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-        char *nick;
+	char *nick;
 	void *free_arg;
 
 	g_return_if_fail(data != NULL);
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 1, &nick))
 		return;
@@ -388,23 +388,23 @@ static char *get_redirect_nicklist(const char *nicks, int *free)
 
 /* SYNTAX: WHOIS [-<server tag>] [<server>] [<nicks>] */
 static void cmd_whois(const char *data, IRC_SERVER_REC *server,
-		      WI_ITEM_REC *item)
+                      WI_ITEM_REC *item)
 {
 	GHashTable *optlist;
 	char *qserver, *query, *event_402, *str;
 	void *free_arg;
 	int free_nick;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS,
-			    "whois", &optlist, &qserver, &query))
+	                    PARAM_FLAG_UNKNOWN_OPTIONS,
+	                    "whois", &optlist, &qserver, &query))
 		return;
 
 	/* -<server tag> */
 	server = IRC_SERVER(cmd_options_get_server("whois", optlist,
-						   SERVER(server)));
+	                                           SERVER(server)));
 	if (server == NULL) {
 		cmd_params_free(free_arg);
 		return;
@@ -439,15 +439,15 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 
 	str = g_strconcat(qserver, " ", query, NULL);
 	server_redirect_event(server, "whois", 1, str, TRUE,
-		      NULL,
-		      "event 318", "whois end",
-		      "event 402", event_402,
-		      "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
-		      "event 313", "whois oper",
-		      "event 401", (settings_get_bool("auto_whowas") ? "whois try whowas" : "whois event not found"),
-		      "event 311", "whois event",
-		      "", "whois default event", NULL);
-        g_free(str);
+	              NULL,
+	              "event 318", "whois end",
+	              "event 402", event_402,
+	              "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
+	              "event 313", "whois oper",
+	              "event 401", (settings_get_bool("auto_whowas") ? "whois try whowas" : "whois event not found"),
+	              "event 311", "whois event",
+	              "", "whois default event", NULL);
+	g_free(str);
 
 	server->whois_found = FALSE;
 	irc_send_cmd_split(server, tmpstr->str, 2, server->max_whois_in_cmd);
@@ -457,7 +457,7 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 }
 
 static void event_whois(IRC_SERVER_REC *server, const char *data,
-			const char *nick, const char *addr)
+                        const char *nick, const char *addr)
 {
 	server->whois_found = TRUE;
 	signal_emit("event 311", 4, server, data, nick, addr);
@@ -473,23 +473,23 @@ static void sig_whois_try_whowas(IRC_SERVER_REC *server, const char *data)
 
 	server->whowas_found = FALSE;
 	server_redirect_event(server, "whowas", 1, nick, -1, NULL,
-			      "event 314", "whowas event",
-			      "event 369", "whowas event end",
-			      "event 406", "event empty", NULL);
+	                      "event 314", "whowas event",
+	                      "event 369", "whowas event end",
+	                      "event 406", "event empty", NULL);
 	irc_send_cmdv(server, "WHOWAS %s 1", nick);
 
 	g_free(params);
 }
 
 static void event_end_of_whois(IRC_SERVER_REC *server, const char *data,
-			       const char *nick, const char *addr)
+                               const char *nick, const char *addr)
 {
 	signal_emit("event 318", 4, server, data, nick, addr);
 	server->whois_found = FALSE;
 }
 
 static void event_whowas(IRC_SERVER_REC *server, const char *data,
-			 const char *nick, const char *addr)
+                         const char *nick, const char *addr)
 {
 	server->whowas_found = TRUE;
 	signal_emit("event 314", 4, server, data, nick, addr);
@@ -502,17 +502,17 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 	int free_nick;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS,
-			    &nicks, &rest))
+	                    &nicks, &rest))
 		return;
 	if (*nicks == '\0') nicks = server->nick;
 
 	nicks_redir = get_redirect_nicklist(nicks, &free_nick);
 	server_redirect_event(server, "whowas", 1, nicks_redir, -1, NULL,
-			      "event 301", "whowas away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
-			      "event 314", "whowas event", NULL);
+	                      "event 301", "whowas away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
+	                      "event 314", "whowas event", NULL);
 	if (free_nick) g_free(nicks_redir);
 
 	server->whowas_found = FALSE;
@@ -529,9 +529,9 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
 	GTimeVal tv;
-        char *str;
+	char *str;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (*data == '\0') {
 		if (!IS_QUERY(item))
@@ -554,7 +554,7 @@ static void cmd_away(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST, "away", &optlist, &reason)) return;
+	                    PARAM_FLAG_GETREST, "away", &optlist, &reason)) return;
 
 	if (g_hash_table_lookup(optlist, "one") != NULL)
 		irc_server_send_away(server, reason);
@@ -567,7 +567,7 @@ static void cmd_away(const char *data, IRC_SERVER_REC *server)
 /* SYNTAX: SCONNECT <new server> [[<port>] <existing server>] */
 static void cmd_sconnect(const char *data, IRC_SERVER_REC *server)
 {
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	irc_send_cmdv(server, "CONNECT %s", data);
@@ -600,11 +600,11 @@ static void cmd_wait(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 	int n;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
-			    NULL, &optlist, &msecs))
+	                    PARAM_FLAG_UNKNOWN_OPTIONS | PARAM_FLAG_GETREST,
+	                    NULL, &optlist, &msecs))
 		return;
 
 	if (*msecs == '\0')
@@ -612,7 +612,7 @@ static void cmd_wait(const char *data, IRC_SERVER_REC *server)
 
 	/* -<server tag> */
 	server = IRC_SERVER(cmd_options_get_server(NULL, optlist,
-						   SERVER(server)));
+	                                           SERVER(server)));
 
 	n = atoi(msecs);
 	if (server != NULL && n > 0) {
@@ -635,10 +635,10 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 	IRC_CHANNEL_REC *chanrec;
 	GSList *tmp, *nicks;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTCHAN |
-			    PARAM_FLAG_GETREST, item, &channame, &msg))
+	                    PARAM_FLAG_GETREST, item, &channame, &msg))
 		return;
 	if (*msg == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -654,11 +654,11 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 		/* Fall back to manually noticing each op */
 		nicks = NULL;
 		g_hash_table_foreach(chanrec->nicks,
-				     (GHFunc) cmd_wall_hash, &nicks);
+		                     (GHFunc) cmd_wall_hash, &nicks);
 
 		args = g_strconcat(chanrec->name, " ", recoded, NULL);
 		msg = parse_special_string(settings_get_str("wall_format"),
-					   SERVER(server), item, args, NULL, 0);
+		                           SERVER(server), item, args, NULL, 0);
 		g_free(args);
 
 		for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
@@ -666,7 +666,7 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 
 			if (rec != chanrec->ownnick) {
 				irc_send_cmdv(server, "NOTICE %s :%s",
-					      rec->nick, msg);
+				              rec->nick, msg);
 			}
 		}
 
@@ -680,17 +680,17 @@ static void cmd_wall(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 
 /* SYNTAX: KICKBAN [<channel>] <nicks> <reason> */
 static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
-			WI_ITEM_REC *item)
+                        WI_ITEM_REC *item)
 {
-        IRC_CHANNEL_REC *chanrec;
+	IRC_CHANNEL_REC *chanrec;
 	char *channel, *nicks, *reason, *kickcmd, *bancmd, *recoded;
-        char **nicklist, *spacenicks;
+	char **nicklist, *spacenicks;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTCHAN | PARAM_FLAG_GETREST,
-			    item, &channel, &nicks, &reason))
+	                    item, &channel, &nicks, &reason))
 		return;
 
 	if (*channel == '\0' || *nicks == '\0')
@@ -701,7 +701,7 @@ static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
 		cmd_param_error(CMDERR_CHAN_NOT_FOUND);
 
 	nicklist = g_strsplit(nicks, ",", -1);
-        spacenicks = g_strjoinv(" ", nicklist);
+	spacenicks = g_strjoinv(" ", nicklist);
 	g_strfreev(nicklist);
 
 	recoded = recode_out(SERVER(server), reason, channel);
@@ -709,9 +709,9 @@ static void cmd_kickban(const char *data, IRC_SERVER_REC *server,
 	g_free(recoded);
 
 	bancmd = g_strdup_printf("%s %s", chanrec->name, spacenicks);
-        g_free(spacenicks);
+	g_free(spacenicks);
 
-        if (settings_get_bool("kick_first_on_kickban")) {
+	if (settings_get_bool("kick_first_on_kickban")) {
 		signal_emit("command kick", 3, kickcmd, server, chanrec);
 		signal_emit("command ban", 3, bancmd, server, chanrec);
 	} else {
@@ -742,7 +742,7 @@ static void knockout_timeout_server(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-        now = time(NULL);
+	now = time(NULL);
 	for (tmp = server->knockoutlist; tmp != NULL; tmp = next) {
 		KNOCKOUT_REC *rec = tmp->data;
 
@@ -763,16 +763,16 @@ static int knockout_timeout(void)
 
 /* SYNTAX: KNOCKOUT [<time>] <nicks> <reason> */
 static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
-			 IRC_CHANNEL_REC *channel)
+                         IRC_CHANNEL_REC *channel)
 {
 	KNOCKOUT_REC *rec;
 	char *nicks, *reason, *timeoutstr, *kickcmd, *bancmd, *recoded;
-        char **nicklist, *spacenicks, *banmasks;
+	char **nicklist, *spacenicks, *banmasks;
 	void *free_arg;
 	int timeleft;
 	GSList *ptr;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!IS_IRC_CHANNEL(channel))
 		cmd_return_error(CMDERR_NOT_JOINED);
@@ -780,14 +780,14 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	if (i_isdigit(*data)) {
 		/* first argument is the timeout */
 		if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_GETREST,
-				    &timeoutstr, &nicks, &reason))
+		                    &timeoutstr, &nicks, &reason))
                         return;
 
 		if (!parse_time_interval(timeoutstr, &timeleft))
 			cmd_param_error(CMDERR_INVALID_TIME);
 	} else {
 		if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
-				    &nicks, &reason))
+		                    &nicks, &reason))
 			return;
                 timeleft = settings_get_time("knockout_time");
 	}
@@ -795,7 +795,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	if (*nicks == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	nicklist = g_strsplit(nicks, ",", -1);
-        spacenicks = g_strjoinv(" ", nicklist);
+	spacenicks = g_strjoinv(" ", nicklist);
 	g_strfreev(nicklist);
 
 	banmasks = ban_get_masks(channel, spacenicks, 0);
@@ -808,7 +808,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 	bancmd = *banmasks == '\0'? NULL :
 		g_strdup_printf("%s %s", channel->name, banmasks);
 
-        if (settings_get_bool("kick_first_on_kickban")) {
+	if (settings_get_bool("kick_first_on_kickban")) {
 		signal_emit("command kick", 3, kickcmd, server, channel);
 		if (bancmd != NULL)
 			signal_emit("command ban", 3, bancmd, server, channel);
@@ -827,7 +827,7 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 		for (ptr = server->knockoutlist; ptr != NULL; ptr = ptr->next) {
 			rec = ptr->data;
 			if (channel == rec->channel &&
-					!g_strcmp0(rec->ban, banmasks))
+			    !g_strcmp0(rec->ban, banmasks))
 				break;
 		}
 		if (ptr == NULL) {
@@ -845,10 +845,10 @@ static void cmd_knockout(const char *data, IRC_SERVER_REC *server,
 /* SYNTAX: SERVER PURGE [<target>] */
 static void cmd_server_purge(const char *data, IRC_SERVER_REC *server)
 {
-        char *target;
+	char *target;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 1, &target))
 		return;
@@ -895,12 +895,12 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 	char *nick, *password;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
-        /* asking for password is handled by fe-common */
+	/* asking for password is handled by fe-common */
 	if (!cmd_get_params(data, &free_arg, 2, &nick, &password))
 		return;
-        if (*password == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (*password == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	irc_send_cmdv(server, "OPER %s %s", nick, password);
 	cmd_params_free(free_arg);
@@ -909,7 +909,7 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 /* SYNTAX: ACCEPT [[-]nick,...] */
 static void cmd_accept(const char *data, IRC_SERVER_REC *server)
 {
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (*data == '\0')
 		irc_send_cmd(server, "ACCEPT *");
@@ -920,7 +920,7 @@ static void cmd_accept(const char *data, IRC_SERVER_REC *server)
 /* SYNTAX: UNSILENCE <nick!user@host> */
 static void cmd_unsilence(const char *data, IRC_SERVER_REC *server)
 {
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (*data == '\0')
 		cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -953,7 +953,7 @@ static void command_2self(const char *data, IRC_SERVER_REC *server)
 	char *target, *text;
 	void *free_arg;
 
-        CMD_IRC_SERVER(server);
+	CMD_IRC_SERVER(server);
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST, &target, &text))
 		return;
@@ -998,8 +998,8 @@ void irc_commands_init(void)
 	command_bind_irc("admin", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: INFO [<server>] */
 	command_bind_irc("info", NULL, (SIGNAL_FUNC) command_self);
-    /* SYNTAX: KNOCK <channel> */
-    command_bind_irc("knock", NULL, (SIGNAL_FUNC) command_self);
+	/* SYNTAX: KNOCK <channel> */
+	command_bind_irc("knock", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: LINKS [[<server>] <mask>] */
 	command_bind_irc("links", NULL, (SIGNAL_FUNC) command_self);
 	/* SYNTAX: LUSERS [<server mask> [<remote server>]] */
@@ -1081,7 +1081,7 @@ void irc_commands_deinit(void)
 	command_unbind("accept", (SIGNAL_FUNC) cmd_accept);
 	command_unbind("admin", (SIGNAL_FUNC) command_self);
 	command_unbind("info", (SIGNAL_FUNC) command_self);
-    command_unbind("knock", (SIGNAL_FUNC) command_self);
+	command_unbind("knock", (SIGNAL_FUNC) command_self);
 	command_unbind("links", (SIGNAL_FUNC) command_self);
 	command_unbind("lusers", (SIGNAL_FUNC) command_self);
 	command_unbind("map", (SIGNAL_FUNC) command_self);
