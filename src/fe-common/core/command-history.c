@@ -33,7 +33,6 @@
 static HISTORY_REC *global_history;
 static int window_history;
 static GSList *histories;
-static HISTORY_REC *last_cleared_history;
 
 void command_history_add(HISTORY_REC *history, const char *text)
 {
@@ -41,13 +40,6 @@ void command_history_add(HISTORY_REC *history, const char *text)
 
 	g_return_if_fail(history != NULL);
 	g_return_if_fail(text != NULL);
-
-	if (last_cleared_history == history) {
-		last_cleared_history = NULL;
-		return; /* ignore this history addition, we just
-			   cleared it */
-	}
-	last_cleared_history = NULL;
 
 	link = g_list_last(history->list);
 	if (link != NULL && g_strcmp0(link->data, text) == 0)
@@ -195,7 +187,6 @@ void command_history_clear(HISTORY_REC *history)
 	g_list_free(history->list);
 	history->list = NULL;
 	history->lines = 0;
-	last_cleared_history = history;
 }
 
 void command_history_destroy(HISTORY_REC *history)
@@ -207,7 +198,6 @@ void command_history_destroy(HISTORY_REC *history)
 
 	histories = g_slist_remove(histories, history);
 	command_history_clear(history);
-	last_cleared_history = NULL; /* was destroyed */
 
 	g_free_not_null(history->name);
 	g_free(history);

@@ -620,10 +620,10 @@ static void cmd_window_name(const char *data)
 void cmd_window_history(const char *data)
 {
 	GHashTable *optlist;
-        char *name;
+	char *name;
 	void *free_arg;
 
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS | PARAM_FLAG_STRIP_TRAILING_WS,
 			    "window history", &optlist, &name))
 		return;
 

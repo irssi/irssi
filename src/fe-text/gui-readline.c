@@ -456,20 +456,19 @@ static void key_send_line(void)
 	add_history = *str != '\0';
 	history = command_history_current(active_win);
 
+	if (redir != NULL && redir->flags & ENTRY_REDIRECT_FLAG_HIDDEN)
+		add_history = 0;
+
+	if (add_history && history != NULL) {
+		command_history_add(history, str);
+	}
+
 	if (redir == NULL) {
 		signal_emit("send command", 3, str,
 			    active_win->active_server,
 			    active_win->active);
 	} else {
-		if (redir->flags & ENTRY_REDIRECT_FLAG_HIDDEN)
-                        add_history = 0;
 		handle_entry_redirect(str);
-	}
-
-	if (add_history) {
-		history = command_history_find(history);
-		if (history != NULL)
-			command_history_add(history, str);
 	}
 
 	if (active_entry != NULL)
