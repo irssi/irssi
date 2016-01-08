@@ -749,7 +749,7 @@ static void knockout_timeout_server(IRC_SERVER_REC *server)
 		next = tmp->next;
 		if (rec->unban_time <= now) {
 			/* timeout, unban. */
-			ban_remove(rec->channel, rec->ban);
+			signal_emit("command unban", 3, rec->ban, server, rec->channel);
 			knockout_destroy(server, rec);
 		}
 	}
