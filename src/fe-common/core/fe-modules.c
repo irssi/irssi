@@ -43,6 +43,10 @@ static void sig_module_error(void *number, const char *data,
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    TXT_MODULE_LOAD_ERROR, rootmodule, submodule, data);
 		break;
+	case MODULE_ERROR_VERSION_MISMATCH:
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_MODULE_VERSION_MISMATCH, rootmodule, submodule, data);
+		break;
 	case MODULE_ERROR_INVALID:
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 			    TXT_MODULE_INVALID, rootmodule, submodule);
@@ -98,6 +102,7 @@ static int module_list_sub(MODULE_REC *module, int mark_type,
 
         return all_dynamic;
 }
+
 
 static void cmd_load_list(void)
 {

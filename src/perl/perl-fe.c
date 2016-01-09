@@ -27,6 +27,7 @@
 
 #include "printtext.h"
 #include "completion.h"
+#include "irssi-version.h"
 
 #include "perl-core.h"
 
@@ -277,4 +278,9 @@ void fe_perl_deinit(void)
 	signal_remove("complete command script unload", (SIGNAL_FUNC) sig_complete_unload);
 
         perl_core_print_script_error(TRUE);
+}
+
+char *fe_perl_abicheck(void)
+{
+	return g_strdup_printf("%d.%d", IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
 }
