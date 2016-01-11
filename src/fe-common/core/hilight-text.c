@@ -325,9 +325,10 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 	if (dest->level & MSGLEVEL_NOHILIGHT)
 		return;
 
-	hilight_start = dest->match_beg;
-	hilight_end = dest->match_end;
-	hilight = dest->hilight;
+	hilight_start = hilight_end = 0;
+	hilight = hilight_match(dest->server, dest->target, dest->nick,
+				dest->address, dest->level, stripped,
+				&hilight_start, &hilight_end);
 
 	if (hilight == NULL)
 		return;
