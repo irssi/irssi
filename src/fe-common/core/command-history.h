@@ -28,6 +28,7 @@ const char *command_history_next(WINDOW_REC *window, const char *text);
 void command_history_clear_pos(WINDOW_REC *window);
 
 HISTORY_REC *command_history_create(const char *name);
+void command_history_clear(HISTORY_REC *history);
 void command_history_destroy(HISTORY_REC *history);
 void command_history_link(const char *name);
 void command_history_unlink(const char *name);
