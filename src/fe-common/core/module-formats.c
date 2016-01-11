@@ -196,6 +196,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "module_already_loaded", "Module {hilight $0/$1} already loaded", 2, { 0, 0 } },
 	{ "module_not_loaded", "Module {hilight $0/$1} is not loaded", 2, { 0, 0 } },
 	{ "module_load_error", "Error loading module {hilight $0/$1}: $2", 3, { 0, 0, 0 } },
+	{ "module_version_mismatch", "{hilight $0/$1} is ABI version $2 but Irssi is version $abiversion, cannot load", 3, { 0, 0, 0 } },
 	{ "module_invalid", "{hilight $0/$1} isn't Irssi module", 2, { 0, 0 } },
 	{ "module_loaded", "Loaded module {hilight $0/$1}", 2, { 0, 0 } },
 	{ "module_unloaded", "Unloaded module {hilight $0/$1}", 2, { 0, 0 } },

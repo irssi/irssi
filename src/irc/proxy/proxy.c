@@ -108,3 +108,8 @@ void irc_proxy_deinit(void)
 {
 	proxy_listen_deinit();
 }
+
+void irc_proxy_abicheck(int *version)
+{
+	*version = IRSSI_ABI_VERSION;
+}

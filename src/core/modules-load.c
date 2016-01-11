@@ -160,11 +160,14 @@ static int module_load_name(const char *path, const char *rootmodule,
 {
 	void (*module_init) (void);
 	void (*module_deinit) (void);
+	void (*module_version) (int *);
 	GModule *gmodule;
         MODULE_REC *module;
 	MODULE_FILE_REC *rec;
+	gpointer value_version = NULL;
 	gpointer value1, value2 = NULL;
-	char *initfunc, *deinitfunc;
+	char *versionfunc, *initfunc, *deinitfunc;
+	int module_abi_version = 0;
         int found;
 
 	gmodule = module_open(path, &found);
@@ -174,6 +177,27 @@ static int module_load_name(const char *path, const char *rootmodule,
 				     rootmodule, submodule);
 		}
 		return found ? 0 : -1;
+	}
+
+	/* get the module's irssi abi version and bail out on mismatch */
+	versionfunc = module_get_func(rootmodule, submodule, "abicheck");
+	if (!g_module_symbol(gmodule, versionfunc, &value_version)) {
+		g_free(versionfunc);
+		module_error(MODULE_ERROR_VERSION_MISMATCH, "0",
+			     rootmodule, submodule);
+		g_module_close(gmodule);
+		return 0;
+	}
+	g_free(versionfunc);
+	module_version = value_version;
+	module_version(&module_abi_version);
+	if (module_abi_version != IRSSI_ABI_VERSION) {
+		char *module_abi_versionstr = g_strdup_printf("%d", module_abi_version);
+		module_error(MODULE_ERROR_VERSION_MISMATCH, module_abi_versionstr,
+			     rootmodule, submodule);
+		g_free(module_abi_versionstr);
+		g_module_close(gmodule);
+		return 0;
 	}
 
 	/* get the module's init() and deinit() functions */
