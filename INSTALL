@@ -11,7 +11,8 @@ To compile irssi you need:
 
 For most people, this should work just fine:
 
- ./configure
+ ./autogen.sh     (for people who just cloned the repository)
+ ./configure      (if this script already exists, skip ./autogen.sh)
  make
  su
  make install     (not _really_ required except for perl support)
