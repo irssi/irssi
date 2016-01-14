@@ -25,9 +25,11 @@
 void irc_channels_setup_init(void)
 {
 	signal_add("channel wholist", (SIGNAL_FUNC) channel_send_autocommands);
+	signal_add("channel joined", (SIGNAL_FUNC) channel_send_autocommands);
 }
 
 void irc_channels_setup_deinit(void)
 {
 	signal_remove("channel wholist", (SIGNAL_FUNC) channel_send_autocommands);
+	signal_remove("channel joined", (SIGNAL_FUNC) channel_send_autocommands);
 }

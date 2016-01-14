@@ -245,9 +245,18 @@ void channel_send_autocommands(CHANNEL_REC *channel)
 	if (rec == NULL || rec->autosendcmd == NULL || !*rec->autosendcmd)
 		return;
 
-	if (rec->botmasks == NULL || !*rec->botmasks) {
-		/* just send the command. */
-		eval_special_string(rec->autosendcmd, "", channel->server, channel);
+	if (channel->wholist == FALSE) {
+		/* if the autosendcmd alone (with no -bots parameter) has been
+		 * specified then send it right after joining the channel, when
+		 * the WHO list hasn't been yet retrieved.
+		 * Depending on the value of the 'channel_max_who_sync' option
+		 * the WHO list might not be retrieved after the join event. */
+
+		if (rec->botmasks == NULL || !*rec->botmasks) {
+			/* just send the command. */
+			eval_special_string(rec->autosendcmd, "", channel->server, channel);
+		}
+
 		return;
 	}
 
