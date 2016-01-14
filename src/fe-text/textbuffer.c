@@ -27,10 +27,6 @@
 
 #include "textbuffer.h"
 
-#ifdef HAVE_REGEX_H
-#  include <regex.h>
-#endif
-
 #define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-(int)sizeof(char*))
 
 TEXT_BUFFER_REC *textbuffer_create(void)
@@ -537,9 +533,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			    int before, int after,
 			    int regexp, int fullword, int case_sensitive)
 {
-#ifdef HAVE_REGEX_H
-	regex_t preg;
-#endif
+	GRegex *preg;
         LINE_REC *line, *pre_line;
 	GList *matches;
 	GString *str;
@@ -550,14 +544,10 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 	g_return_val_if_fail(text != NULL, NULL);
 
 	if (regexp) {
-#ifdef HAVE_REGEX_H
-		int flags = REG_EXTENDED | REG_NOSUB |
-			(case_sensitive ? 0 : REG_ICASE);
-		if (regcomp(&preg, text, flags) != 0)
+		preg = g_regex_new(text, (case_sensitive ? 0 : G_REGEX_CASELESS), 0, NULL);
+
+		if (preg == NULL)
 			return NULL;
-#else
-		return NULL;
-#endif
 	}
 
 	matches = NULL; match_after = 0;
@@ -577,12 +567,11 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 		if (*text != '\0') {
 			textbuffer_line2text(line, FALSE, str);
 
-			if (line_matched)
-			line_matched =
-#ifdef HAVE_REGEX_H
-			regexp ? regexec(&preg, str->str, 0, NULL, 0) == 0 :
-#endif
-			match_func(str->str, text) != NULL;
+			if (line_matched) {
+				line_matched = regexp ? 
+				    g_regex_match(preg, str->str, 0, NULL) :
+				    match_func(str->str, text) != NULL;
+			}
 		}
 
 		if (line_matched) {
@@ -610,9 +599,9 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 				matches = g_list_append(matches, NULL);
 		}
 	}
-#ifdef HAVE_REGEX_H
-	if (regexp) regfree(&preg);
-#endif
+
+	if (regexp)
+		g_regex_unref(preg);
         g_string_free(str, TRUE);
 	return matches;
 }

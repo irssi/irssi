@@ -22,10 +22,6 @@
 #include "misc.h"
 #include "commands.h"
 
-#ifdef HAVE_REGEX_H
-#  include <regex.h>
-#endif
-
 typedef struct {
 	int condition;
 	GInputFunction function;
