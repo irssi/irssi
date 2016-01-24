@@ -31,6 +31,7 @@ void channel_change_visible_name(CHANNEL_REC *channel, const char *name);
 
 /* Send the auto send command to channel */
 void channel_send_autocommands(CHANNEL_REC *channel);
+void channel_send_botcommands(CHANNEL_REC *channel);
 
 void channels_init(void);
 void channels_deinit(void);
