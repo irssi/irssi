@@ -1,0 +1,21 @@
+
+@SYNTAX:servlist@
+
+Works only on IRCnet.
+
+SERVLIST gives the list of services currently present on the
+IRC network.  It can take two arguments.
+    <mask> limits the output to the services which names matches
+           the mask.
+    <type> limits the output to the services of the specified type.
+  
+The fields returned are:
+    Service name.
+    Server who introduced the service.
+    Distribution mask.
+    Service type.
+    Hop count to the service.
+    A comment.
+
+See also: SQUERY
+
