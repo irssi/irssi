@@ -28,7 +28,6 @@
     service instead; on IRCnet, you may use the ALIS service:
 
     /QUOTE SQUERY ALIS :HELP
-    /MSG ALIS HELP
 
 %9See also:%9 QUOTE, STATS, WHOIS
 
