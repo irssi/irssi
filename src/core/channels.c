@@ -233,6 +233,31 @@ static int match_nick_flags(SERVER_REC *server, NICK_REC *nick, char flag)
 void channel_send_autocommands(CHANNEL_REC *channel)
 {
 	CHANNEL_SETUP_REC *rec;
+
+	g_return_if_fail(IS_CHANNEL(channel));
+
+	if (channel->session_rejoin)
+		return;
+
+	rec = channel_setup_find(channel->name, channel->server->connrec->chatnet);
+	if (rec == NULL || rec->autosendcmd == NULL || !*rec->autosendcmd)
+		return;
+
+	/* if the autosendcmd alone (with no -bots parameter) has been
+	 * specified then send it right after joining the channel, when
+	 * the WHO list hasn't been yet retrieved.
+	 * Depending on the value of the 'channel_max_who_sync' option
+	 * the WHO list might not be retrieved after the join event. */
+
+	if (rec->botmasks == NULL || !*rec->botmasks) {
+		/* just send the command. */
+		eval_special_string(rec->autosendcmd, "", channel->server, channel);
+	}
+}
+
+void channel_send_botcommands(CHANNEL_REC *channel)
+{
+	CHANNEL_SETUP_REC *rec;
 	NICK_REC *nick;
 	char **bots, **bot;
 
@@ -245,11 +270,9 @@ void channel_send_autocommands(CHANNEL_REC *channel)
 	if (rec == NULL || rec->autosendcmd == NULL || !*rec->autosendcmd)
 		return;
 
-	if (rec->botmasks == NULL || !*rec->botmasks) {
-		/* just send the command. */
-		eval_special_string(rec->autosendcmd, "", channel->server, channel);
+	/* this case has already been handled by channel_send_autocommands */
+	if (rec->botmasks == NULL || !*rec->botmasks)
 		return;
-	}
 
 	/* find first available bot.. */
 	bots = g_strsplit(rec->botmasks, " ", -1);
