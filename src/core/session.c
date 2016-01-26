@@ -62,6 +62,9 @@ static void cmd_upgrade(const char *data)
 	char *session_file, *str;
 	char *binary;
 
+	if (sandbox)
+		return;
+
 	if (*data == '\0')
 		data = irssi_binary;
 

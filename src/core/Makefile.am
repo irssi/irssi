@@ -37,6 +37,7 @@ libcore_a_SOURCES = \
 	queries.c \
 	rawlog.c \
 	recode.c \
+	sandbox.c \
 	servers.c \
 	servers-reconnect.c \
 	servers-setup.c \
@@ -86,6 +87,7 @@ pkginc_core_HEADERS = \
 	queries.h \
 	rawlog.h \
 	recode.h \
+	sandbox.h \
 	servers.h \
 	servers-reconnect.h \
 	servers-setup.h \
