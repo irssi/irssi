@@ -390,6 +390,7 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_ADDRCONFIG;
 
 	/* save error to host_error for later use */
 	ret = getaddrinfo(addr, NULL, &hints, &ailist);
