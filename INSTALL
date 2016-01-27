@@ -29,10 +29,6 @@ configure options
 
   Build the irssi proxy (see startup-HOWTO).
 
-  --disable-ipv6
-
-  Disable IPv6 support.
-
   --disable-ssl
 
   Disable SSL support.

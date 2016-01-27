@@ -1,5 +1,4 @@
 /* misc.. */
-#undef HAVE_IPV6
 #undef HAVE_SOCKS_H
 #undef HAVE_STATIC_PERL
 #undef HAVE_GMODULE

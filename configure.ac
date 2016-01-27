@@ -140,15 +140,6 @@ AC_ARG_WITH(perl,
 	fi,
 	want_perl=static)
 
-AC_ARG_ENABLE(ipv6,
-[  --disable-ipv6          Disable IPv6 support],
-	if test x$enableval = xno; then
-		want_ipv6=no
-	else
-		want_ipv6=yes
-	fi,
-	want_ipv6=yes)
-
 AC_ARG_ENABLE(dane,
 [  --enable-dane           Enable DANE support],
 	if test x$enableval = xno ; then
@@ -577,29 +568,6 @@ COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS"
 AC_SUBST(COMMON_NOUI_LIBS)
 AC_SUBST(COMMON_LIBS)
 
-dnl **
-dnl ** IPv6 support
-dnl **
-
-have_ipv6=no
-if test "x$want_ipv6" = "xyes"; then
-	AC_MSG_CHECKING([for IPv6])
-	AC_CACHE_VAL(irssi_cv_type_in6_addr,
-	[AC_TRY_COMPILE([
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netinet/in.h>
-	#include <netdb.h>
-	#include <arpa/inet.h>],
-	[struct in6_addr i = in6addr_any; return &i == &i;],
-	have_ipv6=yes,
-	)])
-	if test $have_ipv6 = yes; then
-		AC_DEFINE(HAVE_IPV6)
-	fi
-	AC_MSG_RESULT($have_ipv6)
-fi
-
 have_dane=no
 if test "x$want_dane" = "xyes"; then
 	AC_MSG_CHECKING([for DANE])
@@ -742,7 +710,6 @@ echo "Install prefix ................... : $prefix"
 
 echo
 
-echo "Building with IPv6 support ....... : $have_ipv6"
 echo "Building with SSL support ........ : $have_openssl"
 if test "x$have_openssl" = "xno" -a "x$enable_ssl" = "xyes"; then
   if test -f /etc/debian_version; then
