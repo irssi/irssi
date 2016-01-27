@@ -16,7 +16,7 @@ char *address;
 int port;
 char *chatnet;
 
-IPADDR *own_ip4, *own_ip6;
+IPADDR *own_ip;
 
 char *password;
 char *nick;
