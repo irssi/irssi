@@ -36,6 +36,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "netsplits_line", "%#$[9]0 $[10]1 $[20]2 $3", 4, { 0, 0, 0, 0 } },
 	{ "netsplits_footer", "", 0 },
 	{ "network_added", "Network $0 saved", 1, { 0 } },
+	{ "network_modified", "Network $0 saved", 1, { 0 } },
 	{ "network_removed", "Network $0 removed", 1, { 0 } },
 	{ "network_not_found", "Network $0 not found", 1, { 0 } },
 	{ "network_header", "%#Networks:", 0 },

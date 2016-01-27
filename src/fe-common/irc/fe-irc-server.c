@@ -56,6 +56,36 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
                       [-auto | -noauto] [-network <network>] [-host <hostname>]
                       [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
                       <address> [<port> [<password>]] */
+/* NOTE: -network replaces the old -ircnet flag. */
+static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
+				GHashTable *optlist)
+{
+        IRC_CHATNET_REC *ircnet;
+	char *value;
+
+	value = g_hash_table_lookup(optlist, "network");
+	/* For backwards compatibility, also allow the old name 'ircnet'.
+	   But of course only if -network was not given. */
+	if (!value)
+		value = g_hash_table_lookup(optlist, "ircnet");
+
+	if (value != NULL) {
+		g_free_and_null(rec->chatnet);
+		if (*value != '\0') {
+			ircnet = ircnet_find(value);
+			rec->chatnet = ircnet != NULL ?
+				g_strdup(ircnet->name) : g_strdup(value);
+		}
+	}
+
+	value = g_hash_table_lookup(optlist, "cmdspeed");
+	if (value != NULL && *value != '\0') rec->cmd_queue_speed = atoi(value);
+	value = g_hash_table_lookup(optlist, "cmdmax");
+	if (value != NULL && *value != '\0') rec->max_cmds_at_once = atoi(value);
+	value = g_hash_table_lookup(optlist, "querychans");
+	if (value != NULL && *value != '\0') rec->max_query_chans = atoi(value);
+}
+
 /* SYNTAX: SERVER MODIFY [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
                          [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
                          [-ssl_ciphers <list>]
@@ -63,7 +93,7 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
                          [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
                          <address> [<port> [<password>]] */
 /* NOTE: -network replaces the old -ircnet flag. */
-static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
+static void sig_server_modify_fill(IRC_SERVER_SETUP_REC *rec,
 				GHashTable *optlist)
 {
         IRC_CHATNET_REC *ircnet;
@@ -154,13 +184,16 @@ static void cmd_server_list(const char *data)
 void fe_irc_server_init(void)
 {
 	signal_add("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
+	signal_add("server modify fill", (SIGNAL_FUNC) sig_server_modify_fill);
 	command_bind("server list", NULL, (SIGNAL_FUNC) cmd_server_list);
 
 	command_set_options("server add", "-ircnet -network -cmdspeed -cmdmax -querychans");
+	command_set_options("server modify", "-ircnet -network -cmdspeed -cmdmax -querychans");
 }
 
 void fe_irc_server_deinit(void)
 {
 	signal_remove("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
+	signal_remove("server modify fill", (SIGNAL_FUNC) sig_server_modify_fill);
 	command_unbind("server list", (SIGNAL_FUNC) cmd_server_list);
 }

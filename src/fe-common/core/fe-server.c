@@ -205,6 +205,101 @@ static void cmd_server_add(const char *data)
 	cmd_params_free(free_arg);
 }
 
+static void cmd_server_modify(const char *data)
+{
+        GHashTable *optlist;
+	SERVER_SETUP_REC *rec;
+	char *addr, *portstr, *password, *value, *chatnet;
+	void *free_arg;
+	int port;
+
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
+			    "server modify", &optlist, &addr, &portstr, &password))
+		return;
+
+	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	port = *portstr == '\0' ? DEFAULT_SERVER_ADD_PORT : atoi(portstr);
+
+	chatnet = g_hash_table_lookup(optlist, "network");
+
+	rec = server_setup_find(addr, port, chatnet);
+
+	if (rec == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_NOT_FOUND, addr, port);
+	} else {
+		value = g_hash_table_lookup(optlist, "port");
+		if (value != NULL && *value != '\0') rec->port = atoi(value);
+
+		if (*password != '\0') g_free_and_null(rec->password);
+		if (g_hash_table_lookup(optlist, "host")) {
+			g_free_and_null(rec->own_host);
+			rec->own_ip4 = rec->own_ip6 = NULL;
+		}
+
+		if (g_hash_table_lookup(optlist, "6"))
+			rec->family = AF_INET6;
+	        else if (g_hash_table_lookup(optlist, "4"))
+			rec->family = AF_INET;
+
+		if (g_hash_table_lookup(optlist, "ssl"))
+			rec->use_ssl = TRUE;
+
+		value = g_hash_table_lookup(optlist, "ssl_cert");
+		if (value != NULL && *value != '\0')
+			rec->ssl_cert = g_strdup(value);
+
+		value = g_hash_table_lookup(optlist, "ssl_pkey");
+		if (value != NULL && *value != '\0')
+			rec->ssl_pkey = g_strdup(value);
+
+		value = g_hash_table_lookup(optlist, "ssl_pass");
+		if (value != NULL && *value != '\0')
+			rec->ssl_pass = g_strdup(value);
+
+		if (g_hash_table_lookup(optlist, "ssl_verify"))
+			rec->ssl_verify = TRUE;
+
+		value = g_hash_table_lookup(optlist, "ssl_cafile");
+		if (value != NULL && *value != '\0')
+			rec->ssl_cafile = g_strdup(value);
+
+		value = g_hash_table_lookup(optlist, "ssl_capath");
+		if (value != NULL && *value != '\0')
+			rec->ssl_capath = g_strdup(value);
+
+		value = g_hash_table_lookup(optlist, "ssl_ciphers");
+		if (value != NULL && *value != '\0')
+			rec->ssl_ciphers = g_strdup(value);
+
+		if ((rec->ssl_cafile != NULL && rec->ssl_cafile[0] != '\0')
+		||  (rec->ssl_capath != NULL && rec->ssl_capath[0] != '\0'))
+			rec->ssl_verify = TRUE;
+
+		if ((rec->ssl_cert != NULL && rec->ssl_cert[0] != '\0') || rec->ssl_verify == TRUE)
+			rec->use_ssl = TRUE;
+
+		if (g_hash_table_lookup(optlist, "auto")) rec->autoconnect = TRUE;
+		if (g_hash_table_lookup(optlist, "noauto")) rec->autoconnect = FALSE;
+		if (g_hash_table_lookup(optlist, "proxy")) rec->no_proxy = FALSE;
+		if (g_hash_table_lookup(optlist, "noproxy")) rec->no_proxy = TRUE;
+
+		if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
+		value = g_hash_table_lookup(optlist, "host");
+		if (value != NULL && *value != '\0') {
+			rec->own_host = g_strdup(value);
+			rec->own_ip4 = rec->own_ip6 = NULL;
+		}
+
+		signal_emit("server modify fill", 2, rec, optlist);
+
+		server_setup_add(rec);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_SETUPSERVER_MODIFIED, addr, port);
+	}
+
+	cmd_params_free(free_arg);
+}
+
 /* SYNTAX: SERVER REMOVE <address> [<port>] [<network>] */
 static void cmd_server_remove(const char *data)
 {
@@ -387,12 +482,13 @@ void fe_server_init(void)
 {
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
 	command_bind("server connect", NULL, (SIGNAL_FUNC) cmd_server_connect);
-	command_bind("server modify", NULL, (SIGNAL_FUNC) cmd_server_add);
+	command_bind("server modify", NULL, (SIGNAL_FUNC) cmd_server_modify);
 	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
 	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
 	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) server_command);
 	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers auto noauto proxy noproxy -host -port noautosendcmd");
+	command_set_options("server modify", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers auto noauto proxy noproxy -host -port noautosendcmd");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);
@@ -412,7 +508,7 @@ void fe_server_deinit(void)
 {
 	command_unbind("server", (SIGNAL_FUNC) cmd_server);
 	command_unbind("server connect", (SIGNAL_FUNC) cmd_server_connect);
-	command_unbind("server modify", (SIGNAL_FUNC) cmd_server_add);
+	command_unbind("server modify", (SIGNAL_FUNC) cmd_server_modify);
 	command_unbind("server add", (SIGNAL_FUNC) cmd_server_add);
 	command_unbind("server remove", (SIGNAL_FUNC) cmd_server_remove);
 	command_unbind("server", (SIGNAL_FUNC) server_command);
