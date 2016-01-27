@@ -459,10 +459,7 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 
 int net_ip2host(IPADDR *ip, char *host)
 {
-	if (!inet_ntop(ip->family, &ip->ip, host, MAX_IP_LEN))
-		return -1;
-
-	return 0;
+	return inet_ntop(ip->family, &ip->ip, host, MAX_IP_LEN) ? 0 : -1;
 }
 
 int net_host2ip(const char *host, IPADDR *ip)
