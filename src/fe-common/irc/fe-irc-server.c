@@ -96,7 +96,7 @@ static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 static void sig_server_modify_fill(IRC_SERVER_SETUP_REC *rec,
 				GHashTable *optlist)
 {
-        IRC_CHATNET_REC *ircnet;
+	IRC_CHATNET_REC *ircnet;
 	char *value;
 
 	value = g_hash_table_lookup(optlist, "network");
