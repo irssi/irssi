@@ -104,43 +104,11 @@ static SERVER_SETUP_REC *create_server_setup(GHashTable *optlist)
 	return server;
 }
 
-static void cmd_server_add(const char *data)
+
+static SERVER_SETUP_REC *server_setup_fill_rec(SERVER_SETUP_REC *rec, GHashTable *optlist)
 {
-        GHashTable *optlist;
-	SERVER_SETUP_REC *rec;
-	char *addr, *portstr, *password, *value, *chatnet;
-	void *free_arg;
-	int port;
-
-	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
-			    "server add", &optlist, &addr, &portstr, &password))
-		return;
-
-	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	port = *portstr == '\0' ? DEFAULT_SERVER_ADD_PORT : atoi(portstr);
-
-	chatnet = g_hash_table_lookup(optlist, "network");
-
-	rec = server_setup_find(addr, port, chatnet);
-
-	if (rec == NULL) {
-		rec = create_server_setup(optlist);
-		if (rec == NULL) {
-			cmd_params_free(free_arg);
-			return;
-		}
-		rec->address = g_strdup(addr);
-		rec->port = port;
-	} else {
-		value = g_hash_table_lookup(optlist, "port");
-		if (value != NULL && *value != '\0') rec->port = atoi(value);
-
-		if (*password != '\0') g_free_and_null(rec->password);
-		if (g_hash_table_lookup(optlist, "host")) {
-			g_free_and_null(rec->own_host);
-			rec->own_ip4 = rec->own_ip6 = NULL;
-		}
-	}
+	g_return_if_fail(rec != NULL);
+	char *value;
 
 	if (g_hash_table_lookup(optlist, "6"))
 		rec->family = AF_INET6;
@@ -189,12 +157,56 @@ static void cmd_server_add(const char *data)
 	if (g_hash_table_lookup(optlist, "proxy")) rec->no_proxy = FALSE;
 	if (g_hash_table_lookup(optlist, "noproxy")) rec->no_proxy = TRUE;
 
-	if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
 	value = g_hash_table_lookup(optlist, "host");
 	if (value != NULL && *value != '\0') {
 		rec->own_host = g_strdup(value);
 		rec->own_ip4 = rec->own_ip6 = NULL;
 	}
+
+	return rec;
+}
+
+static void cmd_server_add(const char *data)
+{
+        GHashTable *optlist;
+	SERVER_SETUP_REC *rec;
+	char *addr, *portstr, *password, *value, *chatnet;
+	void *free_arg;
+	int port;
+
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
+			    "server add", &optlist, &addr, &portstr, &password))
+		return;
+
+	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	port = *portstr == '\0' ? DEFAULT_SERVER_ADD_PORT : atoi(portstr);
+
+	chatnet = g_hash_table_lookup(optlist, "network");
+
+	rec = server_setup_find(addr, port, chatnet);
+
+	if (rec == NULL) {
+		rec = create_server_setup(optlist);
+		if (rec == NULL) {
+			cmd_params_free(free_arg);
+			return;
+		}
+		rec->address = g_strdup(addr);
+		rec->port = port;
+	} else {
+		value = g_hash_table_lookup(optlist, "port");
+		if (value != NULL && *value != '\0') rec->port = atoi(value);
+
+		if (*password != '\0') g_free_and_null(rec->password);
+		if (g_hash_table_lookup(optlist, "host")) {
+			g_free_and_null(rec->own_host);
+			rec->own_ip4 = rec->own_ip6 = NULL;
+		}
+	}
+
+	if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
+
+	rec = server_setup_fill_rec(rec, optlist);
 
 	signal_emit("server add fill", 2, rec, optlist);
 
@@ -236,59 +248,9 @@ static void cmd_server_modify(const char *data)
 			rec->own_ip4 = rec->own_ip6 = NULL;
 		}
 
-		if (g_hash_table_lookup(optlist, "6"))
-			rec->family = AF_INET6;
-	        else if (g_hash_table_lookup(optlist, "4"))
-			rec->family = AF_INET;
-
-		if (g_hash_table_lookup(optlist, "ssl"))
-			rec->use_ssl = TRUE;
-
-		value = g_hash_table_lookup(optlist, "ssl_cert");
-		if (value != NULL && *value != '\0')
-			rec->ssl_cert = g_strdup(value);
-
-		value = g_hash_table_lookup(optlist, "ssl_pkey");
-		if (value != NULL && *value != '\0')
-			rec->ssl_pkey = g_strdup(value);
-
-		value = g_hash_table_lookup(optlist, "ssl_pass");
-		if (value != NULL && *value != '\0')
-			rec->ssl_pass = g_strdup(value);
-
-		if (g_hash_table_lookup(optlist, "ssl_verify"))
-			rec->ssl_verify = TRUE;
-
-		value = g_hash_table_lookup(optlist, "ssl_cafile");
-		if (value != NULL && *value != '\0')
-			rec->ssl_cafile = g_strdup(value);
-
-		value = g_hash_table_lookup(optlist, "ssl_capath");
-		if (value != NULL && *value != '\0')
-			rec->ssl_capath = g_strdup(value);
-
-		value = g_hash_table_lookup(optlist, "ssl_ciphers");
-		if (value != NULL && *value != '\0')
-			rec->ssl_ciphers = g_strdup(value);
-
-		if ((rec->ssl_cafile != NULL && rec->ssl_cafile[0] != '\0')
-		||  (rec->ssl_capath != NULL && rec->ssl_capath[0] != '\0'))
-			rec->ssl_verify = TRUE;
-
-		if ((rec->ssl_cert != NULL && rec->ssl_cert[0] != '\0') || rec->ssl_verify == TRUE)
-			rec->use_ssl = TRUE;
-
-		if (g_hash_table_lookup(optlist, "auto")) rec->autoconnect = TRUE;
-		if (g_hash_table_lookup(optlist, "noauto")) rec->autoconnect = FALSE;
-		if (g_hash_table_lookup(optlist, "proxy")) rec->no_proxy = FALSE;
-		if (g_hash_table_lookup(optlist, "noproxy")) rec->no_proxy = TRUE;
-
 		if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
-		value = g_hash_table_lookup(optlist, "host");
-		if (value != NULL && *value != '\0') {
-			rec->own_host = g_strdup(value);
-			rec->own_ip4 = rec->own_ip6 = NULL;
-		}
+
+		rec = server_setup_fill_rec(rec, optlist);
 
 		signal_emit("server modify fill", 2, rec, optlist);
 
