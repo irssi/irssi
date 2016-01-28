@@ -92,8 +92,6 @@ static IRC_CHATNET_REC *network_setup_fill_rec(IRC_CHATNET_REC *rec, GHashTable 
 {
 	char *value;
 
-	g_return_if_fail(rec != NULL);
-
 	value = g_hash_table_lookup(optlist, "kicks");
 	if (value != NULL) rec->max_kicks = atoi(value);
 	value = g_hash_table_lookup(optlist, "msgs");
@@ -170,12 +168,13 @@ static void cmd_network_add(const char *data)
 			g_free_and_null(rec->own_host);
                         rec->own_ip4 = rec->own_ip6 = NULL;
 		}
-		if (g_hash_table_lookup(optlist, "usermode")) g_free_and_null(rec->usermode);
-		if (g_hash_table_lookup(optlist, "autosendcmd")) g_free_and_null(rec->autosendcmd);
-		if (g_hash_table_lookup(optlist, "sasl_mechanism")) g_free_and_null(rec->sasl_mechanism);
-		if (g_hash_table_lookup(optlist, "sasl_username")) g_free_and_null(rec->sasl_username);
-		if (g_hash_table_lookup(optlist, "sasl_password")) g_free_and_null(rec->sasl_password);
 	}
+
+	if (g_hash_table_lookup(optlist, "usermode")) g_free_and_null(rec->usermode);
+	if (g_hash_table_lookup(optlist, "autosendcmd")) g_free_and_null(rec->autosendcmd);
+	if (g_hash_table_lookup(optlist, "sasl_mechanism")) g_free_and_null(rec->sasl_mechanism);
+	if (g_hash_table_lookup(optlist, "sasl_username")) g_free_and_null(rec->sasl_username);
+	if (g_hash_table_lookup(optlist, "sasl_password")) g_free_and_null(rec->sasl_password);
 
 	rec = network_setup_fill_rec(rec, optlist);
 

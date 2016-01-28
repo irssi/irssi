@@ -107,7 +107,6 @@ static SERVER_SETUP_REC *create_server_setup(GHashTable *optlist)
 
 static SERVER_SETUP_REC *server_setup_fill_rec(SERVER_SETUP_REC *rec, GHashTable *optlist)
 {
-	g_return_if_fail(rec != NULL);
 	char *value;
 
 	if (g_hash_table_lookup(optlist, "6"))
@@ -207,9 +206,7 @@ static void cmd_server_add(const char *data)
 	if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
 
 	rec = server_setup_fill_rec(rec, optlist);
-
 	signal_emit("server add fill", 2, rec, optlist);
-
 	server_setup_add(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_SETUPSERVER_ADDED, addr, port);
@@ -251,9 +248,7 @@ static void cmd_server_modify(const char *data)
 		if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
 
 		rec = server_setup_fill_rec(rec, optlist);
-
 		signal_emit("server modify fill", 2, rec, optlist);
-
 		server_setup_add(rec);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 			    TXT_SETUPSERVER_MODIFIED, addr, port);

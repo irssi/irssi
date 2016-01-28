@@ -250,8 +250,6 @@ static CHANNEL_SETUP_REC *channel_setup_fill_rec(CHANNEL_SETUP_REC *rec, GHashTa
 {
 	char *botarg, *botcmdarg;
 
-	g_return_if_fail(rec != NULL);
-
 	botarg = g_hash_table_lookup(optlist, "bots");
 	botcmdarg = g_hash_table_lookup(optlist, "botcmd");
 
@@ -302,7 +300,6 @@ static void cmd_channel_add(const char *data)
 	if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
 
 	rec = channel_setup_fill_rec(rec, optlist);
-
 	channel_setup_create(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_CHANSETUP_ADDED, channel, chatnet);
@@ -336,16 +333,15 @@ static void cmd_channel_modify(const char *data)
 	}
 
 	rec = channel_setup_find(channel, chatnet);
-	if (rec == NULL) {
+	if (rec == NULL)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CHANSETUP_NOT_FOUND, channel, chatnet);
-	} else {
+	else {
 		if (g_hash_table_lookup(optlist, "bots")) g_free_and_null(rec->botmasks);
 		if (g_hash_table_lookup(optlist, "botcmd")) g_free_and_null(rec->autosendcmd);
 		if (*password != '\0') g_free_and_null(rec->password);
 		if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
 
 		rec = channel_setup_fill_rec(rec, optlist);
-
 		channel_setup_create(rec);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 			    TXT_CHANSETUP_MODIFIED, channel, chatnet);
