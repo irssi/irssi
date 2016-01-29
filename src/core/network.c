@@ -447,8 +447,10 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 	sin_set_ip(&so, ip);
 
 	/* save error to host_error for later use */
-        host_error = getnameinfo((struct sockaddr *) &so, sizeof(so),
-                                 hostname, sizeof(hostname), NULL, 0, 0);
+        host_error = getnameinfo((struct sockaddr *)&so, sizeof(so),
+				 hostname, sizeof(hostname),
+				 NULL, 0,
+				 NI_NAMEREQD);
         if (host_error != 0)
                 return host_error;
 
