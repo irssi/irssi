@@ -543,6 +543,8 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 	g_return_val_if_fail(buffer != NULL, NULL);
 	g_return_val_if_fail(text != NULL, NULL);
 
+	preg = NULL;
+
 	if (regexp) {
 		preg = g_regex_new(text, (case_sensitive ? 0 : G_REGEX_CASELESS), 0, NULL);
 

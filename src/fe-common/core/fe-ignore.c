@@ -58,7 +58,7 @@ static void ignore_print(int index, IGNORE_REC *rec)
 		g_string_append(options, "-regexp ");
 		if (rec->pattern == NULL)
 			g_string_append(options, "[INVALID! -pattern missing] ");
-		else if (!rec->regexp_compiled)
+		else if (rec->preg == NULL)
 			g_string_append(options, "[INVALID!] ");
 	}
 	if (rec->fullword) g_string_append(options, "-full ");

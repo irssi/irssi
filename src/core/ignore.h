@@ -16,7 +16,6 @@ struct _IGNORE_REC {
 	unsigned int regexp:1;
 	unsigned int fullword:1;
 	unsigned int replies:1; /* ignore replies to nick in channel */
-	unsigned int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
 	GRegex *preg;
 };
 
