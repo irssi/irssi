@@ -217,6 +217,11 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 		want_space = TRUE;
 		signal_emit("complete word", 5, &complist, window, word, linestart, &want_space);
 		last_want_space = want_space;
+
+		if (complist != NULL) {
+			/* Remove all nulls (from the signal) before doing further processing */
+			complist = g_list_remove_all(g_list_first(complist), NULL);
+		}
 	}
 
 	g_free(linestart);
