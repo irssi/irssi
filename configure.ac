@@ -21,7 +21,7 @@ AC_PATH_PROG(perlpath, perl)
 AC_CHECK_HEADERS(unistd.h dirent.h sys/ioctl.h sys/resource.h)
 
 # check posix headers..
-AC_CHECK_HEADERS(sys/socket.h sys/time.h sys/utsname.h regex.h)
+AC_CHECK_HEADERS(sys/socket.h sys/time.h sys/utsname.h)
 
 AC_SYS_LARGEFILE
 
