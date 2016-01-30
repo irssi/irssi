@@ -589,32 +589,28 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
         unichar *tmpcutbuffer = entry->cutbuffer;
 	switch (update_cutbuffer) {
 		case CUTBUFFER_UPDATE_APPEND:
-                        entry->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
-                        if (entry->cutbuffer) {
-                                memcpy(entry->cutbuffer, tmpcutbuffer,
-                                                entry->cutbuffer_len * sizeof(unichar));
-                                memcpy(entry->cutbuffer + entry->cutbuffer_len * sizeof(unichar),
-                                                entry->text + entry->pos - size, size * sizeof(unichar));
+			entry->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
+			memcpy(entry->cutbuffer, tmpcutbuffer,
+					entry->cutbuffer_len * sizeof(unichar));
+			memcpy(entry->cutbuffer + entry->cutbuffer_len * sizeof(unichar),
+					entry->text + entry->pos - size, size * sizeof(unichar));
 
-                                entry->cutbuffer_len = cutbuffer_new_size;
-                                entry->cutbuffer[cutbuffer_new_size] = '\0';
-                                g_free(tmpcutbuffer);
-                        }
-                        break;
+			entry->cutbuffer_len = cutbuffer_new_size;
+			entry->cutbuffer[cutbuffer_new_size] = '\0';
+			g_free(tmpcutbuffer);
+			break;
 
 		case CUTBUFFER_UPDATE_PREPEND:
-                        entry->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
-                        if (entry->cutbuffer) {
-                                memcpy(entry->cutbuffer, entry->text + entry->pos - size,
-                                                size * sizeof(unichar));
-                                memcpy(entry->cutbuffer + size, tmpcutbuffer,
-                                                entry->cutbuffer_len * sizeof(unichar));
+			entry->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
+			memcpy(entry->cutbuffer, entry->text + entry->pos - size,
+					size * sizeof(unichar));
+			memcpy(entry->cutbuffer + size, tmpcutbuffer,
+					entry->cutbuffer_len * sizeof(unichar));
 
-                                entry->cutbuffer_len = cutbuffer_new_size;
-                                entry->cutbuffer[cutbuffer_new_size] = '\0';
-                                g_free(tmpcutbuffer);
-                        }
-                        break;
+			entry->cutbuffer_len = cutbuffer_new_size;
+			entry->cutbuffer[cutbuffer_new_size] = '\0';
+			g_free(tmpcutbuffer);
+			break;
 
 		case CUTBUFFER_UPDATE_REPLACE:
 			/* put erased text to cutbuffer */
