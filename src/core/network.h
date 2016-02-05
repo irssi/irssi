@@ -21,19 +21,11 @@
 
 struct _IPADDR {
 	unsigned short family;
-#ifdef HAVE_IPV6
 	struct in6_addr ip;
-#else
-	struct in_addr ip;
-#endif
 };
 
 /* maxmimum string length of IP address */
-#ifdef HAVE_IPV6
-#  define MAX_IP_LEN INET6_ADDRSTRLEN
-#else
-#  define MAX_IP_LEN 20
-#endif
+#define MAX_IP_LEN INET6_ADDRSTRLEN
 
 #define IPADDR_IS_V6(ip) ((ip)->family != AF_INET)
 
