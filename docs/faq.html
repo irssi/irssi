@@ -1,152 +1,80 @@
-<h2>FAQ</h2>
+<h1>Frequently Asked Questions</h1>
+<h3 id="q-why-doesnt-irssi-display-colors-even-when-ircii-etc-displays-them">Q: Why doesn’t irssi display colors even when ircii etc. displays them?</h3>
 
-<h3>Q: Why doesn't irssi display colors even when ircii etc. displays them?</h3>
+<p>A: They force ANSI colors even if terminal doesn’t support them. By default, irssi uses colors only if terminfo/termcap so says. The correct way to fix this would be to change your TERM environment to a value where colors work, like xterm-color or color_xterm (eg. <code>TERM=xterm-color irssi</code>). If this doesn’t help, then use the evil way of <code>/SET term_force_colors ON</code>.</p>
 
-<p>A: They force ANSI colors even if terminal doesn't support them. By
-default, irssi uses colors only if terminfo/termcap so says. The correct
-way to fix this would be to change your TERM environment to a value where
-colors work, like xterm-color or color_xterm (eg. <code>TERM=xterm-color
-irssi</code>). If this doesn't help, then use the evil way of <code>/SET
-term_force_colors ON</code>.</p>
-
-
-<h3>Q: How do I easily write text to channel that starts with '/' character?</h3>
+<h3 id="q-how-do-i-easily-write-text-to-channel-that-starts-with--character">Q: How do I easily write text to channel that starts with ‘/’ character?</h3>
 
 <p>A: <code>/ /text</code></p>
 
+<h3 id="q-why-doesnt-irssi-update-my-realname-or-whatever-after-i-change-it-with-set-realname-and-reconnect-with-reconnect-or-server">Q: Why doesn’t irssi update my realname (or whatever) after I change it with <code>/SET realname</code> and reconnect with <code>/RECONNECT</code> or <code>/SERVER</code>?</h3>
 
-<h3>Q: Why doesn't irssi update my realname (or whatever) after I change it
-with <code>/SET realname</code> and reconnect with <code>/RECONNECT</code>
-or <code>/SERVER</code>?</h3>
+<p>A: Irssi is trying to be too smart. This will be fixed in future, but for now you should use <code>/DISCONNECT</code> and <code>/CONNECT</code>.</p>
 
-<p>A: Irssi is trying to be too smart. This will be fixed in future, but for
-now you should use <code>/DISCONNECT</code> and <code>/CONNECT</code>.</p>
+<h3 id="q-i-connected-to-some-server-which-isnt-responding-but-now-irssi-tries-to-connect-back-to-it-all-the-time-how-can-i-stop-it">Q: I connected to some server which isn’t responding but now irssi tries to connect back to it all the time! How can I stop it?</h3>
 
+<p>A: Two ways. The “good way” to do it is with <code>/DISCONNECT</code>. Check the server tags first with <code>/SERVER</code> without giving it any parameters, reconnections are those that have tag starting with “recon” text. So most probably you’re going to do <code>/DISCONNECT recon-1</code>. The other way is to remove all the reconnections with <code>/RMRECONNS</code>, easier but may remove some connections you actually wanted to reconnect (if you used multiple servers..).</p>
 
-<h3>Q: I connected to some server which isn't responding but now irssi tries
-to connect back to it all the time! How can I stop it?</h3>
+<h3 id="q-how-do-i-add-seconds-to-timestamp">Q: How do I add seconds to timestamp?</h3>
 
-<p>A: Two ways. The "good way" to do it is with <code>/DISCONNECT</code>.
-Check the server tags first with <code>/SERVER</code> without giving it any
-parameters, reconnections are those that have tag starting with "recon"
-text. So most probably you're going to do <code>/DISCONNECT recon-1</code>.
-The other way is to remove all the reconnections with
-<code>/RMRECONNS</code>, easier but may remove some connections you actually
-wanted to reconnect (if you used multiple servers..).</p>
+<p>A: <code>/FORMAT timestamp {timestamp %%H:%%M:%%S}</code> - and remember to add the trailing space :)</p>
 
+<h3 id="q-why-does-irssi-say-irssi-channel-not-fully-synchronized-yet-try-again-after-a-while-when-i-try-to-use-ban-etc">Q: Why does irssi say “Irssi: Channel not fully synchronized yet, try again after a while” when I try to use /BAN etc?</h3>
 
-<h3>Q: How do I add seconds to timestamp?</h3>
+<p>A: Possibly a bug in irssi, or ircd you’re using does something that irssi didn’t really notice. The new code should make this happen far less often than before, but one known reason for this is when irssi doesn’t notice that you were unable to join some channel. Currently however I don’t know of any such events irssi doesn’t know about.</p>
 
-<p>A: <code>/FORMAT timestamp {timestamp %%H:%%M:%%S}</code> - and remember
-to add the trailing space :)</p>
-
-
-<h3>Q: Why does irssi say "Irssi: Channel not fully synchronized yet, try
-again after a while" when I try to use /BAN etc?</h3>
- 
-<p>A: Possibly a bug in irssi, or ircd you're using does something that
-irssi didn't really notice. The new code should make this happen far less
-often than before, but one known reason for this is when irssi doesn't
-notice that you were unable to join some channel. Currently however I don't
-know of any such events irssi doesn't know about.</p>
-
-<p>Anyway, if this does happen, do <code>/RAWLOG SAVE ~/rawlog</code> soon
-after joining to channel, and either try to figure out yourself why irssi
-didn't get reply to WHO request, or send the whole log to cras@irssi.org. Note
-that the rawlog is by default only 200 lines and it may not be enough to
-show all needed information, so you might want to do <code>/SET rawlog_lines
-1000</code> or so.</p>
+<p>Anyway, if this does happen, do <code>/RAWLOG SAVE ~/rawlog</code> soon after joining to channel, and either try to figure out yourself why irssi didn’t get reply to WHO request, or open a Github issue with the full log included. Note that the rawlog is by default only 200 lines and it may not be enough to show all needed information, so you might want to do <code>/SET rawlog_lines 1000</code> or so.</p>
 
 <p><code>MODE +b</code> still works fine though.</p>
 
+<h3 id="q-wheres-the-gui-version">Q: Where’s the GUI version?</h3>
 
-<h3>Q: Where's the GUI version?</h3>
+<p>A: There was one on <a href="https://github.com/irssi-import/xirssi">irssi-import/xirssi</a> but it has not been maintained for a long time.</p>
 
-<p>A: Read
-<a href="http://www.irssi.org/about">http://www.irssi.org/about</a></p>
+<h3 id="q-how-do-i-autorejoin-channels-after-being-kicked">Q: How do I autorejoin channels after being kicked?</h3>
 
+<p>A: That’s evil and you shouldn’t do it. If you get kicked, you should stay out, at least until the channel forgot you existed :) Most channels I’ve joined just ban you if you autorejoin after kick. If you’re joined to channels who kick people for fun, try changing channels or something.</p>
 
-<h3>Q: How do I autorejoin channels after being kicked?</h3>
+<p>Anyway, if you REALLY want to do that, and you understand that you’re doing evilness, you can use the autorejoin.pl script that comes with irssi. You’ll still need to specify the channels you wish to rejoin with <code>/SET autorejoin_channels #chan1 #chan2 ...</code></p>
 
-<p>A: That's evil and you shouldn't do it. If you get kicked, you should stay
-out, at least until the channel forgot you existed :) Most channels I've
-joined just ban you if you autorejoin after kick. If you're joined to
-channels who kick people for fun, try changing channels or something.</p>
+<h3 id="q-how-do-i-announce-that-im-awayback-in-all-channels-ive-joined-or-how-do-i-change-my-nick-when-setting-myself-awayback">Q: How do I announce that I’m away/back in all channels I’ve joined? Or how do I change my nick when setting myself away/back?</h3>
 
-<p>Anyway, if you REALLY want to do that, and you understand that you're doing
-evilness, you can use the autorejoin.pl script that comes with irssi. You'll
-still need to specify the channels you wish to rejoin with <code>/SET
-autorejoin_channels #chan1 #chan2 ...</code></p>
+<p>A: That’s even worse than autorejoin. Who could possibly care every time you come and go? Many channels will kick you for using this, and I for example have added several ignores so I’d never need to see these messages. Learn to use <code>/AWAY</code> command properly and tell its existence to people who don’t know about it. <code>/WII yournick</code> shows your away reason much better for people who actually want to know if you’re there or not.</p>
 
+<h3 id="q-why-does-irssi-autojoin-on-invite-by-default">Q: Why does irssi autojoin on invite by default?</h3>
 
-<h3>Q: How do I announce that I'm away/back in all channels I've joined? Or
-how do I change my nick when setting myself away/back?</h3>
+<p>A: The setting is /SET join_auto_chans_on_invite - it’s not the same as regular autojoin-on-invite, which irssi doesn’t even have. The only channels that are joined on invite, are the ones you’ve added to config with /CHANNEL ADD -auto. This is very useful with +i channels when you need to first send an invite request to bot, or if you get accidentally kicked from channel, the kicker can invite you back immediately.</p>
 
-<p>A: That's even worse than autorejoin. Who could possibly care every time 
-you come and go? Many channels will kick you for using this, and I for example
-have added several ignores so I'd never need to see these messages. Learn to
-use <code>/AWAY</code> command properly and tell its existence to people
-who don't know about it. <code>/WII yournick</code> shows your away reason
-much better for people who actually want to know if you're there or not.</p>
+<p>I don’t see any bad side effects with this feature, so it’s ON by default. I guess someone could start kicking/inviting you all the time but server connection shouldn’t drop because of that, and you shouldn’t join channels whose operators are that evil.</p>
 
+<h3 id="q-how-to-make-utf-8-support-work-with-irssi">Q: How to make UTF-8 support work with irssi?</h3>
 
-<h3>Q: Why does irssi autojoin on invite by default?</h3>
+<p>A: Make sure your terminal supports UTF-8 (for example, <code>xterm -u8</code>). If you use screen, you may have to do <code>screen -U</code>. And in Irssi do <code>/SET term_charset utf-8</code>. (for 0.8.9 and older: <code>/SET term_type utf-8</code>)</p>
 
-<p>A: The setting is /SET join_auto_chans_on_invite - it's not the same
-as regular autojoin-on-invite, which irssi doesn't even have. The only
-channels that are joined on invite, are the ones you've added to config
-with /CHANNEL ADD -auto. This is very useful with +i channels when you
-need to first send an invite request to bot, or if you get accidentally
-kicked from channel, the kicker can invite you back immediately.</p>
+<h3 id="q-will-there-be-detach-like-feature">Q: Will there be /DETACH-like feature?</h3>
 
-<p>I don't see any bad side effects with this feature, so it's ON by
-default. I guess someone could start kicking/inviting you all the time
-but server connection shouldn't drop because of that, and you shouldn't
-join channels whose operators are that evil.</p>
+<p>A: <a href="http://tmux.github.io/">tmux</a>, <a href="http://www.gnu.org/software/screen/screen.html">screen</a> and <a href="http://dtach.sf.net/">dtach</a> can be used to do it just fine.</p>
 
+<h3 id="q-how-do-i-run-scripts-automatically-at-startup">Q: How do I run scripts automatically at startup?</h3>
 
-<h3>Q: How to make UTF-8 support work with irssi?</h3>
+<p>A: Put them into <code>~/.irssi/scripts/autorun/</code> directory. Or better would be if you placed them in <code>~/.irssi/scripts/</code> and created symlinks to autorun directory (eg. <code>cd ~/.irssi/scripts/autorun/ ; ln -s ../script.pl .</code>)</p>
 
-<p>A: Make sure your terminal supports UTF-8 (for example, <code>xterm -u8</code>).
-If you use screen, you may have to do <code>screen -U</code>. And in Irssi do
-<code>/SET term_charset utf-8</code>. (for 0.8.9 and older: <code>/SET term_type utf-8</code>)</p>
+<h3 id="q-how-do-i-execute-commands-automatically-at-startup">Q: How do I execute commands automatically at startup?</h3>
 
+<p>A: Put them into <code>~/.irssi/startup</code> file, each command on its own line. The preceding slash (/) is not necessary.</p>
 
-<h3>Q: Will there be /DETACH-like feature?</h3>
+<h3 id="q-how-do-i-easily-edit-existing-topic">Q: How do I easily edit existing topic?</h3>
 
-<p>A: Maybe. Detach code already is there, attach is just missing :) But I
-don't have much interest in coding it,
-<a href="http://www.gnu.org/software/screen/screen.html">screen</a> and
-<a href="http://dtach.sf.net/">dtach</a> can be used to do it just fine.</p>
+<p>A: <code>/TOPIC &lt;tab&gt;</code></p>
 
+<h3 id="q-how-can-i-have-whois-replies-to-active-window">Q: How can I have /WHOIS replies to active window?</h3>
 
-<h3>Q: How do I run scripts automatically at startup?</h3>
+<p>A: You can disable the status window, or do <code>/WINDOW LEVEL -CRAP</code> in it which would also make several other messages show up in active window. You can also use a <a href="http://dgl.cx/irssi/hack-whois-in-current-window.pl">script</a>.</p>
 
-<p>A: Put them into <code>~/.irssi/scripts/autorun/</code> directory. Or
-better would be if you placed them in <code>~/.irssi/scripts/</code> and
-created symlinks to autorun directory (eg. <code>cd
-~/.irssi/scripts/autorun/ ; ln -s ../script.pl .</code>)</p>
+<h3 id="q-how-do-i-add-the-active-network-to-the-statusbar">Q: How do I add the active network to the statusbar</h3>
 
+<p>A: Modify the window-line in statusbar section in config file to <code>window = "{sb $winref:$tag/$T{sbmode $M}}";</code></p>
 
-<h3>Q: How do I execute commands automatically at startup?</h3>
+<h3 id="q-how-to-pronounce-irssi">Q: How to pronounce Irssi?</h3>
 
-<p>A: Put them into <code>~/.irssi/startup</code> file, each command on its
-own line. The preceding slash (/) is not necessary.</p>
-
-
-<h3>Q: How do I easily edit existing topic?</h3>
-
-<p>A: /TOPIC &lt;tab&gt;</p>
-
-<h3>Q: How can I have /WHOIS replies to active window?</h3>
-
-<p>A: You can disable the status window, or do <code>/WINDOW LEVEL
--CRAP</code> in it which would also make several other messages show up in
-active window. You can also use a
-<a href="http://dgl.cx/irssi/hack-whois-in-current-window.pl">script</a>.</p>
-
-<h3>Q: How do I add the active network to the statusbar</h3>
-
-<p>A: Modify the window-line in statusbar section in config file to
-<code>window = "{sb $winref:$tag/$T{sbmode $M}}";</code></p>
-
+<p>A: Check <a href="https://irssi.org/assets/irssi.wav">here</a></p>
