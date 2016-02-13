@@ -150,7 +150,7 @@ void rawlog_save(RAWLOG_REC *rawlog, const char *fname)
 	int f;
 
         dir = g_path_get_dirname(fname);
-        mkpath(dir, log_dir_create_mode);
+        g_mkdir_with_parents(dir, log_dir_create_mode);
         g_free(dir);
 
 	path = convert_home(fname);

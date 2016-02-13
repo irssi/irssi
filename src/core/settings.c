@@ -683,7 +683,7 @@ static void init_configfile(void)
 
 	if (stat(get_irssi_dir(), &statbuf) != 0) {
 		/* ~/.irssi not found, create it. */
-		if (mkpath(get_irssi_dir(), 0700) != 0) {
+		if (g_mkdir_with_parents(get_irssi_dir(), 0700) != 0) {
 			g_error("Couldn't create %s directory", get_irssi_dir());
 		}
 	} else if (!S_ISDIR(statbuf.st_mode)) {

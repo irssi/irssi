@@ -39,8 +39,6 @@ GSList *hashtable_get_keys(GHashTable *hash);
 /* easy way to check if regexp matches */
 int regexp_match(const char *str, const char *regexp);
 
-/* Create the directory and all it's parent directories */
-int mkpath(const char *path, int mode);
 /* convert ~/ to $HOME */
 char *convert_home(const char *path);
 
