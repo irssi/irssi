@@ -157,6 +157,11 @@ void rawlog_save(RAWLOG_REC *rawlog, const char *fname)
 	f = open(path, O_WRONLY | O_APPEND | O_CREAT, log_file_create_mode);
 	g_free(path);
 
+	if (f < 0) {
+		g_warning("rawlog open() failed: %s", strerror(errno));
+		return;
+	}
+
 	rawlog_dump(rawlog, f);
 	close(f);
 }
