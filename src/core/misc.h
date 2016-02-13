@@ -83,9 +83,6 @@ int parse_size(const char *size, int *bytes);
    Stop when `end_char' is found from string. */
 int is_numeric(const char *str, char end_char);
 
-/* Like strlcpy(), but return -1 if buffer was overflown, 0 if not. */
-int strocpy(char *dest, const char *src, size_t dstsize);
-
 /* strstr() with case-ignoring */
 char *stristr(const char *data, const char *key);
 

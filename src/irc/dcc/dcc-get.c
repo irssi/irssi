@@ -473,8 +473,8 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 				net_ip2host(&temp_dcc->addr, temp_dcc->addrstr);
 			else {
 				/* with IPv6, show it to us as it was sent */
-				strocpy(temp_dcc->addrstr, address,
-					sizeof(temp_dcc->addrstr));
+				g_strlcpy(temp_dcc->addrstr, address,
+					  sizeof(temp_dcc->addrstr));
 			}
 
 			/* This new signal is added to let us invoke
@@ -508,7 +508,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 		net_ip2host(&dcc->addr, dcc->addrstr);
 	else {
 		/* with IPv6, show it to us as it was sent */
-		strocpy(dcc->addrstr, address, sizeof(dcc->addrstr));
+		g_strlcpy(dcc->addrstr, address, sizeof(dcc->addrstr));
 	}
 	dcc->port = port;
 	dcc->size = size;
