@@ -36,9 +36,6 @@ char *gslist_to_string(GSList *list, const char *delimiter);
    items while using this list, use g_slist_free() after you're done with it */
 GSList *hashtable_get_keys(GHashTable *hash);
 
-/* easy way to check if regexp matches */
-int regexp_match(const char *str, const char *regexp);
-
 /* convert ~/ to $HOME */
 char *convert_home(const char *path);
 
