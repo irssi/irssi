@@ -150,20 +150,6 @@ int find_substr(const char *list, const char *item)
 	return FALSE;
 }
 
-int strarray_length(char **array)
-{
-	int len;
-
-	g_return_val_if_fail(array != NULL, 0);
-
-	len = 0;
-	while (*array) {
-		len++;
-                array++;
-	}
-        return len;
-}
-
 int strarray_find(char **array, const char *item)
 {
 	char **tmp;

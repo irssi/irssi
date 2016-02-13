@@ -88,7 +88,7 @@ static int dcc_ctcp_resume_parse(int type, const char *data, const char *nick,
 	/* RESUME|ACCEPT <file name> <port> <size> */
 	/* RESUME|ACCEPT <file name> 0 <size> <id> (passive protocol) */
 	params = g_strsplit(data, " ", -1);
-	paramcount = strarray_length(params);
+	paramcount = g_strv_length(params);
 
 	if (paramcount < 3)
 		return 0;

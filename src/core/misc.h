@@ -102,8 +102,6 @@ char *show_lowascii(const char *str);
 /* replace all `from' chars in string to `to' chars. returns `str' */
 char *replace_chars(char *str, char from, char to);
 
-/* return how many items `array' has */
-int strarray_length(char **array);
 /* return index of `item' in `array' or -1 if not found */
 int strarray_find(char **array, const char *item);
 

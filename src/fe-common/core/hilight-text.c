@@ -178,7 +178,7 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 		if (channels == NULL || rec->channels == NULL)
 			continue; /* other doesn't have channels */
 
-		if (strarray_length(channels) != strarray_length(rec->channels))
+		if (g_strv_length(channels) != g_strv_length(rec->channels))
 			continue; /* different amount of channels */
 
 		/* check that channels match */
