@@ -29,6 +29,7 @@ typedef struct {
 	unsigned int user_sent:1;
 	unsigned int connected:1;
 	unsigned int want_ctcp:1;
+	unsigned int multiplex:1;
 } CLIENT_REC;
 
 #endif

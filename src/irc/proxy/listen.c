@@ -108,14 +108,44 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 
 	password = settings_get_str("irssiproxy_password");
 
-	if (password != NULL && g_strcmp0(cmd, "PASS") == 0) {
-		if (g_strcmp0(password, args) == 0)
-			client->pass_sent = TRUE;
-		else {
+	if (g_strcmp0(cmd, "PASS") == 0) {
+		const char *args_pass;
+
+		if (!client->multiplex) {
+			args_pass = args;
+		} else {
+			IRC_SERVER_REC *server;
+			char *tag;
+			const char *tag_end;
+
+			if ((tag_end = strchr(args, ':'))) {
+				args_pass = tag_end + 1;
+			} else {
+				tag_end = args + strlen(args);
+				args_pass = "";
+			}
+
+			tag = g_strndup(args, tag_end - args);
+			server = IRC_SERVER(server_find_chatnet(tag));
+			g_free(tag);
+
+			if (!server) {
+				/* an invalid network was specified */
+				remove_client(client);
+				return;
+			}
+
+			client->server = server;
+			g_free(client->proxy_address);
+			client->proxy_address = g_strdup_printf("%*s.proxy", (int)(tag_end - args), args);
+		}
+
+		if (password && g_strcmp0(password, args_pass) != 0) {
 			/* wrong password! */
 			remove_client(client);
 			return;
 		}
+		client->pass_sent = TRUE;
 	} else if (g_strcmp0(cmd, "NICK") == 0) {
 		g_free_not_null(client->nick);
 		client->nick = g_strdup(args);
@@ -124,7 +154,7 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 	}
 
 	if (client->nick != NULL && client->user_sent) {
-		if (*password != '\0' && !client->pass_sent) {
+		if ((*password != '\0' || client->multiplex) && !client->pass_sent) {
 			/* client didn't send us PASS, kill it */
 			remove_client(client);
 		} else {
@@ -337,7 +367,7 @@ static void sig_listen(LISTEN_REC *listen)
 	CLIENT_REC *rec;
 	IPADDR ip;
 	NET_SENDBUF_REC *sendbuf;
-        GIOChannel *handle;
+	GIOChannel *handle;
 	char host[MAX_IP_LEN];
 	int port;
 
@@ -352,9 +382,13 @@ static void sig_listen(LISTEN_REC *listen)
 	rec = g_new0(CLIENT_REC, 1);
 	rec->listen = listen;
 	rec->handle = sendbuf;
-        rec->host = g_strdup(host);
+	rec->host = g_strdup(host);
 	rec->port = port;
-	if (g_strcmp0(listen->ircnet, "*") == 0) {
+	if (g_strcmp0(listen->ircnet, "?") == 0) {
+		rec->multiplex = TRUE;
+		rec->proxy_address = g_strdup("multiplex.proxy");
+		rec->server = NULL;
+	} else if (g_strcmp0(listen->ircnet, "*") == 0) {
 		rec->proxy_address = g_strdup("irc.proxy");
 		rec->server = servers == NULL ? NULL : IRC_SERVER(servers->data);
 	} else {
@@ -363,15 +397,15 @@ static void sig_listen(LISTEN_REC *listen)
 			IRC_SERVER(server_find_chatnet(listen->ircnet));
 	}
 	rec->recv_tag = g_input_add(handle, G_INPUT_READ,
-			       (GInputFunction) sig_listen_client, rec);
+	                            (GInputFunction) sig_listen_client, rec);
 
 	proxy_clients = g_slist_prepend(proxy_clients, rec);
-	rec->listen->clients = g_slist_prepend(rec->listen->clients, rec);
+	listen->clients = g_slist_prepend(listen->clients, rec);
 
 	signal_emit("proxy client connecting", 1, rec);
 	printtext(rec->server, NULL, MSGLEVEL_CLIENTNOTICE,
-		  "Proxy: New client %s:%d on port %d (%s)",
-		  rec->host, rec->port, listen->port, listen->ircnet);
+	          "Proxy: New client %s:%d on port %d (%s)",
+	          rec->host, rec->port, listen->port, listen->ircnet);
 }
 
 static void sig_incoming(IRC_SERVER_REC *server, const char *line)
