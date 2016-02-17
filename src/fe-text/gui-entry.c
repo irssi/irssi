@@ -582,25 +582,36 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 	if (size == 0 || entry->pos < size)
 		return;
 
+	if (entry->cutbuffer_len == 0) {
+		update_cutbuffer = CUTBUFFER_UPDATE_REPLACE;
+	}
+	int cutbuffer_new_size = entry->cutbuffer_len + size;
+	unichar *tmpcutbuffer = entry->cutbuffer;
 	switch (update_cutbuffer) {
+		case CUTBUFFER_UPDATE_APPEND:
+			entry->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
+			memcpy(entry->cutbuffer, tmpcutbuffer,
+					entry->cutbuffer_len * sizeof(unichar));
+			memcpy(entry->cutbuffer + entry->cutbuffer_len * sizeof(unichar),
+					entry->text + entry->pos - size, size * sizeof(unichar));
+
+			entry->cutbuffer_len = cutbuffer_new_size;
+			entry->cutbuffer[cutbuffer_new_size] = '\0';
+			g_free(tmpcutbuffer);
+			break;
+
 		case CUTBUFFER_UPDATE_PREPEND:
-			if (entry->cutbuffer_len) {
-				int cutbuffer_new_size = entry->cutbuffer_len + size;
-				unichar *tmpcutbuffer = entry->cutbuffer;
-				entry->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
+			entry->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
+			memcpy(entry->cutbuffer, entry->text + entry->pos - size,
+					size * sizeof(unichar));
+			memcpy(entry->cutbuffer + size, tmpcutbuffer,
+					entry->cutbuffer_len * sizeof(unichar));
 
-				memcpy(entry->cutbuffer, entry->text + entry->pos - size,
-						size * sizeof(unichar));
-				memcpy(entry->cutbuffer + size, tmpcutbuffer,
-						entry->cutbuffer_len * sizeof(unichar));
+			entry->cutbuffer_len = cutbuffer_new_size;
+			entry->cutbuffer[cutbuffer_new_size] = '\0';
+			g_free(tmpcutbuffer);
+			break;
 
-				entry->cutbuffer_len = cutbuffer_new_size;
-				entry->cutbuffer[cutbuffer_new_size] = '\0';
-
-				g_free(tmpcutbuffer);
-				break;
-			}
-			/* fall through to REPLACE if cutbuffer_len was 0 */
 		case CUTBUFFER_UPDATE_REPLACE:
 			/* put erased text to cutbuffer */
 			if (entry->cutbuffer_len < size) {
@@ -610,9 +621,9 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 
 			entry->cutbuffer_len = size;
 			entry->cutbuffer[size] = '\0';
-			memcpy(entry->cutbuffer, entry->text + entry->pos - size,
-			       size * sizeof(unichar));
+			memcpy(entry->cutbuffer, entry->text + entry->pos - size, size * sizeof(unichar));
 			break;
+
 		case CUTBUFFER_UPDATE_NOOP:
 			break;
 	}
