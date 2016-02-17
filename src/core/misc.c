@@ -401,22 +401,15 @@ int g_istr_cmp(gconstpointer v, gconstpointer v2)
 	return g_ascii_strcasecmp((const char *) v, (const char *) v2);
 }
 
-/* a char* hash function from ASU */
-unsigned int g_istr_hash(gconstpointer v)
+guint g_istr_hash(gconstpointer v)
 {
-	const char *s = (const char *) v;
-	unsigned int h = 0, g;
+	const signed char *p;
+	guint32 h = 5381;
 
-	while (*s != '\0') {
-		h = (h << 4) + i_toupper(*s);
-		if ((g = h & 0xf0000000UL)) {
-			h = h ^ (g >> 24);
-			h = h ^ g;
-		}
-		s++;
-	}
+	for (p = v; *p != '\0'; p++)
+		h = (h << 5) + h + g_ascii_toupper(*p);
 
-	return h /* % M */;
+	return h;
 }
 
 /* Find `mask' from `data', you can use * and ? wildcards. */
