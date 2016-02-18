@@ -140,7 +140,7 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 			client->proxy_address = g_strdup_printf("%*s.proxy", (int)(tag_end - args), args);
 		}
 
-		if (password && g_strcmp0(password, args_pass) != 0) {
+		if (g_strcmp0(password, args_pass) != 0) {
 			/* wrong password! */
 			remove_client(client);
 			return;
