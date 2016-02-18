@@ -30,6 +30,18 @@ There we have 3 different irc networks answering in 3 ports. Note that
 you'll have to make the correct /IRCNET ADD and /SERVER ADD commands to
 make it work properly.
 
+The special network name "?" allows the client to select the network
+dynamically on connect:
+
+  /SET irssiproxy_ports ?=2777
+
+Now the client can send <network>:<password> as the server password, e.g.
+
+  /CONNECT ... 2777 efnet:secret
+
+to connect to efnet. If there is no irssiproxy_password set, you can
+omit the ":" and just send the network name as the password.
+
 By default, the proxy binds to all available interfaces. To make it
 only listen on (for example) the loopback address:
 
