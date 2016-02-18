@@ -118,7 +118,7 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 			char *tag;
 			const char *tag_end;
 
-			if ((tag_end = strchr(args, ':'))) {
+			if ((tag_end = strchr(args, ':')) != NULL) {
 				args_pass = tag_end + 1;
 			} else {
 				tag_end = args + strlen(args);
