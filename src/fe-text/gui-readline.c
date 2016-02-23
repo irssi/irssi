@@ -360,11 +360,24 @@ static void insert_paste_prompt(void)
 {
 	char *str;
 
+	/* The actual number of lines that will show up post-line-split */
+	int actual_line_count = paste_line_count;
+	int split_lines = paste_buffer->len / LINE_SPLIT_LIMIT;
+
+	/* in case this prompt is happening due to line-splitting, calculate the
+	   number of lines obtained from this. The number isn't entirely accurate;
+	   we just choose the greater of the two since the exact value isn't
+	   important */
+	if (split_lines > paste_verify_line_count &&
+		split_lines > paste_line_count) {
+		actual_line_count = split_lines;
+	}
+
 	paste_prompt = TRUE;
 	paste_old_prompt = g_strdup(active_entry->prompt);
 	printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
 			   TXT_PASTE_WARNING,
-			   paste_line_count,
+			   actual_line_count,
 			   active_win->active == NULL ? "window" :
 			   active_win->active->visible_name);
 
@@ -641,7 +654,11 @@ static gboolean paste_timeout(gpointer data)
 {
 	paste_was_bracketed_mode = paste_bracketed_mode;
 
-	if (paste_line_count == 0) {
+	/* number of lines after splitting extra-long messages */
+	int split_lines = paste_buffer->len / LINE_SPLIT_LIMIT;
+
+	/* Take into account the fact that a line may be split every LINE_SPLIT_LIMIT characters */
+	if (paste_line_count == 0 && split_lines <= paste_verify_line_count) {
 		int i;
 
 		for (i = 0; i < paste_buffer->len; i++) {
@@ -650,8 +667,9 @@ static gboolean paste_timeout(gpointer data)
 		}
 		g_array_set_size(paste_buffer, 0);
 	} else if (paste_verify_line_count > 0 &&
-		   paste_line_count >= paste_verify_line_count &&
-		   active_win->active != NULL)
+				(paste_line_count >= paste_verify_line_count ||
+				split_lines > paste_verify_line_count) &&
+				active_win->active != NULL)
 		insert_paste_prompt();
 	else
 		paste_flush(TRUE);
