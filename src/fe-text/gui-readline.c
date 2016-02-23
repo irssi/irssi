@@ -40,6 +40,9 @@
 #include <string.h>
 #include <signal.h>
 
+/* After LINE_SPLIT_LIMIT characters, the message will be split into multiple lines */
+#define LINE_SPLIT_LIMIT 400
+
 typedef void (*ENTRY_REDIRECT_KEY_FUNC) (int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 typedef void (*ENTRY_REDIRECT_ENTRY_FUNC) (const char *line, void *data, SERVER_REC *server, WI_ITEM_REC *item);
 
@@ -227,7 +230,7 @@ static void paste_buffer_join_lines(GArray *buf)
 	}
 
 	/* all looks fine - now remove the whitespace, but don't let lines
-	   get longer than 400 chars */
+	   get longer than LINE_SPLIT_LIMIT chars */
 	dest = arr; last_lf = TRUE; last_lf_pos = NULL; line_len = 0;
 	for (i = 0; i < buf->len; i++) {
 		if (last_lf && isblank(arr[i])) {
@@ -245,7 +248,7 @@ static void paste_buffer_join_lines(GArray *buf)
 			last_lf = TRUE;
 		} else {
 			last_lf = FALSE;
-			if (++line_len >= 400 && last_lf_pos != NULL) {
+			if (++line_len >= LINE_SPLIT_LIMIT && last_lf_pos != NULL) {
 				memmove(last_lf_pos+1, last_lf_pos,
 					(dest - last_lf_pos) * sizeof(unichar));
 				*last_lf_pos = '\n'; last_lf_pos = NULL;
