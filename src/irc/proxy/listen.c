@@ -202,7 +202,7 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 
 	if (g_strcmp0(cmd, "PROXY") == 0) {
 		if (g_ascii_strcasecmp(args, "CTCP ON") == 0) {
-                        /* client wants all ctcps */
+			/* client wants all ctcps */
 			client->want_ctcp = 1;
 			for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
 				CLIENT_REC *rec = tmp->data;
@@ -494,12 +494,12 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 static void event_connected(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
-        const char *chatnet;
+	const char *chatnet;
 
 	if (!IS_IRC_SERVER(server))
 		return;
 
-        chatnet = server->connrec->chatnet;
+	chatnet = server->connrec->chatnet;
 	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
 		CLIENT_REC *rec = tmp->data;
 
@@ -508,7 +508,7 @@ static void event_connected(IRC_SERVER_REC *server)
 		     (chatnet != NULL &&
 		      g_ascii_strcasecmp(chatnet, rec->listen->ircnet) == 0))) {
 			proxy_outdata(rec, ":%s NOTICE %s :Connected to server\r\n",
-				      rec->proxy_address, rec->nick);
+			                    rec->proxy_address, rec->nick);
 			rec->server = server;
 			proxy_client_reset_nick(rec);
 		}
@@ -516,7 +516,7 @@ static void event_connected(IRC_SERVER_REC *server)
 }
 
 static void proxy_server_disconnected(CLIENT_REC *client,
-				      IRC_SERVER_REC *server)
+                                      IRC_SERVER_REC *server)
 {
 	GSList *tmp;
 
@@ -655,9 +655,9 @@ static void add_listen(const char *ircnet, int port)
 	}
 
 	rec->tag = g_input_add(rec->handle, G_INPUT_READ,
-			       (GInputFunction) sig_listen, rec);
+	                       (GInputFunction) sig_listen, rec);
 
-        proxy_listens = g_slist_append(proxy_listens, rec);
+	proxy_listens = g_slist_append(proxy_listens, rec);
 }
 
 static void remove_listen(LISTEN_REC *rec)
