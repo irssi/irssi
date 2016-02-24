@@ -157,6 +157,7 @@ static void perl_client_fill_hash(HV *hv, CLIENT_REC *client)
 	(void) hv_store(hv, "user_sent", 9, newSViv(client->user_sent), 0);
 	(void) hv_store(hv, "connected", 9, newSViv(client->connected), 0);
 	(void) hv_store(hv, "want_ctcp", 9, newSViv(client->want_ctcp), 0);
+	(void) hv_store(hv, "multiplex", 9, newSViv(client->multiplex), 0);
 	(void) hv_store(hv, "ircnet", 6, new_pv(client->listen->ircnet), 0);
 }
 

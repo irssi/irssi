@@ -735,6 +735,13 @@ reason, and you only use one server connection, you may simply set:</p>
 /SET irssiproxy_ports *=2777
 </pre>
 
+<p>The special network name <code>?</code> allows the client to select the
+network dynamically on connect (see below):</p>
+
+<pre>
+/SET irssiproxy_ports ?=2777
+</pre>
+
 <p>Usage in client side:</p>
 
 <p>Just connect to the irssi proxy like it is a normal server with password
@@ -744,6 +751,16 @@ specified in <code>/SET irssiproxy_password</code>. For example:</p>
 /SERVER ADD -network IRCnet my.irssi-proxy.org 2777 secret
 /SERVER ADD -network efnet my.irssi-proxy.org 2778 secret
 </pre>
+
+<p>Or, if you used <code>?</code> in <code>irssiproxy_ports</code>:</p>
+
+<pre>
+/SERVER ADD -network IRCnet my.irssi-proxy.org 2777 IRCnet:secret
+/SERVER ADD -network efnet my.irssi-proxy.org 2777 efnet:secret
+</pre>
+
+<p>I.e. the network to connect to is specified as part of the password,
+separated by <code>:</code> from the actual proxy password.</p>
 
 <p>Irssi proxy works fine with other IRC clients as well.</p>
 
