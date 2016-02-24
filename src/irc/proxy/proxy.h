@@ -9,17 +9,18 @@
 
 typedef struct {
 	int port;
+	char *port_or_path;
 	char *ircnet;
 
 	int tag;
 	GIOChannel *handle;
 
 	GSList *clients;
+
 } LISTEN_REC;
 
 typedef struct {
-	char *nick, *host;
-	int port;
+	char *nick, *addr;
 	NET_SENDBUF_REC *handle;
 	int recv_tag;
 	char *proxy_address;
