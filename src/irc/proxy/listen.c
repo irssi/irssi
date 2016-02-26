@@ -137,7 +137,7 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 
 			client->server = server;
 			g_free(client->proxy_address);
-			client->proxy_address = g_strdup_printf("%*s.proxy", (int)(tag_end - args), args);
+			client->proxy_address = g_strdup_printf("%.*s.proxy", (int)(tag_end - args), args);
 		}
 
 		if (g_strcmp0(password, args_pass) != 0) {
