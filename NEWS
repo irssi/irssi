@@ -1,4 +1,10 @@
 v0.8.18-head 2016-xx-xx  The Irssi team <staff@irssi.org>
+	* Removed --disable-ipv6
+	+ irssiproxy can now forward all tags through a single port.
+	+ send channel -botcmds immediately when no mask is specified (#175).
+	- Correctly store te layout of SAFE channels (#183).
+
+v0.8.18 2016-02-13  The Irssi team <staff@irssi.org>
 	* Modules will now require to define a
 	      void MODULENAME ## _abicheck(int *version)
 	  method to ensure that they are compiled against the correct Irssi
