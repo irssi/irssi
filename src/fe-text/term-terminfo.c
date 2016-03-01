@@ -565,10 +565,10 @@ void term_clrtoeol(TERM_WINDOW *window)
 			terminfo_clrtoeol();
 			if (vcx == 0) term_lines_empty[vcy] = TRUE;
 		}
-	} else if (vcx < window->width) {
+	} else if (vcx < window->x + window->width) {
 		/* we'll need to fill the line ourself. */
 		if (vcmove) term_move_real();
-		terminfo_repeat(' ', window->width - vcx);
+		terminfo_repeat(' ', window->x + window->width - vcx);
 		terminfo_move(vcx, vcy);
                 term_lines_empty[vcy] = FALSE;
 	}

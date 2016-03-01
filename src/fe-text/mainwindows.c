@@ -186,6 +186,7 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 
 	rec = g_new0(MAIN_WINDOW_REC, 1);
 	rec->dirty = TRUE;
+#if 0
 	rec->width = term_width;
 	rec->first_column = 0;
 	rec->last_column = rec->first_column + rec->width;
@@ -212,6 +213,31 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 		parent->first_line += space+1;
 		mainwindow_resize(parent, 0, -space-1);
 	}
+#else
+	rec->first_line = screen_reserved_top;
+	rec->last_line = term_height-1 - screen_reserved_bottom;
+	rec->height = rec->last_line-rec->first_line+1;
+
+	if (mainwindows == NULL) {
+		active_mainwin = rec;
+
+		rec->first_column = 0;
+		rec->last_column = term_width - 1;
+		rec->width = rec->last_column - rec->first_column + 1;
+
+	} else {
+		parent = WINDOW_MAIN(active_win);
+
+		space = parent->width / 2;
+		rec->first_column = parent->first_column;
+		rec->last_column = rec->first_column + space;
+		rec->width = rec->last_column - rec->first_column + 1;
+
+		parent->first_column += space + 1;
+
+		mainwindow_resize(parent, -space-1, 0);
+	}
+#endif
 
 	rec->screen_win = mainwindow_create_screen(rec);
 	term_refresh(NULL);
