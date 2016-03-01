@@ -39,13 +39,14 @@ int screen_reserved_top, screen_reserved_bottom;
 static int old_screen_width, old_screen_height;
 
 #define mainwindow_create_screen(window) \
-	term_window_create(0, \
+	term_window_create((window)->first_column, \
 			   (window)->first_line + (window)->statusbar_lines_top, \
 			   (window)->width, \
 			   (window)->height - (window)->statusbar_lines)
 
 #define mainwindow_set_screen_size(window) \
-	term_window_move((window)->screen_win, 0, \
+	term_window_move((window)->screen_win, \
+			 (window)->first_column, \
 			 (window)->first_line + (window)->statusbar_lines_top, \
 			 (window)->width, \
 			 (window)->height - (window)->statusbar_lines);
@@ -186,6 +187,8 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 	rec = g_new0(MAIN_WINDOW_REC, 1);
 	rec->dirty = TRUE;
 	rec->width = term_width;
+	rec->first_column = 0;
+	rec->last_column = rec->first_column + rec->width;
 
 	if (mainwindows == NULL) {
 		active_mainwin = rec;

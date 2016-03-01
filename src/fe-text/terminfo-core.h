@@ -6,7 +6,6 @@
 #define terminfo_move(x, y) current_term->move(current_term, x, y)
 #define terminfo_move_relative(oldx, oldy, x, y) current_term->move_relative(current_term, oldx, oldy, x, y)
 #define terminfo_set_cursor_visible(set) current_term->set_cursor_visible(current_term, set)
-#define terminfo_scroll(y1, y2, count) current_term->scroll(current_term, y1, y2, count)
 #define terminfo_clear() current_term->clear(current_term)
 #define terminfo_clrtoeol() current_term->clrtoeol(current_term)
 #define terminfo_repeat(chr, count) current_term->repeat(current_term, chr, count)
@@ -28,7 +27,7 @@ struct _TERM_REC {
 	void (*move)(TERM_REC *term, int x, int y);
 	void (*move_relative)(TERM_REC *term, int oldx, int oldy, int x, int y);
 	void (*set_cursor_visible)(TERM_REC *term, int set);
-	void (*scroll)(TERM_REC *term, int y1, int y2, int count);
+	void (*scroll)(TERM_REC *term, int x1, int y1, int x2, int y2, int count);
 
         void (*clear)(TERM_REC *term);
 	void (*clrtoeol)(TERM_REC *term);

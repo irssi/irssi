@@ -274,27 +274,26 @@ void term_window_clear(TERM_WINDOW *window)
 	int y;
 
         terminfo_set_normal();
-        if (window->y == 0 && window->height == term_height) {
+
+	/* Clear the whole terminal if there's an only window */
+	if (window->x == 0 && window->width == term_width &&
+		window->y == 0 && window->height == term_height) {
         	term_clear();
-        } else {
-		for (y = 0; y < window->height; y++) {
-			term_move(window, 0, y);
-			term_clrtoeol(window);
-		}
+		return;
+	}
+
+	for (y = 0; y < window->height; y++) {
+		term_move(window, window->x, y);
+		term_clrtoeol(window);
 	}
 }
 
-/* Scroll window up/down */
-void term_window_scroll(TERM_WINDOW *window, int count)
+void term_get_window_size(TERM_WINDOW *window, int *width, int *height)
 {
-	int y;
-
-	terminfo_scroll(window->y, window->y+window->height-1, count);
-        term_move_reset(vcx, vcy);
-
-        /* set the newly scrolled area dirty */
-	for (y = 0; (window->y+y) < term_height && y < window->height; y++)
-		term_lines_empty[window->y+y] = FALSE;
+	if (width != NULL)
+		*width = window->width;
+	if (height != NULL)
+		*height = window->height;
 }
 
 inline static int term_putchar(int c)
@@ -441,14 +440,14 @@ void term_set_color(TERM_WINDOW *window, int col)
 void term_move(TERM_WINDOW *window, int x, int y)
 {
 	if (x >= 0 && y >= 0) {
-	vcmove = TRUE;
-	vcx = x+window->x;
-        vcy = y+window->y;
+		vcmove = TRUE;
+		vcx = x + window->x;
+		vcy = y + window->y;
 
-	if (vcx >= term_width)
-		vcx = term_width-1;
-	if (vcy >= term_height)
-                vcy = term_height-1;
+		if (vcx >= term_width)
+			vcx = term_width-1;
+		if (vcy >= term_height)
+			vcy = term_height-1;
 	}
 }
 
@@ -558,16 +557,18 @@ void term_clrtoeol(TERM_WINDOW *window)
 {
 	/* clrtoeol() doesn't necessarily understand colors */
 	if (last_fg == -1 && last_bg == -1 &&
-	    (last_attrs & (ATTR_UNDERLINE|ATTR_REVERSE|ATTR_ITALIC)) == 0) {
+	    (last_attrs & (ATTR_UNDERLINE|ATTR_REVERSE|ATTR_ITALIC)) == 0 &&
+	    window->width == term_width)
+	{
 		if (!term_lines_empty[vcy]) {
 			if (vcmove) term_move_real();
 			terminfo_clrtoeol();
 			if (vcx == 0) term_lines_empty[vcy] = TRUE;
 		}
-	} else if (vcx < term_width) {
+	} else if (vcx < window->width) {
 		/* we'll need to fill the line ourself. */
 		if (vcmove) term_move_real();
-		terminfo_repeat(' ', term_width-vcx);
+		terminfo_repeat(' ', window->width - vcx);
 		terminfo_move(vcx, vcy);
                 term_lines_empty[vcy] = FALSE;
 	}

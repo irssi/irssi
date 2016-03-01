@@ -396,6 +396,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 #ifdef TERM_TRUECOLOR
 	unsigned int fg24, bg24;
 #endif
+	int window_width;
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
                 return 0;
@@ -404,6 +405,8 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	if (subline >= cache->count)
                 return 0;
 
+	term_get_window_size(view->window, &window_width, NULL);
+
         color = ATTR_RESET;
         need_move = TRUE; need_clrtoeol = FALSE;
 	xpos = drawcount = 0; first = TRUE;
@@ -411,7 +414,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		subline == 0 ? line->text : cache->lines[subline-1].start;
 	for (;;) {
 		if (text == text_newline) {
-			if (need_clrtoeol && xpos < term_width) {
+			if (need_clrtoeol && xpos < window_width) {
 				term_set_color(view->window, ATTR_RESET);
 				term_clrtoeol(view->window);
 			}
@@ -510,7 +513,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		}
 
 		xpos += char_width;
-		if (xpos <= term_width) {
+		if (xpos <= window_width) {
 			if (unichar_isprint(chr)) {
 				if (view->utf8)
 				term_add_unichar(view->window, chr);
@@ -527,7 +530,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		text = end;
 	}
 
-	if (need_clrtoeol && xpos < term_width) {
+	if (need_clrtoeol && xpos < window_width) {
 		term_set_color(view->window, ATTR_RESET);
 		term_clrtoeol(view->window);
 	}
@@ -813,23 +816,7 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
 	}
 
 	if (scroll_visible && realcount != 0 && view->window != NULL) {
-		if (realcount <= -view->height || realcount >= view->height) {
-			/* scrolled more than screenful, redraw the
-			   whole view */
-                        textbuffer_view_redraw(view);
-		} else {
-			term_set_color(view->window, ATTR_RESET);
-			term_window_scroll(view->window, realcount);
-
-			if (draw_nonclean) {
-				if (realcount < 0)
-                                        view_draw_top(view, -realcount, TRUE);
-				else
-					view_draw_bottom(view, realcount);
-			}
-
-			term_refresh(view->window);
-		}
+		textbuffer_view_redraw(view);
 	}
 
 	return realcount >= 0 ? realcount : -realcount;

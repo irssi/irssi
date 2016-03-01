@@ -70,7 +70,6 @@ void term_window_move(TERM_WINDOW *window, int x, int y,
 /* Clear window */
 void term_window_clear(TERM_WINDOW *window);
 /* Scroll window up/down */
-void term_window_scroll(TERM_WINDOW *window, int count);
 
 #ifdef TERM_TRUECOLOR
 #define term_set_color(window, col) term_set_color2(window, (col) &~(ATTR_FGCOLOR24|ATTR_BGCOLOR24), UINT_MAX, UINT_MAX)
@@ -87,6 +86,7 @@ int  term_addstr(TERM_WINDOW *window, const char *str);
 void term_clrtoeol(TERM_WINDOW *window);
 
 void term_move_cursor(int x, int y);
+void term_get_window_size(TERM_WINDOW *window, int *width, int *height);
 
 void term_refresh_freeze(void);
 void term_refresh_thaw(void);
