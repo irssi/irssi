@@ -44,10 +44,10 @@ static void cmd_irssiproxy_status(const char *data, IRC_SERVER_REC *server)
 		CLIENT_REC *rec = tmp->data;
 
 		printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
-			  "  %s:%d connect%s to %d (%s)",
-			  rec->host, rec->port,
+			  "  %s connect%s to %s (%s)",
+			  rec->addr,
 			  rec->connected ? "ed" : "ing",
-			  rec->listen->port, rec->listen->ircnet);
+			  rec->listen->port_or_path, rec->listen->ircnet);
 	}
 }
 
