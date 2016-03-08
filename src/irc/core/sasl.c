@@ -145,7 +145,7 @@ static void sasl_step(IRC_SERVER_REC *server, const char *data, const char *from
 
 		case SASL_MECHANISM_EXTERNAL:
 			/* Empty response */
-			irc_send_cmdv(server, "+");
+			irc_send_cmdv(server, "AUTHENTICATE +");
 			break;
 	}
 
