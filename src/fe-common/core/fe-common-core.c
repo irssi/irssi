@@ -463,13 +463,14 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 		return TRUE;
 
 	if (dest->server_tag != NULL) {
-		char *tag = g_strdup_printf("%s/", dest->server_tag);
-		int ret = strarray_find(array, tag);
-		g_free(tag);
+		/* Check for network/ before network/#chan for network-wide activity_hide_targets */
+		char *tagtarget = g_strdup_printf("%s/", dest->server_tag);
+		int ret = strarray_find(array, tagtarget);
+		g_free(tagtarget);
 		if (ret != -1)
 			return TRUE;
 
-		char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
+		tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
 		ret = strarray_find(array, tagtarget);
 		g_free(tagtarget);
 		if (ret != -1)
