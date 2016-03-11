@@ -78,17 +78,47 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 	IRC_SERVER_REC *irc_server = (IRC_SERVER_REC *) server;
 	char *chantypes, *statusmsg;
 
+	/* empty string is no channel */
+	if (*data == '\0')
+		return FALSE;
+
 	chantypes = g_hash_table_lookup(irc_server->isupport, "chantypes");
 	if (chantypes == NULL)
 		chantypes = "#&!+"; /* normal, local, secure, modeless */
+
+	if (strchr(chantypes, *data) != NULL)
+		return TRUE;
+
 	statusmsg = g_hash_table_lookup(irc_server->isupport, "statusmsg");
-	if (statusmsg == NULL)
-		statusmsg = "@+";
+	if (statusmsg == NULL) {
+		gboolean wallchops = g_hash_table_lookup(irc_server->isupport,
+							 "wallchops") != NULL;
+		gboolean wallvoices = g_hash_table_lookup(irc_server->isupport,
+							  "wallvoices") != NULL;
+		if (wallchops && wallvoices)
+			statusmsg = "@+";
+		else if (wallchops)
+			statusmsg = "@";
+		else if (wallvoices)
+			statusmsg = "+";
+		else
+			return FALSE;
+	}
 
-	while (strchr(statusmsg, *data) != NULL)
-		data++;
+	/* No statusmsg announced, so there is no statusmsg prefix to skip */
+	if (*statusmsg == '\0')
+		return FALSE;
 
-	return strchr(chantypes, *data) != NULL;
+	while (*data != '\0') {
+		if (strchr(chantypes, *data) != NULL)
+			return TRUE;
+		else if (strchr(statusmsg, *data) != NULL)
+			data++;
+		else
+			return FALSE;
+	}
+
+	return FALSE;
 }
 
 static char **split_line(const SERVER_REC *server, const char *line,
