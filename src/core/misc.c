@@ -181,6 +181,24 @@ int strarray_find(char **array, const char *item)
 	return -1;
 }
 
+
+int strarray_find_glob(char **array, const char *item)
+{
+	char **tmp;
+	int index;
+
+	g_return_val_if_fail(array != NULL, -1);
+	g_return_val_if_fail(item != NULL, -1);
+
+	index = 0;
+	for (tmp = array; *tmp != NULL; tmp++, index++) {
+		if (g_pattern_match_simple(*tmp, item))
+			return index;
+	}
+
+	return -1;
+}
+
 GSList *gslist_find_string(GSList *list, const char *key)
 {
 	for (; list != NULL; list = list->next)

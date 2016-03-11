@@ -464,7 +464,7 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 
 	if (dest->server_tag != NULL) {
 		char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
-		int ret = strarray_find(array, tagtarget);
+		int ret = strarray_find_glob(array, tagtarget);
 		g_free(tagtarget);
 		if (ret != -1)
 			return TRUE;
