@@ -289,6 +289,7 @@ static GIOStatus irssi_ssl_read(GIOChannel *handle, gchar *buf, gsize len, gsize
 	const char *errstr;
 	gchar *errmsg;
 
+	ERR_clear_error();
 	ret1 = SSL_read(chan->ssl, buf, len);
 	if(ret1 <= 0)
 	{
@@ -334,6 +335,7 @@ static GIOStatus irssi_ssl_write(GIOChannel *handle, const gchar *buf, gsize len
 	const char *errstr;
 	gchar *errmsg;
 
+	ERR_clear_error();
 	ret1 = SSL_write(chan->ssl, (const char *)buf, len);
 	if(ret1 <= 0)
 	{
@@ -581,6 +583,7 @@ int irssi_ssl_handshake(GIOChannel *handle)
 	X509 *cert;
 	const char *errstr;
 
+	ERR_clear_error();
 	ret = SSL_connect(chan->ssl);
 	if (ret <= 0) {
 		err = SSL_get_error(chan->ssl, ret);
