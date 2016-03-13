@@ -473,6 +473,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 	if(!(fd = g_io_channel_unix_get_fd(handle)))
 		return NULL;
 
+	ERR_clear_error();
 	ctx = SSL_CTX_new(SSLv23_client_method());
 	if (ctx == NULL) {
 		g_error("Could not allocate memory for SSL context");
@@ -491,6 +492,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		scert = convert_home(mycert);
 		if (mypkey && *mypkey)
 			spkey = convert_home(mypkey);
+		ERR_clear_error();
 		if (! SSL_CTX_use_certificate_file(ctx, scert, SSL_FILETYPE_PEM))
 			g_warning("Loading of client certificate '%s' failed: %s", mycert, ERR_reason_error_string(ERR_get_error()));
 		else if (! SSL_CTX_use_PrivateKey_file(ctx, spkey ? spkey : scert, SSL_FILETYPE_PEM))
