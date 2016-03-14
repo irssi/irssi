@@ -169,8 +169,8 @@ int strarray_find(char **array, const char *item)
 	char **tmp;
 	int index;
 
-	g_return_val_if_fail(array != NULL, 0);
-	g_return_val_if_fail(item != NULL, 0);
+	g_return_val_if_fail(array != NULL, -1);
+	g_return_val_if_fail(item != NULL, -1);
 
 	index = 0;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
