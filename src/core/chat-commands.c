@@ -117,8 +117,8 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 	if (g_hash_table_lookup(optlist, "!") != NULL)
 		conn->no_autojoin_channels = TRUE;
 
-    if (g_hash_table_lookup(optlist, "noautosendcmd") != NULL)
-        conn->no_autosendcmd = TRUE;
+	if (g_hash_table_lookup(optlist, "noautosendcmd") != NULL)
+		conn->no_autosendcmd = TRUE;
 
 	if (g_hash_table_lookup(optlist, "noproxy") != NULL)
                 g_free_and_null(conn->proxy);
