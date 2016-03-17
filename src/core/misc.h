@@ -111,7 +111,6 @@ char *replace_chars(char *str, char from, char to);
 int strarray_length(char **array);
 /* return index of `item' in `array' or -1 if not found */
 int strarray_find(char **array, const char *item);
-int strarray_find_glob(char **array, const char *item);
 
 /* string -> uoff_t */
 uoff_t str_to_uofft(const char *str);

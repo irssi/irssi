@@ -459,12 +459,21 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 {
 	g_return_val_if_fail(array != NULL, FALSE);
 
+	if (strarray_find(array, "*") != -1)
+		return TRUE;
+
 	if (strarray_find(array, dest->target) != -1)
 		return TRUE;
 
 	if (dest->server_tag != NULL) {
-		char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
-		int ret = strarray_find_glob(array, tagtarget);
+		char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, "*");
+		int ret = strarray_find(array, tagtarget);
+		g_free(tagtarget);
+		if (ret != -1)
+			return TRUE;
+
+		tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
+		ret = strarray_find(array, tagtarget);
 		g_free(tagtarget);
 		if (ret != -1)
 			return TRUE;
