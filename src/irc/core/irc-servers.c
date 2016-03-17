@@ -81,12 +81,12 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 	chantypes = g_hash_table_lookup(irc_server->isupport, "chantypes");
 	if (chantypes == NULL)
 		chantypes = "#&!+"; /* normal, local, secure, modeless */
-	statusmsg = g_hash_table_lookup(irc_server->isupport, "statusmsg");
-	if (statusmsg == NULL)
-		statusmsg = "@+";
 
-	while (strchr(statusmsg, *data) != NULL)
-		data++;
+	statusmsg = g_hash_table_lookup(irc_server->isupport, "statusmsg");
+	if (statusmsg != NULL) {
+		while (strchr(statusmsg, *data) != NULL)
+			data++;
+	}
 
 	return strchr(chantypes, *data) != NULL;
 }
