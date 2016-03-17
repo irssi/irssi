@@ -153,6 +153,20 @@ static void sasl_step(IRC_SERVER_REC *server, const char *data, const char *from
 	server->sasl_timeout = g_timeout_add(SASL_TIMEOUT, (GSourceFunc) sasl_timeout, server);
 }
 
+static void sasl_disconnected(IRC_SERVER_REC *server)
+{
+	g_return_if_fail(server != NULL);
+
+	if (!IS_IRC_SERVER(server)) {
+		return;
+	}
+
+	if (server->sasl_timeout != -1) {
+		g_source_remove(server->sasl_timeout);
+		server->sasl_timeout = -1;
+	}
+}
+
 void sasl_init(void)
 {
 	signal_add_first("server cap ack sasl", (SIGNAL_FUNC) sasl_start);
@@ -163,6 +177,7 @@ void sasl_init(void)
 	signal_add_first("event 905", (SIGNAL_FUNC) sasl_fail);
 	signal_add_first("event 906", (SIGNAL_FUNC) sasl_fail);
 	signal_add_first("event 907", (SIGNAL_FUNC) sasl_already);
+	signal_add_first("server disconnected", (SIGNAL_FUNC) sasl_disconnected);
 }
 
 void sasl_deinit(void)
@@ -175,4 +190,5 @@ void sasl_deinit(void)
 	signal_remove("event 905", (SIGNAL_FUNC) sasl_fail);
 	signal_remove("event 906", (SIGNAL_FUNC) sasl_fail);
 	signal_remove("event 907", (SIGNAL_FUNC) sasl_already);
+	signal_remove("server disconnected", (SIGNAL_FUNC) sasl_disconnected);
 }
