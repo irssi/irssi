@@ -51,7 +51,8 @@ static int ret_texts[] = {
         TXT_INVALID_TIME,
         TXT_INVALID_CHARSET,
         TXT_EVAL_MAX_RECURSE,
-        TXT_PROGRAM_NOT_FOUND
+        TXT_PROGRAM_NOT_FOUND,
+	TXT_NO_SERVER_DEFINED,
 };
 
 int command_hide_output;
