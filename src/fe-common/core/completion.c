@@ -762,7 +762,7 @@ static void cmd_completion(const char *data)
 	int len;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST | PARAM_FLAG_STRIP_TRAILING_WS,
+			    PARAM_FLAG_GETREST,
 			    "completion", &optlist, &key, &value))
 		return;
 
