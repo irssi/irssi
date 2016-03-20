@@ -34,7 +34,7 @@ static gboolean sasl_timeout(IRC_SERVER_REC *server)
 	irc_send_cmd_now(server, "AUTHENTICATE *");
 	cap_finish_negotiation(server);
 
-	server->sasl_timeout = -1;
+	server->sasl_timeout = 0;
 
 	signal_emit("server sasl failure", 2, server, "The authentication timed out");
 
@@ -64,9 +64,9 @@ static void sasl_fail(IRC_SERVER_REC *server, const char *data, const char *from
 	char *params, *error;
 
 	/* Stop any pending timeout, if any */
-	if (server->sasl_timeout != -1) {
+	if (server->sasl_timeout != 0) {
 		g_source_remove(server->sasl_timeout);
-		server->sasl_timeout = -1;
+		server->sasl_timeout = 0;
 	}
 
 	params = event_get_params(data, 2, NULL, &error);
@@ -81,9 +81,9 @@ static void sasl_fail(IRC_SERVER_REC *server, const char *data, const char *from
 
 static void sasl_already(IRC_SERVER_REC *server, const char *data, const char *from)
 {
-	if (server->sasl_timeout != -1) {
+	if (server->sasl_timeout != 0) {
 		g_source_remove(server->sasl_timeout);
-		server->sasl_timeout = -1;
+		server->sasl_timeout = 0;
 	}
 
 	signal_emit("server sasl success", 1, server);
@@ -94,9 +94,9 @@ static void sasl_already(IRC_SERVER_REC *server, const char *data, const char *f
 
 static void sasl_success(IRC_SERVER_REC *server, const char *data, const char *from)
 {
-	if (server->sasl_timeout != -1) {
+	if (server->sasl_timeout != 0) {
 		g_source_remove(server->sasl_timeout);
-		server->sasl_timeout = -1;
+		server->sasl_timeout = 0;
 	}
 
 	signal_emit("server sasl success", 1, server);
@@ -114,9 +114,9 @@ static void sasl_step(IRC_SERVER_REC *server, const char *data, const char *from
 	conn = server->connrec;
 
 	/* Stop the timer */
-	if (server->sasl_timeout != -1) {
+	if (server->sasl_timeout != 0) {
 		g_source_remove(server->sasl_timeout);
-		server->sasl_timeout = -1;
+		server->sasl_timeout = 0;
 	}
 
 	switch (conn->sasl_mechanism) {
@@ -161,9 +161,9 @@ static void sasl_disconnected(IRC_SERVER_REC *server)
 		return;
 	}
 
-	if (server->sasl_timeout != -1) {
+	if (server->sasl_timeout != 0) {
 		g_source_remove(server->sasl_timeout);
-		server->sasl_timeout = -1;
+		server->sasl_timeout = 0;
 	}
 }
 
