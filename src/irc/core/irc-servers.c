@@ -78,17 +78,23 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 	IRC_SERVER_REC *irc_server = (IRC_SERVER_REC *) server;
 	char *chantypes, *statusmsg;
 
+	g_return_val_if_fail(data != NULL, FALSE);
+
+	/* empty string is no channel */
+	if (*data == '\0')
+		return FALSE;
+
 	chantypes = g_hash_table_lookup(irc_server->isupport, "chantypes");
 	if (chantypes == NULL)
 		chantypes = "#&!+"; /* normal, local, secure, modeless */
+
 	statusmsg = g_hash_table_lookup(irc_server->isupport, "statusmsg");
-	if (statusmsg == NULL)
-		statusmsg = "@+";
+	if (statusmsg != NULL)
+		data += strspn(data, statusmsg);
 
-	while (strchr(statusmsg, *data) != NULL)
-		data++;
-
-	return strchr(chantypes, *data) != NULL;
+	/* strchr(3) considers the trailing NUL as part of the string, make sure
+	 * we didn't advance too much. */
+	return *data != '\0' && strchr(chantypes, *data) != NULL;
 }
 
 static char **split_line(const SERVER_REC *server, const char *line,
