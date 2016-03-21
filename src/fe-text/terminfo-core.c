@@ -532,9 +532,6 @@ void terminfo_cont(TERM_REC *term)
 	if (term->TI_smcup)
 		tput(tparm(term->TI_smcup));
 
-	if (term->TI_smkx)
-		tput(tparm(term->TI_smkx));
-
         terminfo_input_init(term);
 }
 
@@ -548,9 +545,6 @@ void terminfo_stop(TERM_REC *term)
 	/* stop cup-mode */
 	if (term->TI_rmcup)
 		tput(tparm(term->TI_rmcup));
-
-	if (term->TI_rmkx)
-		tput(tparm(term->TI_rmkx));
 
         /* reset input settings */
 	terminfo_input_deinit(term);
