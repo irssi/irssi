@@ -73,6 +73,7 @@ static int paste_timeout_id;
 static int paste_use_bracketed_mode;
 static int paste_bracketed_mode;
 static int paste_was_bracketed_mode;
+static int previous_yank_preceded;
 
 /* Terminal sequences that surround the input when the terminal has the
  * bracketed paste mode active. Fror more details see
@@ -440,10 +441,19 @@ static void sig_gui_key_pressed(gpointer keyp)
 		gui_entry_insert_char(active_entry, key);
 		ret = 1;
 	} else {
+		previous_yank_preceded = active_entry->yank_preceded;
+		active_entry->yank_preceded = FALSE;
+		active_entry->previous_append_next_kill = active_entry->append_next_kill;
+		active_entry->append_next_kill = FALSE;
 		ret = key_pressed(keyboard, str);
 		if (ret < 0) {
 			/* key wasn't used for anything, print it */
 			gui_entry_insert_char(active_entry, key);
+		}
+		if (ret == 0) {
+			/* combo not complete, ignore append_next_kill and yank_preceded */
+			active_entry->append_next_kill = active_entry->previous_append_next_kill;
+			active_entry->yank_preceded = previous_yank_preceded;
 		}
 	}
 
@@ -571,7 +581,7 @@ static void key_erase_to_beg_of_line(void)
 	int pos;
 
 	pos = gui_entry_get_pos(active_entry);
-	gui_entry_erase(active_entry, pos, CUTBUFFER_UPDATE_REPLACE);
+	gui_entry_erase(active_entry, pos, CUTBUFFER_UPDATE_PREPEND);
 }
 
 static void key_erase_to_end_of_line(void)
@@ -580,7 +590,7 @@ static void key_erase_to_end_of_line(void)
 
 	pos = gui_entry_get_pos(active_entry);
 	gui_entry_set_pos(active_entry, active_entry->text_len);
-	gui_entry_erase(active_entry, active_entry->text_len - pos, CUTBUFFER_UPDATE_REPLACE);
+	gui_entry_erase(active_entry, active_entry->text_len - pos, CUTBUFFER_UPDATE_APPEND);
 }
 
 static void key_yank_from_cutbuffer(void)
@@ -590,7 +600,36 @@ static void key_yank_from_cutbuffer(void)
         cutbuffer = gui_entry_get_cutbuffer(active_entry);
 	if (cutbuffer != NULL) {
 		gui_entry_insert_text(active_entry, cutbuffer);
-                g_free(cutbuffer);
+		active_entry->yank_preceded = TRUE;
+		g_free(cutbuffer);
+	}
+}
+
+static void key_yank_next_cutbuffer(void)
+{
+	GUI_ENTRY_CUTBUFFER_REC *rec;
+	guint length = 0;
+	char *cutbuffer;
+
+	if (!previous_yank_preceded) {
+		if (settings_get_bool("bell_beeps")) {
+			signal_emit("beep", 0);
+		}
+		return;
+	}
+
+	if (active_entry->kill_ring == NULL)
+		return;
+
+	rec = active_entry->kill_ring->data;
+	if (rec != NULL) length = rec->cutbuffer_len;
+
+	cutbuffer = gui_entry_get_next_cutbuffer(active_entry);
+	if (cutbuffer != NULL) {
+		gui_entry_erase(active_entry, length, CUTBUFFER_UPDATE_NOOP);
+		gui_entry_insert_text(active_entry, cutbuffer);
+		active_entry->yank_preceded = TRUE;
+		g_free(cutbuffer);
 	}
 }
 
@@ -632,22 +671,27 @@ static void key_backspace(void)
 
 static void key_delete_previous_word(void)
 {
-	gui_entry_erase_word(active_entry, FALSE, CUTBUFFER_UPDATE_REPLACE);
+	gui_entry_erase_word(active_entry, FALSE, CUTBUFFER_UPDATE_PREPEND);
 }
 
 static void key_delete_next_word(void)
 {
-	gui_entry_erase_next_word(active_entry, FALSE);
+	gui_entry_erase_next_word(active_entry, FALSE, CUTBUFFER_UPDATE_APPEND);
 }
 
 static void key_delete_to_previous_space(void)
 {
-	gui_entry_erase_word(active_entry, TRUE, CUTBUFFER_UPDATE_REPLACE);
+	gui_entry_erase_word(active_entry, TRUE, CUTBUFFER_UPDATE_PREPEND);
 }
 
 static void key_delete_to_next_space(void)
 {
-	gui_entry_erase_next_word(active_entry, TRUE);
+	gui_entry_erase_next_word(active_entry, TRUE, CUTBUFFER_UPDATE_APPEND);
+}
+
+static void key_append_next_kill(void)
+{
+	active_entry->append_next_kill = TRUE;
 }
 
 static gboolean paste_timeout(gpointer data)
@@ -1191,6 +1235,8 @@ void gui_readline_init(void)
 	key_bind("erase_to_beg_of_line", "Erase everything before the cursor", NULL, NULL, (SIGNAL_FUNC) key_erase_to_beg_of_line);
 	key_bind("erase_to_end_of_line", "Erase everything after the cursor", "^K", NULL, (SIGNAL_FUNC) key_erase_to_end_of_line);
 	key_bind("yank_from_cutbuffer", "\"Undelete\", paste the last deleted text", "^Y", NULL, (SIGNAL_FUNC) key_yank_from_cutbuffer);
+	key_bind("yank_next_cutbuffer", "Revert to the previous last deleted text", NULL, NULL, (SIGNAL_FUNC) key_yank_next_cutbuffer);
+	key_bind("append_next_kill", "Append next deletion", NULL, NULL, (SIGNAL_FUNC) key_append_next_kill);
 	key_bind("transpose_characters", "Swap current and previous character", "^T", NULL, (SIGNAL_FUNC) key_transpose_characters);
 	key_bind("transpose_words", "Swap current and previous word", NULL, NULL, (SIGNAL_FUNC) key_transpose_words);
 	key_bind("capitalize_word", "Capitalize the current word", NULL, NULL, (SIGNAL_FUNC) key_capitalize_word);
@@ -1280,6 +1326,8 @@ void gui_readline_deinit(void)
 	key_unbind("erase_to_beg_of_line", (SIGNAL_FUNC) key_erase_to_beg_of_line);
 	key_unbind("erase_to_end_of_line", (SIGNAL_FUNC) key_erase_to_end_of_line);
 	key_unbind("yank_from_cutbuffer", (SIGNAL_FUNC) key_yank_from_cutbuffer);
+	key_unbind("yank_next_cutbuffer", (SIGNAL_FUNC) key_yank_next_cutbuffer);
+	key_unbind("append_next_kill", (SIGNAL_FUNC) key_append_next_kill);
 	key_unbind("transpose_characters", (SIGNAL_FUNC) key_transpose_characters);
 	key_unbind("transpose_words", (SIGNAL_FUNC) key_transpose_words);
 
