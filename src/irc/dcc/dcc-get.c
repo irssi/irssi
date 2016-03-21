@@ -526,14 +526,14 @@ void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func,
 {
 	GET_DCC_REC *dcc;
 	GSList *tmp, *next;
-	char *nick, *fname;
+	char *nick, *arg, *fname;
 	void *free_arg;
 	int found;
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
-			    &nick, &fname))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
+			    PARAM_FLAG_STRIP_TRAILING_WS, &nick, &arg))
 		return;
 
 	if (*nick == '\0') {
@@ -547,6 +547,8 @@ void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func,
 		cmd_params_free(free_arg);
 		return;
 	}
+
+	fname = cmd_get_quoted_param(&arg);
 
 	found = FALSE;
 	for (tmp = dcc_conns; tmp != NULL; tmp = next) {
