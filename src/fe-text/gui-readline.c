@@ -1254,6 +1254,10 @@ void gui_readline_deinit(void)
 
         key_configure_freeze();
 
+	/* Reset the bracketed paste mode on exit */
+	if (paste_use_bracketed_mode)
+		term_set_bracketed_paste_mode(FALSE);
+
 	key_unbind("paste_start", (SIGNAL_FUNC) key_paste_start);
 
 	key_unbind("backward_character", (SIGNAL_FUNC) key_backward_character);
