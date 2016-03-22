@@ -504,7 +504,7 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	}
 }
 
-static void terminfo_input_init(TERM_REC *term)
+static void terminfo_input_init0(TERM_REC *term)
 {
 	tcgetattr(fileno(term->in), &term->old_tio);
 	memcpy(&term->tio, &term->old_tio, sizeof(term->tio));
@@ -526,8 +526,11 @@ static void terminfo_input_init(TERM_REC *term)
 	term->tio.c_cc[VSUSP] = _POSIX_VDISABLE;
 #endif
 
-        tcsetattr(fileno(term->in), TCSADRAIN, &term->tio);
+}
 
+static void terminfo_input_init(TERM_REC *term)
+{
+        tcsetattr(fileno(term->in), TCSADRAIN, &term->tio);
 }
 
 static void terminfo_input_deinit(TERM_REC *term)
@@ -687,6 +690,7 @@ static int term_setup(TERM_REC *term)
 	term->beep = term->TI_bel ? _beep : _ignore;
 
 	terminfo_setup_colors(term, FALSE);
+	terminfo_input_init0(term);
         terminfo_cont(term);
         return 1;
 }
