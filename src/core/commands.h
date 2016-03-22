@@ -41,7 +41,8 @@ enum {
 	CMDERR_INVALID_TIME, /* invalid time specification */
 	CMDERR_INVALID_CHARSET, /* invalid charset specification */
 	CMDERR_EVAL_MAX_RECURSE, /* eval hit recursion limit */
-	CMDERR_PROGRAM_NOT_FOUND /* program not found */
+	CMDERR_PROGRAM_NOT_FOUND, /* program not found */
+	CMDERR_NO_SERVER_DEFINED, /* no server has been defined for a given chatnet */
 };
 
 /* Return the full command for `alias' */
