@@ -109,7 +109,7 @@ static void cmd_set(char *data)
 	SETTINGS_REC *rec;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
-			    PARAM_FLAG_OPTIONS | PARAM_FLAG_STRIP_TRAILING_WS,
+			    PARAM_FLAG_OPTIONS,
 			    "set", &optlist, &key, &value))
 		return;
 
