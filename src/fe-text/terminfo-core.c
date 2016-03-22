@@ -395,6 +395,14 @@ static void _ignore_parm(TERM_REC *term, int param)
 {
 }
 
+static void term_dec_set_bracketed_paste_mode(int enable)
+{
+	if (enable)
+		tputs("\e[?2004h", 0, term_putchar);
+	else
+		tputs("\e[?2004l", 0, term_putchar);
+}
+
 static void term_fill_capabilities(TERM_REC *term)
 {
 	int i, ival;
@@ -535,6 +543,9 @@ void terminfo_cont(TERM_REC *term)
 	if (term->TI_smkx)
 		tput(tparm(term->TI_smkx));
 
+	if (term->bracketed_paste_enabled)
+		term_dec_set_bracketed_paste_mode(TRUE);
+
         terminfo_input_init(term);
 }
 
@@ -544,6 +555,9 @@ void terminfo_stop(TERM_REC *term)
 	terminfo_set_normal();
         /* move cursor to bottom of the screen */
 	terminfo_move(0, term->height-1);
+
+	if (term->bracketed_paste_enabled)
+		term_dec_set_bracketed_paste_mode(FALSE);
 
 	/* stop cup-mode */
 	if (term->TI_rmcup)
@@ -675,6 +689,15 @@ static int term_setup(TERM_REC *term)
 	terminfo_setup_colors(term, FALSE);
         terminfo_cont(term);
         return 1;
+}
+
+void term_set_bracketed_paste_mode(int enable)
+{
+	if (current_term->bracketed_paste_enabled == enable)
+		return;
+
+	current_term->bracketed_paste_enabled = enable;
+	term_dec_set_bracketed_paste_mode(enable);
 }
 
 TERM_REC *terminfo_core_init(FILE *in, FILE *out)

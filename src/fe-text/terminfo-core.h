@@ -92,6 +92,9 @@ struct _TERM_REC {
 	/* Keyboard-transmit mode */
 	const char *TI_smkx;
 	const char *TI_rmkx;
+
+	/* Terminal mode states */
+	int bracketed_paste_enabled;
 };
 
 extern TERM_REC *current_term;
