@@ -1,3 +1,16 @@
+v0.8.19 2016-03-23  The Irssi team <staff@irssi.org>
+	- Fixed regression when joining and parting channels on IRCnet (#435)
+	- Fixed SASL EXTERNAL (#432)
+	- Fixed regression when not using SASL (#438)
+	- Fixed incorrect SSL disconnects when using SSL from modules/scripts
+	  (#439)
+	- Fixed regression where proxy_string could not be configured or
+	  certain file transfers could not be accepted (#445)
+	- Fixed storing layout of !channels (#183)
+	- Fixed restoration of bracketed paste mode on quit (#449)
+	- Make the usage of meta-O for cursor keys configurable with
+	      /set term_appkey_mode off
+
 v0.8.18 2016-02-13  The Irssi team <staff@irssi.org>
 	* Modules will now require to define a
 	      void MODULENAME ## _abicheck(int *version)
