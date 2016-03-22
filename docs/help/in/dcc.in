@@ -36,10 +36,10 @@
 %9Examples:%9
 
     /DCC CHAT mike
-    /DCC GET bob summer vacation.mkv
+    /DCC GET bob "summer vacation.mkv"
     /DCC SEND sarah "summer vacation.mkv"
     /DCC CLOSE get mike
-    /DCC CLOSE send bob summer vacation.mkv
+    /DCC CLOSE send bob "summer vacation.mkv"
 
 %9See also:%9 CD
 
