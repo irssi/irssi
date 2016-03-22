@@ -94,6 +94,7 @@ struct _TERM_REC {
 	const char *TI_rmkx;
 
 	/* Terminal mode states */
+	int appkey_enabled;
 	int bracketed_paste_enabled;
 };
 

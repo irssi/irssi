@@ -94,6 +94,7 @@ void term_refresh(TERM_WINDOW *window);
 
 void term_stop(void);
 
+void term_set_appkey_mode(int enable);
 void term_set_bracketed_paste_mode(int enable);
 
 /* keyboard input handling */
