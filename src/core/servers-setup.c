@@ -321,10 +321,8 @@ server_create_conn(int chat_type, const char *dest, int port,
         chatrec = chatnet_find(dest);
 	if (chatrec != NULL) {
 		rec = create_chatnet_conn(chatrec->name, port, password, nick);
-		if (rec != NULL)
-			return rec;
-		/* The chatnet has no url to connect to */
-		return NULL;
+		/* If rec is NULL the chatnet has no url to connect to */
+		return rec;
 	}
 
 	chatrec = chatnet == NULL ? NULL : chatnet_find(chatnet);
