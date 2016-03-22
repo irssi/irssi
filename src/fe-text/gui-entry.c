@@ -582,7 +582,8 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 	if (size == 0 || entry->pos < size)
 		return;
 
-	if (entry->cutbuffer_len == 0) {
+	if (update_cutbuffer != CUTBUFFER_UPDATE_NOOP
+	    && entry->cutbuffer_len == 0) {
 		update_cutbuffer = CUTBUFFER_UPDATE_REPLACE;
 	}
 	int cutbuffer_new_size = entry->cutbuffer_len + size;
