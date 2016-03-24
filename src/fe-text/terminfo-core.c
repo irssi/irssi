@@ -395,6 +395,12 @@ static void _ignore_parm(TERM_REC *term, int param)
 {
 }
 
+static void terminfo_set_appkey_mode(TERM_REC *term, int set)
+{
+	if (term->TI_smkx && term->TI_rmkx)
+		tput(tparm(set ? term->TI_smkx : term->TI_rmkx));
+}
+
 static void term_dec_set_bracketed_paste_mode(int enable)
 {
 	if (enable)
@@ -543,8 +549,8 @@ void terminfo_cont(TERM_REC *term)
 	if (term->TI_smcup)
 		tput(tparm(term->TI_smcup));
 
-	if (term->TI_smkx)
-		tput(tparm(term->TI_smkx));
+	if (term->appkey_enabled)
+		terminfo_set_appkey_mode(term, TRUE);
 
 	if (term->bracketed_paste_enabled)
 		term_dec_set_bracketed_paste_mode(TRUE);
@@ -566,8 +572,8 @@ void terminfo_stop(TERM_REC *term)
 	if (term->TI_rmcup)
 		tput(tparm(term->TI_rmcup));
 
-	if (term->TI_rmkx)
-		tput(tparm(term->TI_rmkx));
+	if (term->appkey_enabled)
+		terminfo_set_appkey_mode(term, FALSE);
 
         /* reset input settings */
 	terminfo_input_deinit(term);
@@ -693,6 +699,15 @@ static int term_setup(TERM_REC *term)
 	terminfo_input_init0(term);
         terminfo_cont(term);
         return 1;
+}
+
+void term_set_appkey_mode(int enable)
+{
+	if (current_term->appkey_enabled == enable)
+		return;
+
+	current_term->appkey_enabled = enable;
+	terminfo_set_appkey_mode(current_term, enable);
 }
 
 void term_set_bracketed_paste_mode(int enable)
