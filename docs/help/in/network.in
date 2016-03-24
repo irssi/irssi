@@ -7,7 +7,7 @@
 
     LIST:            Displays the list of configured networks.
     ADD:             Adds a network to your configuration.
-    MODIFY:          Alias for ADD. Modifies a network in your configuration.
+    MODIFY:          Modifies a network in your configuration.
     REMOVE:          Removes a network from your configuration.
 
     -nick:           Specifies the nickname to use.
@@ -49,7 +49,7 @@
     networks.
 
     /NETWORK ADD modifies a network if it already exists in the configuration.
-    /NETWORK MODIFY is an alias for /NETWORK ADD to make the distinction more clear.
+    /NETWORK MODIFY only modifies existing channels.
 
     We recommend using 'WAIT 2000' between the automated commands in order to
     prevent you from being kicked from the network due to flooding commands.

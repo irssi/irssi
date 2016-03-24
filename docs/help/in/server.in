@@ -8,7 +8,7 @@
     LIST:              Displays the list of servers you are connected to.
     CONNECT:           Connects to the given server.
     ADD:               Adds a server to your configuration.
-    MODIFY:            Alias for ADD. Modifies a server in your configuration.
+    MODIFY:            Modifies a server in your configuration.
     REMOVE:            Removes a server from your configuration.
     PURGE:             Purges the commands queued to be sent to the server.
 
@@ -47,7 +47,7 @@
     servers.
 
     /SERVER ADD modifies a server if it already exists in the configuration.
-    /SERVER MODIFY is an alias for /SERVER ADD to make the distinction more clear.
+    /SERVER MODIFY only modified existing servers.
 
     When using the command without any of the given parameters, it will
     connect to the specified server; the server in the active window will be

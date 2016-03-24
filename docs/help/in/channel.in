@@ -7,7 +7,7 @@
 
     LIST:       Displays the list of configured channels.
     ADD:        Adds a channel to your configuration.
-    MODIFY:     Alias for ADD. Modifies a channel in your configuration.
+    MODIFY:     Modifies a channel in your configuration.
     REMOVE:     Removes a channel from your configuration.
 
     -auto:      Automatically join the channel.
@@ -27,7 +27,7 @@
     used to automate and simplify your workflow.
 
     /CHANNEL ADD modifies a channel if it already exists in the configuration.
-    /CHANNEL MODIFY is an alias for /CHANNEL ADD to make the distinction more clear.
+    /CHANNEL MODIFY only modifies existing channels.
 
     You can use the ADDALLCHANS command, which is a default alias, to add all
     the channels you are present on into the configuration.
