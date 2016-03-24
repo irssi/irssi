@@ -1,0 +1,16 @@
+
+%9Syntax:%9
+
+@SYNTAX:squery@
+
+%9Parameters:%9
+
+    <service> - Service nickname or full hostmask of service to query.
+    <message> - Message to send to the service.
+
+%9Description:%9
+
+    /SQUERY sends a query to the specified service.
+
+%9See also:%9 SERVLIST, LIST, MSG
+

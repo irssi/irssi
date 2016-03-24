@@ -25,10 +25,10 @@
 %9Remarks:%9
 
     Not all networks support server-side filtering and may provide a network
-    service instead; on IRCnet, you may use the ALIS service:
+    service or service bot instead; on IRCnet, you may use the List service:
 
-    /QUOTE SQUERY ALIS :HELP
+    /SQUERY List HELP
     /MSG ALIS HELP
 
-%9See also:%9 QUOTE, STATS, WHOIS
+%9See also:%9 STATS, SQUERY, WHOIS
 
