@@ -1,0 +1,23 @@
+
+%9Syntax:%9
+
+@SYNTAX:servlist@
+
+%9Parameters:%9
+
+    <mask> limits the output to the services which names matches
+           the mask.
+    <type> limits the output to the services of the specified type.
+
+%9Description:%9
+
+    List the network services currently present on the
+    IRC network.
+
+%9Examples:%9
+
+    /SERVLIST *@javairc.*
+    /SERVLIST * 0xD000
+
+%9See also:%9 SQUERY
+
