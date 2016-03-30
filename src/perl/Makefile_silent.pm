@@ -3,7 +3,7 @@ my $verb = $AM_DEFAULT_VERBOSITY;
 { package MY;
     sub _center {
 	my $z = shift;
-	length $z == 2 ? "  $z   " : length $z == 4 ? " $z  " : " $z "
+	(length $z == 2 ? "  $z   " : length $z == 4 ? " $z  " : " $z ").'   '
     }
     sub _silent_cmd {
 	my $z = shift;

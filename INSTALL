@@ -59,17 +59,11 @@ configure options
 
   Build without text frontend
 
-If ncurses is installed in a non-standard path you can specify it with
---with-ncurses=/path. If anything else is in non-standard path, you can just
-give the paths in CPPFLAGS and LIBS environment variable, eg.:
+If anything is in non-standard path, you can just give the paths in
+CPPFLAGS and LIBS environment variable, eg.:
 
   CPPFLAGS=-I/opt/openssl/include LDFLAGS=-L/opt/openssl/lib ./configure
 
-Irssi doesn't really need curses anymore, by default it uses
-terminfo/termcap directly. The functions for using terminfo/termcap
-however are usually only in curses library, some systems use libtermcap
-as well. If you want to use only curses calls for some reason, use
---without-terminfo.
 
 
  Perl problems
