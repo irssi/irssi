@@ -164,7 +164,7 @@ static void print_channel_netjoins(char *channel, TEMP_PRINT_REC *rec,
 	g_free(channel);
 }
 
-static void print_netjoins(NETJOIN_SERVER_REC *server)
+static void print_netjoins(NETJOIN_SERVER_REC *server, const char *channel)
 {
 	TEMP_PRINT_REC *temp;
 	GHashTable *channels;
@@ -185,6 +185,9 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 		while (rec->now_channels != NULL) {
 			char *channel = rec->now_channels->data;
 			char *realchannel = channel + 1;
+
+			if (channel != NULL && strcasecmp(realchannel, channel) != 0)
+				continue;
 
 			temp = g_hash_table_lookup(channels, realchannel);
 			if (temp == NULL) {
@@ -235,20 +238,31 @@ static void print_netjoins(NETJOIN_SERVER_REC *server)
 
 /* something is going to be printed to screen, print our current netsplit
    message before it. */
-static void sig_print_starting(void)
+static void sig_print_starting(TEXT_DEST_REC *dest)
 {
-	GSList *tmp, *next;
+	NETJOIN_SERVER_REC *rec;
 
 	if (printing_joins)
 		return;
 
-	for (tmp = joinservers; tmp != NULL; tmp = next) {
-		NETJOIN_SERVER_REC *server = tmp->data;
+	/* Do not dump the netsplit stats unless:
+	 * a) This is an IRC server
+	 * b) The message level is high enough
+	 * b) The message belongs to a channel
+	 * c) There's a NETJOIN record for this server
+	 */
+	if (!IS_IRC_SERVER(dest->server))
+		return;
 
-		next = tmp->next;
-		if (server->netjoins != NULL)
-			print_netjoins(server);
-	}
+	if (dest->level != MSGLEVEL_MSGS)
+		return;
+
+	if (!server_ischannel(dest->server, dest->target))
+		return;
+
+	rec = netjoin_find_server(IRC_SERVER(dest->server));
+	if (rec != NULL && rec->netjoins != NULL)
+		print_netjoins(rec, dest->target);
 }
 
 static int sig_check_netjoins(void)
@@ -272,7 +286,7 @@ static int sig_check_netjoins(void)
 		}
 
                 if (server->netjoins != NULL)
-			print_netjoins(server);
+			print_netjoins(server, NULL);
 	}
 
 	/* now remove all netjoins which haven't had any new joins
