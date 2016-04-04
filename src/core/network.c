@@ -510,7 +510,11 @@ const char *net_gethosterror(int error)
 {
 	g_return_val_if_fail(error != 0, NULL);
 
-	return gai_strerror(error);
+	if (error == EAI_SYSTEM) {
+		return strerror(errno);
+	} else {
+		return gai_strerror(error);
+	}
 }
 
 /* return TRUE if host lookup failed because it didn't exist (ie. not
