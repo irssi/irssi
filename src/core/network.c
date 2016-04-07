@@ -585,7 +585,11 @@ const char *net_gethosterror(int error)
 #ifdef HAVE_IPV6
 	g_return_val_if_fail(error != 0, NULL);
 
-	return gai_strerror(error);
+	if (error == EAI_SYSTEM) {
+		return strerror(errno);
+	} else {
+		return gai_strerror(error);
+	}
 #else
 	switch (error) {
 	case HOST_NOT_FOUND:
