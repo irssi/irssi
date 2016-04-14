@@ -20,12 +20,12 @@
 #include "network-proxy.h"
 
 struct _network_proxy_socks5 {
-	struct network_proxy	proxy;
+	struct network_proxy proxy;
 
-	char const		*username;
-	char const		*password;
+	char const *username;
+	char const *password;
 };
 
-struct network_proxy *		_network_proxy_socks5_create(void);
+struct network_proxy *_network_proxy_socks5_create(void);
 
 #endif	/* H_IRSSI_SRC_CORE_PROXY_SOCKS5_H */

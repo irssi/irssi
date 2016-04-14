@@ -25,10 +25,9 @@
 #include "network.h"
 #include "network-proxy-priv.h"
 
-static void
-network_proxy_http_destroy(struct network_proxy *proxy)
+static void network_proxy_http_destroy(struct network_proxy *proxy)
 {
-    struct _network_proxy_http  *self = container_of(proxy, struct _network_proxy_http, proxy);
+    struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
 
     g_free((void *)self->password);
     _network_proxy_destroy(proxy);
@@ -39,8 +38,8 @@ network_proxy_http_destroy(struct network_proxy *proxy)
 static struct network_proxy *
 network_proxy_http_clone(struct network_proxy const *proxy)
 {
-    struct _network_proxy_http  *self = container_of(proxy, struct _network_proxy_http, proxy);
-    struct _network_proxy_http  *res;
+    struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
+    struct _network_proxy_http *res;
 
     res = g_malloc0(sizeof *res);
 
@@ -49,18 +48,18 @@ network_proxy_http_clone(struct network_proxy const *proxy)
     return &res->proxy;
 }
 
-static bool
-send_connect(struct _network_proxy_http *proxy, GIOChannel *ch, char const *address, uint16_t port)
+static bool send_connect(struct _network_proxy_http *proxy, GIOChannel *ch,
+						 char const *address, uint16_t port)
 {
-    char                port_str[6];
+    char port_str[6];
 
     (void)proxy;
     sprintf(port_str, "%u", port);
 
     if (!_network_proxy_send_all(ch, "CONNECT ", -1) ||
-        !_network_proxy_send_all(ch, address,    -1) ||
-        !_network_proxy_send_all(ch, ":",        -1) ||
-        !_network_proxy_send_all(ch, port_str,   -1) ||
+        !_network_proxy_send_all(ch, address, -1) ||
+        !_network_proxy_send_all(ch, ":", -1) ||
+        !_network_proxy_send_all(ch, port_str, -1) ||
         !_network_proxy_send_all(ch, " HTTP/1.0\r\n\r\n", -1) ||
         !_network_proxy_flush(ch))
         return false;
@@ -68,16 +67,15 @@ send_connect(struct _network_proxy_http *proxy, GIOChannel *ch, char const *addr
     return true;
 }
 
-static int
-read_response(struct _network_proxy_http *proxy, GIOChannel *ch)
+static int read_response(struct _network_proxy_http *proxy, GIOChannel *ch)
 {
-    GIOStatus           status;
-    GString             line = { .str = NULL };
-    gsize               term_pos;
-    GError              *err = NULL;
-    int             state = 0;
-    int             rc = 0;
-    gchar               *resp = NULL;
+    GIOStatus status;
+    GString line = { .str = NULL };
+    gsize term_pos;
+    GError *err = NULL;
+    int state = 0;
+    int rc = 0;
+    gchar *resp = NULL;
 
     (void)proxy;
     for (;;) {
@@ -97,7 +95,7 @@ read_response(struct _network_proxy_http *proxy, GIOChannel *ch)
         if (state==0) {
             if (g_str_has_prefix(line.str, "HTTP/1.0 ")) {
                 resp = g_strndup(line.str+9, line.len-9-2);
-                rc   = g_ascii_strtoull(resp, NULL, 10);
+                rc = g_ascii_strtoull(resp, NULL, 10);
             } else {
                 g_warning("unexpected HTTP response: '%s'", line.str);
                 goto err;
@@ -125,16 +123,15 @@ err:
     return -1;
 }
 
-static GIOChannel *
-network_proxy_http_connect(struct network_proxy const *proxy, IPADDR const *hint_ip,
-                           char const *address, int port)
+static GIOChannel *network_proxy_http_connect(struct network_proxy const *proxy, IPADDR const *hint_ip,
+											  char const *address, int port)
 {
-    struct _network_proxy_http  *self = container_of(proxy, struct _network_proxy_http, proxy);
-    GIOChannel          *ch;
-    GIOFlags            old_flags;
-    GError              *err = NULL;
-    gchar const         *line_term;
-    gint                line_term_sz;
+    struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
+    GIOChannel *ch;
+    GIOFlags old_flags;
+    GError *err = NULL;
+    gchar const *line_term;
+    gint line_term_sz;
 
     if (hint_ip)
         ch = net_connect_ip(hint_ip, self->proxy.port, NULL);
@@ -175,19 +172,18 @@ err:
 }
 
 
-struct network_proxy *
-_network_proxy_http_create(void)
+struct network_proxy *_network_proxy_http_create(void)
 {
-    struct _network_proxy_http  *res;
+    struct _network_proxy_http *res;
 
     res = g_malloc0(sizeof *res);
 
     _network_proxy_create(&res->proxy);
-    res->password    = g_strdup(settings_get_str("proxy_password"));
+    res->password = g_strdup(settings_get_str("proxy_password"));
 
     res->proxy.destroy = network_proxy_http_destroy;
     res->proxy.connect = network_proxy_http_connect;
-    res->proxy.clone   = network_proxy_http_clone;
+    res->proxy.clone = network_proxy_http_clone;
 
     return &res->proxy;
 }

@@ -1,3 +1,8 @@
+ - New proxy code crashes if an invalid proxy_type setting is used
+ - Remove old socks code
+ - Lots of warnings at least when using socks5
+ - Clean up coding style
+
 19:36 [IRCNet] [muzzy] more bugs in irssi, apparently the new version:  foo splits out,
       	       	       bar joins, bar changes his nick to foo, foo splits again ->
 		       Glib warning "is already in split list (how?)" .. :)
