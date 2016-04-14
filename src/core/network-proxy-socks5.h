@@ -22,8 +22,8 @@
 struct _network_proxy_socks5 {
 	struct network_proxy proxy;
 
-	char const *username;
-	char const *password;
+	char *username;
+	char *password;
 };
 
 struct network_proxy *_network_proxy_socks5_create(void);

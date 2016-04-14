@@ -24,7 +24,7 @@
  * class */
 struct network_proxy_send_string_info
 {
-    char const *host;  /* hostname of the IRC server */
+    char *host;  /* hostname of the IRC server */
     uint16_t port;   /* portnumber of the IRC server */
     
     /* function which is used to send string; usually irc_send_cmd_now() */
