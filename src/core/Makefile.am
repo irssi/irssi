@@ -31,6 +31,9 @@ libcore_a_SOURCES = \
 	net-sendbuffer.c \
 	network.c \
 	network-openssl.c \
+	network-proxy.c \
+	network-proxy.h \
+	network-proxy-priv.h \
 	nicklist.c \
 	nickmatch-cache.c \
 	pidwait.c \
