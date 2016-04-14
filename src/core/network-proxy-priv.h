@@ -40,7 +40,7 @@ inline static void _network_proxy_clone(struct network_proxy *dst, struct networ
 
 inline static void _network_proxy_destroy(struct network_proxy *proxy)
 {
-	g_free(proxy->host);
+	g_free((void*)proxy->host);
 }
 
 
@@ -81,7 +81,7 @@ inline static bool _network_proxy_recv_all(GIOChannel *ch, void *buf_v, size_t l
         if (status!=G_IO_STATUS_NORMAL)
             break;
         
-        buf = l;
+        buf = (gchar *)l;
         len -= l;
     }
     
