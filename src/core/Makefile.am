@@ -33,6 +33,12 @@ libcore_a_SOURCES = \
 	network-openssl.c \
 	network-proxy.c \
 	network-proxy.h \
+	network-proxy-simple.c \
+	network-proxy-simple.h \
+	network-proxy-http.c \
+	network-proxy-http.h \
+	network-proxy-socks5.c \
+	network-proxy-socks5.h \
 	network-proxy-priv.h \
 	nicklist.c \
 	nickmatch-cache.c \
