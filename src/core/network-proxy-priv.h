@@ -19,15 +19,11 @@
 
 #include "settings.h"
 #include <stdbool.h>
-
-/* stolen from linux kernel */
-#define container_of(ptr, type, member)  __extension__ ({               \
-            const __typeof__( ((type *)0)->member ) *__mptr = (ptr);    \
-            (type *)( (char *)__mptr - offsetof(type,member) );})
-        
             
 inline static void _network_proxy_create(struct network_proxy *dst)
 {
+	// TODO: Initialize all fields, to bring the struct to a known state
+	dst->privdata = NULL;
     dst->port = settings_get_int("proxy_port");
     dst->host = g_strdup(settings_get_str("proxy_address"));
 }

@@ -27,28 +27,35 @@
 
 static void network_proxy_http_destroy(struct network_proxy *proxy)
 {
-    struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
+	struct network_proxy_http *self = (struct network_proxy_http *)proxy->privdata;
 
 	g_free(self->password);
-    _network_proxy_destroy(proxy);
 
     g_free(self);
+
+	_network_proxy_destroy(proxy);
+
+	g_free(proxy);
 }
 
-static struct network_proxy *
-network_proxy_http_clone(struct network_proxy const *proxy)
+static struct network_proxy *network_proxy_http_clone(struct network_proxy const *proxy)
 {
-    struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
-    struct _network_proxy_http *res;
+	struct network_proxy_http *self = (struct network_proxy_http *)proxy->privdata;
+	struct network_proxy_http *priv;
+	struct network_proxy *res;
+ 
+	res = g_malloc0(sizeof(struct network_proxy));
 
-    res = g_malloc0(sizeof *res);
+	_network_proxy_clone(res, proxy);
 
-    _network_proxy_clone(&res->proxy, &self->proxy);
-    res->password = g_strdup(self->password);
-    return &res->proxy;
+	priv = g_malloc0(sizeof(struct network_proxy_http));
+	res->privdata = (void *)priv;
+
+	priv->password = g_strdup(self->password);
+	return res;
 }
 
-static bool send_connect(struct _network_proxy_http *proxy, GIOChannel *ch,
+static bool send_connect(struct network_proxy_http *proxy, GIOChannel *ch,
 						 char const *address, uint16_t port)
 {
     char port_str[6];
@@ -67,7 +74,7 @@ static bool send_connect(struct _network_proxy_http *proxy, GIOChannel *ch,
     return true;
 }
 
-static int read_response(struct _network_proxy_http *proxy, GIOChannel *ch)
+static int read_response(struct network_proxy_http *proxy, GIOChannel *ch)
 {
     GIOStatus status;
     GString line = { .str = NULL };
@@ -126,7 +133,7 @@ err:
 static GIOChannel *network_proxy_http_connect(struct network_proxy const *proxy, IPADDR const *hint_ip,
 											  char const *address, int port)
 {
-    struct _network_proxy_http *self = container_of(proxy, struct _network_proxy_http, proxy);
+	struct network_proxy_http *self = (struct network_proxy_http *)proxy->privdata;
     GIOChannel *ch;
     GIOFlags old_flags;
     GError *err = NULL;
@@ -134,9 +141,9 @@ static GIOChannel *network_proxy_http_connect(struct network_proxy const *proxy,
     gint line_term_sz;
 
     if (hint_ip)
-        ch = net_connect_ip(hint_ip, self->proxy.port, NULL);
+		ch = net_connect_ip(hint_ip, proxy->port, NULL);
     else
-        ch = net_connect(self->proxy.host, self->proxy.port, NULL);
+		ch = net_connect(proxy->host, proxy->port, NULL);
 
     if (!ch)
         return NULL;
@@ -172,18 +179,23 @@ err:
 }
 
 
-struct network_proxy *_network_proxy_http_create(void)
+struct network_proxy *network_proxy_http_create(void)
 {
-    struct _network_proxy_http *res;
+	struct network_proxy *res;
+	struct network_proxy_http *priv;
 
-    res = g_malloc0(sizeof *res);
+	res = g_malloc0(sizeof(struct network_proxy));
 
-    _network_proxy_create(&res->proxy);
-    res->password = g_strdup(settings_get_str("proxy_password"));
+	_network_proxy_create(res);
 
-    res->proxy.destroy = network_proxy_http_destroy;
-    res->proxy.connect = network_proxy_http_connect;
-    res->proxy.clone = network_proxy_http_clone;
+	priv = g_malloc0(sizeof(struct network_proxy_http));
+	res->privdata = (void *)priv;
 
-    return &res->proxy;
+	priv->password = g_strdup(settings_get_str("proxy_password"));
+
+	res->destroy = network_proxy_http_destroy;
+	res->connect = network_proxy_http_connect;
+	res->clone = network_proxy_http_clone;
+
+	return res;
 }
