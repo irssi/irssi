@@ -135,7 +135,6 @@ static bool socks5_connect(const struct network_proxy_socks5 *proxy, GIOChannel 
 	struct server_greeting s_greeting;
 	struct server_response s_response;
 
-
 	/* Phase 1: exchange greeting */
 	{
 		struct client_greeting c_greeting = {
@@ -290,11 +289,10 @@ static GIOChannel *network_proxy_socks5_connect(struct network_proxy const *prox
 	old_flags = g_io_channel_get_flags(ch);
 	old_buf = g_io_channel_get_buffered(ch);
 
+	g_io_channel_set_buffered(ch, true);
 	if (g_io_channel_set_encoding(ch, NULL, &err)!=G_IO_STATUS_NORMAL ||
 	    g_io_channel_set_flags(ch, old_flags & ~G_IO_FLAG_NONBLOCK, &err)!=G_IO_STATUS_NORMAL)
 		goto err;
-
-	g_io_channel_set_buffered(ch, false);
 
 	if (!socks5_connect(self, ch, address, port))
 		goto err;
