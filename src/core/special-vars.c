@@ -318,29 +318,60 @@ static int get_alignment_args(char **data, int *align, int *flags, char *pad)
 /* return the aligned text */
 static char *get_alignment(const char *text, int align, int flags, char pad)
 {
-	GString *str;
-	char *ret;
+	gchar *ret;
+	gchar *ret_p;
+	uint i;
+	uint start_length;
+	uint cut_length;
+	uint final_length;
+	uint pad_count;
 
 	g_return_val_if_fail(text != NULL, NULL);
 
-	str = g_string_new(text);
+	/* abort if non-valid UTF-8 */
+	if (!g_utf8_validate(text, -1, NULL))
+		return NULL;
 
-	/* cut */
-	if ((flags & ALIGN_CUT) && align > 0 && str->len > align)
-		g_string_truncate(str, align);
+	/* how many characters do we have in the first place? */
+	start_length = g_utf8_strlen(text, 1024);
+	/* how many characters will we have after the cut? */
+	cut_length = start_length;
+	if ((flags & ALIGN_CUT) && align > 0 && start_length > align)
+		cut_length = align;
+	/* how many characters will we have after the pad? */
+	final_length = cut_length;
+	pad_count = 0;
+	if ((flags & ALIGN_PAD) && align > cut_length) {
+		final_length = align;
+		pad_count = final_length - cut_length;
+	}
 
-	/* add pad characters */
-	if (flags & ALIGN_PAD) {
-		while (str->len < align) {
-			if (flags & ALIGN_RIGHT)
-				g_string_prepend_c(str, pad);
-			else
-				g_string_append_c(str, pad);
+	/* allocate 4 bytes for each character we will have in the end */
+	ret = g_malloc((4 * final_length) + 1);
+	ret_p = ret;
+
+	/* left pad to align right, if necessary */
+	if (pad_count && (flags & ALIGN_RIGHT)) {
+		for (i = 0; i < pad_count; i++) {
+			*ret_p = pad;
+			ret_p ++;
 		}
 	}
 
-	ret = str->str;
-        g_string_free(str, FALSE);
+	/* copy the original string (either n characters or the whole of it) */
+	g_utf8_strncpy(ret_p, text, cut_length);
+	/* sadly, at this point, we have no idea where g_utf8_strncpy put the trailing \0... */
+	ret_p += strlen(ret_p);
+
+	/* right pad to align left, if necessary */
+	if (pad_count && !(flags & ALIGN_RIGHT)) {
+		for (i = 0; i < pad_count; i++) {
+			*ret_p = pad;
+			ret_p ++;
+		}
+		*ret_p = '\0';
+	}
+
 	return ret;
 }
 
