@@ -328,35 +328,35 @@ static int get_nick_length(void *data)
 
 static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 {
-        WINDOW_REC *window;
+	WINDOW_REC *window;
 	TEXT_DEST_REC dest;
 	GString *str;
 	GSList *tmp;
-        char *format, *stripped, *prefix_format;
+	char *format, *stripped, *prefix_format;
 	char *linebuf, nickmode[2] = { 0, 0 };
 	int *columns, cols, rows, last_col_rows, col, row, max_width;
-        int item_extra, linebuf_size, formatnum;
+	int item_extra, linebuf_size, formatnum;
 
 	window = window_find_closest(channel->server, channel->visible_name,
-				     MSGLEVEL_CLIENTCRAP);
-        max_width = window->width;
+	                             MSGLEVEL_CLIENTCRAP);
+	max_width = window->width;
 
-        /* get the length of item extra stuff ("[ ] ") */
+	/* get the length of item extra stuff ("[ ] ") */
 	format = format_get_text(MODULE_NAME, NULL,
-				 channel->server, channel->visible_name,
-				 TXT_NAMES_NICK, " ", "");
+	                         channel->server, channel->visible_name,
+	                         TXT_NAMES_NICK, " ", "");
 	stripped = strip_codes(format);
 	item_extra = strlen(stripped);
-        g_free(stripped);
+	g_free(stripped);
 	g_free(format);
 
 	if (settings_get_int("names_max_width") > 0 &&
 	    settings_get_int("names_max_width") < max_width)
 		max_width = settings_get_int("names_max_width");
 
-        /* remove width of the timestamp from max_width */
+	/* remove width of the timestamp from max_width */
 	format_create_dest(&dest, channel->server, channel->visible_name,
-			   MSGLEVEL_CLIENTCRAP, NULL);
+	                   MSGLEVEL_CLIENTCRAP, NULL);
 	format = format_get_line_start(current_theme, &dest, time(NULL));
 	if (format != NULL) {
 		stripped = strip_codes(format);
@@ -365,11 +365,11 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		g_free(format);
 	}
 
-        /* remove width of the prefix from max_width */
+	/* remove width of the prefix from max_width */
 	prefix_format = format_get_text(MODULE_NAME, NULL,
-					channel->server, channel->visible_name,
-					TXT_NAMES_PREFIX,
-					channel->visible_name);
+	                                channel->server, channel->visible_name,
+	                                TXT_NAMES_PREFIX,
+	                                channel->visible_name);
 	if (prefix_format != NULL) {
 		stripped = strip_codes(prefix_format);
 		max_width -= strlen(stripped);
@@ -384,19 +384,19 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 
 	/* calculate columns */
 	cols = get_max_column_count(nicklist, get_nick_length, max_width,
-				    settings_get_int("names_max_columns"),
-				    item_extra, 3, &columns, &rows);
+	                            settings_get_int("names_max_columns"),
+	                            item_extra, 3, &columns, &rows);
 	nicklist = columns_sort_list(nicklist, rows);
 
-        /* rows in last column */
+	/* rows in last column */
 	last_col_rows = rows-(cols*rows-g_slist_length(nicklist));
 	if (last_col_rows == 0)
-                last_col_rows = rows;
+		last_col_rows = rows;
 
 	str = g_string_new(prefix_format);
 	linebuf_size = max_width+1; linebuf = g_malloc(linebuf_size);
 
-        col = 0; row = 0;
+	col = 0; row = 0;
 	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
@@ -407,39 +407,39 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 
 		if (linebuf_size < columns[col]-item_extra+1) {
 			linebuf_size = (columns[col]-item_extra+1)*2;
-                        linebuf = g_realloc(linebuf, linebuf_size);
+			linebuf = g_realloc(linebuf, linebuf_size);
 		}
 		memset(linebuf, ' ', columns[col]-item_extra);
 		linebuf[columns[col]-item_extra] = '\0';
 		memcpy(linebuf, rec->nick, strlen(rec->nick));
 
-		formatnum = rec->op ? TXT_NAMES_NICK_OP :
-			rec->halfop ? TXT_NAMES_NICK_HALFOP :
-			rec->voice ? TXT_NAMES_NICK_VOICE :
-                        TXT_NAMES_NICK;
+		formatnum = rec->op     ? TXT_NAMES_NICK_OP :
+		            rec->halfop ? TXT_NAMES_NICK_HALFOP :
+		            rec->voice  ? TXT_NAMES_NICK_VOICE :
+		                          TXT_NAMES_NICK;
 		format = format_get_text(MODULE_NAME, NULL,
-					 channel->server,
-					 channel->visible_name,
-					 formatnum, nickmode, linebuf);
+		                         channel->server,
+		                         channel->visible_name,
+		                         formatnum, nickmode, linebuf);
 		g_string_append(str, format);
 		g_free(format);
 
 		if (++col == cols) {
 			printtext(channel->server, channel->visible_name,
-				  MSGLEVEL_CLIENTCRAP, "%s", str->str);
+			          MSGLEVEL_CLIENTCRAP, "%s", str->str);
 			g_string_truncate(str, 0);
 			if (prefix_format != NULL)
-                                g_string_assign(str, prefix_format);
+				g_string_assign(str, prefix_format);
 			col = 0; row++;
 
 			if (row == last_col_rows)
-                                cols--;
+				cols--;
 		}
 	}
 
 	if (str->len > strlen(prefix_format)) {
 		printtext(channel->server, channel->visible_name,
-			  MSGLEVEL_CLIENTCRAP, "%s", str->str);
+		          MSGLEVEL_CLIENTCRAP, "%s", str->str);
 	}
 
 	g_slist_free(nicklist);
