@@ -26,10 +26,6 @@
 #include "servers.h"
 #include "misc.h"
 
-#define ALIGN_RIGHT 0x01
-#define ALIGN_CUT   0x02
-#define ALIGN_PAD   0x04
-
 #define isvarchar(c) \
         (i_isalnum(c) || (c) == '_')
 
@@ -316,7 +312,7 @@ static int get_alignment_args(char **data, int *align, int *flags, char *pad)
 }
 
 /* return the aligned text */
-static char *get_alignment(const char *text, int align, int flags, char pad)
+char *get_alignment(const char *text, int align, int flags, char pad)
 {
 	gchar *ret;
 	gchar *ret_p;
