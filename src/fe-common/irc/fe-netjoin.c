@@ -168,7 +168,7 @@ static void print_netjoins(NETJOIN_SERVER_REC *server, const char *channel)
 {
 	TEMP_PRINT_REC *temp;
 	GHashTable *channels;
-	GSList *tmp, *next, *old;
+	GSList *tmp, *tmp2, *next, *next2, *old;
 
 	g_return_if_fail(server != NULL);
 
@@ -181,10 +181,13 @@ static void print_netjoins(NETJOIN_SERVER_REC *server, const char *channel)
 	for (tmp = server->netjoins; tmp != NULL; tmp = next) {
 		NETJOIN_REC *rec = tmp->data;
 
-		next = tmp->next;
-		while (rec->now_channels != NULL) {
-			char *channel = rec->now_channels->data;
+		next = g_slist_next(tmp);
+
+		for (tmp2 = rec->now_channels; tmp2 != NULL; tmp2 = next2) {
+			char *channel = tmp2->data;
 			char *realchannel = channel + 1;
+
+			next2 = g_slist_next(tmp2);
 
 			if (channel != NULL && strcasecmp(realchannel, channel) != 0)
 				continue;
@@ -217,8 +220,8 @@ static void print_netjoins(NETJOIN_SERVER_REC *server, const char *channel)
 				g_free(data);
 			}
 
-			rec->now_channels =
-				g_slist_remove(rec->now_channels, channel);
+			/* drop tmp2 from the list */
+			rec->now_channels = g_slist_delete_link(rec->now_channels, tmp2);
 			g_free(channel);
 		}
 
