@@ -44,6 +44,8 @@ libcore_a_SOURCES = \
 	settings.c \
 	signals.c \
 	special-vars.c \
+	utf8.c \
+	wcwidth.c \
 	write-buffer.c
 
 structure_headers = \
