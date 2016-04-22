@@ -75,3 +75,50 @@ int get_utf8_string_width(const gchar *s, int skip_validation) {
 	 */
 	return str_width;
 }
+
+/* Return the amount of characters from s it takes to reach n columns, or -1 if
+ * s is NULL.
+ */
+int get_utf8_chars_for_width(const gchar *s, unsigned int n, int skip_validation, unsigned int *delta) {
+	const gchar *c;
+	int str_width, char_width, char_count;
+
+	/* Ensure s is non-NULL: */
+	if (!s) {
+		return -1;
+	}
+
+	/* Handle the dummy case where n is 0: */
+	if (!n) {
+		return 0;
+	}
+
+	/* Validate the string, unless required otherwise: */
+	if (!skip_validation) {
+		if (!g_utf8_validate(s, -1, NULL)) {
+			/* Another possibility here would be to return strlen(s). */
+			return -1;
+		}
+	}
+
+	/* Iterate over characters until we reach n: */
+	char_count = 0;
+	str_width = 0;
+	for (c = s; *c; c = g_utf8_next_char(c)) {
+		char_width = get_utf8_char_width(c);
+		if (str_width + char_width > n) {
+			/* We are about to exceed n, stop here. */
+			break;
+		}
+		++ char_count;
+		str_width += char_width;
+	}
+	/* At this point, we know that char_count characters reach str_width
+	 * columns, which is less than or equal to n. */
+
+	/* Optionally provide the delta between str_width and n */
+	if (delta) {
+		*delta = n - str_width;
+	}
+	return char_count;
+}
