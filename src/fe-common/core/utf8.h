@@ -11,6 +11,10 @@
 /* Returns width for character (0-2). */
 int mk_wcwidth(unichar c);
 
+/* Return the number of columns occupied by a given string. */
+int get_utf8_char_width(const gchar *);
+int get_utf8_string_width(const gchar *);
+
 #define unichar_isprint(c) (((c) & ~0x80) >= 32)
 #define is_utf8_leading(c) (((c) & 0xc0) != 0x80)
 
