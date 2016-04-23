@@ -25,6 +25,7 @@
 #include "settings.h"
 #include "servers.h"
 #include "misc.h"
+#include "utf8.h"
 
 #define isvarchar(c) \
         (i_isalnum(c) || (c) == '_')
@@ -317,10 +318,14 @@ char *get_alignment(const char *text, int align, int flags, char pad)
 	gchar *ret;
 	gchar *ret_p;
 	uint i;
-	uint start_length;
-	uint cut_length;
-	uint final_length;
+	/* Terminology: width is an amount of columns, length is an amount of
+	 * characters.
+	 */
+	uint start_width, start_length;
+	uint cut_width, cut_length;
+	uint final_width, final_length;
 	uint pad_count;
+	uint delta;
 
 	g_return_val_if_fail(text != NULL, NULL);
 
@@ -328,18 +333,31 @@ char *get_alignment(const char *text, int align, int flags, char pad)
 	if (!g_utf8_validate(text, -1, NULL))
 		return NULL;
 
-	/* how many characters do we have in the first place? */
+	/* how many columns and chars do we have in the first place? */
+	start_width = get_utf8_string_width(text, 1 /* skip UTF-8 validation */);
 	start_length = g_utf8_strlen(text, 1024);
-	/* how many characters will we have after the cut? */
+	/* how many columns and chars will we have after the cut? */
+	cut_width = start_width;
 	cut_length = start_length;
-	if ((flags & ALIGN_CUT) && align > 0 && start_length > align)
-		cut_length = align;
-	/* how many characters will we have after the pad? */
+	delta = 0;
+	if ((flags & ALIGN_CUT) && align > 0 && start_width > align) {
+		cut_width = align;
+		cut_length = get_utf8_chars_for_width(text,
+		                                      align,
+		                                      1 /* skip UTF-8 validation */,
+		                                      &delta);
+		/* At this point, we know that we have to take "cut_length" chars from
+		 * "text" and append "delta" padding chars to reach "align" columns.
+		 */
+	}
+	/* how many columns will we have after the pad? */
+	final_width = cut_width;
 	final_length = cut_length;
-	pad_count = 0;
-	if ((flags & ALIGN_PAD) && align > cut_length) {
-		final_length = align;
-		pad_count = final_length - cut_length;
+	pad_count = delta;
+	if ((flags & ALIGN_PAD) && align > cut_width) {
+		final_width = align;
+		pad_count += (final_width - cut_width);
+		final_length += pad_count;
 	}
 
 	/* allocate 4 bytes for each character we will have in the end */

@@ -27,6 +27,7 @@
 #include "misc.h"
 #include "settings.h"
 #include "special-vars.h"
+#include "utf8.h"
 
 #include "chat-protocols.h"
 #include "chatnets.h"
@@ -324,7 +325,7 @@ static void cmd_channel_remove(const char *data)
 
 static int get_nick_length(void *data)
 {
-	return g_utf8_strlen(((NICK_REC *) data)->nick, 1024);
+	return get_utf8_string_width(((NICK_REC *) data)->nick, 1024);
 }
 
 static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
