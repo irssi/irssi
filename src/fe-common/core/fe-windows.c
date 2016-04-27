@@ -575,7 +575,7 @@ static void sig_server_disconnected(SERVER_REC *server)
 	}
 }
 
-static void window_print_daychange(WINDOW_REC *window, struct tm *tm)
+void window_print_daychange(WINDOW_REC *window, struct tm *tm)
 {
         THEME_REC *theme;
         TEXT_DEST_REC dest;
@@ -664,9 +664,9 @@ static void sig_print_text(void)
 	daycheck = 2;
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 
-	/* day changed, print notice about it to every window */
+	/* day changed, notify every window */
 	for (tmp = windows; tmp != NULL; tmp = tmp->next)
-		window_print_daychange(tmp->data, tm);
+		((WINDOW_REC *)(tmp->data))->daychanged = 1;
 }
 
 static int sig_check_daychange(void)

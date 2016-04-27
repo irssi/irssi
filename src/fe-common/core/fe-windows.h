@@ -35,6 +35,7 @@ struct _WINDOW_REC {
 	unsigned int immortal:1;
 	unsigned int sticky_refnum:1;
 	unsigned int destroying:1;
+	unsigned int daychanged:1;
 
 	/* window-specific command line history */
 	HISTORY_REC *history;
@@ -82,6 +83,7 @@ WINDOW_REC *window_find_item(SERVER_REC *server, const char *name);
 int window_refnum_prev(int refnum, int wrap);
 int window_refnum_next(int refnum, int wrap);
 int windows_refnum_last(void);
+void window_print_daychange(WINDOW_REC *window, struct tm *tm);
 
 int window_refnum_cmp(WINDOW_REC *w1, WINDOW_REC *w2);
 GSList *windows_get_sorted(void);
