@@ -10,6 +10,7 @@
     -line:        Highlights the whole line.
     -mask:        Highlights all messages from users matching the mask.
     -full:        The text must match the full word.
+    -case:        The text must match case.
     -regexp:      The text is a regular expression.
     -color:       The color the display the highlight in.
     -actcolor:    The color to mark the highlight activity in the statusbar.
