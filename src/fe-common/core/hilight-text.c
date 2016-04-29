@@ -122,8 +122,11 @@ static void hilight_init_rec(HILIGHT_REC *rec)
 {
 #ifdef HAVE_REGEX_H
 	if (rec->regexp_compiled) regfree(&rec->preg);
-	rec->regexp_compiled = !rec->regexp ? FALSE :
-		regcomp(&rec->preg, rec->text, REG_EXTENDED|REG_ICASE) == 0;
+	if (!rec->regexp)
+		rec->regexp_compiled = FALSE;
+	else
+		rec->regexp_compiled = regcomp(&rec->preg, rec->text,
+				rec->case_sensitive ? REG_EXTENDED : (REG_EXTENDED|REG_ICASE)) == 0;
 #endif
 }
 
