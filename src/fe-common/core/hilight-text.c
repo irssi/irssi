@@ -218,8 +218,7 @@ static int hilight_match_text(HILIGHT_REC *rec, const char *text,
 			match = rec->fullword ?
 				strstr_full(text, rec->text) :
 				strstr(text, rec->text);
-		}
-		else {
+		} else {
 			match = rec->fullword ?
 				stristr_full(text, rec->text) :
 				stristr(text, rec->text);
