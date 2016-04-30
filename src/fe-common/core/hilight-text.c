@@ -49,7 +49,7 @@ static void reset_level_cache(void)
 		HILIGHT_REC *rec = tmp->data;
 
 		if (never_hilight_level & rec->level)
-                        never_hilight_level &= ~rec->level;
+			never_hilight_level &= ~rec->level;
 	}
 }
 
@@ -68,17 +68,18 @@ static void hilight_add_config(HILIGHT_REC *rec)
 	node = iconfig_node_traverse("(hilights", TRUE);
 	node = iconfig_node_section(node, NULL, NODE_TYPE_BLOCK);
 
-        iconfig_node_set_str(node, "text", rec->text);
-        if (rec->level > 0) iconfig_node_set_int(node, "level", rec->level);
-        if (rec->color) iconfig_node_set_str(node, "color", rec->color);
-        if (rec->act_color) iconfig_node_set_str(node, "act_color", rec->act_color);
-        if (rec->priority > 0) iconfig_node_set_int(node, "priority", rec->priority);
-        iconfig_node_set_bool(node, "nick", rec->nick);
-        iconfig_node_set_bool(node, "word", rec->word);
-        if (rec->nickmask) iconfig_node_set_bool(node, "mask", TRUE);
-        if (rec->fullword) iconfig_node_set_bool(node, "fullword", TRUE);
-        if (rec->regexp) iconfig_node_set_bool(node, "regexp", TRUE);
-        if (rec->servertag) iconfig_node_set_str(node, "servertag", rec->servertag);
+	iconfig_node_set_str(node, "text", rec->text);
+	if (rec->level > 0) iconfig_node_set_int(node, "level", rec->level);
+	if (rec->color) iconfig_node_set_str(node, "color", rec->color);
+	if (rec->act_color) iconfig_node_set_str(node, "act_color", rec->act_color);
+	if (rec->priority > 0) iconfig_node_set_int(node, "priority", rec->priority);
+	iconfig_node_set_bool(node, "nick", rec->nick);
+	iconfig_node_set_bool(node, "word", rec->word);
+	if (rec->nickmask) iconfig_node_set_bool(node, "mask", TRUE);
+	if (rec->fullword) iconfig_node_set_bool(node, "fullword", TRUE);
+	if (rec->regexp) iconfig_node_set_bool(node, "regexp", TRUE);
+	if (rec->case_sensitive) iconfig_node_set_bool(node, "matchcase", TRUE);
+	if (rec->servertag) iconfig_node_set_str(node, "servertag", rec->servertag);
 
 	if (rec->channels != NULL && *rec->channels != NULL) {
 		node = iconfig_node_section(node, "channels", NODE_TYPE_LIST);
@@ -121,8 +122,11 @@ static void hilight_init_rec(HILIGHT_REC *rec)
 {
 #ifdef HAVE_REGEX_H
 	if (rec->regexp_compiled) regfree(&rec->preg);
-	rec->regexp_compiled = !rec->regexp ? FALSE :
-		regcomp(&rec->preg, rec->text, REG_EXTENDED|REG_ICASE) == 0;
+	if (!rec->regexp)
+		rec->regexp_compiled = FALSE;
+	else
+		rec->regexp_compiled = regcomp(&rec->preg, rec->text,
+				rec->case_sensitive ? REG_EXTENDED : (REG_EXTENDED|REG_ICASE)) == 0;
 #endif
 }
 
@@ -191,7 +195,7 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 }
 
 static int hilight_match_text(HILIGHT_REC *rec, const char *text,
-			      int *match_beg, int *match_end)
+				  int *match_beg, int *match_end)
 {
 	char *match;
 
@@ -200,9 +204,9 @@ static int hilight_match_text(HILIGHT_REC *rec, const char *text,
 		regmatch_t rmatch[1];
 
 		if (rec->regexp_compiled &&
-		    regexec(&rec->preg, text, 1, rmatch, 0) == 0) {
+			regexec(&rec->preg, text, 1, rmatch, 0) == 0) {
 			if (rmatch[0].rm_so > 0 &&
-			    match_beg != NULL && match_end != NULL) {
+				match_beg != NULL && match_end != NULL) {
 				*match_beg = rmatch[0].rm_so;
 				*match_end = rmatch[0].rm_eo;
 			}
@@ -210,9 +214,15 @@ static int hilight_match_text(HILIGHT_REC *rec, const char *text,
 		}
 #endif
 	} else {
-		match = rec->fullword ?
-			stristr_full(text, rec->text) :
-			stristr(text, rec->text);
+		if (rec->case_sensitive) {
+			match = rec->fullword ?
+				strstr_full(text, rec->text) :
+				strstr(text, rec->text);
+		} else {
+			match = rec->fullword ?
+				stristr_full(text, rec->text) :
+				stristr(text, rec->text);
+		}
 		if (match != NULL) {
 			if (match_beg != NULL && match_end != NULL) {
 				*match_beg = (int) (match-text);
@@ -222,7 +232,7 @@ static int hilight_match_text(HILIGHT_REC *rec, const char *text,
 		}
 	}
 
-        return FALSE;
+	return FALSE;
 }
 
 #define hilight_match_level(rec, level) \
@@ -267,14 +277,14 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
 		HILIGHT_REC *rec = tmp->data;
 
 		if (!rec->nickmask && hilight_match_level(rec, level) &&
-		    hilight_match_channel(rec, channel) &&
-		    (rec->servertag == NULL ||
-		     (server != NULL && g_ascii_strcasecmp(rec->servertag, server->tag) == 0)) &&
-		    hilight_match_text(rec, str, match_beg, match_end))
+			hilight_match_channel(rec, channel) &&
+			(rec->servertag == NULL ||
+			 (server != NULL && g_ascii_strcasecmp(rec->servertag, server->tag) == 0)) &&
+			hilight_match_text(rec, str, match_beg, match_end))
 			return rec;
 	}
 
-        return NULL;
+	return NULL;
 }
 
 static char *hilight_get_act_color(HILIGHT_REC *rec)
@@ -308,7 +318,7 @@ void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
 	g_free_and_null(dest->hilight_color);
 	if (rec->act_color != NULL && g_strcmp0(rec->act_color, "%n") == 0)
 		dest->level |= MSGLEVEL_NO_ACT;
-        else
+	else
 		dest->hilight_color = hilight_get_act_color(rec);
 }
 
@@ -362,29 +372,29 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 		/* hilight whole line */
 		char *tmp = strip_codes(text);
 		newstr = g_strconcat(color, tmp, NULL);
-                g_free(tmp);
+		g_free(tmp);
 	} else {
 		/* hilight part of the line */
-                GString *tmp;
-                char *middle;
+		GString *tmp;
+		char *middle;
 		int pos, color_pos, color_len;
 
-                tmp = g_string_new(NULL);
+		tmp = g_string_new(NULL);
 
-                /* start of the line */
+		/* start of the line */
 		pos = strip_real_length(text, hilight_start, NULL, NULL);
 		g_string_append(tmp, text);
-                g_string_truncate(tmp, pos);
+		g_string_truncate(tmp, pos);
 
 		/* color */
-                g_string_append(tmp, color);
+		g_string_append(tmp, color);
 
 		/* middle of the line, stripped */
 		middle = strip_codes(text+pos);
-                pos = tmp->len;
+		pos = tmp->len;
 		g_string_append(tmp, middle);
-                g_string_truncate(tmp, pos+hilight_len);
-                g_free(middle);
+		g_string_truncate(tmp, pos+hilight_len);
+		g_free(middle);
 
 		/* end of the line */
 		pos = strip_real_length(text, hilight_end,
@@ -398,8 +408,8 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 		}
 		g_string_append(tmp, text+pos);
 
-                newstr = tmp->str;
-                g_string_free(tmp, FALSE);
+		newstr = tmp->str;
+		g_string_free(tmp, FALSE);
 	}
 
 	signal_emit("print text", 3, dest, newstr, stripped);
@@ -417,7 +427,7 @@ HILIGHT_REC *hilight_match_nick(SERVER_REC *server, const char *channel,
         HILIGHT_REC *rec;
 
 	rec = hilight_match(server, channel, nick, address,
-			    level, msg, NULL, NULL);
+				level, msg, NULL, NULL);
 	return (rec == NULL || !rec->nick) ? NULL : rec;
 }
 
@@ -464,6 +474,7 @@ static void read_hilight_config(void)
 		rec->priority = config_node_get_int(node, "priority", 0);
 		rec->nick = config_node_get_bool(node, "nick", TRUE);
 		rec->word = config_node_get_bool(node, "word", TRUE);
+		rec->case_sensitive = config_node_get_bool(node, "matchcase", FALSE);
 
 		rec->nickmask = config_node_get_bool(node, "mask", FALSE);
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
@@ -475,7 +486,7 @@ static void read_hilight_config(void)
 		if (node != NULL) rec->channels = config_node_get_list(node);
 	}
 
-        reset_cache();
+	reset_cache();
 }
 
 static void hilight_print(int index, HILIGHT_REC *rec)
@@ -495,6 +506,7 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 
 	if (rec->nickmask) g_string_append(options, "-mask ");
 	if (rec->fullword) g_string_append(options, "-full ");
+	if (rec->case_sensitive) g_string_append(options, "-matchcase ");
 	if (rec->regexp) {
 		g_string_append(options, "-regexp ");
 #ifdef HAVE_REGEX_H
@@ -519,10 +531,10 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 	if (levelstr != NULL)
 		levelstr = g_strconcat(levelstr, " ", NULL);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-		    TXT_HILIGHT_LINE, index, rec->text,
-		    chans != NULL ? chans : "",
-		    levelstr != NULL ? levelstr : "",
-		    options->str);
+			TXT_HILIGHT_LINE, index, rec->text,
+			chans != NULL ? chans : "",
+			levelstr != NULL ? levelstr : "",
+			options->str);
 	g_free_not_null(chans);
 	g_free_not_null(levelstr);
 	g_string_free(options, TRUE);
@@ -543,12 +555,12 @@ static void cmd_hilight_show(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_HILIGHT_FOOTER);
 }
 
-/* SYNTAX: HILIGHT [-nick | -word | -line] [-mask | -full | -regexp]
+/* SYNTAX: HILIGHT [-nick | -word | -line] [-mask | -full | -matchcase | -regexp]
                    [-color <color>] [-actcolor <color>] [-level <level>]
 		   [-network <network>] [-channels <channels>] <text> */
 static void cmd_hilight(const char *data)
 {
-        GHashTable *optlist;
+	GHashTable *optlist;
 	HILIGHT_REC *rec;
 	char *colorarg, *actcolorarg, *levelarg, *priorityarg, *chanarg, *text, *servertag;
 	char **channels;
@@ -562,7 +574,7 @@ static void cmd_hilight(const char *data)
 	}
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS |
-			    PARAM_FLAG_GETREST, "hilight", &optlist, &text))
+				PARAM_FLAG_GETREST, "hilight", &optlist, &text))
 		return;
 
 	chanarg = g_hash_table_lookup(optlist, "channels");
@@ -582,7 +594,7 @@ static void cmd_hilight(const char *data)
 		rec = g_new0(HILIGHT_REC, 1);
 
 		/* default to nick/word hilighting */
-                rec->nick = TRUE;
+		rec->nick = TRUE;
 		rec->word = TRUE;
 
 		rec->text = g_strdup(text);
@@ -602,15 +614,16 @@ static void cmd_hilight(const char *data)
 
 	if (g_hash_table_lookup(optlist, "word") != NULL) {
 		rec->word = TRUE;
-                rec->nick = FALSE;
+		rec->nick = FALSE;
 	}
 
 	if (g_hash_table_lookup(optlist, "nick") != NULL)
-                rec->nick = TRUE;
+		rec->nick = TRUE;
 
 	rec->nickmask = g_hash_table_lookup(optlist, "mask") != NULL;
 	rec->fullword = g_hash_table_lookup(optlist, "full") != NULL;
 	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
+	rec->case_sensitive = g_hash_table_lookup(optlist, "matchcase") != NULL;
 
 	if (colorarg != NULL) {
 		g_free_and_null(rec->color);
@@ -631,7 +644,7 @@ static void cmd_hilight(const char *data)
 	hilight_create(rec);
 
 	hilight_print(g_slist_index(hilights, rec)+1, rec);
-        cmd_params_free(free_arg);
+	cmd_params_free(free_arg);
 
 	reset_cache();
 }
@@ -649,7 +662,7 @@ static void cmd_dehilight(const char *data)
 	} else {
 		/* with mask */
 		char *chans[2] = { "*", NULL };
-                rec = hilight_find(data, chans);
+		rec = hilight_find(data, chans);
 	}
 
 	if (rec == NULL)
@@ -657,20 +670,20 @@ static void cmd_dehilight(const char *data)
 	else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_HILIGHT_REMOVED, rec->text);
 		hilight_remove(rec);
-                reset_cache();
+		reset_cache();
 	}
 }
 
 static void hilight_nick_cache(GHashTable *list, CHANNEL_REC *channel,
-			       NICK_REC *nick)
+				   NICK_REC *nick)
 {
 	GSList *tmp;
 	HILIGHT_REC *match;
-        char *nickmask;
+	char *nickmask;
 	int len, best_match;
 
 	if (nick->host == NULL)
-                return; /* don't check until host is known */
+		return; /* don't check until host is known */
 
 	nickmask = g_strconcat(nick->nick, "!", nick->host, NULL);
 
@@ -679,8 +692,8 @@ static void hilight_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 		HILIGHT_REC *rec = tmp->data;
 
 		if (rec->nickmask &&
-		    hilight_match_channel(rec, channel->name) &&
-		    match_wildcards(rec->text, nickmask)) {
+			hilight_match_channel(rec, channel->name) &&
+			match_wildcards(rec->text, nickmask)) {
 			len = strlen(rec->text);
 			if (best_match < len) {
 				best_match = len;
@@ -691,7 +704,7 @@ static void hilight_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 	g_free_not_null(nickmask);
 
 	if (match != NULL)
-                g_hash_table_insert(list, nick, match);
+		g_hash_table_insert(list, nick, match);
 }
 
 static void read_settings(void)
@@ -706,28 +719,28 @@ void hilight_text_init(void)
 	settings_add_str("lookandfeel", "hilight_act_color", "%M");
 	settings_add_level("lookandfeel", "hilight_level", "PUBLIC DCCMSGS");
 
-        read_settings();
+	read_settings();
 
 	nickmatch = nickmatch_init(hilight_nick_cache);
 	read_hilight_config();
 
 	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
-        signal_add("setup reread", (SIGNAL_FUNC) read_hilight_config);
-        signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add("setup reread", (SIGNAL_FUNC) read_hilight_config);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_bind("hilight", NULL, (SIGNAL_FUNC) cmd_hilight);
 	command_bind("dehilight", NULL, (SIGNAL_FUNC) cmd_dehilight);
-	command_set_options("hilight", "-color -actcolor -level -priority -network -channels nick word line mask full regexp");
+	command_set_options("hilight", "-color -actcolor -level -priority -network -channels nick word line mask full regexp matchcase");
 }
 
 void hilight_text_deinit(void)
 {
 	hilights_destroy_all();
-        nickmatch_deinit(nickmatch);
+	nickmatch_deinit(nickmatch);
 
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
-        signal_remove("setup reread", (SIGNAL_FUNC) read_hilight_config);
-        signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("setup reread", (SIGNAL_FUNC) read_hilight_config);
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_unbind("hilight", (SIGNAL_FUNC) cmd_hilight);
 	command_unbind("dehilight", (SIGNAL_FUNC) cmd_dehilight);
