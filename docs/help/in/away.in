@@ -8,8 +8,8 @@
    -one:    Marks yourself as away on the active server.
    -all:    Marks yourself as away on all the servers you are connected to.
 
-   You away message; if no argument is given, your away status will be removed.
-   
+   Your away message; if no argument is given, your away status will be removed.
+
 %9Description:%9
 
     Marks yourself as 'away'; this method is used to inform people that you
