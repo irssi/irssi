@@ -365,9 +365,9 @@ char *theme_format_expand_get(THEME_REC *theme, const char **format)
 	GString *str;
 	char *ret;
 	theme_rm_col dummy, reset;
+	int braces = 1; /* we start with one brace opened */
 	dummy.m[0] = '\0';
 	strcpy(reset.m, "n");
-	int braces = 1; /* we start with one brace opened */
 
 	str = g_string_new(NULL);
 	while (**format != '\0' && braces != 0) {

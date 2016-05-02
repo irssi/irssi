@@ -671,8 +671,8 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 	WI_ITEM_REC *wiitem;
 	char *tmpstr, *tmpstr2;
 	theme_rm_col reset;
-	strcpy(reset.m, "n");
 	int len;
+	strcpy(reset.m, "n");
 
 	if (str == NULL)
 		str = statusbar_item_get_value(item);

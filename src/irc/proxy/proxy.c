@@ -28,13 +28,14 @@
 /* SYNTAX: IRSSIPROXY STATUS */
 static void cmd_irssiproxy_status(const char *data, IRC_SERVER_REC *server)
 {
+	GSList *tmp;
+
 	if (!settings_get_bool("irssiproxy")) {
 		printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
 			  "Proxy is currently disabled");
 		return;
 	}
 
-	GSList *tmp;
 
 	printtext(server, NULL, MSGLEVEL_CLIENTNOTICE,
 		  "Proxy: Currently connected clients: %d",
