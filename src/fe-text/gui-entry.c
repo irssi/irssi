@@ -554,6 +554,7 @@ void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr)
 
 char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry)
 {
+	GUI_ENTRY_CUTBUFFER_REC *tmp;
 	char *buf;
         int i;
 
@@ -562,7 +563,7 @@ char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry)
 	if (entry->kill_ring == NULL || entry->kill_ring->data == NULL)
 		return NULL;
 
-	GUI_ENTRY_CUTBUFFER_REC *tmp = entry->kill_ring->data;
+	tmp = entry->kill_ring->data;
 
 	if (tmp->cutbuffer == NULL)
                 return NULL;
@@ -582,12 +583,14 @@ char *gui_entry_get_cutbuffer(GUI_ENTRY_REC *entry)
 
 char *gui_entry_get_next_cutbuffer(GUI_ENTRY_REC *entry)
 {
+	GUI_ENTRY_CUTBUFFER_REC *tmp;
+
 	g_return_val_if_fail(entry != NULL, NULL);
 
 	if (entry->kill_ring == NULL)
 		return NULL;
 
-	GUI_ENTRY_CUTBUFFER_REC *tmp = entry->kill_ring->data;
+	tmp = entry->kill_ring->data;
 
 	entry->kill_ring = g_slist_remove(entry->kill_ring, tmp);
 	entry->kill_ring = g_slist_append(entry->kill_ring, tmp);
@@ -608,7 +611,7 @@ void gui_entry_erase_to(GUI_ENTRY_REC *entry, int pos, CUTBUFFER_UPDATE_OP updat
 
 static GUI_ENTRY_CUTBUFFER_REC *get_cutbuffer_rec(GUI_ENTRY_REC *entry, CUTBUFFER_UPDATE_OP update_cutbuffer)
 {
-	GUI_ENTRY_CUTBUFFER_REC *tmp = NULL;
+	GUI_ENTRY_CUTBUFFER_REC *tmp;
 
 	g_return_val_if_fail(entry != NULL, NULL);
 

@@ -696,10 +696,11 @@ static void key_append_next_kill(void)
 
 static gboolean paste_timeout(gpointer data)
 {
+	int split_lines;
 	paste_was_bracketed_mode = paste_bracketed_mode;
 
 	/* number of lines after splitting extra-long messages */
-	int split_lines = paste_buffer->len / LINE_SPLIT_LIMIT;
+	split_lines = paste_buffer->len / LINE_SPLIT_LIMIT;
 
 	/* Take into account the fact that a line may be split every LINE_SPLIT_LIMIT characters */
 	if (paste_line_count == 0 && split_lines <= paste_verify_line_count) {
