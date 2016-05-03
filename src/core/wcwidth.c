@@ -60,6 +60,7 @@
  */
 
 #include "module.h"
+#include "utf8.h"
 
 struct interval {
   int first;

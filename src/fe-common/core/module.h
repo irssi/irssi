@@ -2,7 +2,7 @@
 
 #define MODULE_NAME "fe-common/core"
 
-typedef guint32 unichar;
+#include "utf8.h"
 typedef struct {
 	time_t time;
 	char *nick;

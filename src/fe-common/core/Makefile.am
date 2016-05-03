@@ -24,8 +24,6 @@ libfe_common_core_a_SOURCES = \
 	fe-queries.c \
 	fe-server.c \
 	fe-settings.c \
-	utf8.c \
-	wcwidth.c \
 	formats.c \
 	hilight-text.c \
 	keyboard.c \
@@ -62,6 +60,3 @@ pkginc_fe_common_core_HEADERS = \
 	window-items.h \
 	windows-layout.h \
 	fe-windows.h
-
-noinst_HEADERS = \
-	utf8.h

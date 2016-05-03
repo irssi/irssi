@@ -25,10 +25,7 @@
 #include "settings.h"
 #include "servers.h"
 #include "misc.h"
-
-#define ALIGN_RIGHT 0x01
-#define ALIGN_CUT   0x02
-#define ALIGN_PAD   0x04
+#include "utf8.h"
 
 #define isvarchar(c) \
         (i_isalnum(c) || (c) == '_')
@@ -316,31 +313,79 @@ static int get_alignment_args(char **data, int *align, int *flags, char *pad)
 }
 
 /* return the aligned text */
-static char *get_alignment(const char *text, int align, int flags, char pad)
+char *get_alignment(const char *text, int align, int flags, char pad)
 {
-	GString *str;
-	char *ret;
+	gchar *ret;
+	gchar *ret_p;
+	uint i;
+	/* Terminology: width is an amount of columns, length is an amount of
+	 * characters.
+	 */
+	uint start_width, start_length;
+	uint cut_width, cut_length;
+	uint final_width, final_length;
+	uint pad_count;
+	uint delta;
 
 	g_return_val_if_fail(text != NULL, NULL);
 
-	str = g_string_new(text);
+	/* abort if non-valid UTF-8 */
+	if (!g_utf8_validate(text, -1, NULL))
+		return NULL;
 
-	/* cut */
-	if ((flags & ALIGN_CUT) && align > 0 && str->len > align)
-		g_string_truncate(str, align);
+	/* how many columns and chars do we have in the first place? */
+	start_width = get_utf8_string_width(text, 1 /* skip UTF-8 validation */);
+	start_length = g_utf8_strlen(text, 1024);
+	/* how many columns and chars will we have after the cut? */
+	cut_width = start_width;
+	cut_length = start_length;
+	delta = 0;
+	if ((flags & ALIGN_CUT) && align > 0 && start_width > align) {
+		cut_width = align;
+		cut_length = get_utf8_chars_for_width(text,
+		                                      align,
+		                                      1 /* skip UTF-8 validation */,
+		                                      &delta);
+		/* At this point, we know that we have to take "cut_length" chars from
+		 * "text" and append "delta" padding chars to reach "align" columns.
+		 */
+	}
+	/* how many columns will we have after the pad? */
+	final_width = cut_width;
+	final_length = cut_length;
+	pad_count = delta;
+	if ((flags & ALIGN_PAD) && align > cut_width) {
+		final_width = align;
+		pad_count += (final_width - cut_width);
+		final_length += pad_count;
+	}
 
-	/* add pad characters */
-	if (flags & ALIGN_PAD) {
-		while (str->len < align) {
-			if (flags & ALIGN_RIGHT)
-				g_string_prepend_c(str, pad);
-			else
-				g_string_append_c(str, pad);
+	/* allocate 4 bytes for each character we will have in the end */
+	ret = g_malloc((4 * final_length) + 1);
+	ret_p = ret;
+
+	/* left pad to align right, if necessary */
+	if (pad_count && (flags & ALIGN_RIGHT)) {
+		for (i = 0; i < pad_count; i++) {
+			*ret_p = pad;
+			ret_p ++;
 		}
 	}
 
-	ret = str->str;
-        g_string_free(str, FALSE);
+	/* copy the original string (either n characters or the whole of it) */
+	g_utf8_strncpy(ret_p, text, cut_length);
+	/* sadly, at this point, we have no idea where g_utf8_strncpy put the trailing \0... */
+	ret_p += strlen(ret_p);
+
+	/* right pad to align left, if necessary */
+	if (pad_count && !(flags & ALIGN_RIGHT)) {
+		for (i = 0; i < pad_count; i++) {
+			*ret_p = pad;
+			ret_p ++;
+		}
+		*ret_p = '\0';
+	}
+
 	return ret;
 }
 
