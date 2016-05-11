@@ -467,7 +467,7 @@ if test "$want_perl" != "no"; then
 		$perlpath -MExtUtils::MakeMaker -e 'WriteMakefile(NAME => "test", MAKEFILE => "Makefile.test", FIRST_MAKEFILE => "/dev/null", NO_META => 1, NO_MYMETA => 1);' $PERL_MM_PARAMS >/dev/null
 		echo 'show-INSTALLDIRS:' >> Makefile.test
 		echo '	@echo $(INSTALLDIRS)' >> Makefile.test
-		perl_INSTALLDIRS=`$am_make -f Makefile.test show-INSTALLDIRS`
+		perl_INSTALLDIRS=`$am_make -s -f Makefile.test show-INSTALLDIRS`
 		if test "x$perl_INSTALLDIRS" = "xsite"; then
 			perl_library_dir="site default"
 			perl_INSTALL_VAR=INSTALLSITEARCH
@@ -480,7 +480,7 @@ if test "$want_perl" != "no"; then
 		fi
 		echo 'show-ARCHLIB:' >> Makefile.test
 		echo '	@echo $('"$perl_INSTALL_VAR"')' >> Makefile.test
-		perl_use_lib=`$am_make -f Makefile.test show-ARCHLIB`
+		perl_use_lib=`$am_make -s -f Makefile.test show-ARCHLIB`
 		rm -f Makefile.test
 		if test "x$perl_set_use_lib" = "xyes"; then
 			if $perlpath -e 'exit ! grep $_ eq $ARGV@<:@0@:>@, grep /^\//, @INC' "$perl_use_lib"; then
