@@ -26,7 +26,7 @@
 #include "module.h"
 #include "wcwidth.c"
 
-int advance(char const **str, gboolean utf8)
+int string_advance(char const **str, gboolean utf8)
 {
 	if (utf8) {
 		gunichar c;

@@ -449,7 +449,7 @@ int format_get_length(const char *str)
 				len++;
 		}
 
-		len += advance(&str, utf8);
+		len += string_advance(&str, utf8);
 	}
 
 	g_string_free(tmp, TRUE);
@@ -491,7 +491,7 @@ int format_real_length(const char *str, int len)
 		}
 
 		oldstr = str;
-		len -= advance(&str, utf8);
+		len -= string_advance(&str, utf8);
 		if (len < 0)
 			str = oldstr;
 	}
