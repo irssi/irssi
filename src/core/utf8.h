@@ -14,6 +14,11 @@ typedef guint32 unichar;
 /* Returns width for character (0-2). */
 int mk_wcwidth(unichar c);
 
+/* Advance the str pointer one character further; return the number of columns
+ * occupied by the skipped character.
+ */
+int advance(char const **str, gboolean utf8);
+
 #define unichar_isprint(c) (((c) & ~0x80) >= 32)
 #define is_utf8_leading(c) (((c) & 0xc0) != 0x80)
 
