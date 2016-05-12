@@ -8,6 +8,9 @@
 #define is_big5_hi(hi)  (0x81 <= (hi) && (hi) <= 0xFE)
 #define is_big5(hi,lo) (is_big5_hi(hi) && is_big5_lo(lo))
 
+#include <glib.h>
+typedef guint32 unichar;
+
 /* Returns width for character (0-2). */
 int mk_wcwidth(unichar c);
 
