@@ -25,6 +25,8 @@
 #include "utf8.h"
 #include "module.h"
 #include "wcwidth.c"
+/* Provide is_utf8(): */
+#include "recode.h"
 
 int string_advance(char const **str, gboolean utf8)
 {
@@ -40,4 +42,15 @@ int string_advance(char const **str, gboolean utf8)
 
 		return 1;
 	}
+}
+
+int string_policy(const char *str)
+{
+	if (is_utf8()) {
+		if (!str || g_utf8_validate(str, -1, NULL)) {
+			/* No string provided or valid UTF-8 string: treat as UTF-8: */
+			return TREAT_STRING_AS_UTF8;
+		}
+	}
+	return TREAT_STRING_AS_BYTES;
 }

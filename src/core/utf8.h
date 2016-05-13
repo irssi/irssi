@@ -19,6 +19,20 @@ int mk_wcwidth(unichar c);
  */
 int string_advance(char const **str, gboolean utf8);
 
+/* TREAT_STRING_AS_BYTES means strings are to be treated using strncpy,
+ * strnlen, etc.
+ * TREAT_STRING_AS_UTF8 means strings are to be treated using g_utf8_*
+ * functions.
+ */
+#define TREAT_STRING_AS_BYTES 0
+#define TREAT_STRING_AS_UTF8  1
+
+/* Return how the str string ought to be treated: TREAT_STRING_AS_UTF8 if the
+ * terminal handles UTF-8 and if the string appears to be a valid UTF-8 string;
+ * TREAT_STRING_AS_BYTES otherwise.
+ */
+int string_policy(const char *str);
+
 #define unichar_isprint(c) (((c) & ~0x80) >= 32)
 #define is_utf8_leading(c) (((c) & 0xc0) != 0x80)
 
