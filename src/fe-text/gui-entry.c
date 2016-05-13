@@ -367,7 +367,7 @@ static int scrlen_str(const char *str)
 	g_return_val_if_fail(str != NULL, 0);
 
 	str = stripped = strip_codes(str);
-	if (is_utf8() && g_utf8_validate(str, -1, NULL)) {
+	if (string_policy(str) == TREAT_STRING_AS_UTF8) {
 
 		while (*str != '\0') {
 			gunichar c;

@@ -425,12 +425,12 @@ int format_get_length(const char *str)
 {
 	GString *tmp;
 	int len;
-	gboolean utf8;
+	int utf8;
 	int adv = 0;
 
 	g_return_val_if_fail(str != NULL, 0);
 
-	utf8 = is_utf8() && g_utf8_validate(str, -1, NULL);
+	utf8 = string_policy(str);
 
 	tmp = g_string_new(NULL);
 	len = 0;
@@ -464,12 +464,12 @@ int format_real_length(const char *str, int len)
 	GString *tmp;
 	const char *start;
 	const char *oldstr;
-	gboolean utf8;
+	int utf8;
 	int adv = 0;
 	g_return_val_if_fail(str != NULL, 0);
 	g_return_val_if_fail(len >= 0, 0);
 
-	utf8 = is_utf8() && g_utf8_validate(str, -1, NULL);
+	utf8 = string_policy(str);
 
 	start = str;
 	tmp = g_string_new(NULL);

@@ -17,7 +17,7 @@ int mk_wcwidth(unichar c);
 /* Advance the str pointer one character further; return the number of columns
  * occupied by the skipped character.
  */
-int string_advance(char const **str, gboolean utf8);
+int string_advance(char const **str, int policy);
 
 /* TREAT_STRING_AS_BYTES means strings are to be treated using strncpy,
  * strnlen, etc.

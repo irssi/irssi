@@ -28,9 +28,9 @@
 /* Provide is_utf8(): */
 #include "recode.h"
 
-int string_advance(char const **str, gboolean utf8)
+int string_advance(char const **str, int policy)
 {
-	if (utf8) {
+	if (policy == TREAT_STRING_AS_UTF8) {
 		gunichar c;
 
 		c = g_utf8_get_char(*str);
@@ -38,6 +38,7 @@ int string_advance(char const **str, gboolean utf8)
 
 		return unichar_isprint(c) ? mk_wcwidth(c) : 1;
 	} else {
+		/* Assume TREAT_STRING_AS_BYTES: */
 		*str += 1;
 
 		return 1;
