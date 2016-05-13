@@ -55,3 +55,37 @@ int string_policy(const char *str)
 	}
 	return TREAT_STRING_AS_BYTES;
 }
+
+int string_length(const char *str, int policy)
+{
+	g_return_val_if_fail(str != NULL, 0);
+
+	if (policy == -1) {
+		policy = string_policy(str);
+	}
+
+	if (policy == TREAT_STRING_AS_UTF8) {
+		return g_utf8_strlen(str, -1);
+	}
+	else {
+		/* Assume TREAT_STRING_AS_BYTES: */
+		return strlen(str);
+	}
+}
+
+int string_width(const char *str, int policy)
+{
+	int len;
+
+	g_return_val_if_fail(str != NULL, 0);
+
+	if (policy == -1) {
+		policy = string_policy(str);
+	}
+
+	len = 0;
+	while (*str != '\0') {
+		len += string_advance(&str, policy);
+	}
+	return len;
+}

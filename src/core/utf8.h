@@ -33,6 +33,15 @@ int string_advance(char const **str, int policy);
  */
 int string_policy(const char *str);
 
+/* Return the length of the str string according to the given policy; if policy
+ * is -1, this function will call string_policy().
+ */
+int string_length(const char *str, int policy);
+/* Return the screen width of the str string according to the given policy; if
+ * policy is -1, this function will call string_policy().
+ */
+int string_width(const char *str, int policy);
+
 #define unichar_isprint(c) (((c) & ~0x80) >= 32)
 #define is_utf8_leading(c) (((c) & 0xc0) != 0x80)
 
