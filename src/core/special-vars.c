@@ -25,6 +25,7 @@
 #include "settings.h"
 #include "servers.h"
 #include "misc.h"
+#include "utf8.h"
 
 #define ALIGN_RIGHT 0x01
 #define ALIGN_CUT   0x02
@@ -320,18 +321,24 @@ static char *get_alignment(const char *text, int align, int flags, char pad)
 {
 	GString *str;
 	char *ret;
+	int policy;
+	unsigned int cut_bytes;
 
 	g_return_val_if_fail(text != NULL, NULL);
+
+	policy = string_policy(text);
 
 	str = g_string_new(text);
 
 	/* cut */
-	if ((flags & ALIGN_CUT) && align > 0 && str->len > align)
-		g_string_truncate(str, align);
+	if ((flags & ALIGN_CUT) && align > 0 && string_width(text, policy) > align) {
+		string_chars_for_width(text, policy, align, &cut_bytes);
+		g_string_truncate(str, cut_bytes);
+	}
 
 	/* add pad characters */
 	if (flags & ALIGN_PAD) {
-		while (str->len < align) {
+		while (string_width(str->str, policy) < align) {
 			if (flags & ALIGN_RIGHT)
 				g_string_prepend_c(str, pad);
 			else
