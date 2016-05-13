@@ -42,6 +42,12 @@ int string_length(const char *str, int policy);
  */
 int string_width(const char *str, int policy);
 
+/* Return the amount of characters from str it takes to reach n columns, or -1 if
+ * str is NULL. Optionally return the equivalent amount of bytes.
+ * If policy is -1, this function will call string_policy().
+ */
+int string_chars_for_width(const char *str, int policy, unsigned int n, unsigned int *bytes);
+
 #define unichar_isprint(c) (((c) & ~0x80) >= 32)
 #define is_utf8_leading(c) (((c) & 0xc0) != 0x80)
 

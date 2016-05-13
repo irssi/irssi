@@ -89,3 +89,47 @@ int string_width(const char *str, int policy)
 	}
 	return len;
 }
+
+int string_chars_for_width(const char *str, int policy, unsigned int n, unsigned int *bytes)
+{
+	const char *c, *previous_c;
+	int str_width, char_width, char_count;
+
+	g_return_val_if_fail(str != NULL, -1);
+
+	/* Handle the dummy case where n is 0: */
+	if (!n) {
+		if (bytes) {
+			*bytes = 0;
+		}
+		return 0;
+	}
+
+	if (policy == -1) {
+		policy = string_policy(str);
+	}
+
+	/* Iterate over characters until we reach n: */
+	char_count = 0;
+	str_width = 0;
+	c = str;
+	while (*c != '\0') {
+		previous_c = c;
+		char_width = string_advance(&c, policy);
+		if (str_width + char_width > n) {
+			/* We stepped beyond n, get one step back and stop there: */
+			c = previous_c;
+			break;
+		}
+		++ char_count;
+		str_width += char_width;
+	}
+	/* At this point, we know that char_count characters reach str_width
+	 * columns, which is less than or equal to n. */
+
+	/* Optionally provide the equivalent amount of bytes: */
+	if (bytes) {
+		*bytes = c - str;
+	}
+	return char_count;
+}
