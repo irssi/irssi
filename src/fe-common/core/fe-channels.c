@@ -26,6 +26,8 @@
 #include "levels.h"
 #include "misc.h"
 #include "settings.h"
+#include "special-vars.h"
+#include "utf8.h"
 
 #include "chat-protocols.h"
 #include "chatnets.h"
@@ -323,7 +325,7 @@ static void cmd_channel_remove(const char *data)
 
 static int get_nick_length(void *data)
 {
-        return strlen(((NICK_REC *) data)->nick);
+        return string_width(((NICK_REC *) data)->nick, -1);
 }
 
 static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
@@ -333,9 +335,9 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 	GString *str;
 	GSList *tmp;
 	char *format, *stripped, *prefix_format;
-	char *linebuf, nickmode[2] = { 0, 0 };
+	char *aligned_nick, nickmode[2] = { 0, 0 };
 	int *columns, cols, rows, last_col_rows, col, row, max_width;
-	int item_extra, linebuf_size, formatnum;
+	int item_extra, formatnum;
 
 	window = window_find_closest(channel->server, channel->visible_name,
 	                             MSGLEVEL_CLIENTCRAP);
@@ -394,7 +396,6 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		last_col_rows = rows;
 
 	str = g_string_new(prefix_format);
-	linebuf_size = max_width+1; linebuf = g_malloc(linebuf_size);
 
 	col = 0; row = 0;
 	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
@@ -405,13 +406,9 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		else
 			nickmode[0] = ' ';
 
-		if (linebuf_size < columns[col]-item_extra+1) {
-			linebuf_size = (columns[col]-item_extra+1)*2;
-			linebuf = g_realloc(linebuf, linebuf_size);
-		}
-		memset(linebuf, ' ', columns[col]-item_extra);
-		linebuf[columns[col]-item_extra] = '\0';
-		memcpy(linebuf, rec->nick, strlen(rec->nick));
+		aligned_nick = get_alignment(rec->nick,
+		                             columns[col]-item_extra,
+		                             ALIGN_PAD, ' ');
 
 		formatnum = rec->op     ? TXT_NAMES_NICK_OP :
 		            rec->halfop ? TXT_NAMES_NICK_HALFOP :
@@ -420,8 +417,9 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		format = format_get_text(MODULE_NAME, NULL,
 		                         channel->server,
 		                         channel->visible_name,
-		                         formatnum, nickmode, linebuf);
+		                         formatnum, nickmode, aligned_nick);
 		g_string_append(str, format);
+		g_free(aligned_nick);
 		g_free(format);
 
 		if (++col == cols) {
@@ -446,7 +444,6 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 	g_string_free(str, TRUE);
 	g_free_not_null(columns);
 	g_free_not_null(prefix_format);
-	g_free(linebuf);
 }
 
 void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
