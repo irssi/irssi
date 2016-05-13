@@ -48,7 +48,7 @@ int string_advance(char const **str, int policy)
 int string_policy(const char *str)
 {
 	if (is_utf8()) {
-		if (!str || g_utf8_validate(str, -1, NULL)) {
+		if (str == NULL || g_utf8_validate(str, -1, NULL)) {
 			/* No string provided or valid UTF-8 string: treat as UTF-8: */
 			return TREAT_STRING_AS_UTF8;
 		}
@@ -98,8 +98,8 @@ int string_chars_for_width(const char *str, int policy, unsigned int n, unsigned
 	g_return_val_if_fail(str != NULL, -1);
 
 	/* Handle the dummy case where n is 0: */
-	if (!n) {
-		if (bytes) {
+	if (n == 0) {
+		if (bytes != NULL) {
 			*bytes = 0;
 		}
 		return 0;
@@ -128,7 +128,7 @@ int string_chars_for_width(const char *str, int policy, unsigned int n, unsigned
 	 * columns, which is less than or equal to n. */
 
 	/* Optionally provide the equivalent amount of bytes: */
-	if (bytes) {
+	if (bytes != NULL) {
 		*bytes = c - str;
 	}
 	return char_count;
