@@ -340,7 +340,7 @@ static char *get_alignment(const char *text, int align, int flags, char pad)
 	}
 
 	ret = str->str;
-        g_string_free(str, FALSE);
+	g_string_free(str, FALSE);
 	return ret;
 }
 
