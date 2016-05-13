@@ -24,8 +24,10 @@ int string_advance(char const **str, int policy);
  * TREAT_STRING_AS_UTF8 means strings are to be treated using g_utf8_*
  * functions.
  */
-#define TREAT_STRING_AS_BYTES 0
-#define TREAT_STRING_AS_UTF8  1
+enum str_policy {
+	TREAT_STRING_AS_BYTES,
+	TREAT_STRING_AS_UTF8
+};
 
 /* Return how the str string ought to be treated: TREAT_STRING_AS_UTF8 if the
  * terminal handles UTF-8 and if the string appears to be a valid UTF-8 string;
