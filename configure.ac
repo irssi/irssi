@@ -79,7 +79,6 @@ AC_ARG_WITH(modules,
 if test "x$prefix" != "xNONE"; then
 	prefix=`eval echo $prefix`
 	PERL_MM_PARAMS="INSTALLDIRS=perl INSTALL_BASE=$prefix"
-	perl_library_dir="PERL_USE_LIB"
 	perl_set_use_lib=yes
 
 	perl_prefix_note=yes
@@ -97,30 +96,35 @@ AC_ARG_WITH(perl-staticlib,
 
 
 AC_ARG_WITH(perl-lib,
-[  --with-perl-lib=[site|vendor|DIR]  Specify where to install the
+[  --with-perl-lib=[perl|site|vendor|DIR]  Specify where to install the
                           Perl libraries for irssi, default is site],
 	if test "x$withval" = xyes; then
 		want_perl=yes
 	elif test "x$withval" = xno; then
 		want_perl=no
+	elif test "x$withval" = xperl; then
+		want_perl=yes
+		perl_prefix_note=no
+		PERL_MM_PARAMS="INSTALLDIRS=perl"
+		perl_set_use_lib=no
 	elif test "x$withval" = xsite; then
 		want_perl=yes
 		perl_prefix_note=no
 		PERL_MM_PARAMS=""
+		perl_set_use_lib=no
 	elif test "x$withval" = xvendor; then
 		want_perl=yes
 		perl_prefix_note=no
 		if test -z "`$perlpath -v|grep '5\.0'`"; then
 			PERL_MM_PARAMS="INSTALLDIRS=vendor"
 		else
-			PERL_MM_PARAMS="INSTALLDIRS=perl PREFIX=`perl -e 'use Config; print $Config{prefix}'`"
+			PERL_MM_PARAMS="INSTALLDIRS=perl PREFIX=`$perlpath -e 'use Config; print $Config{prefix}'`"
 		fi
-		perl_library_dir="(vendor default - `$perlpath -e 'use Config; print $Config{archlib}'`)"
+		perl_set_use_lib=no
 	else
 		want_perl=yes
 		perl_prefix_note=no
 		PERL_MM_PARAMS="INSTALLDIRS=perl LIB=$withval"
-		perl_library_dir="PERL_USE_LIB"
 		perl_set_use_lib=yes
 	fi,
 	want_perl=yes)
@@ -371,7 +375,7 @@ if test "$want_perl" != "no"; then
 		dnl * complain about them. Normally there's only few options
 		dnl * that we want to keep:
 		dnl * -Ddefine -Uundef -I/path -fopt -mopt
-		PERL_CFLAGS=`echo $PERL_CFLAGS | $perlpath -pe 's/^(.* )?-[^DUIfm][^ ]+/\1/g; s/^(.* )?\+[^ ]+/\1/g'`
+		PERL_CFLAGS=`echo $PERL_CFLAGS | $perlpath -pe 's/^(.* )?-@<:@^DUIfm@:>@@<:@^ @:>@+/\1/g; s/^(.* )?\+@<:@^ @:>@+/\1/g'`
 
 		PERL_EXTRA_OPTS="CCCDLFLAGS=\"-fPIC\""
 		AC_SUBST(PERL_EXTRA_OPTS)
@@ -455,13 +459,37 @@ if test "$want_perl" != "no"; then
 			PERL_STATIC_LIBS=0
 		fi
 
+		# remove any prefix from PERL_MM_OPT
+		PERL_MM_OPT=`perl -MText::ParseWords -e 'sub qu{$_=shift;s{^(.*?)=(.*)$}{($a,$b)=($1,$2);$b=~s/"/\\\\"/g;qq{$a="$b"}}ge if /@<:@\s"@:>@/;$_} local $,=" "; print map qu($_), grep !/^(INSTALL_BASE|PREFIX)=/, shellwords(@ARGV)' "$PERL_MM_OPT"`
 		# figure out the correct @INC path - we'll need to do this
 		# through MakeMaker since it's difficult to get it right
 		# otherwise.
+		$perlpath -MExtUtils::MakeMaker -e 'WriteMakefile(NAME => "test", MAKEFILE => "Makefile.test", FIRST_MAKEFILE => "/dev/null", NO_META => 1, NO_MYMETA => 1);' $PERL_MM_PARAMS >/dev/null
+		echo 'show-INSTALLDIRS:' >> Makefile.test
+		echo '	@echo $(INSTALLDIRS)' >> Makefile.test
+		perl_INSTALLDIRS=`$am_make -s -f Makefile.test show-INSTALLDIRS`
+		if test "x$perl_INSTALLDIRS" = "xsite"; then
+			perl_library_dir="site default"
+			perl_INSTALL_VAR=INSTALLSITEARCH
+		elif test "x$perl_INSTALLDIRS" = "xvendor"; then
+			perl_library_dir="vendor default"
+			perl_INSTALL_VAR=INSTALLVENDORARCH
+		else
+			perl_library_dir="module default"
+			perl_INSTALL_VAR=INSTALLARCHLIB
+		fi
+		echo 'show-ARCHLIB:' >> Makefile.test
+		echo '	@echo $('"$perl_INSTALL_VAR"')' >> Makefile.test
+		perl_use_lib=`$am_make -s -f Makefile.test show-ARCHLIB`
+		rm -f Makefile.test
 		if test "x$perl_set_use_lib" = "xyes"; then
-			perl -e 'use ExtUtils::MakeMaker; WriteMakefile("NAME" => "test", "MAKEFILE" => "Makefile.test");' $PERL_MM_PARAMS >/dev/null
-			PERL_USE_LIB=`perl -e 'open(F, "Makefile.test"); while (<F>) { chomp; if (/^(\w+) = (.*$)/) { $keys{$1} = $2; } }; $key = $keys{INSTALLARCHLIB}; while ($key =~ /\\$\((\w+)\)/) { $value = $keys{$1}; $key =~ s/\\$\($1\)/$value/; }; print $key;'`
-			rm -f Makefile.test
+			if $perlpath -e 'exit ! grep $_ eq $ARGV@<:@0@:>@, grep /^\//, @INC' "$perl_use_lib"; then
+				perl_library_dir="other path in @INC"
+				perl_set_use_lib=no
+			else
+				perl_library_dir="prepends to @INC with /set perl_use_lib"
+				PERL_USE_LIB="$perl_use_lib"
+			fi
 		fi
 
 		AC_SUBST(perl_module_lib)
@@ -477,6 +505,7 @@ if test "$want_perl" != "no"; then
 		AC_SUBST(PERL_CFLAGS)
 
 		AC_SUBST(PERL_USE_LIB)
+		AC_SUBST(PERL_MM_OPT)
 		AC_SUBST(PERL_MM_PARAMS)
 		AC_SUBST(PERL_STATIC_LIBS)
 	fi
@@ -591,6 +620,25 @@ else
 	want_truecolor=no
 fi
 
+AH_TEMPLATE(HAS_CURSES, [macros/curses checks])
+AH_TEMPLATE(HAVE_CURSES_IDCOK)
+AH_TEMPLATE(HAVE_CURSES_RESIZETERM)
+AH_TEMPLATE(HAVE_CURSES_WRESIZE)
+AH_TEMPLATE(HAVE_GMODULE)
+AH_TEMPLATE(HAVE_NCURSES_USE_DEFAULT_COLORS, [our own curses checks])
+AH_TEMPLATE(HAVE_SOCKS_H, [misc..])
+AH_TEMPLATE(HAVE_STATIC_PERL)
+AH_TEMPLATE(HAVE_TERMINFO, [terminfo/termcap])
+AH_TEMPLATE(NO_COLOR_CURSES)
+AH_TEMPLATE(PRIuUOFF_T, [printf()-format for uoff_t, eg. "u" or "lu" or "llu"])
+AH_TEMPLATE(SCO_FLAVOR)
+AH_TEMPLATE(UOFF_T_INT, [What type should be used for uoff_t])
+AH_TEMPLATE(UOFF_T_LONG)
+AH_TEMPLATE(UOFF_T_LONG_LONG)
+AH_TEMPLATE(USE_NCURSES)
+AH_TEMPLATE(USE_SUNOS_CURSES)
+AH_TEMPLATE(USE_SYSV_CURSES)
+
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
@@ -692,13 +740,7 @@ if test "x$want_perl" != "xno" -a "x$perl_mod_error" != "x"; then
 fi
 
 if test "x$want_perl" != "xno"; then
-	if test "$perl_library_dir" = "PERL_USE_LIB"; then
-		perl_library_dir=$PERL_USE_LIB
-	fi
-	if test -z "$perl_library_dir"; then
-		perl_library_dir="(site default - `$perlpath -e 'use Config; print $Config{sitearch}'`)"
-	fi
-	echo "Perl library directory ........... : $perl_library_dir"
+	echo "Perl library directory ........... : ($perl_library_dir - $perl_use_lib)"
 	if test "x$perl_prefix_note" = "xyes"; then
 		echo "  - NOTE: This was automatically set to the same directory you gave with"
 		echo "  --prefix. If you want the perl libraries to install to their 'correct'"
