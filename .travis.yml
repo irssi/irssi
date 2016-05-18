@@ -16,11 +16,31 @@ addons:
 
 before_install:
     - perl -V
+    - ./autogen.sh --with-proxy --with-bot --with-perl=module
+    - make dist
+    - cd ..
+    - tar xaf */irssi-*.tar.*
+    - cd irssi-*
 
-install: true
-
-script:
-    - ./autogen.sh --with-proxy --with-bot --with-perl=module --prefix=$HOME/irssi-build
-    - cat config.log
+install:
+    - ./configure --with-proxy --with-bot --with-perl=module --prefix=$HOME/irssi-build
     - make CFLAGS="-Wall -Werror"
     - make install
+
+before_script:
+    - cd
+    - mkdir irssi-test
+    - echo echo automated irssi launch test > irssi-test/startup;
+      echo ^set settings_autosave off >> irssi-test/startup;
+      echo ^set -clear log_close_string >> irssi-test/startup;
+      echo ^set -clear log_day_changed >> irssi-test/startup;
+      echo ^set -clear log_open_string >> irssi-test/startup;
+      echo ^set log_timestamp '* ' >> irssi-test/startup;
+      echo ^window log on >> irssi-test/startup
+    - echo load perl >> irssi-test/startup
+    - echo load proxy >> irssi-test/startup
+    - echo ^quit >> irssi-test/startup
+    - irssi-build/bin/irssi --home irssi-test
+    - cat irc.log.*
+
+script: true
