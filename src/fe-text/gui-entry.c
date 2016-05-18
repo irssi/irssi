@@ -366,22 +366,8 @@ static int scrlen_str(const char *str)
 	char *stripped;
 	g_return_val_if_fail(str != NULL, 0);
 
-	str = stripped = strip_codes(str);
-	if (is_utf8() && g_utf8_validate(str, -1, NULL)) {
-
-		while (*str != '\0') {
-			gunichar c;
-
-			c = g_utf8_get_char(str);
-			str = g_utf8_next_char(str);
-
-			len += unichar_isprint(c) ? mk_wcwidth(c) : 1;
-		}
-
-	} else {
-		len = strlen(str);
-	}
-
+	stripped = strip_codes(str);
+	len = string_width(stripped, -1);
 	g_free(stripped);
 	return len;
 }
