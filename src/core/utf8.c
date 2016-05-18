@@ -24,7 +24,7 @@
 
 #include "utf8.h"
 #include "module.h"
-#include "wcwidth.c"
+
 /* Provide is_utf8(): */
 #include "recode.h"
 
