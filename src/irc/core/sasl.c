@@ -71,7 +71,7 @@ static void sasl_fail(IRC_SERVER_REC *server, const char *data, const char *from
 
 	params = event_get_params(data, 2, NULL, &error);
 
-	signal_emit("server sasl fail", 2, server, error);
+	signal_emit("server sasl failure", 2, server, error);
 
 	/* Terminate the negotiation */
 	cap_finish_negotiation(server);
