@@ -47,18 +47,30 @@ static int window_get_new_refnum(void)
 	GSList *tmp;
 	int refnum;
 
-	refnum = 1;
+	refnum = settings_get_int("window_create_min_number");
 	tmp = windows;
-	while (tmp != NULL) {
-		win = tmp->data;
-
-		if (refnum != win->refnum) {
+	if(settings_get_bool("window_create_at_end")) {
+		while (tmp != NULL) {
+			win = tmp->data;
+			if(win->refnum > refnum)
+			    refnum = win->refnum;
 			tmp = tmp->next;
-			continue;
 		}
 
 		refnum++;
-		tmp = windows;
+	}
+	else {
+		while (tmp != NULL) {
+			win = tmp->data;
+
+			if (refnum != win->refnum) {
+				tmp = tmp->next;
+				continue;
+			}
+
+			refnum++;
+			tmp = windows;
+		}
 	}
 
 	return refnum;
@@ -712,6 +724,8 @@ void windows_init(void)
 	daycheck = 0; daytag = -1;
 	settings_add_bool("lookandfeel", "window_auto_change", FALSE);
 	settings_add_bool("lookandfeel", "windows_auto_renumber", TRUE);
+	settings_add_bool("lookandfeel", "window_create_at_end", FALSE);
+	settings_add_int("lookandfeel", "window_create_min_number", 0);
 	settings_add_bool("lookandfeel", "window_check_level_first", FALSE);
 	settings_add_level("lookandfeel", "window_default_level", "NONE");
 
