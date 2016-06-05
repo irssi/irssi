@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "misc.h"
+#include "commands.h"
 
 #ifdef HAVE_REGEX_H
 #  include <regex.h>
@@ -265,14 +266,23 @@ void hash_save_key(char *key, void *value, GSList **list)
         *list = g_slist_append(*list, key);
 }
 
-/* save all keys in hash table to linked list - you shouldn't remove any
-   items while using this list, use g_slist_free() after you're done with it */
-GSList *hashtable_get_keys(GHashTable *hash)
+/* remove all the options from the optlist hash table that are valid for the
+ * command cmd */
+GList *optlist_remove_known(const char *cmd, GHashTable *optlist)
 {
-	GSList *list;
+	GList *list, *tmp, *next;
 
-	list = NULL;
-	g_hash_table_foreach(hash, (GHFunc) hash_save_key, &list);
+	list = g_hash_table_get_keys(optlist);
+	if (cmd != NULL && list != NULL) {
+		for (tmp = list; tmp != NULL; tmp = next) {
+			char *option = tmp->data;
+			next = tmp->next;
+
+			if (command_have_option(cmd, option))
+				list = g_list_remove(list, option);
+		}
+	}
+
 	return list;
 }
 

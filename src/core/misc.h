@@ -32,9 +32,7 @@ char *gslistptr_to_string(GSList *list, int offset, const char *delimiter);
 /* `list' contains char* */
 char *gslist_to_string(GSList *list, const char *delimiter);
 
-/* save all keys in hash table to linked list - you shouldn't remove any
-   items while using this list, use g_slist_free() after you're done with it */
-GSList *hashtable_get_keys(GHashTable *hash);
+GList *optlist_remove_known(const char *cmd, GHashTable *optlist);
 
 /* convert ~/ to $HOME */
 char *convert_home(const char *path);
