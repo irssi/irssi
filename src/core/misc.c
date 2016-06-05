@@ -515,15 +515,11 @@ int dec2octal(int decimal)
 /* string -> uoff_t */
 uoff_t str_to_uofft(const char *str)
 {
-	uoff_t ret;
-
-	ret = 0;
-	while (*str != '\0') {
-		ret = ret*10 + (*str - '0');
-		str++;
-	}
-
-	return ret;
+#ifdef UOFF_T_LONG_LONG
+	return (uoff_t)strtoull(str, NULL, 10);
+#else
+	return (uoff_t)strtoul(str, NULL, 10);
+#endif
 }
 
 /* convert all low-ascii (<32) to ^<A..> combinations */
