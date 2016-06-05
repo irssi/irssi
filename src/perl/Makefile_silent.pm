@@ -1,6 +1,6 @@
 push @ExtUtils::MakeMaker::Overridable, qw(pm_to_blib);
 my $verb = $AM_DEFAULT_VERBOSITY;
-package MY {
+{ package MY;
     sub _center {
 	my $z = shift;
 	length $z == 2 ? "  $z   " : length $z == 4 ? " $z  " : " $z "
@@ -72,5 +72,5 @@ pl_am__v_${_}_1 =
 " for map uc, @terse, @silent;
 	$ret
     }
-};
+}
 1;
