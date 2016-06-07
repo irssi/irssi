@@ -38,11 +38,18 @@
 #include "chat-completion.h"
 #include "window-items.h"
 
+enum {
+	COMPLETE_MCASE_NEVER = 0,
+	COMPLETE_MCASE_ALWAYS,
+	COMPLETE_MCASE_AUTO,
+};
+
 static int keep_privates_count, keep_publics_count;
 static int completion_lowercase;
 static char *completion_char, *cmdchars;
 static GSList *global_lastmsgs;
 static int completion_auto, completion_strict;
+static int completion_match_case;
 
 #define SERVER_LAST_MSG_ADD(server, nick) \
 	last_msg_add(&((MODULE_SERVER_REC *) MODULE_DATA(server))->lastmsgs, \
@@ -52,7 +59,7 @@ static int completion_auto, completion_strict;
 	last_msg_add(&((MODULE_CHANNEL_REC *) MODULE_DATA(channel))->lastmsgs, \
 		     nick, own, keep_publics_count)
 
-static int contains_uppercase(const char *s1)
+static gboolean contains_uppercase(const char *s1)
 {
 	const char *ch;
 
@@ -454,7 +461,8 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 	if (suffix != NULL && *suffix == '\0')
 		suffix = NULL;
 
-	match_case = contains_uppercase(nick);
+	match_case = completion_match_case == COMPLETE_MCASE_ALWAYS ||
+		(completion_match_case == COMPLETE_MCASE_AUTO && contains_uppercase(nick));
 
 	/* put first the nicks who have recently said something */
 	list = NULL;
@@ -1150,6 +1158,8 @@ static void read_settings(void)
 	completion_auto = settings_get_bool("completion_auto");
 	completion_strict = settings_get_bool("completion_strict");
 
+	completion_match_case = settings_get_choice("completion_nicks_match_case");
+
 	g_free_not_null(completion_char);
 	completion_char = g_strdup(settings_get_str("completion_char"));
 
@@ -1170,6 +1180,7 @@ void chat_completion_init(void)
 	settings_add_int("completion", "completion_keep_privates", 10);
 	settings_add_bool("completion", "completion_nicks_lowercase", FALSE);
 	settings_add_bool("completion", "completion_strict", FALSE);
+	settings_add_choice("completion", "completion_nicks_match_case", COMPLETE_MCASE_AUTO, "never;always;auto");
 
 	settings_add_bool("lookandfeel", "expand_escapes", FALSE);
 
