@@ -666,7 +666,7 @@ get_optional_channel(WI_ITEM_REC *active_item, char **data, int require_name)
 	const char *ret;
 	char *tmp, *origtmp, *channel;
 
-	if (active_item == NULL) {
+	if (active_item == NULL || active_item->server == NULL) {
                 /* no active channel in window, channel required */
 		return cmd_get_param(data);
 	}
@@ -674,11 +674,13 @@ get_optional_channel(WI_ITEM_REC *active_item, char **data, int require_name)
 	origtmp = tmp = g_strdup(*data);
 	channel = cmd_get_param(&tmp);
 
-	if (g_strcmp0(channel, "*") == 0 && !require_name) {
+	if (g_strcmp0(channel, "*") == 0 && IS_CHANNEL(active_item) &&
+	    !require_name) {
                 /* "*" means active channel */
 		cmd_get_param(data);
 		ret = window_item_get_target(active_item);
-	} else if (!server_ischannel(active_item->server, channel)) {
+	} else if (IS_CHANNEL(active_item) &&
+		   !server_ischannel(active_item->server, channel)) {
                 /* we don't have channel parameter - use active channel */
 		ret = window_item_get_target(active_item);
 	} else {
