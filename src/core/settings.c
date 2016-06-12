@@ -386,7 +386,7 @@ gboolean settings_set_choice(const char *key, const char *value)
 	SETTINGS_REC *rec;
 
 	rec = settings_get_record(key);
-	/* XXX: The leading/trailing whitespace makes the test fail */
+
 	if (rec != NULL && strarray_find(rec->choices, value) < 0) {
 		char *msg = g_strjoinv(",", rec->choices);
 		g_warning("Invalid value for '%s', must be one of: %s", key, msg);

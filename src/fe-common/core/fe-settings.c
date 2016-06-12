@@ -67,6 +67,7 @@ static void set_print_pattern(const char *pattern)
 static void set_boolean(const char *key, const char *value)
 {
 	char *stripped_value;
+
 	stripped_value = g_strdup(value);
 	g_strstrip(stripped_value);
 
@@ -79,7 +80,7 @@ static void set_boolean(const char *key, const char *value)
 	else
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_NOT_TOGGLE);
 
-    g_free(stripped_value);
+	g_free(stripped_value);
 }
 
 static void set_int(const char *key, const char *value)
@@ -97,6 +98,16 @@ static void set_int(const char *key, const char *value)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_INVALID_NUMBER);
 	else
 		settings_set_int(key, (int)longval);
+}
+
+static void set_choice(const char *key, const char *value)
+{
+	char *stripped_value;
+
+	stripped_value = g_strdup(value);
+	g_strstrip(stripped_value);
+	settings_set_choice(key, stripped_value);
+	g_free(stripped_value);
 }
 
 /* SYNTAX: SET [-clear | -default] [<key> [<value>]] */
@@ -143,9 +154,10 @@ static void cmd_set(char *data)
 					set_int(key, value);
 				break;
 			case SETTING_TYPE_CHOICE:
-				settings_set_choice(key, clear ? "" :
-						    set_default ? rec->choices[rec->default_value.v_int] :
-						    value);
+				if (clear || set_default)
+					settings_set_choice(key, rec->choices[rec->default_value.v_int]);
+				else
+					set_choice(key, value);
 				break;
 			case SETTING_TYPE_STRING:
 				settings_set_str(key, clear ? "" :
