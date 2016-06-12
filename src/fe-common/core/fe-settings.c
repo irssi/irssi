@@ -142,6 +142,11 @@ static void cmd_set(char *data)
 				else
 					set_int(key, value);
 				break;
+			case SETTING_TYPE_CHOICE:
+				settings_set_choice(key, clear ? "" :
+						    set_default ? rec->choices[rec->default_value.v_int] :
+						    value);
+				break;
 			case SETTING_TYPE_STRING:
 				settings_set_str(key, clear ? "" :
 						 set_default ? rec->default_value.v_string :

@@ -690,9 +690,20 @@ static void sig_complete_set(GList **list, WINDOW_REC *window,
 	else if (*line != '\0' && *word == '\0') {
 		SETTINGS_REC *rec = settings_get_record(line);
 		if (rec != NULL) {
-			char *value = settings_get_print(rec);
-			if (value != NULL)
-				*list = g_list_append(*list, value);
+			/* show the whole list of valid options */
+			if (rec->type == SETTING_TYPE_CHOICE) {
+				char **tmp = rec->choices;
+
+				while (*tmp)
+					*list = g_list_append(*list, g_strdup(*tmp++));
+			}
+			/* show the current option */
+			else {
+				char *value = settings_get_print(rec);
+
+				if (value != NULL)
+					*list = g_list_append(*list, value);
+			}
 		}
 	}
 
