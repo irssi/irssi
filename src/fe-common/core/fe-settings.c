@@ -106,7 +106,15 @@ static void set_choice(const char *key, const char *value)
 
 	stripped_value = g_strdup(value);
 	g_strstrip(stripped_value);
-	settings_set_choice(key, stripped_value);
+
+	if (settings_set_choice(key, stripped_value) == FALSE) {
+		SETTINGS_REC *rec = settings_get_record(key);
+		char *msg = g_strjoinv(",", rec->choices);
+
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_INVALID_CHOICE, msg);
+		g_free(msg);
+	}
+
 	g_free(stripped_value);
 }
 

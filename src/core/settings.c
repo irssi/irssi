@@ -387,15 +387,11 @@ gboolean settings_set_choice(const char *key, const char *value)
 
 	rec = settings_get_record(key);
 
-	if (rec != NULL && strarray_find(rec->choices, value) < 0) {
-		char *msg = g_strjoinv(",", rec->choices);
-		g_warning("Invalid value for '%s', must be one of: %s", key, msg);
-		g_free(msg);
-
+	if (rec != NULL && strarray_find(rec->choices, value) < 0)
 		return FALSE;
-	}
 
 	settings_set_str(key, value);
+
 	return TRUE;
 }
 
