@@ -221,6 +221,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "invalid_level", "Invalid message level", 0 },
 	{ "invalid_size", "Invalid size", 0 },
 	{ "invalid_charset", "Invalid charset: $0", 1, { 0 } },
+	{ "invalid_choice", "Invalid choice, must be one of $0", 1, { 0 } },
 	{ "eval_max_recurse", "/eval hit maximum recursion limit", 0 },
 	{ "program_not_found", "Could not find file or file is not executable", 0 },
 	{ "no_server_defined", "No servers defined for this network, see /help server for how to add one", 0 },

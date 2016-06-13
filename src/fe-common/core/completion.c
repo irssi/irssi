@@ -691,8 +691,20 @@ static void sig_complete_set(GList **list, WINDOW_REC *window,
 		SETTINGS_REC *rec = settings_get_record(line);
 		if (rec != NULL) {
 			char *value = settings_get_print(rec);
+
+			/* show the current option first */
 			if (value != NULL)
 				*list = g_list_append(*list, value);
+
+			/* show the whole list of valid options */
+			if (rec->type == SETTING_TYPE_CHOICE) {
+				char **tmp;
+
+				for (tmp = rec->choices; *tmp; tmp++) {
+					if (g_ascii_strcasecmp(*tmp, value) != 0)
+						*list = g_list_append(*list, g_strdup(*tmp));
+				}
+			}
 		}
 	}
 
