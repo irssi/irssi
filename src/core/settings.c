@@ -210,7 +210,7 @@ static void settings_add(const char *module, const char *section,
 			return;
 		}
 
-		choices_vec = g_strsplit(choices, ",", -1);
+		choices_vec = g_strsplit(choices, ";", -1);
 
 		/* validate the default value */
 		if (default_value->v_int < 0 || default_value->v_int >= g_strv_length(choices_vec)) {

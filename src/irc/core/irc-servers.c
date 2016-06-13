@@ -1017,7 +1017,7 @@ void irc_server_init_isupport(IRC_SERVER_REC *server)
 
 void irc_servers_init(void)
 {
-	settings_add_choice("servers", "rejoin_channels_on_reconnect", 1, "off,on,auto");
+	settings_add_choice("servers", "rejoin_channels_on_reconnect", 1, "off;on;auto");
 	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
 	settings_add_str("misc", "split_line_start", "");
 	settings_add_str("misc", "split_line_end", "");
