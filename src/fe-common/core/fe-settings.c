@@ -109,7 +109,7 @@ static void set_choice(const char *key, const char *value)
 
 	if (settings_set_choice(key, stripped_value) == FALSE) {
 		SETTINGS_REC *rec = settings_get_record(key);
-		char *msg = g_strjoinv(",", rec->choices);
+		char *msg = g_strjoinv(", ", rec->choices);
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_INVALID_CHOICE, msg);
 		g_free(msg);
