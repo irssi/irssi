@@ -153,7 +153,7 @@ int settings_get_choice(const char *key)
 	SETTINGS_REC *rec;
 	CONFIG_NODE *node;
 	char *str;
-	int idx;
+	int index;
 
 	rec = settings_get(key, SETTING_TYPE_CHOICE);
 	if (rec == NULL) return -1;
@@ -164,8 +164,10 @@ int settings_get_choice(const char *key)
 	str = node == NULL ? rec->default_value.v_string :
 		config_node_get_str(node, key, rec->default_value.v_string);
 
-	idx = strarray_find(rec->choices, str);
-	return (idx < 0) ? rec->default_value.v_int : idx;
+	if (str == NULL || (index = strarray_find(rec->choices, str)) < 0)
+		return rec->default_value.v_int;
+
+	return index;
 }
 
 char *settings_get_print(SETTINGS_REC *rec)
