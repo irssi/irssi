@@ -453,7 +453,7 @@ static void autolog_open(SERVER_REC *server, const char *server_tag,
 		log_item_add(log, LOG_ITEM_TARGET, target, server_tag);
 
 		dir = g_path_get_dirname(log->real_fname);
-		mkpath(dir, log_dir_create_mode);
+		g_mkdir_with_parents(dir, log_dir_create_mode);
 		g_free(dir);
 
 		log->temp = TRUE;

@@ -684,21 +684,11 @@ SERVER_REC *cmd_options_get_server(const char *cmd,
 				   SERVER_REC *defserver)
 {
 	SERVER_REC *server;
-	GSList *list, *tmp, *next;
+	GList *list;
 
 	/* get all the options, then remove the known ones. there should
 	   be only one left - the server tag. */
-	list = hashtable_get_keys(optlist);
-	if (cmd != NULL) {
-		for (tmp = list; tmp != NULL; tmp = next) {
-			char *option = tmp->data;
-			next = tmp->next;
-
-			if (command_have_option(cmd, option))
-				list = g_slist_remove(list, option);
-		}
-	}
-
+	list = optlist_remove_known(cmd, optlist);
 	if (list == NULL)
 		return defserver;
 
@@ -713,7 +703,7 @@ SERVER_REC *cmd_options_get_server(const char *cmd,
 		server = NULL;
 	}
 
-	g_slist_free(list);
+	g_list_free(list);
 	return server;
 }
 

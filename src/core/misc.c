@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "misc.h"
+#include "commands.h"
 
 #ifdef HAVE_REGEX_H
 #  include <regex.h>
@@ -150,20 +151,6 @@ int find_substr(const char *list, const char *item)
 	return FALSE;
 }
 
-int strarray_length(char **array)
-{
-	int len;
-
-	g_return_val_if_fail(array != NULL, 0);
-
-	len = 0;
-	while (*array) {
-		len++;
-                array++;
-	}
-        return len;
-}
-
 int strarray_find(char **array, const char *item)
 {
 	char **tmp;
@@ -279,14 +266,23 @@ void hash_save_key(char *key, void *value, GSList **list)
         *list = g_slist_append(*list, key);
 }
 
-/* save all keys in hash table to linked list - you shouldn't remove any
-   items while using this list, use g_slist_free() after you're done with it */
-GSList *hashtable_get_keys(GHashTable *hash)
+/* remove all the options from the optlist hash table that are valid for the
+ * command cmd */
+GList *optlist_remove_known(const char *cmd, GHashTable *optlist)
 {
-	GSList *list;
+	GList *list, *tmp, *next;
 
-	list = NULL;
-	g_hash_table_foreach(hash, (GHFunc) hash_save_key, &list);
+	list = g_hash_table_get_keys(optlist);
+	if (cmd != NULL && list != NULL) {
+		for (tmp = list; tmp != NULL; tmp = next) {
+			char *option = tmp->data;
+			next = tmp->next;
+
+			if (command_have_option(cmd, option))
+				list = g_list_remove(list, option);
+		}
+	}
+
 	return list;
 }
 
@@ -389,62 +385,6 @@ char *stristr_full(const char *data, const char *key)
         return strstr_full_case(data, key, TRUE);
 }
 
-int regexp_match(const char *str, const char *regexp)
-{
-#ifdef HAVE_REGEX_H
-	regex_t preg;
-	int ret;
-
-	if (regcomp(&preg, regexp, REG_EXTENDED|REG_ICASE|REG_NOSUB) != 0)
-                return 0;
-
-	ret = regexec(&preg, str, 0, NULL, 0);
-	regfree(&preg);
-
-	return ret == 0;
-#else
-	return FALSE;
-#endif
-}
-
-/* Create the directory and all it's parent directories */
-int mkpath(const char *path, int mode)
-{
-	struct stat statbuf;
-	const char *p;
-	char *dir;
-
-	g_return_val_if_fail(path != NULL, -1);
-
-	p = g_path_skip_root((char *) path);
-	if (p == NULL) {
-		/* not a full path, maybe not what we wanted
-		   but continue anyway.. */
-                p = path;
-	}
-	for (;;) {
-		if (*p != G_DIR_SEPARATOR && *p != '\0') {
-			p++;
-			continue;
-		}
-
-		dir = g_strndup(path, (int) (p-path));
-		if (stat(dir, &statbuf) != 0) {
-			if (mkdir(dir, mode) == -1)
-			{
-				g_free(dir);
-				return -1;
-			}
-		}
-		g_free(dir);
-
-		if (*p++ == '\0')
-			break;
-	}
-
-	return 0;
-}
-
 /* convert ~/ to $HOME */
 char *convert_home(const char *path)
 {
@@ -471,22 +411,15 @@ int g_istr_cmp(gconstpointer v, gconstpointer v2)
 	return g_ascii_strcasecmp((const char *) v, (const char *) v2);
 }
 
-/* a char* hash function from ASU */
-unsigned int g_istr_hash(gconstpointer v)
+guint g_istr_hash(gconstpointer v)
 {
-	const char *s = (const char *) v;
-	unsigned int h = 0, g;
+	const signed char *p;
+	guint32 h = 5381;
 
-	while (*s != '\0') {
-		h = (h << 4) + i_toupper(*s);
-		if ((g = h & 0xf0000000UL)) {
-			h = h ^ (g >> 24);
-			h = h ^ g;
-		}
-		s++;
-	}
+	for (p = v; *p != '\0'; p++)
+		h = (h << 5) + h + g_ascii_toupper(*p);
 
-	return h /* % M */;
+	return h;
 }
 
 /* Find `mask' from `data', you can use * and ? wildcards. */
@@ -592,15 +525,11 @@ int dec2octal(int decimal)
 /* string -> uoff_t */
 uoff_t str_to_uofft(const char *str)
 {
-	uoff_t ret;
-
-	ret = 0;
-	while (*str != '\0') {
-		ret = ret*10 + (*str - '0');
-		str++;
-	}
-
-	return ret;
+#ifdef UOFF_T_LONG_LONG
+	return (uoff_t)strtoull(str, NULL, 10);
+#else
+	return (uoff_t)strtoul(str, NULL, 10);
+#endif
 }
 
 /* convert all low-ascii (<32) to ^<A..> combinations */
@@ -809,20 +738,6 @@ char *escape_string(const char *str)
 	*p = '\0';
 
 	return ret;
-}
-
-int strocpy(char *dest, const char *src, size_t dstsize)
-{
-	if (dstsize == 0)
-		return -1;
-
-	while (*src != '\0' && dstsize > 1) {
-		*dest++ = *src++;
-		dstsize--;
-	}
-
-	*dest++ = '\0';
-	return *src == '\0' ? 0 : -1;
 }
 
 int nearest_power(int num)

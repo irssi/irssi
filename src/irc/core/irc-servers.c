@@ -212,7 +212,6 @@ static void server_init(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
 	char *address, *ptr, *username, *cmd;
-	GTimeVal now;
 
 	g_return_if_fail(server != NULL);
 
@@ -287,9 +286,8 @@ static void server_init(IRC_SERVER_REC *server)
 
 	/* prevent the queue from sending too early, we have a max cut off of 120 secs */
 	/* this will reset to 1 sec after we get the 001 event */
-	g_get_current_time(&now);
-	memcpy(&((IRC_SERVER_REC *)server)->wait_cmd, &now, sizeof(GTimeVal));
-	((IRC_SERVER_REC *)server)->wait_cmd.tv_sec += 120;
+	g_get_current_time(&server->wait_cmd);
+	g_time_val_add(&server->wait_cmd, 120 * G_USEC_PER_SEC);
 }
 
 SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
@@ -535,7 +533,7 @@ void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 		server->wait_cmd.tv_sec = 0;
 	else {
 		memcpy(&server->wait_cmd, &server->last_cmd, sizeof(GTimeVal));
-		server->wait_cmd.tv_sec += 2 + len/100;
+		g_time_val_add(&server->wait_cmd, (2 + len/100) * G_USEC_PER_SEC);
 	}
 }
 
@@ -679,7 +677,6 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 static void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 {
 	char *params, *nick;
-	GTimeVal now;
 
 	g_return_if_fail(server != NULL);
 
@@ -702,8 +699,7 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 	server->real_connect_time = time(NULL);
 
 	/* let the queue send now that we are identified */
-	g_get_current_time(&now);
-	memcpy(&server->wait_cmd, &now, sizeof(GTimeVal));
+	g_get_current_time(&server->wait_cmd);
 
 	if (server->connrec->usermode != NULL) {
 		/* Send the user mode, before the autosendcmd.

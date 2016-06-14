@@ -237,22 +237,13 @@ static int signal_name_to_id(const char *name)
 static int cmd_options_get_signal(const char *cmd,
 				  GHashTable *optlist)
 {
-	GSList *list, *tmp, *next;
+	GList *list;
 	char *signame;
         int signum;
 
 	/* get all the options, then remove the known ones. there should
 	   be only one left - the signal */
-	list = hashtable_get_keys(optlist);
-	if (cmd != NULL) {
-		for (tmp = list; tmp != NULL; tmp = next) {
-			char *option = tmp->data;
-			next = tmp->next;
-
-			if (command_have_option(cmd, option))
-				list = g_slist_remove(list, option);
-		}
-	}
+	list = optlist_remove_known(cmd, optlist);
 
 	if (list == NULL)
 		return -1;
@@ -272,7 +263,7 @@ static int cmd_options_get_signal(const char *cmd,
                 return -2;
 	}
 
-	g_slist_free(list);
+	g_list_free(list);
 	return signum;
 }
 

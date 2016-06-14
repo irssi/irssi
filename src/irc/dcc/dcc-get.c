@@ -423,7 +423,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 	/* SEND <file name> <address> <port> <size> [...] */
 	/* SEND <file name> <address> 0 <size> <id> (DCC SEND passive protocol) */
 	params = g_strsplit(data, " ", -1);
-	paramcount = strarray_length(params);
+	paramcount = g_strv_length(params);
 
 	if (paramcount < 4) {
 		signal_emit("dcc error ctcp", 5, "SEND", data,
@@ -473,8 +473,8 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 				net_ip2host(&temp_dcc->addr, temp_dcc->addrstr);
 			else {
 				/* with IPv6, show it to us as it was sent */
-				strocpy(temp_dcc->addrstr, address,
-					sizeof(temp_dcc->addrstr));
+				g_strlcpy(temp_dcc->addrstr, address,
+					  sizeof(temp_dcc->addrstr));
 			}
 
 			/* This new signal is added to let us invoke
@@ -508,7 +508,7 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 		net_ip2host(&dcc->addr, dcc->addrstr);
 	else {
 		/* with IPv6, show it to us as it was sent */
-		strocpy(dcc->addrstr, address, sizeof(dcc->addrstr));
+		g_strlcpy(dcc->addrstr, address, sizeof(dcc->addrstr));
 	}
 	dcc->port = port;
 	dcc->size = size;

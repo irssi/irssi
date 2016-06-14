@@ -245,7 +245,7 @@ static void dcc_server_msg(SERVER_DCC_REC *dcc, const char *msg)
 
 			/* 120 clientnickname filesize filename */
 			params = g_strsplit(msg, " ", -1);
-			paramcount = strarray_length(params);
+			paramcount = g_strv_length(params);
 
 			if (paramcount < 3) {
 				g_strfreev(params);

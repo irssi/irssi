@@ -44,7 +44,7 @@ static char *get_argument(char **cmd, char **arglist)
 	arg = 0;
 	max = -1;
 
-	argcount = arglist == NULL ? 0 : strarray_length(arglist);
+	argcount = arglist == NULL ? 0 : g_strv_length(arglist);
 
 	if (**cmd == '*') {
 		/* get all arguments */

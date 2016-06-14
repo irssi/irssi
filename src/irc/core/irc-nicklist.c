@@ -48,7 +48,7 @@ NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
 	rec->send_massjoin = send_massjoin;
 
 	if (prefixes != NULL) {
-		strocpy(rec->prefixes, prefixes, sizeof(rec->prefixes));
+		g_strlcpy(rec->prefixes, prefixes, sizeof(rec->prefixes));
 	}
 
 	nicklist_insert(CHANNEL(channel), rec);
