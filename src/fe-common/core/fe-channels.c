@@ -248,6 +248,21 @@ static void cmd_channel(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	}
 }
 
+static CHANNEL_SETUP_REC *channel_setup_fill_rec(CHANNEL_SETUP_REC *rec, GHashTable *optlist)
+{
+	char *botarg, *botcmdarg;
+
+	botarg = g_hash_table_lookup(optlist, "bots");
+	botcmdarg = g_hash_table_lookup(optlist, "botcmd");
+
+	if (g_hash_table_lookup(optlist, "auto")) rec->autojoin = TRUE;
+	if (g_hash_table_lookup(optlist, "noauto")) rec->autojoin = FALSE;
+	if (botarg != NULL && *botarg != '\0') rec->botmasks = g_strdup(botarg);
+	if (botcmdarg != NULL && *botcmdarg != '\0') rec->autosendcmd = g_strdup(botcmdarg);
+
+	return rec;
+}
+
 /* SYNTAX: CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
                        <channel> <network> [<password>] */
 static void cmd_channel_add(const char *data)
@@ -255,7 +270,7 @@ static void cmd_channel_add(const char *data)
 	GHashTable *optlist;
         CHATNET_REC *chatnetrec;
 	CHANNEL_SETUP_REC *rec;
-	char *botarg, *botcmdarg, *chatnet, *channel, *password;
+	char *chatnet, *channel, *password;
 	void *free_arg;
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
@@ -273,9 +288,6 @@ static void cmd_channel_add(const char *data)
                 return;
 	}
 
-	botarg = g_hash_table_lookup(optlist, "bots");
-	botcmdarg = g_hash_table_lookup(optlist, "botcmd");
-
 	rec = channel_setup_find(channel, chatnet);
 	if (rec == NULL) {
 		rec = CHAT_PROTOCOL(chatnetrec)->create_channel_setup();
@@ -286,17 +298,56 @@ static void cmd_channel_add(const char *data)
 		if (g_hash_table_lookup(optlist, "botcmd")) g_free_and_null(rec->autosendcmd);
 		if (*password != '\0') g_free_and_null(rec->password);
 	}
-	if (g_hash_table_lookup(optlist, "auto")) rec->autojoin = TRUE;
-	if (g_hash_table_lookup(optlist, "noauto")) rec->autojoin = FALSE;
-	if (botarg != NULL && *botarg != '\0') rec->botmasks = g_strdup(botarg);
-	if (botcmdarg != NULL && *botcmdarg != '\0') rec->autosendcmd = g_strdup(botcmdarg);
+
 	if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
 
-	signal_emit("channel add fill", 2, rec, optlist);
-
+	rec = channel_setup_fill_rec(rec, optlist);
 	channel_setup_create(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_CHANSETUP_ADDED, channel, chatnet);
+
+	cmd_params_free(free_arg);
+}
+
+/* SYNTAX: CHANNEL MODIFY [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
+                          <channel> <network> [<password>] */
+static void cmd_channel_modify(const char *data)
+{
+	GHashTable *optlist;
+        CHATNET_REC *chatnetrec;
+	CHANNEL_SETUP_REC *rec;
+	char *chatnet, *channel, *password;
+	void *free_arg;
+
+	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
+			    "channel modify", &optlist, &channel, &chatnet, &password))
+		return;
+
+	if (*chatnet == '\0' || *channel == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	chatnetrec = chatnet_find(chatnet);
+	if (chatnetrec == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_UNKNOWN_CHATNET, chatnet);
+		cmd_params_free(free_arg);
+                return;
+	}
+
+	rec = channel_setup_find(channel, chatnet);
+	if (rec == NULL)
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_CHANSETUP_NOT_FOUND, channel, chatnet);
+	else {
+		if (g_hash_table_lookup(optlist, "bots")) g_free_and_null(rec->botmasks);
+		if (g_hash_table_lookup(optlist, "botcmd")) g_free_and_null(rec->autosendcmd);
+		if (*password != '\0') g_free_and_null(rec->password);
+		if (*password != '\0' && g_strcmp0(password, "-") != 0) rec->password = g_strdup(password);
+
+		rec = channel_setup_fill_rec(rec, optlist);
+		channel_setup_create(rec);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_CHANSETUP_MODIFIED, channel, chatnet);
+	}
 
 	cmd_params_free(free_arg);
 }
@@ -618,6 +669,7 @@ void fe_channels_init(void)
 
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
+	command_bind("channel modify", NULL, (SIGNAL_FUNC) cmd_channel_modify);
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);
@@ -625,6 +677,7 @@ void fe_channels_init(void)
 	command_bind("cycle", NULL, (SIGNAL_FUNC) cmd_cycle);
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
+	command_set_options("channel modify", "auto noauto -bots -botcmd");
 	command_set_options("names", "count ops halfops voices normal");
 	command_set_options("join", "invite window");
 }
@@ -639,6 +692,7 @@ void fe_channels_deinit(void)
 
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
+	command_unbind("channel modify", (SIGNAL_FUNC) cmd_channel_modify);
 	command_unbind("channel add", (SIGNAL_FUNC) cmd_channel_add);
 	command_unbind("channel remove", (SIGNAL_FUNC) cmd_channel_remove);
 	command_unbind("channel list", (SIGNAL_FUNC) cmd_channel_list);

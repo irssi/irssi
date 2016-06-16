@@ -8,6 +8,7 @@
     LIST:              Displays the list of servers you are connected to.
     CONNECT:           Connects to the given server.
     ADD:               Adds a server to your configuration.
+    MODIFY:            Modifies a server in your configuration.
     REMOVE:            Removes a server from your configuration.
     PURGE:             Purges the commands queued to be sent to the server.
 
@@ -45,8 +46,8 @@
     Displays, adds, modifies or removes the network configuration of IRC 
     servers.
 
-    When using the ADD parameter on a server that already exists, the
-    configuration will be merged with each other.
+    /SERVER ADD modifies a server if it already exists in the configuration.
+    /SERVER MODIFY only modified existing servers.
 
     When using the command without any of the given parameters, it will
     connect to the specified server; the server in the active window will be
@@ -62,6 +63,7 @@
     /SERVER CONNECT +chat.freenode.net
     /SERVER ADD -network Freenode -noautosendcmd orwell.freenode.net
     /SERVER ADD -! -auto -host staff.irssi.org -port 6667 -4 -network Freenode -noproxy orwell.freenode.net
+    /SERVER MODIFY -network Freenode -noauto orwell.freenode.net
     /SERVER REMOVE orwell.freenode.net 6667 Freenode
     /SERVER PURGE
     /SERVER PURGE orwell.freenode.net

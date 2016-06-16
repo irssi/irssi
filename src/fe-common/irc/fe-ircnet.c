@@ -88,43 +88,9 @@ static void cmd_network_list(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETWORK_FOOTER);
 }
 
-/* SYNTAX: NETWORK ADD [-nick <nick>] [-user <user>] [-realname <name>]
-                       [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
-                       [-querychans <count>] [-whois <count>] [-msgs <count>]
-                       [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
-                       [-cmdmax <count>] [-sasl_mechanism <mechanism>]
-                       [-sasl_username <username>] [-sasl_password <password>]
-                       <name> */
-static void cmd_network_add(const char *data)
+static IRC_CHATNET_REC *network_setup_fill_rec(IRC_CHATNET_REC *rec, GHashTable *optlist)
 {
-	GHashTable *optlist;
-	char *name, *value;
-	void *free_arg;
-	IRC_CHATNET_REC *rec;
-
-	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
-			    "network add", &optlist, &name))
-		return;
-	if (*name == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-
-	rec = ircnet_find(name);
-	if (rec == NULL) {
-		rec = g_new0(IRC_CHATNET_REC, 1);
-		rec->name = g_strdup(name);
-	} else {
-		if (g_hash_table_lookup(optlist, "nick")) g_free_and_null(rec->nick);
-		if (g_hash_table_lookup(optlist, "user")) g_free_and_null(rec->username);
-		if (g_hash_table_lookup(optlist, "realname")) g_free_and_null(rec->realname);
-		if (g_hash_table_lookup(optlist, "host")) {
-			g_free_and_null(rec->own_host);
-                        rec->own_ip4 = rec->own_ip6 = NULL;
-		}
-		if (g_hash_table_lookup(optlist, "usermode")) g_free_and_null(rec->usermode);
-		if (g_hash_table_lookup(optlist, "autosendcmd")) g_free_and_null(rec->autosendcmd);
-		if (g_hash_table_lookup(optlist, "sasl_mechanism")) g_free_and_null(rec->sasl_mechanism);
-		if (g_hash_table_lookup(optlist, "sasl_username")) g_free_and_null(rec->sasl_username);
-		if (g_hash_table_lookup(optlist, "sasl_password")) g_free_and_null(rec->sasl_password);
-	}
+	char *value;
 
 	value = g_hash_table_lookup(optlist, "kicks");
 	if (value != NULL) rec->max_kicks = atoi(value);
@@ -155,6 +121,12 @@ static void cmd_network_add(const char *data)
 		rec->own_ip4 = rec->own_ip6 = NULL;
 	}
 
+	if (g_hash_table_lookup(optlist, "usermode")) g_free_and_null(rec->usermode);
+	if (g_hash_table_lookup(optlist, "autosendcmd")) g_free_and_null(rec->autosendcmd);
+	if (g_hash_table_lookup(optlist, "sasl_mechanism")) g_free_and_null(rec->sasl_mechanism);
+	if (g_hash_table_lookup(optlist, "sasl_username")) g_free_and_null(rec->sasl_username);
+	if (g_hash_table_lookup(optlist, "sasl_password")) g_free_and_null(rec->sasl_password);
+
 	value = g_hash_table_lookup(optlist, "usermode");
 	if (value != NULL && *value != '\0') rec->usermode = g_strdup(value);
 	value = g_hash_table_lookup(optlist, "autosendcmd");
@@ -168,8 +140,86 @@ static void cmd_network_add(const char *data)
 	value = g_hash_table_lookup(optlist, "sasl_password");
 	if (value != NULL && *value != '\0') rec->sasl_password = g_strdup(value);
 
+	return rec;
+}
+
+/* SYNTAX: NETWORK ADD [-nick <nick>] [-user <user>] [-realname <name>]
+                       [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
+                       [-querychans <count>] [-whois <count>] [-msgs <count>]
+                       [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
+                       [-cmdmax <count>] [-sasl_mechanism <mechanism>]
+                       [-sasl_username <username>] [-sasl_password <password>]
+                       <name> */
+static void cmd_network_add(const char *data)
+{
+	GHashTable *optlist;
+	char *name;
+	void *free_arg;
+	IRC_CHATNET_REC *rec;
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "network add", &optlist, &name))
+		return;
+	if (*name == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	rec = ircnet_find(name);
+	if (rec == NULL) {
+		rec = g_new0(IRC_CHATNET_REC, 1);
+		rec->name = g_strdup(name);
+	} else {
+		if (g_hash_table_lookup(optlist, "nick")) g_free_and_null(rec->nick);
+		if (g_hash_table_lookup(optlist, "user")) g_free_and_null(rec->username);
+		if (g_hash_table_lookup(optlist, "realname")) g_free_and_null(rec->realname);
+		if (g_hash_table_lookup(optlist, "host")) {
+			g_free_and_null(rec->own_host);
+                        rec->own_ip4 = rec->own_ip6 = NULL;
+		}
+	}
+
+	rec = network_setup_fill_rec(rec, optlist);
+
 	ircnet_create(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETWORK_ADDED, name);
+
+	cmd_params_free(free_arg);
+}
+
+/* SYNTAX: NETWORK MODIFY [-nick <nick>] [-user <user>] [-realname <name>]
+                          [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
+                          [-querychans <count>] [-whois <count>] [-msgs <count>]
+                          [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
+                          [-cmdmax <count>] [-sasl_mechanism <mechanism>]
+                          [-sasl_username <username>] [-sasl_password <password>]
+                          <name> */
+static void cmd_network_modify(const char *data)
+{
+	GHashTable *optlist;
+	char *name;
+	void *free_arg;
+	IRC_CHATNET_REC *rec;
+
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
+			    "network modify", &optlist, &name))
+		return;
+	if (*name == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	rec = ircnet_find(name);
+	if (rec == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETWORK_NOT_FOUND, name);
+	} else {
+		if (g_hash_table_lookup(optlist, "nick")) g_free_and_null(rec->nick);
+		if (g_hash_table_lookup(optlist, "user")) g_free_and_null(rec->username);
+		if (g_hash_table_lookup(optlist, "realname")) g_free_and_null(rec->realname);
+		if (g_hash_table_lookup(optlist, "host")) {
+			g_free_and_null(rec->own_host);
+                        rec->own_ip4 = rec->own_ip6 = NULL;
+		}
+
+		rec = network_setup_fill_rec(rec, optlist);
+
+		ircnet_create(rec);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETWORK_MODIFIED, name);
+	}
 
 	cmd_params_free(free_arg);
 }
@@ -205,10 +255,13 @@ void fe_ircnet_init(void)
 	command_bind("ircnet", NULL, (SIGNAL_FUNC) cmd_network);
 	command_bind("network", NULL, (SIGNAL_FUNC) cmd_network);
 	command_bind("network list", NULL, (SIGNAL_FUNC) cmd_network_list);
+	command_bind("network modify", NULL, (SIGNAL_FUNC) cmd_network_modify);
 	command_bind("network add", NULL, (SIGNAL_FUNC) cmd_network_add);
 	command_bind("network remove", NULL, (SIGNAL_FUNC) cmd_network_remove);
 
 	command_set_options("network add", "-kicks -msgs -modes -whois -cmdspeed "
+			    "-cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
+	command_set_options("network modify", "-kicks -msgs -modes -whois -cmdspeed "
 			    "-cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
 }
 
@@ -217,6 +270,7 @@ void fe_ircnet_deinit(void)
 	command_unbind("ircnet", (SIGNAL_FUNC) cmd_network);
 	command_unbind("network", (SIGNAL_FUNC) cmd_network);
 	command_unbind("network list", (SIGNAL_FUNC) cmd_network_list);
+	command_unbind("network modify", (SIGNAL_FUNC) cmd_network_modify);
 	command_unbind("network add", (SIGNAL_FUNC) cmd_network_add);
 	command_unbind("network remove", (SIGNAL_FUNC) cmd_network_remove);
 }
