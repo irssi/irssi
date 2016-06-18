@@ -138,7 +138,7 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		}
 		rec->address = g_strdup(addr);
 		rec->port = port;
-	} else if (!add) {
+	} else {
 		value = g_hash_table_lookup(optlist, "port");
 		if (value != NULL && *value != '\0') rec->port = atoi(value);
 

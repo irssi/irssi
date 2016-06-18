@@ -285,7 +285,7 @@ static void cmd_channel_add_modify(const char *data, gboolean add)
 		rec = CHAT_PROTOCOL(chatnetrec)->create_channel_setup();
 		rec->name = g_strdup(channel);
 		rec->chatnet = g_strdup(chatnet);
-	} else if (!add) {
+	} else {
 		if (g_hash_table_lookup(optlist, "bots")) g_free_and_null(rec->botmasks);
 		if (g_hash_table_lookup(optlist, "botcmd")) g_free_and_null(rec->autosendcmd);
 		if (*password != '\0') g_free_and_null(rec->password);

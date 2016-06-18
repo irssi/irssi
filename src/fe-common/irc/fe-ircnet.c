@@ -112,7 +112,7 @@ static void cmd_network_add_modify(const char *data, gboolean add)
 
 		rec = g_new0(IRC_CHATNET_REC, 1);
 		rec->name = g_strdup(name);
-	} else if (!add) {
+	} else {
 		if (g_hash_table_lookup(optlist, "nick")) g_free_and_null(rec->nick);
 		if (g_hash_table_lookup(optlist, "user")) g_free_and_null(rec->username);
 		if (g_hash_table_lookup(optlist, "realname")) g_free_and_null(rec->realname);
