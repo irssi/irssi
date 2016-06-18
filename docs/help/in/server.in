@@ -8,6 +8,7 @@
     LIST:              Displays the list of servers you are connected to.
     CONNECT:           Connects to the given server.
     ADD:               Adds a server to your configuration.
+    MODIFY:            Modifies a server in your configuration.
     REMOVE:            Removes a server from your configuration.
     PURGE:             Purges the commands queued to be sent to the server.
 
@@ -62,6 +63,7 @@
     /SERVER CONNECT +chat.freenode.net
     /SERVER ADD -network Freenode -noautosendcmd orwell.freenode.net
     /SERVER ADD -! -auto -host staff.irssi.org -port 6667 -4 -network Freenode -noproxy orwell.freenode.net
+    /SERVER MODIFY -network Freenode -noauto orwell.freenode.net
     /SERVER REMOVE orwell.freenode.net 6667 Freenode
     /SERVER PURGE
     /SERVER PURGE orwell.freenode.net
