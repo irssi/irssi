@@ -236,6 +236,8 @@ void fe_ircnet_init(void)
 
 	command_set_options("network add", "-kicks -msgs -modes -whois -cmdspeed "
 			    "-cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
+	command_set_options("network modify", "-kicks -msgs -modes -whois -cmdspeed "
+			    "-cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
 }
 
 void fe_ircnet_deinit(void)

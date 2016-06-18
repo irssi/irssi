@@ -649,6 +649,7 @@ void fe_channels_init(void)
 	command_bind("cycle", NULL, (SIGNAL_FUNC) cmd_cycle);
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
+	command_set_options("channel modify", "auto noauto -bots -botcmd");
 	command_set_options("names", "count ops halfops voices normal");
 	command_set_options("join", "invite window");
 }
