@@ -104,7 +104,7 @@ static SERVER_SETUP_REC *create_server_setup(GHashTable *optlist)
 	return server;
 }
 
-static void cmd_server_add(const char *data)
+static void cmd_server_add_modify(const char *data, gboolean add)
 {
         GHashTable *optlist;
 	SERVER_SETUP_REC *rec;
@@ -113,7 +113,7 @@ static void cmd_server_add(const char *data)
 	int port;
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
-			    "server add", &optlist, &addr, &portstr, &password))
+		"server add", &optlist, &addr, &portstr, &password))
 		return;
 
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
@@ -124,6 +124,13 @@ static void cmd_server_add(const char *data)
 	rec = server_setup_find(addr, port, chatnet);
 
 	if (rec == NULL) {
+		if (!add) {
+			cmd_params_free(free_arg);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+				TXT_SETUPSERVER_NOT_FOUND, addr, port);
+			return;
+		}
+
 		rec = create_server_setup(optlist);
 		if (rec == NULL) {
 			cmd_params_free(free_arg);
@@ -131,7 +138,7 @@ static void cmd_server_add(const char *data)
 		}
 		rec->address = g_strdup(addr);
 		rec->port = port;
-	} else {
+	} else if (!add) {
 		value = g_hash_table_lookup(optlist, "port");
 		if (value != NULL && *value != '\0') rec->port = atoi(value);
 
@@ -203,6 +210,16 @@ static void cmd_server_add(const char *data)
 		    TXT_SETUPSERVER_ADDED, addr, port);
 
 	cmd_params_free(free_arg);
+}
+
+static void cmd_server_add(const char *data)
+{
+	cmd_server_add_modify(data, 1);
+}
+
+static void cmd_server_modify(const char *data)
+{
+	cmd_server_add_modify(data, 0);
 }
 
 /* SYNTAX: SERVER REMOVE <address> [<port>] [<network>] */
@@ -388,6 +405,7 @@ void fe_server_init(void)
 	command_bind("server", NULL, (SIGNAL_FUNC) cmd_server);
 	command_bind("server connect", NULL, (SIGNAL_FUNC) cmd_server_connect);
 	command_bind("server add", NULL, (SIGNAL_FUNC) cmd_server_add);
+	command_bind("server modify", NULL, (SIGNAL_FUNC) cmd_server_modify);
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
 	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
 	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) server_command);
@@ -412,6 +430,7 @@ void fe_server_deinit(void)
 	command_unbind("server", (SIGNAL_FUNC) cmd_server);
 	command_unbind("server connect", (SIGNAL_FUNC) cmd_server_connect);
 	command_unbind("server add", (SIGNAL_FUNC) cmd_server_add);
+	command_unbind("server modify", (SIGNAL_FUNC) cmd_server_modify);
 	command_unbind("server remove", (SIGNAL_FUNC) cmd_server_remove);
 	command_unbind("server", (SIGNAL_FUNC) server_command);
 	command_unbind("disconnect", (SIGNAL_FUNC) server_command);
