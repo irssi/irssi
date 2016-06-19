@@ -66,8 +66,10 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
         if (text == NULL)
 		return FALSE;
 
-	if (rec->regexp)
-		return rec->preg && g_regex_match(rec->preg, text, 0, NULL);
+	if (rec->regexp) {
+		return rec->preg != NULL &&
+			g_regex_match(rec->preg, text, 0, NULL);
+	}
 
 	return rec->fullword ?
 		stristr_full(text, rec->pattern) != NULL :

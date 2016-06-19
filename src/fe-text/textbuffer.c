@@ -570,7 +570,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			textbuffer_line2text(line, FALSE, str);
 
 			if (line_matched) {
-				line_matched = regexp ? 
+				line_matched = regexp ?
 				    g_regex_match(preg, str->str, 0, NULL) :
 				    match_func(str->str, text) != NULL;
 			}
