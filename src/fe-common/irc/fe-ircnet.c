@@ -175,28 +175,21 @@ static void cmd_network_add_modify(const char *data, gboolean add)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: NETWORK ADD [-nick <nick>] [-user <user>] [-realname <name>]
-                       [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
-                       [-querychans <count>] [-whois <count>] [-msgs <count>]
-                       [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
-                       [-cmdmax <count>] [-sasl_mechanism <mechanism>]
-                       [-sasl_username <username>] [-sasl_password <password>]
-                       <name> */
+/* SYNTAX: NETWORK ADD|MODIFY [-nick <nick>] [-user <user>] [-realname <name>]
+                              [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
+                              [-querychans <count>] [-whois <count>] [-msgs <count>]
+                              [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
+                              [-cmdmax <count>] [-sasl_mechanism <mechanism>]
+                              [-sasl_username <username>] [-sasl_password <password>]
+                              <name> */
 static void cmd_network_add(const char *data)
 {
-	cmd_network_add_modify(data, 1);
+	cmd_network_add_modify(data, TRUE);
 }
 
-/* SYNTAX: NETWORK MODIFY [-nick <nick>] [-user <user>] [-realname <name>]
-                          [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
-                          [-querychans <count>] [-whois <count>] [-msgs <count>]
-                          [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
-                          [-cmdmax <count>] [-sasl_mechanism <mechanism>]
-                          [-sasl_username <username>] [-sasl_password <password>]
-                          <name> */
 static void cmd_network_modify(const char *data)
 {
-	cmd_network_add_modify(data, 0);
+	cmd_network_add_modify(data, FALSE);
 }
 
 /* SYNTAX: NETWORK REMOVE <network> */

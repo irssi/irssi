@@ -305,18 +305,16 @@ static void cmd_channel_add_modify(const char *data, gboolean add)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
-                       <channel> <network> [<password>] */
+/* SYNTAX: CHANNEL ADD|MODIFY [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
+                              <channel> <network> [<password>] */
 static void cmd_channel_add(const char *data)
 {
-	cmd_channel_add_modify(data, 1);
+	cmd_channel_add_modify(data, TRUE);
 }
 
-/* SYNTAX: CHANNEL MODIFY [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
-                          <channel> <network> [<password>] */
 static void cmd_channel_modify(const char *data)
 {
-	cmd_channel_add_modify(data, 0);
+	cmd_channel_add_modify(data, FALSE);
 }
 
 /* SYNTAX: CHANNEL REMOVE <channel> <network> */

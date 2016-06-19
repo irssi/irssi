@@ -51,18 +51,12 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 	return target;
 }
 
-/* SYNTAX: SERVER ADD [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
-                      [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
-                      [-ssl_ciphers <list>]
-                      [-auto | -noauto] [-network <network>] [-host <hostname>]
-                      [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
-                      <address> [<port> [<password>]] */
-/* SYNTAX: SERVER MODIFY [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
-                         [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
-                         [-ssl_ciphers <list>]
-                         [-auto | -noauto] [-network <network>] [-host <hostname>]
-                         [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
-                         <address> [<port> [<password>]] */
+/* SYNTAX: SERVER ADD|MODIFY [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
+                             [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
+                             [-ssl_ciphers <list>]
+                             [-auto | -noauto] [-network <network>] [-host <hostname>]
+                             [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
+                             <address> [<port> [<password>]] */
 /* NOTE: -network replaces the old -ircnet flag. */
 static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 				GHashTable *optlist)

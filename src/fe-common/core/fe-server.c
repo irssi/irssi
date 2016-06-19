@@ -214,12 +214,12 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 
 static void cmd_server_add(const char *data)
 {
-	cmd_server_add_modify(data, 1);
+	cmd_server_add_modify(data, TRUE);
 }
 
 static void cmd_server_modify(const char *data)
 {
-	cmd_server_add_modify(data, 0);
+	cmd_server_add_modify(data, FALSE);
 }
 
 /* SYNTAX: SERVER REMOVE <address> [<port>] [<network>] */
