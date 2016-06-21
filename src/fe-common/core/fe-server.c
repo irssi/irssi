@@ -124,7 +124,7 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 	rec = server_setup_find(addr, port, chatnet);
 
 	if (rec == NULL) {
-		if (!add) {
+		if (add == FALSE) {
 			cmd_params_free(free_arg);
 			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 				TXT_SETUPSERVER_NOT_FOUND, addr, port);
