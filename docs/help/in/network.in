@@ -7,6 +7,7 @@
 
     LIST:            Displays the list of configured networks.
     ADD:             Adds a network to your configuration.
+    MODIFY:          Modifies a network in your configuration.
     REMOVE:          Removes a network from your configuration.
 
     -nick:           Specifies the nickname to use.
@@ -59,6 +60,7 @@
     /NETWORK ADD -usermode +iw -nick mike -realname 'The one and only mike!' -host staff.irssi.org Freenode
     /NETWORK ADD -autosendcmd '^MSG NickServ identify WzerT8zq' Freenode
     /NETWORK ADD -autosendcmd '^MSG Q@CServe.quakenet.org AUTH mike WzerT8zq; WAIT 2000; OPER mike WzerT8zq; WAIT 2000; MODE mike +kXP' Quakenet
+    /NETWORK MODIFY -usermode +gi EFnet
     /NETWORK REMOVE Freenode
 
 %9See also:%9 CHANNEL, CONNECT, SERVER
