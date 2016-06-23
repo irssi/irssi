@@ -328,7 +328,7 @@ static void ignore_init_rec(IGNORE_REC *rec)
 	if (rec->regexp && rec->pattern != NULL) {
 		GError *re_error;
 
-		rec->preg = g_regex_new(rec->pattern, G_REGEX_CASELESS, 0, &re_error);
+		rec->preg = g_regex_new(rec->pattern, G_REGEX_OPTIMIZE | G_REGEX_RAW | G_REGEX_CASELESS, 0, &re_error);
 
 		if (rec->preg == NULL) {
 			g_warning("Failed to compile regexp '%s': %s", rec->pattern, re_error->message);

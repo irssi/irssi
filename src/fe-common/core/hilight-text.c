@@ -121,7 +121,7 @@ static void hilight_init_rec(HILIGHT_REC *rec)
 	if (rec->preg != NULL)
 		g_regex_unref(rec->preg);
 
-	rec->preg = g_regex_new(rec->text, G_REGEX_CASELESS, 0, NULL);
+	rec->preg = g_regex_new(rec->text, G_REGEX_OPTIMIZE | G_REGEX_RAW | G_REGEX_CASELESS, 0, NULL);
 }
 
 void hilight_create(HILIGHT_REC *rec)
@@ -188,22 +188,25 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 	return NULL;
 }
 
-static int hilight_match_text(HILIGHT_REC *rec, const char *text,
+static gboolean hilight_match_text(HILIGHT_REC *rec, const char *text,
 				  int *match_beg, int *match_end)
 {
-	char *match;
+	gboolean ret = FALSE;
 
 	if (rec->regexp) {
-		GMatchInfo *match;
-
 		if (rec->preg != NULL) {
+			GMatchInfo *match;
+
 			g_regex_match (rec->preg, text, 0, &match);
 
-			if (g_match_info_matches(match)) {
-				return g_match_info_fetch_pos(match, 0, match_beg, match_end);
-			}
+			if (g_match_info_matches(match))
+				ret = g_match_info_fetch_pos(match, 0, match_beg, match_end);
+
+			g_match_info_free(match);
 		}
 	} else {
+		char *match;
+
 		if (rec->case_sensitive) {
 			match = rec->fullword ?
 				strstr_full(text, rec->text) :
@@ -218,11 +221,11 @@ static int hilight_match_text(HILIGHT_REC *rec, const char *text,
 				*match_beg = (int) (match-text);
 				*match_end = *match_beg + strlen(rec->text);
 			}
-			return TRUE;
+			ret = TRUE;
 		}
 	}
 
-	return FALSE;
+	return ret;
 }
 
 #define hilight_match_level(rec, level) \

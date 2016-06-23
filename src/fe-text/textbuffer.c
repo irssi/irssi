@@ -546,7 +546,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 	preg = NULL;
 
 	if (regexp) {
-		preg = g_regex_new(text, (case_sensitive ? 0 : G_REGEX_CASELESS), 0, NULL);
+		preg = g_regex_new(text, G_REGEX_RAW | (case_sensitive ? 0 : G_REGEX_CASELESS), 0, NULL);
 
 		if (preg == NULL)
 			return NULL;
@@ -602,7 +602,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 		}
 	}
 
-	if (regexp)
+	if (preg != NULL)
 		g_regex_unref(preg);
         g_string_free(str, TRUE);
 	return matches;
