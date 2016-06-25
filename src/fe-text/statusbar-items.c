@@ -289,6 +289,10 @@ static void sig_statusbar_more_updated(void)
 {
 	int visible;
 
+	 /* no active window, for example during /window hide */
+	if (active_win == NULL)
+		return;
+
         visible = g_slist_find(more_visible, WINDOW_MAIN(active_win)) != NULL;
 	if (WINDOW_GUI(active_win)->view->more_text != visible)
                 statusbar_items_redraw("more");
