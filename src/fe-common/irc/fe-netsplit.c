@@ -142,7 +142,7 @@ static void get_server_splits(void *key, NETSPLIT_REC *split,
 	}
 }
 
-static void print_server_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
+static void print_server_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec, const char *channel)
 {
 	GString *destservers;
 	char *sourceserver;
@@ -167,6 +167,9 @@ static void print_server_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec)
 	sourceserver = ((NETSPLIT_SERVER_REC *) (rec->servers->data))->server;
 	for (tmp = rec->channels; tmp != NULL; tmp = tmp->next) {
 		TEMP_SPLIT_CHAN_REC *chan = tmp->data;
+
+		if (channel != NULL && strcasecmp(channel, chan->name) != 0)
+			continue;
 
 		g_string_truncate(chan->nicks, chan->nicks->len-2);
 
@@ -193,7 +196,7 @@ static void temp_split_chan_free(TEMP_SPLIT_CHAN_REC *rec)
 	g_free(rec);
 }
 
-static void print_splits(IRC_SERVER_REC *server)
+static void print_splits(IRC_SERVER_REC *server, const char *channel)
 {
 	TEMP_SPLIT_REC temp;
 	GSList *servers;
@@ -212,7 +215,7 @@ static void print_splits(IRC_SERVER_REC *server)
 
 		g_hash_table_foreach(server->splits,
 				     (GHFunc) get_server_splits, &temp);
-		print_server_splits(server, &temp);
+		print_server_splits(server, &temp, channel);
 
 		g_slist_foreach(temp.channels,
 				(GFunc) temp_split_chan_free, NULL);
@@ -233,25 +236,31 @@ static int check_server_splits(IRC_SERVER_REC *server)
 	if (time(NULL)-last < SPLIT_WAIT_TIME)
 		return FALSE;
 
-	print_splits(server);
+	print_splits(server, NULL);
         return TRUE;
 }
 
 /* something is going to be printed to screen, print our current netsplit
    message before it. */
-static void sig_print_starting(void)
+static void sig_print_starting(TEXT_DEST_REC *dest)
 {
-	GSList *tmp;
+	IRC_SERVER_REC *rec;
 
 	if (printing_splits)
 		return;
 
-	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		IRC_SERVER_REC *rec = tmp->data;
+	if (IS_IRC_SERVER(dest->server) == FALSE)
+		return;
 
-		if (IS_IRC_SERVER(rec) && rec->split_servers != NULL)
-			print_splits(rec);
-	}
+	if (dest->level != MSGLEVEL_PUBLIC)
+		return;
+
+	if (server_ischannel(dest->server, dest->target) == FALSE)
+		return;
+
+	rec = IRC_SERVER(dest->server);
+	if (rec->split_servers != NULL)
+		print_splits(rec, dest->target);
 }
 
 static int sig_check_splits(void)

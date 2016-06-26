@@ -248,16 +248,10 @@ static void sig_print_starting(TEXT_DEST_REC *dest)
 	if (printing_joins)
 		return;
 
-	/* Do not dump the netsplit stats unless:
-	 * a) This is an IRC server
-	 * b) The message level is high enough
-	 * b) The message belongs to a channel
-	 * c) There's a NETJOIN record for this server
-	 */
 	if (!IS_IRC_SERVER(dest->server))
 		return;
 
-	if (dest->level != MSGLEVEL_MSGS)
+	if (dest->level != MSGLEVEL_PUBLIC)
 		return;
 
 	if (!server_ischannel(dest->server, dest->target))
