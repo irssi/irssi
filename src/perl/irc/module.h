@@ -12,6 +12,7 @@
 #include "mode-lists.h"
 #include "netsplit.h"
 #include "servers-redirect.h"
+#include "sasl.h"
 
 #include "dcc/dcc.h"
 #include "dcc/dcc-file.h"

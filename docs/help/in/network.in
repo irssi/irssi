@@ -34,8 +34,8 @@
     -cmdmax:         Specifies the maximum number of commands to perform before
                      starting the internal flood protection.
     -sasl_mechanism  Specifies the mechanism to use for the SASL authentication.
-                     At the moment irssi only supports the 'plain' and the
-                     'external' mechanisms.
+                     Irssi supports the 'plain' and 'external' mechanisms by
+                     default and other mechanisms through scripts.
     -sasl_username   Specifies the username to use during the SASL authentication.
     -sasl_password   Specifies the password to use during the SASL authentication.
 

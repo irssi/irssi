@@ -7,6 +7,9 @@ static void perl_irc_connect_fill_hash(HV *hv, IRC_SERVER_CONNECT_REC *conn)
 {
 	perl_connect_fill_hash(hv, (SERVER_CONNECT_REC *) conn);
 	(void) hv_store(hv, "alternate_nick", 14, new_pv(conn->alternate_nick), 0);
+
+	(void) hv_store(hv, "sasl_username", 13, new_pv(conn->sasl_username), 0);
+	(void) hv_store(hv, "sasl_password", 13, new_pv(conn->sasl_password), 0);
 }
 
 static void perl_irc_server_fill_hash(HV *hv, IRC_SERVER_REC *server)
@@ -227,3 +230,11 @@ BOOT:
 	irssi_boot(Irc__Query);
 	irssi_boot(Irc__Server);
 	irssi_boot(Irc__Client);
+
+void
+sasl_mechanism_register(name)
+	char *name
+
+void
+sasl_mechanism_unregister(name)
+	char *name

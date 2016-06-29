@@ -137,6 +137,9 @@ irc-cap.c
  "server cap end", SERVER_REC
 
 sasl.c
+ "server sasl init "<mechanism>, SERVER_REC
+ "server sasl step "<mechanism>, SERVER_REC, GBytes *
+ "server sasl abort "<mechanism>, SERVER_REC
  "server sasl failure", SERVER_REC, char *reason
  "server sasl success", SERVER_REC
 
