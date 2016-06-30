@@ -311,6 +311,7 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 		if (servername) {
 			g_free(server->connrec->address);
 			server->connrec->address = g_strdup(servername);
+			server->dns_reverse = TRUE;
 		}
 		server_real_connect(server, ip, NULL);
 		errormsg = NULL;
