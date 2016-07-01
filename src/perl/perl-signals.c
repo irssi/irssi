@@ -80,6 +80,7 @@ void perl_signal_args_to_c(
                 unsigned long v_ulong;
                 GSList *v_gslist;
                 GList *v_glist;
+                GBytes *v_gbytes;
         } saved_args[SIGNAL_MAX_ARGUMENTS];
         void *p[SIGNAL_MAX_ARGUMENTS];
         PERL_SIGNAL_ARGS_REC *rec;
@@ -101,6 +102,12 @@ void perl_signal_args_to_c(
                         c_arg = NULL;
                 } else if (g_strcmp0(rec->args[n], "string") == 0) {
                         c_arg = SvPV_nolen(arg);
+                } else if (g_strcmp0(rec->args[n], "gbytes") == 0) {
+                        char *bytes;
+                        STRLEN len;
+
+                        bytes = SvPV(arg, len);
+                        c_arg = saved_args[n].v_gbytes = g_bytes_new(bytes, len);
                 } else if (g_strcmp0(rec->args[n], "int") == 0) {
                         c_arg = (void *)SvIV(arg);
                 } else if (g_strcmp0(rec->args[n], "ulongptr") == 0) {
@@ -181,7 +188,9 @@ void perl_signal_args_to_c(
                         continue;
                 }
 
-                if (g_strcmp0(rec->args[n], "intptr") == 0) {
+                if (g_strcmp0(rec->args[n], "gbytes") == 0) {
+                        g_bytes_unref(saved_args[n].v_gbytes);
+                } else if (g_strcmp0(rec->args[n], "intptr") == 0) {
                         SV *t = SvRV(arg);
                         SvIOK_only(t);
                         SvIV_set(t, saved_args[n].v_int);
@@ -291,6 +300,14 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 			/* "simple irssi object" - any struct that has
 			   int type; as it's first variable (dcc) */
 			perlarg = simple_iobject_bless((SERVER_REC *) arg);
+		} else if (g_strcmp0(rec->args[n], "gbytes") == 0) {
+			GBytes *tmp;
+			const char *data;
+			STRLEN data_len;
+
+			tmp = arg;
+			data = g_bytes_get_data(tmp, &data_len);
+			perlarg = newSVpvn(data, data_len);
 		} else {
 			/* blessed object */
 			perlarg = plain_bless(arg, rec->args[n]);
