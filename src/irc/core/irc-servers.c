@@ -444,6 +444,8 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	gslist_free_full(server->cap_queue, (GDestroyNotify) g_free);
 	server->cap_queue = NULL;
 
+	g_free_and_null(server->sasl_buffer);
+
 	/* these are dynamically allocated only if isupport was sent */
 	g_hash_table_foreach(server->isupport,
 			     (GHFunc) isupport_destroy_hash, server);

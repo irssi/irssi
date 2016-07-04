@@ -78,7 +78,8 @@ struct _IRC_SERVER_REC {
 	GSList *cap_queue;     /* A list of caps to request on connection */ 
 	int cap_complete:1;    /* We've done the initial CAP negotiation */
 
-	guint sasl_timeout; /* Holds the source id of the running timeout */
+	GString *sasl_buffer; /* Buffer used to reassemble a fragmented SASL payload */
+	guint sasl_timeout;   /* Holds the source id of the running timeout */
 
 	/* Command sending queue */
 	int cmdcount; /* number of commands in `cmdqueue'. Can be more than

@@ -26,6 +26,19 @@
 #include "irc-servers.h"
 #include "sasl.h"
 
+/*
+ * Based on IRCv3 SASL Extension Specification:
+ * http://ircv3.net/specs/extensions/sasl-3.1.html
+ */
+#define AUTHENTICATE_CHUNK_SIZE 400 // bytes
+
+/*
+ * Maximum size to allow the buffer to grow to before the next fragment comes in. Note that
+ * due to the way fragmentation works, the maximum message size will actually be:
+ * floor(AUTHENTICATE_MAX_SIZE / AUTHENTICATE_CHUNK_SIZE) + AUTHENTICATE_CHUNK_SIZE - 1
+ */
+#define AUTHENTICATE_MAX_SIZE 8192 // bytes
+
 #define SASL_TIMEOUT (20 * 1000) // ms
 
 static gboolean sasl_timeout(IRC_SERVER_REC *server)
@@ -105,19 +118,106 @@ static void sasl_success(IRC_SERVER_REC *server, const char *data, const char *f
 	cap_finish_negotiation(server);
 }
 
-static void sasl_step(IRC_SERVER_REC *server, const char *data, const char *from)
+/*
+ * Responsible for reassembling incoming SASL requests. SASL requests must be split
+ * into 400 byte requests to stay below the IRC command length limit of 512 bytes.
+ * The spec says that if there is 400 bytes, then there is expected to be a
+ * continuation in the next chunk. If a message is exactly a multiple of 400 bytes,
+ * there must be a blank message of "AUTHENTICATE +" to indicate the end.
+ *
+ * This function returns the fully reassembled and decoded AUTHENTICATION message if
+ * completed or NULL if there are more messages expected.
+ */
+static gboolean sasl_reassemble_incoming(IRC_SERVER_REC *server, const char *fragment, GString **decoded)
+{
+	GString *enc_req;
+	gsize fragment_len;
+
+	fragment_len = strlen(fragment);
+
+	/* Check if there is an existing fragment to prepend. */
+	if (server->sasl_buffer != NULL) {
+		if (g_strcmp0("+", fragment) == 0) {
+			enc_req = server->sasl_buffer;
+		} else {
+			enc_req = g_string_append_len(server->sasl_buffer, fragment, fragment_len);
+		}
+		server->sasl_buffer = NULL;
+	} else {
+		enc_req = g_string_new_len(fragment, fragment_len);
+	}
+
+	/*
+	 * Fail authentication with this server. They have sent too much data.
+	 */
+	if (enc_req->len > AUTHENTICATE_MAX_SIZE) {
+		return FALSE;
+	}
+
+	/*
+	 * If the the request is exactly the chunk size, this is a fragment
+	 * and more data is expected.
+	 */
+	if (fragment_len == AUTHENTICATE_CHUNK_SIZE) {
+		server->sasl_buffer = enc_req;
+		return TRUE;
+	}
+
+	if (enc_req->len == 1 && *enc_req->str == '+') {
+		*decoded = g_string_new_len("", 0);
+	} else {
+		gsize dec_len;
+		gchar *tmp;
+
+		tmp = (gchar *) g_base64_decode(enc_req->str, &dec_len);
+		*decoded = g_string_new_len(tmp, dec_len);
+	}
+
+	g_string_free(enc_req, TRUE);
+	return TRUE;
+}
+
+/*
+ * Splits the response into appropriately sized chunks for the AUTHENTICATION
+ * command to be sent to the IRC server. If |response| is NULL, then the empty
+ * response is sent to the server.
+ */
+void sasl_send_response(IRC_SERVER_REC *server, GString *response)
+{
+	char *enc;
+	size_t offset, enc_len, chunk_len;
+
+	if (response == NULL) {
+		irc_send_cmdv(server, "AUTHENTICATE +");
+		return;
+	}
+
+	enc = g_base64_encode((guchar *) response->str, response->len);
+	enc_len = strlen(enc);
+
+	for (offset = 0; offset < enc_len; offset += AUTHENTICATE_CHUNK_SIZE) {
+		chunk_len = enc_len - offset;
+		if (chunk_len > AUTHENTICATE_CHUNK_SIZE)
+			chunk_len = AUTHENTICATE_CHUNK_SIZE;
+
+		irc_send_cmdv(server, "AUTHENTICATE %.*s", (int) chunk_len, enc + offset);
+	}
+
+	if (offset == enc_len) {
+		irc_send_cmdv(server, "AUTHENTICATE +");
+	}
+	g_free(enc);
+}
+
+/*
+ * Called when the incoming SASL request is completely received.
+ */
+static void sasl_step_complete(IRC_SERVER_REC *server, GString *data)
 {
 	IRC_SERVER_CONNECT_REC *conn;
-	GString *req;
-	char *enc_req;
+	GString *resp;
 
 	conn = server->connrec;
-
-	/* Stop the timer */
-	if (server->sasl_timeout != 0) {
-		g_source_remove(server->sasl_timeout);
-		server->sasl_timeout = 0;
-	}
 
 	switch (conn->sasl_mechanism) {
 		case SASL_MECHANISM_PLAIN:
@@ -125,28 +225,56 @@ static void sasl_step(IRC_SERVER_REC *server, const char *data, const char *from
 			 * The PLAIN mechanism expects a NULL-separated string composed by the authorization identity, the
 			 * authentication identity and the password.
 			 * The authorization identity field is explicitly set to the user provided username.
-			 * The whole request is then encoded in base64. */
+			 */
 
-			req = g_string_new(NULL);
+			resp = g_string_new(NULL);
 
-			g_string_append(req, conn->sasl_username);
-			g_string_append_c(req, '\0');
-			g_string_append(req, conn->sasl_username);
-			g_string_append_c(req, '\0');
-			g_string_append(req, conn->sasl_password);
+			g_string_append(resp, conn->sasl_username);
+			g_string_append_c(resp, '\0');
+			g_string_append(resp, conn->sasl_username);
+			g_string_append_c(resp, '\0');
+			g_string_append(resp, conn->sasl_password);
 
-			enc_req = g_base64_encode((const guchar *)req->str, req->len);
+			sasl_send_response(server, resp);
+			g_string_free(resp, TRUE);
 
-			irc_send_cmdv(server, "AUTHENTICATE %s", enc_req);
-
-			g_free(enc_req);
-			g_string_free(req, TRUE);
 			break;
 
 		case SASL_MECHANISM_EXTERNAL:
 			/* Empty response */
-			irc_send_cmdv(server, "AUTHENTICATE +");
+			sasl_send_response(server, NULL);
 			break;
+	}
+}
+
+static void sasl_step_fail(IRC_SERVER_REC *server)
+{
+	irc_send_cmd_now(server, "AUTHENTICATE *");
+	cap_finish_negotiation(server);
+
+	server->sasl_timeout = 0;
+
+	signal_emit("server sasl failure", 2, server, "The server sent an invalid payload");
+}
+
+static void sasl_step(IRC_SERVER_REC *server, const char *data, const char *from)
+{
+	GString *req = NULL;
+
+	/* Stop the timer */
+	if (server->sasl_timeout != 0) {
+		g_source_remove(server->sasl_timeout);
+		server->sasl_timeout = 0;
+	}
+
+	if (!sasl_reassemble_incoming(server, data, &req)) {
+		sasl_step_fail(server);
+		return;
+	}
+
+	if (req != NULL) {
+		sasl_step_complete(server, req);
+		g_string_free(req, TRUE);
 	}
 
 	/* We expect a response within a reasonable time */
