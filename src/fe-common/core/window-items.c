@@ -242,7 +242,7 @@ WI_ITEM_REC *window_item_find(void *server, const char *name)
 	return NULL;
 }
 
-static int window_bind_has_sticky(WINDOW_REC *window)
+int window_bind_has_sticky(WINDOW_REC *window)
 {
 	GSList *tmp;
 

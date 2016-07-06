@@ -136,7 +136,7 @@ void window_destroy(WINDOW_REC *window)
 void window_auto_destroy(WINDOW_REC *window)
 {
 	if (settings_get_bool("autoclose_windows") && windows->next != NULL &&
-	    window->items == NULL && window->bound_items == NULL &&
+	    window->items == NULL && window_bind_has_sticky(window) == FALSE &&
 	    window->level == 0 && !window->immortal)
                 window_destroy(window);
 }

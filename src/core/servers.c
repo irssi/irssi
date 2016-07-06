@@ -449,6 +449,8 @@ static int server_remove_channels(SERVER_REC *server)
 		CHANNEL_REC *channel = tmp->data;
 
 		next = tmp->next;
+		/* mark all the channels as parted */
+		channel->left = TRUE;
 		channel_destroy(channel);
 		found = TRUE;
 	}
