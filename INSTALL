@@ -4,7 +4,7 @@
 
 To compile irssi you need:
 
-- glib-2.6 or greater
+- glib-2.28 or greater
 - pkg-config
 - openssl (for ssl support)
 - perl-5.6 or greater (for perl support)
