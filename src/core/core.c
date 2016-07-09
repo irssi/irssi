@@ -182,16 +182,21 @@ void core_register_options(void)
 
 void core_preinit(const char *path)
 {
-	const char *home;
 	char *str;
 	int len;
 
 	if (irssi_dir == NULL) {
-		home = g_get_home_dir();
-		if (home == NULL)
-			home = ".";
+		/* Try the XDG-compliant path first, if the config directory
+		 * exists use it instead of the one at ~/.irssi */
+		irssi_dir = g_build_filename(g_get_user_config_dir(),
+					     "irssi", NULL);
 
-		irssi_dir = g_strdup_printf(IRSSI_DIR_FULL, home);
+		if (g_file_test(irssi_dir, G_FILE_TEST_IS_DIR) == FALSE) {
+			g_free(irssi_dir);
+
+			const char *home = g_get_home_dir();
+			irssi_dir = g_build_filename(home? home: ".", ".irssi", NULL);
+		}
 	} else {
 		str = irssi_dir;
 		irssi_dir = fix_path(str);
@@ -200,8 +205,9 @@ void core_preinit(const char *path)
 		if (irssi_dir[len-1] == G_DIR_SEPARATOR)
 			irssi_dir[len-1] = '\0';
 	}
+
 	if (irssi_config_file == NULL)
-		irssi_config_file = g_strdup_printf("%s/"IRSSI_HOME_CONFIG, irssi_dir);
+		irssi_config_file = g_build_filename(irssi_dir, IRSSI_HOME_CONFIG, NULL);
 	else {
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);
