@@ -433,8 +433,9 @@ static void perl_signal_remove_list_one(GSList **siglist, PERL_SIGNAL_REC *rec)
 }
 
 #define sv_func_cmp(f1, f2) \
-	(f1 == f2 || (SvPOK(f1) && SvPOK(f2) && \
-		g_strcmp0(SvPV_nolen(f1), SvPV_nolen(f2)) == 0))
+	((SvROK(f1) && SvROK(f2) && SvRV(f1) == SvRV(f2)) || \
+	 (SvPOK(f1) && SvPOK(f2) && \
+	  g_strcmp0(SvPV_nolen(f1), SvPV_nolen(f2)) == 0))
 
 static void perl_signal_remove_list(GSList **list, SV *func)
 {
