@@ -293,6 +293,9 @@ PERL_SCRIPT_REC *perl_script_load_file(const char *path)
 
         g_return_val_if_fail(path != NULL, NULL);
 
+	if (g_file_test(path, G_FILE_TEST_IS_REGULAR) == FALSE)
+		return NULL;
+
         name = script_file_get_name(path);
         return script_load(name, path, NULL);
 }
