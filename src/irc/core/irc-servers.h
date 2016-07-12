@@ -68,6 +68,7 @@ struct _IRC_SERVER_REC {
 	unsigned int motd_got:1; /* We've received MOTD */
 	unsigned int isupport_sent:1; /* Server has sent us an isupport reply */
 	unsigned int cap_complete:1; /* We've done the initial CAP negotiation */
+	unsigned int sasl_success:1; /* Did we authenticate successfully ? */
 
 	int max_kicks_in_cmd; /* max. number of people to kick with one /KICK command */
 	int max_modes_in_cmd; /* max. number of mode changes in one /MODE command */
