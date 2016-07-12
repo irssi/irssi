@@ -345,7 +345,9 @@ GList *filename_complete(const char *path, const char *default_path)
 			    (dp->d_name[1] == '.' && dp->d_name[2] == '\0'))
 				continue; /* skip . and .. */
 
-			if (basename[0] != '.')
+			/* Skip the dotfiles unless the user explicitly asked us
+			 * to do so. Basename might be './', beware of that */
+			if (basename[0] != '.' || basename[1] == '\0')
 				continue;
 		}
 
