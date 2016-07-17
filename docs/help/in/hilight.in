@@ -32,7 +32,7 @@
     /HILIGHT
     /HILIGHT mike
     /HILIGHT -regexp mi+ke+
-    /HILIGHT -mask bob!*@*.irssi.org -color %%G
+    /HILIGHT -mask -color %%G bob!*@*.irssi.org
     /HILIGHT -full -color %%G -actcolor %%Y redbull
 
 %9References:%9
