@@ -32,11 +32,6 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#ifdef HAVE_DANE
-#include <validator/validator.h>
-#include <validator/val_dane.h>
-#endif
-
 /* ssl i/o channel object */
 typedef struct
 {
@@ -206,39 +201,6 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, int port, X509 *cert, SERVER_REC *server)
 {
 	long result;
-#ifdef HAVE_DANE
-	int dane_ret;
-	struct val_daneparams daneparams;
-	struct val_danestatus *danestatus = NULL;
-
-	// Check if a TLSA record is available.
-	daneparams.port = port;
-	daneparams.proto = DANE_PARAM_PROTO_TCP;
-
-	dane_ret = val_getdaneinfo(NULL, hostname, &daneparams, &danestatus);
-
-	if (dane_ret == VAL_DANE_NOERROR) {
-		signal_emit("tlsa available", 1, server);
-	}
-
-	if (danestatus != NULL) {
-		int do_certificate_check = 1;
-
-		if (val_dane_check(NULL, ssl, danestatus, &do_certificate_check) != VAL_DANE_NOERROR) {
-			g_warning("DANE: TLSA record for hostname %s port %d could not be verified", hostname, port);
-			signal_emit("tlsa verification failed", 1, server);
-			val_free_dane(danestatus);
-			return FALSE;
-		}
-
-		signal_emit("tlsa verification success", 1, server);
-		val_free_dane(danestatus);
-
-		if (do_certificate_check == 0) {
-			return TRUE;
-		}
-	}
-#endif
 
 	result = SSL_get_verify_result(ssl);
 	if (result != X509_V_OK) {
