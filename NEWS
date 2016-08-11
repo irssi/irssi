@@ -23,6 +23,7 @@ v0.8.20-head 2016-xx-xx  The Irssi team <staff@irssi.org>
 	- IP addresses are no longer stored when resolve_reverse_lookup is
 	  used.
 	- /names and $[...] now uses utf8 string operations (#40, #411).
+	- Removed broken support for curses.
 
 v0.8.19 2016-03-23  The Irssi team <staff@irssi.org>
 	- Fixed regression when joining and parting channels on IRCnet (#435)

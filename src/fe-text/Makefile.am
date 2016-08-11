@@ -4,8 +4,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/fe-common/core/ \
-	$(GLIB_CFLAGS) \
-	$(CURSES_INCLUDEDIR)
+	$(GLIB_CFLAGS)
 
 irssi_DEPENDENCIES = \
 	@COMMON_LIBS@ \
@@ -22,25 +21,11 @@ irssi_LDADD = \
 	@PROG_LIBS@ \
 	@TEXTUI_LIBS@
 
-tparm_sources = \
-	tparm.c
-
 terminfo_sources = \
         term-terminfo.c \
         terminfo-core.c
 
-curses_sources = \
-	term-curses.c
-
-if NEED_TPARM
-use_tparm_sources = $(tparm_sources)
-endif
-
-if USE_CURSES
-use_term_sources = $(curses_sources)
-else
 use_term_sources = $(terminfo_sources)
-endif
 
 irssi_SOURCES = \
         gui-entry.c \
@@ -57,7 +42,6 @@ irssi_SOURCES = \
         statusbar-items.c \
         term.c \
 	term-dummy.c \
-	$(use_tparm_sources) \
 	$(use_term_sources) \
         textbuffer.c \
         textbuffer-commands.c \
@@ -85,6 +69,4 @@ noinst_HEADERS = \
 	module-formats.h
 
 EXTRA_DIST = \
-	$(tparm_sources) \
-	$(terminfo_sources) \
-	$(curses_sources)
+	$(terminfo_sources)

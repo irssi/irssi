@@ -61,15 +61,6 @@ AC_ARG_WITH(proxy,
 	fi,
 	want_irssiproxy=no)
 
-AC_ARG_WITH(terminfo,
-[  --without-terminfo      Use curses backend instead of terminfo],
-	if test x$withval = xno; then
-		want_terminfo=no
-	else
-		want_terminfo=yes
-	fi,
-	want_terminfo=yes)
-
 AC_ARG_WITH(modules,
 [  --with-modules          Specify what modules to build in binary],
 	if test x$withval != xyes -a x$withval != xno; then
@@ -314,45 +305,19 @@ dnl **
 dnl ** curses checks
 dnl **
 
-if test "x$want_textui" = "xyes"; then
-	AC_CHECK_CURSES
+if test "x$want_textui" != "xno"; then
 
-	TEXTUI_LIBS="$CURSES_LIBS"
-	if test "x$has_curses" = "xtrue"; then
-		old_libs=$LIBS
-		LIBS="$LIBS $CURSES_LIBS"
-		if test $want_terminfo = no; then
-			AC_CHECK_FUNC(use_default_colors, AC_DEFINE(HAVE_NCURSES_USE_DEFAULT_COLORS))
-			AC_CHECK_FUNC(idcok, AC_DEFINE(HAVE_CURSES_IDCOK))
-			AC_CHECK_FUNC(resizeterm, AC_DEFINE(HAVE_CURSES_RESIZETERM))
-			AC_CHECK_FUNC(wresize, AC_DEFINE(HAVE_CURSES_WRESIZE))
-		fi
-		AC_CHECK_FUNC(setupterm,, [
-			want_termcap=yes
-		])
-		LIBS=$old_libs
-	else
-		AC_CHECK_LIB(tinfo, setupterm, [
-		  TEXTUI_LIBS="-ltinfo"
-		  want_terminfo=yes
-		], AC_CHECK_LIB(termlib, tgetent, [
-		  TEXTUI_LIBS="-ltermlib"
-		  want_termcap=yes
-		], AC_CHECK_LIB(termcap, tgetent, [
-		  TEXTUI_LIBS="-ltermcap"
-		  want_termcap=yes
-		], [
-		  AC_ERROR(Terminfo/termcap not found - install libncurses-dev or ncurses-devel package)
-		  want_textui=no
-		])))
-	fi
+	TEXTUI_NO_LIBS="$LIBS"
+	LIBS=
+	AC_SEARCH_LIBS([setupterm], [tinfo ncursesw ncurses], [want_textui=yes], [
+		AC_ERROR(Terminfo not found - install libncurses-dev or ncurses-devel package)
+		want_textui="no, Terminfo not found"
+	])
+
+	TEXTUI_LIBS="$LIBS"
 	AC_SUBST(TEXTUI_LIBS)
+	LIBS="$TEXTUI_NO_LIBS"
 
-	if test "x$want_termcap" = "xyes"; then
-		AC_CHECK_FUNC(tparm,, need_tparm=yes)
-	else
-		AC_DEFINE(HAVE_TERMINFO)
-	fi
 fi
 
 dnl **
@@ -516,8 +481,6 @@ AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
-AM_CONDITIONAL(NEED_TPARM, test "$need_tparm" = "yes")
-AM_CONDITIONAL(USE_CURSES, test "$want_terminfo" != "yes" -a "$want_termcap" != "yes")
 
 # move LIBS to PROG_LIBS so they're not tried to be used when linking eg. perl libraries
 PROG_LIBS=$LIBS
@@ -614,30 +577,19 @@ if test "x$want_dane" = "xyes"; then
 	fi
 fi
 
-if test "x$want_truecolor" = "xyes" -a "x$want_termcap" != "xyes" -a "x$want_terminfo" = "xyes" ; then
+if test "x$want_truecolor" = "xyes"; then
 	AC_DEFINE([TERM_TRUECOLOR], [], [true color support in terminal])
 else
 	want_truecolor=no
 fi
 
-AH_TEMPLATE(HAS_CURSES, [macros/curses checks])
-AH_TEMPLATE(HAVE_CURSES_IDCOK)
-AH_TEMPLATE(HAVE_CURSES_RESIZETERM)
-AH_TEMPLATE(HAVE_CURSES_WRESIZE)
 AH_TEMPLATE(HAVE_GMODULE)
-AH_TEMPLATE(HAVE_NCURSES_USE_DEFAULT_COLORS, [our own curses checks])
 AH_TEMPLATE(HAVE_SOCKS_H, [misc..])
 AH_TEMPLATE(HAVE_STATIC_PERL)
-AH_TEMPLATE(HAVE_TERMINFO, [terminfo/termcap])
-AH_TEMPLATE(NO_COLOR_CURSES)
 AH_TEMPLATE(PRIuUOFF_T, [printf()-format for uoff_t, eg. "u" or "lu" or "llu"])
-AH_TEMPLATE(SCO_FLAVOR)
 AH_TEMPLATE(UOFF_T_INT, [What type should be used for uoff_t])
 AH_TEMPLATE(UOFF_T_LONG)
 AH_TEMPLATE(UOFF_T_LONG_LONG)
-AH_TEMPLATE(USE_NCURSES)
-AH_TEMPLATE(USE_SUNOS_CURSES)
-AH_TEMPLATE(USE_SYSV_CURSES)
 
 AC_CONFIG_FILES([
 Makefile
@@ -691,16 +643,7 @@ fi
 
 echo
 
-if test "x$want_textui" = "xno"; then
-	text=no
-elif test "x$want_termcap" = "xyes"; then
-	text="yes, using termcap"
-elif test "x$want_terminfo" = "xyes"; then
-	text="yes, using terminfo"
-else
-	text="yes, using curses"
-fi
-echo "Building text frontend ........... : $text"
+echo "Building text frontend ........... : $want_textui"
 echo "Building irssi bot ............... : $want_irssibot"
 echo "Building irssi proxy ............. : $want_irssiproxy"
 if test "x$have_gmodule" = "xyes"; then
