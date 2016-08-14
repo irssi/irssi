@@ -41,7 +41,6 @@ irssi_SOURCES = \
         statusbar-config.c \
         statusbar-items.c \
         term.c \
-	term-dummy.c \
 	$(use_term_sources) \
         textbuffer.c \
         textbuffer-commands.c \
