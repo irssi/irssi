@@ -20,8 +20,8 @@
 #endif
 
 struct _IPADDR {
-	unsigned short family;
-	struct in6_addr ip;
+    unsigned short family;
+    struct in6_addr ip;
 };
 
 /* maxmimum string length of IP address */
@@ -29,6 +29,7 @@ struct _IPADDR {
 
 #define IPADDR_IS_V6(ip) ((ip)->family != AF_INET)
 
+struct network_proxy;
 extern IPADDR ip4_any;
 
 GIOChannel *g_io_channel_new(int handle);
@@ -39,10 +40,14 @@ int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 /* Connect to socket */
 GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip) G_GNUC_DEPRECATED;
 /* Connect to socket with ip address and SSL*/
-GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *server);
+GIOChannel *net_connect_proxy_ssl(const struct network_proxy *proxy, const char *host, int port,
+                                  IPADDR *ip, IPADDR *my_ip, SERVER_REC *server);
+
 int irssi_ssl_handshake(GIOChannel *handle);
 /* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
+GIOChannel *net_connect_ip(const IPADDR *ip, int port, IPADDR *my_ip);
+GIOChannel *net_connect_proxy(const struct network_proxy *proxy, const char *host, int port,
+                              IPADDR *ip, IPADDR *my_ip);
 /* Connect to named UNIX socket */
 GIOChannel *net_connect_unix(const char *path);
 /* Disconnect socket */
