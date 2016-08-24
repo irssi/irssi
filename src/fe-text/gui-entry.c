@@ -655,7 +655,7 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 				tmp->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
 				memcpy(tmp->cutbuffer, tmpcutbuffer,
 				       tmp->cutbuffer_len * sizeof(unichar));
-				memcpy(tmp->cutbuffer + tmp->cutbuffer_len * sizeof(unichar),
+				memcpy(tmp->cutbuffer + tmp->cutbuffer_len,
 				       entry->text + entry->pos - size, size * sizeof(unichar));
 
 				tmp->cutbuffer_len = cutbuffer_new_size;
