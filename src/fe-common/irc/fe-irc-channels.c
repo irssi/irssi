@@ -41,7 +41,7 @@ int fe_channel_is_opchannel(IRC_SERVER_REC *server, const char *target)
 
 	statusmsg = g_hash_table_lookup(server->isupport, "statusmsg");
 	if (statusmsg == NULL)
-		statusmsg = "@+";
+		statusmsg = "@";
 
 	return strchr(statusmsg, *target) != NULL;
 }
@@ -61,12 +61,9 @@ const char *fe_channel_skip_prefix(IRC_SERVER_REC *server, const char *target)
 	statusmsg = g_hash_table_lookup(server->isupport, "statusmsg");
 
 	/* Hack: for bahamut 1.4 which sends neither STATUSMSG nor
-	 * WALLCHOPS in 005, accept @#chan and @+#chan (but not +#chan) */
-	if (statusmsg == NULL && *target != '@')
-		return target;
-
+	 * WALLCHOPS in 005 */
 	if (statusmsg == NULL)
-		statusmsg = "@+";
+		statusmsg = "@";
 
 	/* Strip the leading statusmsg prefixes */
 	while (strchr(statusmsg, *target) != NULL) {
