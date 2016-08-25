@@ -603,9 +603,6 @@ static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
 	char *nickhost, *p;
 	int n;
 
-	if (nick->host == NULL)
-                return;
-
 	firstnick = g_hash_table_lookup(channel->nicks, nick->nick);
 	if (firstnick->next == NULL)
 		return;
@@ -617,6 +614,9 @@ static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
 		if (nick == NULL)
                         return; /* nope, we have it */
 	}
+
+	if (nick->host == NULL)
+                return;
 
 	/* identical nick already exists, have to change it somehow.. */
 	p = strchr(nick->host, '@');
