@@ -16,6 +16,8 @@ extern GSList *perl_scripts;
 void perl_scripts_init(void);
 /* Destroy all perl scripts and deinitialize perl interpreter */
 void perl_scripts_deinit(void);
+/* Load all the scripts in the autorun/ folder */
+void perl_scripts_autorun(void);
 
 /* Load a perl script, path must be a full path. */
 PERL_SCRIPT_REC *perl_script_load_file(const char *path);
