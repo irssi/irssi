@@ -11,12 +11,15 @@ static void perl_irc_connect_fill_hash(HV *hv, IRC_SERVER_CONNECT_REC *conn)
 
 static void perl_irc_server_fill_hash(HV *hv, IRC_SERVER_REC *server)
 {
-       	perl_irc_connect_fill_hash(hv, server->connrec);
-       	perl_server_fill_hash(hv, (SERVER_REC *) server);
+	AV *av;
+	GSList *tmp;
 
-       	(void) hv_store(hv, "real_address", 12, new_pv(server->real_address), 0);
-       	(void) hv_store(hv, "usermode", 8, new_pv(server->usermode), 0);
-       	(void) hv_store(hv, "userhost", 8, new_pv(server->userhost), 0);
+	perl_irc_connect_fill_hash(hv, server->connrec);
+	perl_server_fill_hash(hv, (SERVER_REC *) server);
+
+	(void) hv_store(hv, "real_address", 12, new_pv(server->real_address), 0);
+	(void) hv_store(hv, "usermode", 8, new_pv(server->usermode), 0);
+	(void) hv_store(hv, "userhost", 8, new_pv(server->userhost), 0);
 
 	(void) hv_store(hv, "max_cmds_at_once", 16, newSViv(server->max_cmds_at_once), 0);
 	(void) hv_store(hv, "cmd_queue_speed", 15, newSViv(server->cmd_queue_speed), 0);
@@ -27,6 +30,18 @@ static void perl_irc_server_fill_hash(HV *hv, IRC_SERVER_REC *server)
 	(void) hv_store(hv, "max_modes_in_cmd", 16, newSViv(server->max_modes_in_cmd), 0);
 	(void) hv_store(hv, "max_whois_in_cmd", 16, newSViv(server->max_whois_in_cmd), 0);
 	(void) hv_store(hv, "isupport_sent", 13, newSViv(server->isupport_sent), 0);
+
+	(void) hv_store(hv, "cap_complete", 12, newSViv(server->cap_complete), 0);
+
+	av = newAV();
+	for (tmp = server->cap_supported; tmp != NULL; tmp = tmp->next)
+		av_push(av, new_pv(tmp->data));
+	(void) hv_store(hv, "cap_supported", 13, newRV_noinc((SV*)av), 0);
+
+	av = newAV();
+	for (tmp = server->cap_active; tmp != NULL; tmp = tmp->next)
+		av_push(av, new_pv(tmp->data));
+	(void) hv_store(hv, "cap_active", 10, newRV_noinc((SV*)av), 0);
 }
 
 static void perl_ban_fill_hash(HV *hv, BAN_REC *ban)
