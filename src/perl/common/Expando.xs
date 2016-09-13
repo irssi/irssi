@@ -85,7 +85,9 @@ static char *perl_expando_event(PerlExpando *rec, SERVER_REC *server,
 			script_unregister_expandos(script);
 		/* rec has been freed now */
 
-		signal_emit("script error", 2, script, SvPV_nolen(ERRSV));
+		char *error = g_strdup(SvPV_nolen(ERRSV));
+		signal_emit("script error", 2, script, error);
+		g_free(error);
 	} else if (retcount > 0) {
 		ret = g_strdup(POPp);
 		*free_ret = TRUE;
