@@ -131,6 +131,8 @@ void unformat_24bit_color(char **ptr, int off, int *fgcolor, int *bgcolor, int *
 	unsigned char rgbx[4];
 	unsigned int i;
 	for (i = 0; i < 4; ++i) {
+		if ((*ptr)[i + off] == '\0')
+			return;
 		rgbx[i] = (*ptr)[i + off];
 	}
 	rgbx[3] -= 0x20;
@@ -1357,6 +1359,9 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 					bgcolor = *ptr==(char)0xff ? -1 : *ptr-'0';
 				}
 			}
+			if (*ptr == '\0')
+				break;
+
 			ptr++;
 			break;
 		case 6:
