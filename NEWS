@@ -1,3 +1,17 @@
+v0.8.20 2016-09-16  The Irssi team <staff@irssi.org>
+	- Correct the name of an emitted sasl signal (#484)
+	- Correct the prototype for the 'message private' signal (#515)
+	- Corrections in away and hilight help text (#477, #518)
+	- /squery and /servlist commands have been restored.
+	- Where Irssi would previously only report "System error" on connect,
+	  it will now try harder to retrieve the system error message.
+	- Fixed issue with +channels not working properly (#533)
+	- Fixed crash in optchan when item has no server (#485)
+	- Fixed random remote crash in the nicklist handling (#529)
+	- Fixed remote crash due to incorrect bounds checking on
+	  formats, reported by Gabriel Campana and Adrien Guinet from
+	  Quarkslab.
+
 v0.8.19 2016-03-23  The Irssi team <staff@irssi.org>
 	- Fixed regression when joining and parting channels on IRCnet (#435)
 	- Fixed SASL EXTERNAL (#432)
