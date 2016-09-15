@@ -6,6 +6,7 @@
 #include "irc-queries.h"
 #include "irc-nicklist.h"
 #include "irc-masks.h"
+#include "irc-cap.h"
 
 #include "bans.h"
 #include "modes.h"

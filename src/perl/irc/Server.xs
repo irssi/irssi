@@ -149,3 +149,12 @@ CODE:
 OUTPUT:
 	RETVAL
 
+int
+irc_server_cap_toggle(server, cap, enable)
+	Irssi::Irc::Server server
+	char *cap
+	int enable
+CODE:
+	RETVAL = cap_toggle(server, cap, enable);
+OUTPUT:
+	RETVAL
