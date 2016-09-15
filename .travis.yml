@@ -16,11 +16,26 @@ addons:
 
 before_install:
     - perl -V
+    - version="$(git describe --dirty --long --always --tags | tr -- '-|' '+-')"
+    - sed -i -e "s|AC_INIT(irssi,.*|AC_INIT(irssi, $version)|" configure.ac
     - ./autogen.sh --with-proxy --with-bot --with-perl=module
     - make dist
     - cd ..
     - tar xaf */irssi-*.tar.*
     - cd irssi-*
+    - cp -a "$TRAVIS_BUILD_DIR"/.git .
+    - git checkout -b build/autoconf
+    - git add -A .
+    - git config user.email 'source@irssi.org'
+    - git config user.name 'Irssi Source Helper'
+    - git commit -q -m 'autoconf for '"$version $TRAVIS_COMMIT"$'\n\n''[skip ci]'
+    - |
+      if [ "$TRAVIS_PULL_REQUEST" = false ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "${TRAVIS_JOB_NUMBER##*.}" = 1 ] && $TRAVIS_SECURE_ENV_VARS; then
+        git config remote.origin.url git@github.com:$TRAVIS_REPO_SLUG
+        echo "$PUSHKEY" > ~/.ssh/id_rsa
+        git push -f -u origin build/autoconf
+      fi
+    - unset PUSHKEY
 
 install:
     - ./configure --with-proxy --with-bot --with-perl=module --prefix=$HOME/irssi-build
