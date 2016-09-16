@@ -209,6 +209,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 	char *errmsg2;
 	char ipaddr[MAX_IP_LEN];
         int port;
+        int failed_use_ssl = 1;
 
 	g_return_if_fail(ip != NULL || unix_socket != NULL);
 
@@ -248,15 +249,18 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 	} else {
 		server->handle = net_sendbuffer_create(handle, 0);
 #ifdef HAVE_OPENSSL
-		if (server->connrec->use_ssl)
+		if (server->connrec->use_ssl){
 			server_connect_callback_init_ssl(server, handle);
-		else
+			failed_use_ssl = 0;
+		}
+		
 #endif
-		server->connect_tag =
-			g_input_add(handle, G_INPUT_WRITE | G_INPUT_READ,
-				    (GInputFunction)
-				    server_connect_callback_init,
-				    server);
+		if (failed_use_ssl)
+			server->connect_tag =
+				g_input_add(handle, G_INPUT_WRITE | G_INPUT_READ,
+					    (GInputFunction)
+					    server_connect_callback_init,
+				    	    server);
 	}
 }
 
