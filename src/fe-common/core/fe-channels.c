@@ -26,6 +26,8 @@
 #include "levels.h"
 #include "misc.h"
 #include "settings.h"
+#include "special-vars.h"
+#include "utf8.h"
 
 #include "chat-protocols.h"
 #include "chatnets.h"
@@ -246,9 +248,7 @@ static void cmd_channel(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	}
 }
 
-/* SYNTAX: CHANNEL ADD [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
-                       <channel> <network> [<password>] */
-static void cmd_channel_add(const char *data)
+static void cmd_channel_add_modify(const char *data, gboolean add)
 {
 	GHashTable *optlist;
         CHATNET_REC *chatnetrec;
@@ -257,18 +257,19 @@ static void cmd_channel_add(const char *data)
 	void *free_arg;
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
-			    "channel add", &optlist, &channel, &chatnet, &password))
+		"channel add", &optlist, &channel, &chatnet, &password))
 		return;
 
-	if (*chatnet == '\0' || *channel == '\0')
+	if (*chatnet == '\0' || *channel == '\0') {
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	}
 
 	chatnetrec = chatnet_find(chatnet);
 	if (chatnetrec == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    TXT_UNKNOWN_CHATNET, chatnet);
+			TXT_UNKNOWN_CHATNET, chatnet);
 		cmd_params_free(free_arg);
-                return;
+		return;
 	}
 
 	botarg = g_hash_table_lookup(optlist, "bots");
@@ -276,6 +277,13 @@ static void cmd_channel_add(const char *data)
 
 	rec = channel_setup_find(channel, chatnet);
 	if (rec == NULL) {
+		if (add == FALSE) {
+			cmd_params_free(free_arg);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+				TXT_CHANSETUP_NOT_FOUND, channel, chatnet);
+			return;
+		}
+
 		rec = CHAT_PROTOCOL(chatnetrec)->create_channel_setup();
 		rec->name = g_strdup(channel);
 		rec->chatnet = g_strdup(chatnet);
@@ -297,6 +305,18 @@ static void cmd_channel_add(const char *data)
 		    TXT_CHANSETUP_ADDED, channel, chatnet);
 
 	cmd_params_free(free_arg);
+}
+
+/* SYNTAX: CHANNEL ADD|MODIFY [-auto | -noauto] [-bots <masks>] [-botcmd <command>]
+                              <channel> <network> [<password>] */
+static void cmd_channel_add(const char *data)
+{
+	cmd_channel_add_modify(data, TRUE);
+}
+
+static void cmd_channel_modify(const char *data)
+{
+	cmd_channel_add_modify(data, FALSE);
 }
 
 /* SYNTAX: CHANNEL REMOVE <channel> <network> */
@@ -323,40 +343,40 @@ static void cmd_channel_remove(const char *data)
 
 static int get_nick_length(void *data)
 {
-        return strlen(((NICK_REC *) data)->nick);
+        return string_width(((NICK_REC *) data)->nick, -1);
 }
 
 static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 {
-        WINDOW_REC *window;
+	WINDOW_REC *window;
 	TEXT_DEST_REC dest;
 	GString *str;
 	GSList *tmp;
-        char *format, *stripped, *prefix_format;
-	char *linebuf, nickmode[2] = { 0, 0 };
+	char *format, *stripped, *prefix_format;
+	char *aligned_nick, nickmode[2] = { 0, 0 };
 	int *columns, cols, rows, last_col_rows, col, row, max_width;
-        int item_extra, linebuf_size, formatnum;
+	int item_extra, formatnum;
 
 	window = window_find_closest(channel->server, channel->visible_name,
-				     MSGLEVEL_CLIENTCRAP);
-        max_width = window->width;
+	                             MSGLEVEL_CLIENTCRAP);
+	max_width = window->width;
 
-        /* get the length of item extra stuff ("[ ] ") */
+	/* get the length of item extra stuff ("[ ] ") */
 	format = format_get_text(MODULE_NAME, NULL,
-				 channel->server, channel->visible_name,
-				 TXT_NAMES_NICK, " ", "");
+	                         channel->server, channel->visible_name,
+	                         TXT_NAMES_NICK, " ", "");
 	stripped = strip_codes(format);
 	item_extra = strlen(stripped);
-        g_free(stripped);
+	g_free(stripped);
 	g_free(format);
 
 	if (settings_get_int("names_max_width") > 0 &&
 	    settings_get_int("names_max_width") < max_width)
 		max_width = settings_get_int("names_max_width");
 
-        /* remove width of the timestamp from max_width */
+	/* remove width of the timestamp from max_width */
 	format_create_dest(&dest, channel->server, channel->visible_name,
-			   MSGLEVEL_CLIENTCRAP, NULL);
+	                   MSGLEVEL_CLIENTCRAP, NULL);
 	format = format_get_line_start(current_theme, &dest, time(NULL));
 	if (format != NULL) {
 		stripped = strip_codes(format);
@@ -365,11 +385,11 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		g_free(format);
 	}
 
-        /* remove width of the prefix from max_width */
+	/* remove width of the prefix from max_width */
 	prefix_format = format_get_text(MODULE_NAME, NULL,
-					channel->server, channel->visible_name,
-					TXT_NAMES_PREFIX,
-					channel->visible_name);
+	                                channel->server, channel->visible_name,
+	                                TXT_NAMES_PREFIX,
+	                                channel->visible_name);
 	if (prefix_format != NULL) {
 		stripped = strip_codes(prefix_format);
 		max_width -= strlen(stripped);
@@ -384,19 +404,18 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 
 	/* calculate columns */
 	cols = get_max_column_count(nicklist, get_nick_length, max_width,
-				    settings_get_int("names_max_columns"),
-				    item_extra, 3, &columns, &rows);
+	                            settings_get_int("names_max_columns"),
+	                            item_extra, 3, &columns, &rows);
 	nicklist = columns_sort_list(nicklist, rows);
 
-        /* rows in last column */
+	/* rows in last column */
 	last_col_rows = rows-(cols*rows-g_slist_length(nicklist));
 	if (last_col_rows == 0)
-                last_col_rows = rows;
+		last_col_rows = rows;
 
 	str = g_string_new(prefix_format);
-	linebuf_size = max_width+1; linebuf = g_malloc(linebuf_size);
 
-        col = 0; row = 0;
+	col = 0; row = 0;
 	for (tmp = nicklist; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
@@ -405,48 +424,44 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		else
 			nickmode[0] = ' ';
 
-		if (linebuf_size < columns[col]-item_extra+1) {
-			linebuf_size = (columns[col]-item_extra+1)*2;
-                        linebuf = g_realloc(linebuf, linebuf_size);
-		}
-		memset(linebuf, ' ', columns[col]-item_extra);
-		linebuf[columns[col]-item_extra] = '\0';
-		memcpy(linebuf, rec->nick, strlen(rec->nick));
+		aligned_nick = get_alignment(rec->nick,
+		                             columns[col]-item_extra,
+		                             ALIGN_PAD, ' ');
 
-		formatnum = rec->op ? TXT_NAMES_NICK_OP :
-			rec->halfop ? TXT_NAMES_NICK_HALFOP :
-			rec->voice ? TXT_NAMES_NICK_VOICE :
-                        TXT_NAMES_NICK;
+		formatnum = rec->op     ? TXT_NAMES_NICK_OP :
+		            rec->halfop ? TXT_NAMES_NICK_HALFOP :
+		            rec->voice  ? TXT_NAMES_NICK_VOICE :
+		                          TXT_NAMES_NICK;
 		format = format_get_text(MODULE_NAME, NULL,
-					 channel->server,
-					 channel->visible_name,
-					 formatnum, nickmode, linebuf);
+		                         channel->server,
+		                         channel->visible_name,
+		                         formatnum, nickmode, aligned_nick);
 		g_string_append(str, format);
+		g_free(aligned_nick);
 		g_free(format);
 
 		if (++col == cols) {
 			printtext(channel->server, channel->visible_name,
-				  MSGLEVEL_CLIENTCRAP, "%s", str->str);
+			          MSGLEVEL_CLIENTCRAP, "%s", str->str);
 			g_string_truncate(str, 0);
 			if (prefix_format != NULL)
-                                g_string_assign(str, prefix_format);
+				g_string_assign(str, prefix_format);
 			col = 0; row++;
 
 			if (row == last_col_rows)
-                                cols--;
+				cols--;
 		}
 	}
 
 	if (str->len > strlen(prefix_format)) {
 		printtext(channel->server, channel->visible_name,
-			  MSGLEVEL_CLIENTCRAP, "%s", str->str);
+		          MSGLEVEL_CLIENTCRAP, "%s", str->str);
 	}
 
 	g_slist_free(nicklist);
 	g_string_free(str, TRUE);
 	g_free_not_null(columns);
 	g_free_not_null(prefix_format);
-	g_free(linebuf);
 }
 
 void fe_channels_nicklist(CHANNEL_REC *channel, int flags)
@@ -622,12 +637,14 @@ void fe_channels_init(void)
 	command_bind("join", NULL, (SIGNAL_FUNC) cmd_join);
 	command_bind("channel", NULL, (SIGNAL_FUNC) cmd_channel);
 	command_bind("channel add", NULL, (SIGNAL_FUNC) cmd_channel_add);
+	command_bind("channel modify", NULL, (SIGNAL_FUNC) cmd_channel_modify);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);
 	command_bind("names", NULL, (SIGNAL_FUNC) cmd_names);
 	command_bind("cycle", NULL, (SIGNAL_FUNC) cmd_cycle);
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
+	command_set_options("channel modify", "auto noauto -bots -botcmd");
 	command_set_options("names", "count ops halfops voices normal");
 	command_set_options("join", "invite window");
 }
@@ -643,6 +660,7 @@ void fe_channels_deinit(void)
 	command_unbind("join", (SIGNAL_FUNC) cmd_join);
 	command_unbind("channel", (SIGNAL_FUNC) cmd_channel);
 	command_unbind("channel add", (SIGNAL_FUNC) cmd_channel_add);
+	command_unbind("channel modify", (SIGNAL_FUNC) cmd_channel_modify);
 	command_unbind("channel remove", (SIGNAL_FUNC) cmd_channel_remove);
 	command_unbind("channel list", (SIGNAL_FUNC) cmd_channel_list);
 	command_unbind("names", (SIGNAL_FUNC) cmd_names);

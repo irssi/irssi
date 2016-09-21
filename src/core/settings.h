@@ -8,6 +8,7 @@ typedef enum {
 	SETTING_TYPE_TIME,
 	SETTING_TYPE_LEVEL,
 	SETTING_TYPE_SIZE,
+	SETTING_TYPE_CHOICE,
 	SETTING_TYPE_ANY
 } SettingType;
 
@@ -26,6 +27,7 @@ typedef struct {
 
 	SettingType type;
 	SettingValue default_value;
+	char **choices;
 } SETTINGS_REC;
 
 /* macros for handling the default Irssi configuration */
@@ -58,6 +60,7 @@ int settings_get_bool(const char *key);
 int settings_get_time(const char *key); /* as milliseconds */
 int settings_get_level(const char *key);
 int settings_get_size(const char *key); /* as bytes */
+int settings_get_choice(const char *key);
 char *settings_get_print(SETTINGS_REC *rec);
 
 /* Functions to add/remove settings */
@@ -73,6 +76,8 @@ void settings_add_level_module(const char *module, const char *section,
 			       const char *key, const char *def);
 void settings_add_size_module(const char *module, const char *section,
 			      const char *key, const char *def);
+void settings_add_choice_module(const char *module, const char *section,
+				const char *key, int def, const char *choices);
 void settings_remove(const char *key);
 void settings_remove_module(const char *module);
 
@@ -88,13 +93,16 @@ void settings_remove_module(const char *module);
 	settings_add_level_module(MODULE_NAME, section, key, def)
 #define settings_add_size(section, key, def) \
 	settings_add_size_module(MODULE_NAME, section, key, def)
+#define settings_add_choice(section, key, def, choices) \
+	settings_add_choice_module(MODULE_NAME, section, key, def, choices)
 
 void settings_set_str(const char *key, const char *value);
 void settings_set_int(const char *key, int value);
 void settings_set_bool(const char *key, int value);
-int settings_set_time(const char *key, const char *value);
-int settings_set_level(const char *key, const char *value);
-int settings_set_size(const char *key, const char *value);
+gboolean settings_set_time(const char *key, const char *value);
+gboolean settings_set_level(const char *key, const char *value);
+gboolean settings_set_size(const char *key, const char *value);
+gboolean settings_set_choice(const char *key, const char *value);
 
 /* Get the type (SETTING_TYPE_xxx) of `key' */
 SettingType settings_get_type(const char *key);

@@ -17,7 +17,6 @@ inline static int term_putchar(int c)
 char *tparm();
 int tputs();
 
-#ifdef HAVE_TERMINFO
 int setupterm();
 char *tigetstr();
 int tigetnum();
@@ -25,15 +24,6 @@ int tigetflag();
 #define term_getstr(x, buffer) tigetstr(x.ti_name)
 #define term_getnum(x) tigetnum(x.ti_name);
 #define term_getflag(x) tigetflag(x.ti_name);
-#else
-int tgetent();
-char *tgetstr();
-int tgetnum();
-int tgetflag();
-#define term_getstr(x, buffer) tgetstr(x.tc_name, &buffer)
-#define term_getnum(x) tgetnum(x.tc_name)
-#define term_getflag(x) tgetflag(x.tc_name)
-#endif
 
 #define CAP_TYPE_FLAG	0
 #define CAP_TYPE_INT	1
@@ -415,9 +405,6 @@ static void term_fill_capabilities(TERM_REC *term)
 	char *sval;
         void *ptr;
 
-#ifndef HAVE_TERMINFO
-	char *tptr = term->buffer2;
-#endif
 	for (i = 0; i < sizeof(tcaps)/sizeof(tcaps[0]); i++) {
 		ptr = G_STRUCT_MEMBER_P(term, tcaps[i].offset);
 
@@ -583,9 +570,7 @@ void terminfo_stop(TERM_REC *term)
 static int term_setup(TERM_REC *term)
 {
 	GString *str;
-#ifdef HAVE_TERMINFO
 	int err;
-#endif
         char *term_env;
 
 	term_env = getenv("TERM");
@@ -594,18 +579,10 @@ static int term_setup(TERM_REC *term)
                 return 0;
 	}
 
-#ifdef HAVE_TERMINFO
 	if (setupterm(term_env, 1, &err) != 0) {
 		fprintf(stderr, "setupterm() failed for TERM=%s: %d\n", term_env, err);
 		return 0;
 	}
-#else
-	if (tgetent(term->buffer1, term_env) < 1)
-	{
-		fprintf(stderr, "Termcap not found for TERM=%s\n", term_env);
-		return 0;
-	}
-#endif
 
         term_fill_capabilities(term);
 

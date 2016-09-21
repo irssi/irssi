@@ -611,8 +611,6 @@ void term_stop(void)
 {
 	terminfo_stop(current_term);
 	kill(getpid(), SIGTSTP);
-	terminfo_cont(current_term);
-	irssi_redraw();
 }
 
 static int input_utf8(const unsigned char *buffer, int size, unichar *result)

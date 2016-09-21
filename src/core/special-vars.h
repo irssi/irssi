@@ -9,8 +9,15 @@
 #define PARSE_FLAG_ESCAPE_THEME 0x08 /* if any arguments/variables contain { or } chars, escape them with % */
 #define PARSE_FLAG_ONLY_ARGS	0x10 /* expand only arguments ($0 $1 etc.) but no other $variables */
 
+#define ALIGN_RIGHT 0x01
+#define ALIGN_CUT   0x02
+#define ALIGN_PAD   0x04
+
 typedef char* (*SPECIAL_HISTORY_FUNC)
 	(const char *text, void *item, int *free_ret);
+
+/* Cut and/or pad text so it takes exactly "align" characters on the screen */
+char *get_alignment(const char *text, int align, int flags, char pad);
 
 /* Parse and expand text after '$' character. return value has to be
    g_free()'d if `free_ret' is TRUE. */

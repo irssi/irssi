@@ -12,6 +12,8 @@
     RESET:         Unloads all the scripts.
     -permanent:    In combination with EXEC, the code will be loaded into the
                    memory.
+    -autorun:      When passed to RESET the scripts in the autorun folder are
+                   reloaded.
 
     If no argument is given, the list of active scripts will be displayed.
 

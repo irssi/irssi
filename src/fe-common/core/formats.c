@@ -422,33 +422,17 @@ void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
 		window_find_closest(server, target, level);
 }
 
-static int advance (char const **str, gboolean utf8)
-{
-	if (utf8) {
-		gunichar c;
-
-		c = g_utf8_get_char(*str);
-		*str = g_utf8_next_char(*str);
-
-		return unichar_isprint(c) ? mk_wcwidth(c) : 1;
-	} else {
-		*str += 1;
-
-		return 1;
-	}
-}
-
 /* Return length of text part in string (ie. without % codes) */
 int format_get_length(const char *str)
 {
 	GString *tmp;
 	int len;
-	gboolean utf8;
+	int utf8;
 	int adv = 0;
 
 	g_return_val_if_fail(str != NULL, 0);
 
-	utf8 = is_utf8() && g_utf8_validate(str, -1, NULL);
+	utf8 = string_policy(str);
 
 	tmp = g_string_new(NULL);
 	len = 0;
@@ -467,7 +451,7 @@ int format_get_length(const char *str)
 				len++;
 		}
 
-		len += advance(&str, utf8);
+		len += string_advance(&str, utf8);
 	}
 
 	g_string_free(tmp, TRUE);
@@ -482,12 +466,12 @@ int format_real_length(const char *str, int len)
 	GString *tmp;
 	const char *start;
 	const char *oldstr;
-	gboolean utf8;
+	int utf8;
 	int adv = 0;
 	g_return_val_if_fail(str != NULL, 0);
 	g_return_val_if_fail(len >= 0, 0);
 
-	utf8 = is_utf8() && g_utf8_validate(str, -1, NULL);
+	utf8 = string_policy(str);
 
 	start = str;
 	tmp = g_string_new(NULL);
@@ -509,7 +493,7 @@ int format_real_length(const char *str, int len)
 		}
 
 		oldstr = str;
-		len -= advance(&str, utf8);
+		len -= string_advance(&str, utf8);
 		if (len < 0)
 			str = oldstr;
 	}

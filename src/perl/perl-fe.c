@@ -119,8 +119,20 @@ static void cmd_script_unload(const char *data)
 
 static void cmd_script_reset(const char *data)
 {
+	void *free_arg;
+	GHashTable *optlist;
+
+	if (!cmd_get_params(data, &free_arg, 0 | PARAM_FLAG_OPTIONS,
+			    "script reset", &optlist))
+		return;
+
 	perl_scripts_deinit();
 	perl_scripts_init();
+
+	if (g_hash_table_lookup(optlist, "autorun") != NULL)
+		perl_scripts_autorun();
+
+	cmd_params_free(free_arg);
 }
 
 static void cmd_script_list(void)
@@ -251,6 +263,7 @@ void fe_perl_init(void)
 	command_bind("script list", NULL, (SIGNAL_FUNC) cmd_script_list);
 	command_bind("load", NULL, (SIGNAL_FUNC) cmd_load);
 	command_set_options("script exec", "permanent");
+	command_set_options("script reset", "autorun");
 
         signal_add("script error", (SIGNAL_FUNC) sig_script_error);
 	signal_add("complete command script load", (SIGNAL_FUNC) sig_complete_load);

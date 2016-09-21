@@ -32,15 +32,8 @@ char *gslistptr_to_string(GSList *list, int offset, const char *delimiter);
 /* `list' contains char* */
 char *gslist_to_string(GSList *list, const char *delimiter);
 
-/* save all keys in hash table to linked list - you shouldn't remove any
-   items while using this list, use g_slist_free() after you're done with it */
-GSList *hashtable_get_keys(GHashTable *hash);
+GList *optlist_remove_known(const char *cmd, GHashTable *optlist);
 
-/* easy way to check if regexp matches */
-int regexp_match(const char *str, const char *regexp);
-
-/* Create the directory and all it's parent directories */
-int mkpath(const char *path, int mode);
 /* convert ~/ to $HOME */
 char *convert_home(const char *path);
 
@@ -85,9 +78,6 @@ int parse_size(const char *size, int *bytes);
    Stop when `end_char' is found from string. */
 int is_numeric(const char *str, char end_char);
 
-/* Like strlcpy(), but return -1 if buffer was overflown, 0 if not. */
-int strocpy(char *dest, const char *src, size_t dstsize);
-
 /* strstr() with case-ignoring */
 char *stristr(const char *data, const char *key);
 
@@ -107,8 +97,6 @@ char *show_lowascii(const char *str);
 /* replace all `from' chars in string to `to' chars. returns `str' */
 char *replace_chars(char *str, char from, char to);
 
-/* return how many items `array' has */
-int strarray_length(char **array);
 /* return index of `item' in `array' or -1 if not found */
 int strarray_find(char **array, const char *item);
 

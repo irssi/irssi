@@ -490,7 +490,7 @@ static void event_no_such_nick(IRC_SERVER_REC *server, char *data)
 static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 {
 	GSList *tmp, *next;
-	char *typestr, *nick, *arg;
+	char *typestr, *nick, *arg, *fname;
 	void *free_arg;
 	int found, type;
 
@@ -510,13 +510,15 @@ static void cmd_dcc_close(char *data, IRC_SERVER_REC *server)
 		return;
 	}
 
+	fname = cmd_get_quoted_param(&arg);
+
 	found = FALSE;
 	for (tmp = dcc_conns; tmp != NULL; tmp = next) {
 		DCC_REC *dcc = tmp->data;
 
 		next = tmp->next;
 		if (dcc->type == type && g_ascii_strcasecmp(dcc->nick, nick) == 0 &&
-		    (*arg == '\0' || g_strcmp0(dcc->arg, arg) == 0)) {
+		    (*fname == '\0' || g_strcmp0(dcc->arg, fname) == 0)) {
 			dcc_reject(dcc, server);
 			found = TRUE;
 		}

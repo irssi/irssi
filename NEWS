@@ -1,3 +1,27 @@
+v0.8.21-head 2016-xx-xx  The Irssi team <staff@irssi.org>
+	* Removed --disable-ipv6
+	* /connect Network now aborts with an error if no servers have been
+	  added to that network.
+	* /dcc commands now use quotes around spaces consistently.
+	+ irssiproxy can now forward all tags through a single port.
+	+ irssiproxy can also listen on unix sockets.
+	+ send channel -botcmds immediately when no mask is specified (#175).
+	+ the kill buffer now remembers consecutive kills.
+	  New bindings were added: yank_next_cutbuffer and append_next_kill
+	+ connections will avoid looking up IPv6 addresses if the machine does
+	  not have an IPv6 address assigned (exact behaviour is implementation
+	  defined).
+	+ Fix potential crash if scripts insert undef values into the completion
+	  list.
+	+ Paste warning is now also shown on pasting overlong lines.
+	+ autolog_ignore_targets and activity_hide_targets learn a new syntax
+	      tag/* and * to ignore whole networks or everything.
+	+ /hilight got a -matchcase flag to hilight case sensitively (#421).
+	- IP addresses are no longer stored when resolve_reverse_lookup is
+	  used.
+	- /names and $[...] now uses utf8 string operations (#40, #411).
+	- Removed broken support for curses.
+
 v0.8.20 2016-09-16  The Irssi team <staff@irssi.org>
 	- Correct the name of an emitted sasl signal (#484)
 	- Correct the prototype for the 'message private' signal (#515)

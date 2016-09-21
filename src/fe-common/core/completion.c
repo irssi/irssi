@@ -37,8 +37,11 @@ static int last_want_space, last_line_pos;
 #define isseparator_notspace(c) \
         ((c) == ',')
 
+#define isseparator_space(c) \
+        ((c) == ' ')
+
 #define isseparator(c) \
-	((c) == ' ' || isseparator_notspace(c))
+	(isseparator_space(c) || isseparator_notspace(c))
 
 void chat_completion_init(void);
 void chat_completion_deinit(void);
@@ -153,20 +156,23 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 		word = NULL;
                 linestart = NULL;
 	} else {
+		char* old_wordstart;
+
 		/* get the word we want to complete */
 		word = get_word_at(line, *pos, &wordstart);
+		old_wordstart = wordstart;
+
 		startpos = (int) (wordstart-line);
 		wordlen = strlen(word);
 
-		/* get the start of line until the word we're completing */
-		if (isseparator(*line)) {
-			/* empty space at the start of line */
-			if (wordstart == line)
-				wordstart += strlen(wordstart);
-		} else {
-			while (wordstart > line && isseparator(wordstart[-1]))
-				wordstart--;
-		}
+		/* remove trailing spaces from linestart */
+		while (wordstart > line && isseparator_space(wordstart[-1]))
+			wordstart--;
+
+		/* unless everything was spaces */
+		if (old_wordstart > line && wordstart == line)
+			wordstart = old_wordstart - 1;
+
 		linestart = g_strndup(line, (int) (wordstart-line));
 
 		/* completions usually add space after the word, that makes
@@ -175,19 +181,24 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 		   BUT if we start completion with "/msg "<tab>, we don't
 		   want to complete the /msg word, but instead complete empty
 		   word with /msg being in linestart. */
-		if (!erase && *pos > 0 && line[*pos-1] == ' ' &&
-		    (*linestart == '\0' || wordstart[-1] != ' ')) {
+		if (!erase && *pos > 0 && isseparator_space(line[*pos-1]) &&
+		    (*linestart == '\0' || !isseparator_space(wordstart[-1]))) {
 			char *old;
 
-                        old = linestart;
+			old = linestart;
 			linestart = *linestart == '\0' ?
 				g_strdup(word) :
-				g_strconcat(linestart, " ", word, NULL);
+				g_strdup_printf("%s%c%s",
+						/* do not accidentally duplicate the word separator */
+						line == wordstart - 1 ? "" : linestart,
+						wordstart[-1], word);
 			g_free(old);
 
 			g_free(word);
 			word = g_strdup("");
-			startpos = strlen(linestart)+1;
+
+			startpos = *linestart == '\0' ? 0 :
+				strlen(linestart)+1;
 			wordlen = 0;
 		}
 
@@ -217,6 +228,11 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 		want_space = TRUE;
 		signal_emit("complete word", 5, &complist, window, word, linestart, &want_space);
 		last_want_space = want_space;
+
+		if (complist != NULL) {
+			/* Remove all nulls (from the signal) before doing further processing */
+			complist = g_list_remove_all(g_list_first(complist), NULL);
+		}
 	}
 
 	g_free(linestart);
@@ -329,7 +345,9 @@ GList *filename_complete(const char *path, const char *default_path)
 			    (dp->d_name[1] == '.' && dp->d_name[2] == '\0'))
 				continue; /* skip . and .. */
 
-			if (basename[0] != '.')
+			/* Skip the dotfiles unless the user explicitly asked us
+			 * to do so. Basename might be './', beware of that */
+			if (basename[0] != '.' || basename[1] == '\0')
 				continue;
 		}
 
@@ -392,7 +410,8 @@ static GList *completion_get_aliases(const char *alias, char cmdchar)
 			continue;
 
 		if (g_ascii_strncasecmp(node->key, alias, len) == 0) {
-			word = g_strdup_printf("%c%s", cmdchar, node->key);
+			word = cmdchar == '\0' ? g_strdup(node->key) :
+				g_strdup_printf("%c%s", cmdchar, node->key);
 			/* add matching alias to completion list, aliases will
 			   be appended after command completions and kept in
 			   uppercase to show it's an alias */
@@ -584,13 +603,19 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 
 	/* command completion? */
 	cmdchars = settings_get_str("cmdchars");
-	if (*word != '\0' && *linestart == '\0' && strchr(cmdchars, *word)) {
+	if (*word != '\0' && ((*linestart == '\0' && strchr(cmdchars, *word)) ||
+			      (*linestart != '\0' && linestart[1] == '\0' &&
+			       strchr(cmdchars, *linestart)))) {
+		gboolean skip = *linestart == '\0' ? TRUE : FALSE;
+
 		/* complete /command */
-		*list = completion_get_commands(word+1, *word);
+		*list = completion_get_commands(word + (skip ? 1 : 0),
+						skip ? *word : '\0');
 
 		/* complete aliases, too */
 		*list = g_list_concat(*list,
-				      completion_get_aliases(word+1, *word));
+				      completion_get_aliases(word + (skip ? 1 : 0),
+							     skip ? *word : '\0'));
 
 		if (*list != NULL) signal_stop();
 		return;
@@ -686,8 +711,20 @@ static void sig_complete_set(GList **list, WINDOW_REC *window,
 		SETTINGS_REC *rec = settings_get_record(line);
 		if (rec != NULL) {
 			char *value = settings_get_print(rec);
+
+			/* show the current option first */
 			if (value != NULL)
 				*list = g_list_append(*list, value);
+
+			/* show the whole list of valid options */
+			if (rec->type == SETTING_TYPE_CHOICE) {
+				char **tmp;
+
+				for (tmp = rec->choices; *tmp; tmp++) {
+					if (g_ascii_strcasecmp(*tmp, value) != 0)
+						*list = g_list_append(*list, g_strdup(*tmp));
+				}
+			}
 		}
 	}
 

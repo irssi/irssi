@@ -619,7 +619,7 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
         /* CHAT <unused> <address> <port> */
 	/* CHAT <unused> <address> 0 <id> (DCC CHAT passive protocol) */
 	params = g_strsplit(data, " ", -1);
-	paramcount = strarray_length(params);
+	paramcount = g_strv_length(params);
 
 	if (paramcount < 3) {
 		g_strfreev(params);

@@ -21,19 +21,11 @@
 
 struct _IPADDR {
 	unsigned short family;
-#ifdef HAVE_IPV6
 	struct in6_addr ip;
-#else
-	struct in_addr ip;
-#endif
 };
 
 /* maxmimum string length of IP address */
-#ifdef HAVE_IPV6
-#  define MAX_IP_LEN INET6_ADDRSTRLEN
-#else
-#  define MAX_IP_LEN 20
-#endif
+#define MAX_IP_LEN INET6_ADDRSTRLEN
 
 #define IPADDR_IS_V6(ip) ((ip)->family != AF_INET)
 
@@ -45,7 +37,7 @@ GIOChannel *g_io_channel_new(int handle);
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 
 /* Connect to socket */
-GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip);
+GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip) G_GNUC_DEPRECATED;
 /* Connect to socket with ip address and SSL*/
 GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *server);
 int irssi_ssl_handshake(GIOChannel *handle);

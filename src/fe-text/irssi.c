@@ -74,10 +74,7 @@ void mainwindow_activity_deinit(void);
 void mainwindows_layout_init(void);
 void mainwindows_layout_deinit(void);
 
-void term_dummy_init(void);
-void term_dummy_deinit(void);
-
-static int dirty, full_redraw, dummy;
+static int dirty, full_redraw;
 
 static GMainLoop *main_loop;
 int quitting;
@@ -122,7 +119,7 @@ void irssi_set_dirty(void)
 
 static void dirty_check(void)
 {
-	if (!dirty || dummy)
+	if (!dirty)
 		return;
 
         term_resize_dirty();
@@ -171,27 +168,22 @@ static void textui_finish_init(void)
 {
 	quitting = FALSE;
 
-	if (dummy)
-		term_dummy_init();
-	else {
-		term_refresh_freeze();
-	        textbuffer_init();
-	        textbuffer_view_init();
-		textbuffer_commands_init();
-		gui_expandos_init();
-		gui_printtext_init();
-		gui_readline_init();
-	        lastlog_init();
-		mainwindows_init();
-		mainwindow_activity_init();
-		mainwindows_layout_init();
-		gui_windows_init();
-		statusbar_init();
-		term_refresh_thaw();
+	term_refresh_freeze();
+	textbuffer_init();
+	textbuffer_view_init();
+	textbuffer_commands_init();
+	gui_expandos_init();
+	gui_printtext_init();
+	gui_readline_init();
+	lastlog_init();
+	mainwindows_init();
+	mainwindow_activity_init();
+	mainwindows_layout_init();
+	gui_windows_init();
+	statusbar_init();
+	term_refresh_thaw();
 
-		/* don't check settings with dummy mode */
-		settings_check();
-	}
+	settings_check();
 
 	module_register("core", "fe-text");
 
@@ -233,25 +225,21 @@ static void textui_deinit(void)
         dirty_check(); /* one last time to print any quit messages */
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 
-	if (dummy)
-		term_dummy_deinit();
-	else {
-	        lastlog_deinit();
-		statusbar_deinit();
-		gui_printtext_deinit();
-		gui_readline_deinit();
-		gui_windows_deinit();
-		mainwindows_layout_deinit();
-		mainwindow_activity_deinit();
-		mainwindows_deinit();
-		gui_expandos_deinit();
-		textbuffer_commands_deinit();
-	        textbuffer_view_deinit();
-	        textbuffer_deinit();
+	lastlog_deinit();
+	statusbar_deinit();
+	gui_printtext_deinit();
+	gui_readline_deinit();
+	gui_windows_deinit();
+	mainwindows_layout_deinit();
+	mainwindow_activity_deinit();
+	mainwindows_deinit();
+	gui_expandos_deinit();
+	textbuffer_commands_deinit();
+	textbuffer_view_deinit();
+	textbuffer_deinit();
 
-	        term_refresh_thaw();
-	        term_deinit();
-	}
+	term_refresh_thaw();
+	term_deinit();
 
 	theme_unregister();
 
@@ -276,7 +264,6 @@ int main(int argc, char **argv)
 {
 	static int version = 0;
 	static GOptionEntry options[] = {
-		{ "dummy", 'd', 0, G_OPTION_ARG_NONE, &dummy, "Use the dummy terminal mode", NULL },
 		{ "version", 'v', 0, G_OPTION_ARG_NONE, &version, "Display irssi version", NULL },
 		{ NULL }
 	};
@@ -295,7 +282,6 @@ int main(int argc, char **argv)
 
 	srand(time(NULL));
 
-	dummy = FALSE;
 	quitting = FALSE;
 	core_preinit(argv[0]);
 
@@ -319,9 +305,8 @@ int main(int argc, char **argv)
 	loglev = g_log_set_always_fatal(G_LOG_FATAL_MASK | G_LOG_LEVEL_CRITICAL);
 	textui_init();
 
-	if (!dummy && !term_init()) {
-		fprintf(stderr, "Can't initialize screen handling, quitting.\n");
-		fprintf(stderr, "You can still use the dummy mode with -d parameter\n");
+	if (!term_init()) {
+		fprintf(stderr, "Can't initialize screen handling.\n");
 		return 1;
 	}
 
@@ -332,9 +317,9 @@ int main(int argc, char **argv)
 	/* Does the same as g_main_run(main_loop), except we
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
-		if (!dummy) term_refresh_freeze();
+		term_refresh_freeze();
 		g_main_iteration(TRUE);
-                if (!dummy) term_refresh_thaw();
+                term_refresh_thaw();
 
 		if (reload_config) {
                         /* SIGHUP received, do /RELOAD */

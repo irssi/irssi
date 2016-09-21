@@ -74,15 +74,20 @@ static char *perl_expando_event(PerlExpando *rec, SERVER_REC *server,
 
 	ret = NULL;
 	if (SvTRUE(ERRSV)) {
+		PERL_SCRIPT_REC *script = rec->script;
+
 		(void) POPs;
 		/* call putback before emitting script error signal as that
 		 * could manipulate the perl stack. */
 		PUTBACK;
 		/* make sure we don't get back here */
-		if (rec->script != NULL)
-			script_unregister_expandos(rec->script);
+		if (script != NULL)
+			script_unregister_expandos(script);
+		/* rec has been freed now */
 
-		signal_emit("script error", 2, rec->script, SvPV_nolen(ERRSV));
+		char *error = g_strdup(SvPV_nolen(ERRSV));
+		signal_emit("script error", 2, script, error);
+		g_free(error);
 	} else if (retcount > 0) {
 		ret = g_strdup(POPp);
 		*free_ret = TRUE;

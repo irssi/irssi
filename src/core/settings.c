@@ -148,11 +148,36 @@ int settings_get_size(const char *key)
 	return str == NULL ? 0 : bytes;
 }
 
+int settings_get_choice(const char *key)
+{
+	SETTINGS_REC *rec;
+	CONFIG_NODE *node;
+	char *str;
+	int index;
+
+	rec = settings_get(key, SETTING_TYPE_CHOICE);
+	if (rec == NULL) return -1;
+
+	node = iconfig_node_traverse("settings", FALSE);
+	node = node == NULL ? NULL : iconfig_node_section(node, rec->module, -1);
+
+	str = node == NULL ? rec->default_value.v_string :
+		config_node_get_str(node, key, rec->default_value.v_string);
+
+	if (str == NULL || (index = strarray_find(rec->choices, str)) < 0)
+		return rec->default_value.v_int;
+
+	return index;
+}
+
 char *settings_get_print(SETTINGS_REC *rec)
 {
 	char *value = NULL;
 
 	switch(rec->type) {
+	case SETTING_TYPE_CHOICE:
+		value = g_strdup(rec->choices[settings_get_choice(rec->key)]);
+		break;
 	case SETTING_TYPE_BOOLEAN:
 		value = g_strdup(settings_get_bool(rec->key) ? "ON" : "OFF");
 		break;
@@ -172,12 +197,30 @@ char *settings_get_print(SETTINGS_REC *rec)
 
 static void settings_add(const char *module, const char *section,
 			 const char *key, SettingType type,
-			 const SettingValue *default_value)
+			 const SettingValue *default_value,
+			 const char *choices)
 {
 	SETTINGS_REC *rec;
+	char **choices_vec = NULL;
 
 	g_return_if_fail(key != NULL);
 	g_return_if_fail(section != NULL);
+
+	if (type == SETTING_TYPE_CHOICE) {
+		if (choices == NULL) {
+			g_warning("Trying to add setting '%s' with no choices.", key);
+			return;
+		}
+
+		choices_vec = g_strsplit(choices, ";", -1);
+
+		/* validate the default value */
+		if (default_value->v_int < 0 || default_value->v_int >= g_strv_length(choices_vec)) {
+			g_warning("Trying to add setting '%s' with an invalid default value.", key);
+			g_strfreev(choices_vec);
+			return;
+		}
+	}
 
 	rec = g_hash_table_lookup(settings, key);
 	if (rec != NULL) {
@@ -197,6 +240,7 @@ static void settings_add(const char *module, const char *section,
                 rec->type = type;
 
 		rec->default_value = *default_value;
+		rec->choices = choices_vec;
 		g_hash_table_insert(settings, rec->key, rec);
 	}
 }
@@ -208,7 +252,17 @@ void settings_add_str_module(const char *module, const char *section,
 
 	memset(&default_value, 0, sizeof(default_value));
 	default_value.v_string = g_strdup(def);
-	settings_add(module, section, key, SETTING_TYPE_STRING, &default_value);
+	settings_add(module, section, key, SETTING_TYPE_STRING, &default_value, NULL);
+}
+
+void settings_add_choice_module(const char *module, const char *section,
+				const char *key, int def, const char *choices)
+{
+	SettingValue default_value;
+
+	memset(&default_value, 0, sizeof(default_value));
+	default_value.v_int = def;
+	settings_add(module, section, key, SETTING_TYPE_CHOICE, &default_value, choices);
 }
 
 void settings_add_int_module(const char *module, const char *section,
@@ -218,7 +272,7 @@ void settings_add_int_module(const char *module, const char *section,
 
 	memset(&default_value, 0, sizeof(default_value));
         default_value.v_int = def;
-	settings_add(module, section, key, SETTING_TYPE_INT, &default_value);
+	settings_add(module, section, key, SETTING_TYPE_INT, &default_value, NULL);
 }
 
 void settings_add_bool_module(const char *module, const char *section,
@@ -228,8 +282,7 @@ void settings_add_bool_module(const char *module, const char *section,
 
 	memset(&default_value, 0, sizeof(default_value));
         default_value.v_bool = def;
-	settings_add(module, section, key, SETTING_TYPE_BOOLEAN,
-		     &default_value);
+	settings_add(module, section, key, SETTING_TYPE_BOOLEAN, &default_value, NULL);
 }
 
 void settings_add_time_module(const char *module, const char *section,
@@ -239,7 +292,7 @@ void settings_add_time_module(const char *module, const char *section,
 
 	memset(&default_value, 0, sizeof(default_value));
 	default_value.v_string = g_strdup(def);
-	settings_add(module, section, key, SETTING_TYPE_TIME, &default_value);
+	settings_add(module, section, key, SETTING_TYPE_TIME, &default_value, NULL);
 }
 
 void settings_add_level_module(const char *module, const char *section,
@@ -249,7 +302,7 @@ void settings_add_level_module(const char *module, const char *section,
 
 	memset(&default_value, 0, sizeof(default_value));
 	default_value.v_string = g_strdup(def);
-	settings_add(module, section, key, SETTING_TYPE_LEVEL, &default_value);
+	settings_add(module, section, key, SETTING_TYPE_LEVEL, &default_value, NULL);
 }
 
 void settings_add_size_module(const char *module, const char *section,
@@ -259,14 +312,16 @@ void settings_add_size_module(const char *module, const char *section,
 
 	memset(&default_value, 0, sizeof(default_value));
 	default_value.v_string = g_strdup(def);
-	settings_add(module, section, key, SETTING_TYPE_SIZE, &default_value);
+	settings_add(module, section, key, SETTING_TYPE_SIZE, &default_value, NULL);
 }
 
 static void settings_destroy(SETTINGS_REC *rec)
 {
 	if (rec->type != SETTING_TYPE_INT &&
-	    rec->type != SETTING_TYPE_BOOLEAN)
+	    rec->type != SETTING_TYPE_BOOLEAN &&
+	    rec->type != SETTING_TYPE_CHOICE)
 		g_free(rec->default_value.v_string);
+	g_strfreev(rec->choices);
         g_free(rec->module);
         g_free(rec->section);
         g_free(rec->key);
@@ -328,6 +383,20 @@ static CONFIG_NODE *settings_get_node(const char *key)
 	return iconfig_node_section(node, rec->module, NODE_TYPE_BLOCK);
 }
 
+gboolean settings_set_choice(const char *key, const char *value)
+{
+	SETTINGS_REC *rec;
+
+	rec = settings_get_record(key);
+
+	if (rec != NULL && strarray_find(rec->choices, value) < 0)
+		return FALSE;
+
+	settings_set_str(key, value);
+
+	return TRUE;
+}
+
 void settings_set_str(const char *key, const char *value)
 {
         iconfig_node_set_str(settings_get_node(key), key, value);
@@ -343,7 +412,7 @@ void settings_set_bool(const char *key, int value)
         iconfig_node_set_bool(settings_get_node(key), key, value);
 }
 
-int settings_set_time(const char *key, const char *value)
+gboolean settings_set_time(const char *key, const char *value)
 {
 	int msecs;
 
@@ -354,7 +423,7 @@ int settings_set_time(const char *key, const char *value)
 	return TRUE;
 }
 
-int settings_set_level(const char *key, const char *value)
+gboolean settings_set_level(const char *key, const char *value)
 {
 	int iserror;
 
@@ -366,7 +435,7 @@ int settings_set_level(const char *key, const char *value)
 	return TRUE;
 }
 
-int settings_set_size(const char *key, const char *value)
+gboolean settings_set_size(const char *key, const char *value)
 {
 	int size;
 
@@ -683,7 +752,7 @@ static void init_configfile(void)
 
 	if (stat(get_irssi_dir(), &statbuf) != 0) {
 		/* ~/.irssi not found, create it. */
-		if (mkpath(get_irssi_dir(), 0700) != 0) {
+		if (g_mkdir_with_parents(get_irssi_dir(), 0700) != 0) {
 			g_error("Couldn't create %s directory", get_irssi_dir());
 		}
 	} else if (!S_ISDIR(statbuf.st_mode)) {

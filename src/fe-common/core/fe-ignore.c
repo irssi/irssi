@@ -215,7 +215,7 @@ static void cmd_unignore(const char *data)
 {
 	IGNORE_REC *rec;
 	GSList *tmp;
-        char *mask;
+        char *mask, *mask_orig;
 	void *free_arg;
 
 	if (!cmd_get_params(data, &free_arg, 1, &mask))
@@ -223,6 +223,10 @@ static void cmd_unignore(const char *data)
 
 	if (*mask == '\0')
                 cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+
+	/* Save the mask string here since it might be modified in the code
+	 * below and we need it to print meaningful error messages. */
+	mask_orig = mask;
 
 	if (is_numeric(mask, ' ')) {
 		/* with index number */
@@ -248,7 +252,7 @@ static void cmd_unignore(const char *data)
 		ignore_update_rec(rec);
 	} else {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    TXT_IGNORE_NOT_FOUND, mask);
+			    TXT_IGNORE_NOT_FOUND, mask_orig);
 	}
 	cmd_params_free(free_arg);
 }

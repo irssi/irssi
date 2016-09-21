@@ -38,11 +38,18 @@
 #include "chat-completion.h"
 #include "window-items.h"
 
+enum {
+	COMPLETE_MCASE_NEVER = 0,
+	COMPLETE_MCASE_ALWAYS,
+	COMPLETE_MCASE_AUTO,
+};
+
 static int keep_privates_count, keep_publics_count;
 static int completion_lowercase;
 static char *completion_char, *cmdchars;
 static GSList *global_lastmsgs;
 static int completion_auto, completion_strict;
+static int completion_match_case;
 
 #define SERVER_LAST_MSG_ADD(server, nick) \
 	last_msg_add(&((MODULE_SERVER_REC *) MODULE_DATA(server))->lastmsgs, \
@@ -51,6 +58,18 @@ static int completion_auto, completion_strict;
 #define CHANNEL_LAST_MSG_ADD(channel, nick, own) \
 	last_msg_add(&((MODULE_CHANNEL_REC *) MODULE_DATA(channel))->lastmsgs, \
 		     nick, own, keep_publics_count)
+
+static gboolean contains_uppercase(const char *s1)
+{
+	const char *ch;
+
+	for (ch = s1; *ch != '\0'; ch++) {
+		if (g_ascii_isupper(*ch))
+			return TRUE;
+	}
+
+	return FALSE;
+}
 
 static LAST_MSG_REC *last_msg_find(GSList *list, const char *nick)
 {
@@ -336,7 +355,8 @@ GList *completion_msg(SERVER_REC *win_server,
 }
 
 static void complete_from_nicklist(GList **outlist, CHANNEL_REC *channel,
-				   const char *nick, const char *suffix)
+				   const char *nick, const char *suffix,
+				   const int match_case)
 {
         MODULE_CHANNEL_REC *mchannel;
 	GSList *tmp;
@@ -352,8 +372,10 @@ static void complete_from_nicklist(GList **outlist, CHANNEL_REC *channel,
 	for (tmp = mchannel->lastmsgs; tmp != NULL; tmp = tmp->next) {
 		LAST_MSG_REC *rec = tmp->data;
 
-		if (g_ascii_strncasecmp(rec->nick, nick, len) == 0 &&
-		    glist_find_icase_string(*outlist, rec->nick) == NULL) {
+		if ((match_case? strncmp(rec->nick, nick, len)
+		     : g_ascii_strncasecmp(rec->nick, nick, len)) == 0 &&
+		    (match_case? glist_find_string(*outlist, rec->nick)
+		     : glist_find_icase_string(*outlist, rec->nick)) == NULL) {
 			str = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase) ascii_strdown(str);
 			if (rec->own)
@@ -368,7 +390,8 @@ static void complete_from_nicklist(GList **outlist, CHANNEL_REC *channel,
 
 static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
 					 const char *nick,
-					 const char *suffix)
+					 const char *suffix,
+					 const int match_case)
 {
 	GSList *nicks, *tmp;
 	GList *list;
@@ -404,7 +427,8 @@ static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
                 *out = '\0';
 
 		/* add to list if 'cleaned' nick matches */
-		if (g_ascii_strncasecmp(str, nick, len) == 0) {
+		if ((match_case? strncmp(str, nick, len)
+		     : g_ascii_strncasecmp(str, nick, len)) == 0) {
 			tnick = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase)
 				ascii_strdown(tnick);
@@ -428,7 +452,7 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 	GSList *nicks, *tmp;
 	GList *list;
 	char *str;
-	int len;
+	int len, match_case;
 
 	g_return_val_if_fail(channel != NULL, NULL);
 	g_return_val_if_fail(nick != NULL, NULL);
@@ -437,9 +461,12 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 	if (suffix != NULL && *suffix == '\0')
 		suffix = NULL;
 
+	match_case = completion_match_case == COMPLETE_MCASE_ALWAYS ||
+		(completion_match_case == COMPLETE_MCASE_AUTO && contains_uppercase(nick));
+
 	/* put first the nicks who have recently said something */
 	list = NULL;
-	complete_from_nicklist(&list, channel, nick, suffix);
+	complete_from_nicklist(&list, channel, nick, suffix, match_case);
 
 	/* and add the rest of the nicks too */
 	len = strlen(nick);
@@ -447,7 +474,8 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
 		NICK_REC *rec = tmp->data;
 
-		if (g_ascii_strncasecmp(rec->nick, nick, len) == 0 &&
+		if ((match_case? strncmp(rec->nick, nick, len)
+		     : g_ascii_strncasecmp(rec->nick, nick, len)) == 0 &&
 		    rec != channel->ownnick) {
 			str = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase)
@@ -463,7 +491,7 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 	/* remove non alphanum chars from nick and search again in case
 	   list is still NULL ("foo<tab>" would match "_foo_" f.e.) */
 	if (!completion_strict)
-		list = g_list_concat(list, completion_nicks_nonstrict(channel, nick, suffix));
+		list = g_list_concat(list, completion_nicks_nonstrict(channel, nick, suffix, match_case));
 	return list;
 }
 
@@ -1130,6 +1158,8 @@ static void read_settings(void)
 	completion_auto = settings_get_bool("completion_auto");
 	completion_strict = settings_get_bool("completion_strict");
 
+	completion_match_case = settings_get_choice("completion_nicks_match_case");
+
 	g_free_not_null(completion_char);
 	completion_char = g_strdup(settings_get_str("completion_char"));
 
@@ -1150,6 +1180,7 @@ void chat_completion_init(void)
 	settings_add_int("completion", "completion_keep_privates", 10);
 	settings_add_bool("completion", "completion_nicks_lowercase", FALSE);
 	settings_add_bool("completion", "completion_strict", FALSE);
+	settings_add_choice("completion", "completion_nicks_match_case", COMPLETE_MCASE_AUTO, "never;always;auto");
 
 	settings_add_bool("lookandfeel", "expand_escapes", FALSE);
 

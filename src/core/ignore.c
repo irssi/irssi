@@ -241,7 +241,7 @@ IGNORE_REC *ignore_find_full(const char *servertag, const char *mask, const char
 		if (channels == NULL || rec->channels == NULL)
 			continue; /* other doesn't have channels */
 
-		if (strarray_length(channels) != strarray_length(rec->channels))
+		if (g_strv_length(channels) != g_strv_length(rec->channels))
 			continue; /* different amount of channels */
 
 		/* check that channels match */

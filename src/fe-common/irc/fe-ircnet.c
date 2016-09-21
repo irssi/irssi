@@ -88,14 +88,7 @@ static void cmd_network_list(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETWORK_FOOTER);
 }
 
-/* SYNTAX: NETWORK ADD [-nick <nick>] [-user <user>] [-realname <name>]
-                       [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
-                       [-querychans <count>] [-whois <count>] [-msgs <count>]
-                       [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
-                       [-cmdmax <count>] [-sasl_mechanism <mechanism>]
-                       [-sasl_username <username>] [-sasl_password <password>]
-                       <name> */
-static void cmd_network_add(const char *data)
+static void cmd_network_add_modify(const char *data, gboolean add)
 {
 	GHashTable *optlist;
 	char *name, *value;
@@ -103,12 +96,20 @@ static void cmd_network_add(const char *data)
 	IRC_CHATNET_REC *rec;
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS,
-			    "network add", &optlist, &name))
+		"network add", &optlist, &name))
 		return;
+
 	if (*name == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	rec = ircnet_find(name);
 	if (rec == NULL) {
+		if (add == FALSE) {
+			cmd_params_free(free_arg);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
+				IRCTXT_NETWORK_NOT_FOUND, name);
+			return;
+		}
+
 		rec = g_new0(IRC_CHATNET_REC, 1);
 		rec->name = g_strdup(name);
 	} else {
@@ -174,6 +175,23 @@ static void cmd_network_add(const char *data)
 	cmd_params_free(free_arg);
 }
 
+/* SYNTAX: NETWORK ADD|MODIFY [-nick <nick>] [-user <user>] [-realname <name>]
+                              [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
+                              [-querychans <count>] [-whois <count>] [-msgs <count>]
+                              [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
+                              [-cmdmax <count>] [-sasl_mechanism <mechanism>]
+                              [-sasl_username <username>] [-sasl_password <password>]
+                              <name> */
+static void cmd_network_add(const char *data)
+{
+	cmd_network_add_modify(data, TRUE);
+}
+
+static void cmd_network_modify(const char *data)
+{
+	cmd_network_add_modify(data, FALSE);
+}
+
 /* SYNTAX: NETWORK REMOVE <network> */
 static void cmd_network_remove(const char *data)
 {
@@ -206,9 +224,12 @@ void fe_ircnet_init(void)
 	command_bind("network", NULL, (SIGNAL_FUNC) cmd_network);
 	command_bind("network list", NULL, (SIGNAL_FUNC) cmd_network_list);
 	command_bind("network add", NULL, (SIGNAL_FUNC) cmd_network_add);
+	command_bind("network modify", NULL, (SIGNAL_FUNC) cmd_network_modify);
 	command_bind("network remove", NULL, (SIGNAL_FUNC) cmd_network_remove);
 
 	command_set_options("network add", "-kicks -msgs -modes -whois -cmdspeed "
+			    "-cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
+	command_set_options("network modify", "-kicks -msgs -modes -whois -cmdspeed "
 			    "-cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
 }
 
@@ -218,5 +239,6 @@ void fe_ircnet_deinit(void)
 	command_unbind("network", (SIGNAL_FUNC) cmd_network);
 	command_unbind("network list", (SIGNAL_FUNC) cmd_network_list);
 	command_unbind("network add", (SIGNAL_FUNC) cmd_network_add);
+	command_unbind("network modify", (SIGNAL_FUNC) cmd_network_modify);
 	command_unbind("network remove", (SIGNAL_FUNC) cmd_network_remove);
 }

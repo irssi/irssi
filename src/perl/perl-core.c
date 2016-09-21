@@ -393,7 +393,7 @@ int perl_get_api_version(void)
         return IRSSI_PERL_API_VERSION;
 }
 
-static void perl_scripts_autorun(void)
+void perl_scripts_autorun(void)
 {
 	DIR *dirp;
 	struct dirent *dp;
