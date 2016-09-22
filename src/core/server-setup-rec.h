@@ -8,7 +8,7 @@ char *address;
 int port;
 char *password;
 
-int sasl_mechanism;
+char *sasl_mechanism;
 char *sasl_password;
 
 char *ssl_cert;

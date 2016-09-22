@@ -88,26 +88,23 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 		conn->max_query_chans = ircnet->max_query_chans;
 
 	/* Validate the SASL parameters filled by sig_chatnet_read() or cmd_network_add */
-	conn->sasl_mechanism = SASL_MECHANISM_NONE;
+	g_free_and_null(conn->sasl_mechanism);
 
 	if (ircnet->sasl_mechanism != NULL) {
-		if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "plain")) {
-			/* The PLAIN method needs both the username and the password */
-			if (ircnet->sasl_username != NULL && *ircnet->sasl_username &&
-			    ircnet->sasl_password != NULL && *ircnet->sasl_password) {
-				conn->sasl_mechanism = SASL_MECHANISM_PLAIN;
-				conn->sasl_username = ircnet->sasl_username;
-				conn->sasl_password = ircnet->sasl_password;
-			} else
-				g_warning("The fields sasl_username and sasl_password are either missing or empty");
+		conn->sasl_mechanism = g_strdup(ircnet->sasl_mechanism);
+		if (ircnet->sasl_username != NULL && *ircnet->sasl_username) {
+			g_free_and_null(conn->sasl_username);
+			conn->sasl_username = g_strdup(ircnet->sasl_username);
 		}
-		else if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "external")) {
-				conn->sasl_mechanism = SASL_MECHANISM_EXTERNAL;
-				conn->sasl_username = NULL;
-				conn->sasl_password = NULL;
+		if (ircnet->sasl_password != NULL && *ircnet->sasl_password) {
+			g_free_and_null(conn->sasl_password);
+			conn->sasl_password = g_strdup(ircnet->sasl_password);
 		}
-		else
-			g_warning("Unsupported SASL mechanism \"%s\" selected", ircnet->sasl_mechanism);
+
+		/* The PLAIN method needs both the username and the password */
+		if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "plain") &&
+		    (conn->sasl_username == NULL || conn->sasl_password == NULL))
+			g_warning("The fields sasl_username and sasl_password are either missing or empty");
 	}
 }
 

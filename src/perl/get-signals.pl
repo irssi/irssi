@@ -18,6 +18,7 @@ while (<STDIN>) {
 
 	s/GList \* of ([^,]*)/glistptr_\1/g;
 	s/GSList of (\w+)s/gslist_\1/g;
+	s/GBytes \*/gbytes/g;
 
 	s/char \*[^,]*/string/g;
 	s/ulong \*[^,]*/ulongptr/g;

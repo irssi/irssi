@@ -67,7 +67,7 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "away_reason", server->away_reason);
 	config_node_set_bool(config, node, "emode_known", server->emode_known);
 
-	config_node_set_int(config, node, "sasl_mechanism", server->connrec->sasl_mechanism);
+	config_node_set_str(config, node, "sasl_mechanism", server->connrec->sasl_mechanism);
 	config_node_set_str(config, node, "sasl_username", server->connrec->sasl_username);
 	config_node_set_str(config, node, "sasl_password", server->connrec->sasl_password);
 
@@ -96,10 +96,11 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	server->emode_known = config_node_get_bool(node, "emode_known", FALSE);
 	server->isupport_sent = config_node_get_bool(node, "isupport_sent", FALSE);
 
-	server->connrec->sasl_mechanism = config_node_get_int(node, "sasl_mechanism", SASL_MECHANISM_NONE);
 	/* The fields below might have been filled when loading the chatnet
 	 * description from the config and we favor the content that's been saved
 	 * in the session file over that. */
+	g_free(server->connrec->sasl_mechanism);
+	server->connrec->sasl_mechanism = g_strdup(config_node_get_str(node, "sasl_mechanism", NULL));
 	g_free(server->connrec->sasl_username);
 	server->connrec->sasl_username = g_strdup(config_node_get_str(node, "sasl_username", NULL));
 	g_free(server->connrec->sasl_password);

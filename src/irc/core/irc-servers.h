@@ -27,7 +27,7 @@ struct _IRC_SERVER_CONNECT_REC {
 	char *usermode;
 	char *alternate_nick;
 
-	int sasl_mechanism;
+	char *sasl_mechanism;
 	char *sasl_username;
 	char *sasl_password;
 

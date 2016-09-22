@@ -149,3 +149,25 @@ CODE:
 OUTPUT:
 	RETVAL
 
+MODULE = Irssi::Irc::Server	PACKAGE = Irssi::Irc::Server
+PROTOTYPES: ENABLE
+
+void
+send_sasl_response(server, response)
+	Irssi::Irc::Server server
+	SV *response
+PREINIT:
+	char *p;
+	STRLEN len;
+	GBytes *bytes;
+CODE:
+	p = SvPV(response, len);
+	bytes = g_bytes_new(p, len);
+	sasl_send_response(server, bytes);
+	g_bytes_unref(bytes);
+
+void
+send_sasl_abort(server)
+	Irssi::Irc::Server server
+CODE:
+	sasl_abort(server);

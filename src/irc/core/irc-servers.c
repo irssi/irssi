@@ -232,7 +232,7 @@ static void server_init(IRC_SERVER_REC *server)
 		g_free(cmd);
 	}
 
-	if (conn->sasl_mechanism != SASL_MECHANISM_NONE)
+	if (conn->sasl_mechanism != NULL)
 		cap_toggle(server, "sasl", TRUE);
 
 	cap_toggle(server, "multi-prefix", TRUE);

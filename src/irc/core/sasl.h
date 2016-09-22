@@ -21,12 +21,10 @@
 #ifndef __SASL_H
 #define __SASL_H
 
-enum {
-	SASL_MECHANISM_NONE = 0,
-	SASL_MECHANISM_PLAIN,
-	SASL_MECHANISM_EXTERNAL,
-	SASL_MECHANISM_MAX
-};
+void sasl_mechanism_register(const char *);
+void sasl_mechanism_unregister(const char *);
+void sasl_send_response(IRC_SERVER_REC *, GBytes *);
+void sasl_abort(IRC_SERVER_REC *);
 
 void sasl_init(void);
 void sasl_deinit(void);
