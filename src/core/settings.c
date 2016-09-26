@@ -585,6 +585,7 @@ void settings_check_module(const char *module)
 	for (; tmp != NULL; tmp = next) {
 		node = tmp->data;
 		next = config_node_next(tmp);
+		if (node->key == NULL) continue;
 
 		set = g_hash_table_lookup(settings, node->key);
 		if (backwards_compatibility(module, node, parent))
