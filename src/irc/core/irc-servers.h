@@ -67,6 +67,7 @@ struct _IRC_SERVER_REC {
 	unsigned int nick_collision:1; /* We're just now being killed because of nick collision */
 	unsigned int motd_got:1; /* We've received MOTD */
 	unsigned int isupport_sent:1; /* Server has sent us an isupport reply */
+	unsigned int cap_complete:1; /* We've done the initial CAP negotiation */
 
 	int max_kicks_in_cmd; /* max. number of people to kick with one /KICK command */
 	int max_modes_in_cmd; /* max. number of mode changes in one /MODE command */
@@ -76,7 +77,6 @@ struct _IRC_SERVER_REC {
 	GSList *cap_supported; /* A list of caps supported by the server */
 	GSList *cap_active;    /* A list of caps active for this session */
 	GSList *cap_queue;     /* A list of caps to request on connection */ 
-	int cap_complete:1;    /* We've done the initial CAP negotiation */
 
 	GString *sasl_buffer; /* Buffer used to reassemble a fragmented SASL payload */
 	guint sasl_timeout;   /* Holds the source id of the running timeout */
