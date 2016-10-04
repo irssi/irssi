@@ -8,6 +8,7 @@ To compile irssi you need:
 - pkg-config
 - openssl (for ssl support)
 - perl-5.6 or greater (for perl support)
+- terminfo or ncurses (for text frontend)
 
 For most people, this should work just fine:
 
