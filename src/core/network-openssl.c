@@ -481,7 +481,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		if (capath && *capath)
 			scapath = convert_home(capath);
 		if (! SSL_CTX_load_verify_locations(ctx, scafile, scapath)) {
-			g_warning("Could not load CA list for verifying SSL server certificate");
+			g_warning("Could not load CA list for verifying TLS server certificate");
 			g_free(scafile);
 			g_free(scapath);
 			SSL_CTX_free(ctx);
@@ -784,12 +784,12 @@ int irssi_ssl_handshake(GIOChannel *handle)
 	pubkey = X509_get_X509_PUBKEY(cert);
 
 	if (cert == NULL) {
-		g_warning("SSL server supplied no certificate");
+		g_warning("TLS server supplied no certificate");
 		return -1;
 	}
 
 	if (pubkey == NULL) {
-		g_warning("SSL server supplied no certificate public key");
+		g_warning("TLS server supplied no certificate public key");
 		return -1;
 	}
 
