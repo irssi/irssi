@@ -154,42 +154,55 @@ static void cmd_server_add_modify(const char *data, gboolean add)
         else if (g_hash_table_lookup(optlist, "4"))
 		rec->family = AF_INET;
 
-	if (g_hash_table_lookup(optlist, "ssl"))
-		rec->use_ssl = TRUE;
+	if (g_hash_table_lookup(optlist, "tls") || g_hash_table_lookup(optlist, "ssl"))
+		rec->use_tls = TRUE;
 
-	value = g_hash_table_lookup(optlist, "ssl_cert");
+	value = g_hash_table_lookup(optlist, "tls_cert");
+	if (value == NULL)
+		value = g_hash_table_lookup(optlist, "ssl_cert");
 	if (value != NULL && *value != '\0')
-		rec->ssl_cert = g_strdup(value);
+		rec->tls_cert = g_strdup(value);
 
-	value = g_hash_table_lookup(optlist, "ssl_pkey");
+	value = g_hash_table_lookup(optlist, "tls_pkey");
+	if (value == NULL)
+		value = g_hash_table_lookup(optlist, "ssl_pkey");
 	if (value != NULL && *value != '\0')
-		rec->ssl_pkey = g_strdup(value);
+		rec->tls_pkey = g_strdup(value);
 
-	value = g_hash_table_lookup(optlist, "ssl_pass");
+	value = g_hash_table_lookup(optlist, "tls_pass");
+	if (value == NULL)
+		value = g_hash_table_lookup(optlist, "ssl_pass");
 	if (value != NULL && *value != '\0')
-		rec->ssl_pass = g_strdup(value);
+		rec->tls_pass = g_strdup(value);
 
-	if (g_hash_table_lookup(optlist, "ssl_verify"))
-		rec->ssl_verify = TRUE;
+	if (g_hash_table_lookup(optlist, "tls_verify") || g_hash_table_lookup(optlist, "ssl_verify"))
+		rec->tls_verify = TRUE;
 
-	value = g_hash_table_lookup(optlist, "ssl_cafile");
+	value = g_hash_table_lookup(optlist, "tls_cafile");
+	if (value == NULL)
+		value = g_hash_table_lookup(optlist, "ssl_cafile");
 	if (value != NULL && *value != '\0')
-		rec->ssl_cafile = g_strdup(value);
+		rec->tls_cafile = g_strdup(value);
 
-	value = g_hash_table_lookup(optlist, "ssl_capath");
+	value = g_hash_table_lookup(optlist, "tls_capath");
+	if (value == NULL)
+		value = g_hash_table_lookup(optlist, "ssl_capath");
 	if (value != NULL && *value != '\0')
-		rec->ssl_capath = g_strdup(value);
+		rec->tls_capath = g_strdup(value);
 
-	value = g_hash_table_lookup(optlist, "ssl_ciphers");
+	value = g_hash_table_lookup(optlist, "tls_ciphers");
+	if (value == NULL)
+		value = g_hash_table_lookup(optlist, "ssl_ciphers");
 	if (value != NULL && *value != '\0')
-		rec->ssl_ciphers = g_strdup(value);
+		rec->tls_ciphers = g_strdup(value);
 
-	if ((rec->ssl_cafile != NULL && rec->ssl_cafile[0] != '\0')
-	||  (rec->ssl_capath != NULL && rec->ssl_capath[0] != '\0'))
-		rec->ssl_verify = TRUE;
 
-	if ((rec->ssl_cert != NULL && rec->ssl_cert[0] != '\0') || rec->ssl_verify == TRUE)
-		rec->use_ssl = TRUE;
+	if ((rec->tls_cafile != NULL && rec->tls_cafile[0] != '\0')
+	||  (rec->tls_capath != NULL && rec->tls_capath[0] != '\0'))
+		rec->tls_verify = TRUE;
+
+	if ((rec->tls_cert != NULL && rec->tls_cert[0] != '\0') || rec->tls_verify == TRUE)
+		rec->use_tls = TRUE;
 
 	if (g_hash_table_lookup(optlist, "auto")) rec->autoconnect = TRUE;
 	if (g_hash_table_lookup(optlist, "noauto")) rec->autoconnect = FALSE;
@@ -409,8 +422,9 @@ void fe_server_init(void)
 	command_bind("server remove", NULL, (SIGNAL_FUNC) cmd_server_remove);
 	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
 	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) server_command);
-	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers auto noauto proxy noproxy -host -port noautosendcmd");
-	command_set_options("server modify", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers auto noauto proxy noproxy -host -port noautosendcmd");
+
+	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers auto noauto proxy noproxy -host -port noautosendcmd");
+	command_set_options("server modify", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers auto noauto proxy noproxy -host -port noautosendcmd");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);

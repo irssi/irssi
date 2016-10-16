@@ -219,7 +219,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
 		port = server->connrec->proxy != NULL ?
 			server->connrec->proxy_port : server->connrec->port;
-		handle = server->connrec->use_ssl ?
+		handle = server->connrec->use_tls ?
 			net_connect_ip_ssl(ip, port, own_ip, server) : net_connect_ip(ip, port, own_ip);
 	} else {
 		handle = net_connect_unix(unix_socket);
@@ -237,7 +237,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 			}
 			server->no_reconnect = TRUE;
 		}
-		if (server->connrec->use_ssl && errno == ENOSYS)
+		if (server->connrec->use_tls && errno == ENOSYS)
 			server->no_reconnect = TRUE;
 
 		server->connection_lost = TRUE;
@@ -245,7 +245,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		g_free(errmsg2);
 	} else {
 		server->handle = net_sendbuffer_create(handle, 0);
-		if (server->connrec->use_ssl)
+		if (server->connrec->use_tls)
 			server_connect_callback_init_ssl(server, handle);
 		else
 		server->connect_tag =
@@ -622,22 +622,22 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->own_ip4);
 	g_free_not_null(conn->own_ip6);
 
-        g_free_not_null(conn->password);
-        g_free_not_null(conn->nick);
-        g_free_not_null(conn->username);
+	g_free_not_null(conn->password);
+	g_free_not_null(conn->nick);
+	g_free_not_null(conn->username);
 	g_free_not_null(conn->realname);
 
-	g_free_not_null(conn->ssl_cert);
-	g_free_not_null(conn->ssl_pkey);
-	g_free_not_null(conn->ssl_pass);
-	g_free_not_null(conn->ssl_cafile);
-	g_free_not_null(conn->ssl_capath);
-	g_free_not_null(conn->ssl_ciphers);
+	g_free_not_null(conn->tls_cert);
+	g_free_not_null(conn->tls_pkey);
+	g_free_not_null(conn->tls_pass);
+	g_free_not_null(conn->tls_cafile);
+	g_free_not_null(conn->tls_capath);
+	g_free_not_null(conn->tls_ciphers);
 
 	g_free_not_null(conn->channels);
-        g_free_not_null(conn->away_reason);
+	g_free_not_null(conn->away_reason);
 
-        conn->type = 0;
+	conn->type = 0;
 	g_free(conn);
 }
 

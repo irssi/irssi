@@ -455,13 +455,13 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 	SSL *ssl;
 	SSL_CTX *ctx = NULL;
 
-	const char *mycert = server->connrec->ssl_cert;
-	const char *mypkey = server->connrec->ssl_pkey;
-	const char *mypass = server->connrec->ssl_pass;
-	const char *cafile = server->connrec->ssl_cafile;
-	const char *capath = server->connrec->ssl_capath;
-	const char *ciphers = server->connrec->ssl_ciphers;
-	gboolean verify = server->connrec->ssl_verify;
+	const char *mycert = server->connrec->tls_cert;
+	const char *mypkey = server->connrec->tls_pkey;
+	const char *mypass = server->connrec->tls_pass;
+	const char *cafile = server->connrec->tls_cafile;
+	const char *capath = server->connrec->tls_capath;
+	const char *ciphers = server->connrec->tls_ciphers;
+	gboolean verify = server->connrec->tls_verify;
 
 	g_return_val_if_fail(handle != NULL, NULL);
 
@@ -480,7 +480,8 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 	SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 	SSL_CTX_set_default_passwd_cb(ctx, get_pem_password_callback);
 	SSL_CTX_set_default_passwd_cb_userdata(ctx, (void *)mypass);
-	if (ciphers && *ciphers) {
+
+	if (ciphers != NULL && ciphers[0] != '\0') {
 		if (SSL_CTX_set_cipher_list(ctx, ciphers) != 1)
 			g_warning("No valid SSL cipher suite could be selected");
 	}
