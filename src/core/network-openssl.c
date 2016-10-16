@@ -787,18 +787,20 @@ int irssi_ssl_handshake(GIOChannel *handle)
 
 	if (cert == NULL) {
 		g_warning("TLS server supplied no certificate");
-		return -1;
+		ret = 0;
+		goto done;
 	}
 
 	if (pubkey == NULL) {
 		g_warning("TLS server supplied no certificate public key");
-		return -1;
+		ret = 0;
+		goto done;
 	}
 
 	if (! X509_digest(cert, EVP_sha256(), cert_fingerprint, &cert_fingerprint_size)) {
 		g_warning("Unable to generate certificate fingerprint");
-		X509_free(cert);
-		return -1;
+		ret = 0;
+		goto done;
 	}
 
 	pubkey_size = i2d_X509_PUBKEY(pubkey, NULL);
@@ -847,6 +849,7 @@ int irssi_ssl_handshake(GIOChannel *handle)
 	// Emit the TLS rec.
 	signal_emit("tls handshake finished", 2, chan->server, tls);
 
+done:
 	tls_rec_free(tls);
 	X509_free(cert);
 	g_free(pubkey_der);
