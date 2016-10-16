@@ -109,4 +109,8 @@ int find_substr(const char *list, const char *item);
 /* split `str' into `len' sized substrings */
 char **strsplit_len(const char *str, int len, gboolean onspace);
 
+/* Convert a given buffer to a printable, colon-delimited, hex string and
+ * return a pointer to the newly allocated buffer */
+char *binary_to_hex(unsigned char *buffer, size_t size);
+
 #endif
