@@ -88,6 +88,9 @@ void fe_server_deinit(void);
 void fe_settings_init(void);
 void fe_settings_deinit(void);
 
+void fe_tls_init(void);
+void fe_tls_deinit(void);
+
 void window_commands_init(void);
 void window_commands_deinit(void);
 
@@ -176,6 +179,7 @@ void fe_common_core_init(void)
 	fe_modules_init();
 	fe_server_init();
 	fe_settings_init();
+	fe_tls_init();
 	windows_init();
 	window_activity_init();
 	window_commands_init();
@@ -217,6 +221,7 @@ void fe_common_core_deinit(void)
 	fe_modules_deinit();
 	fe_server_deinit();
 	fe_settings_deinit();
+	fe_tls_deinit();
 	windows_deinit();
 	window_activity_deinit();
 	window_commands_deinit();
