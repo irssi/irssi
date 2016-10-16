@@ -29,6 +29,8 @@ char *tls_pass;
 char *tls_cafile;
 char *tls_capath;
 char *tls_ciphers;
+char *tls_pinned_cert;
+char *tls_pinned_pubkey;
 
 GIOChannel *connect_handle; /* connect using this handle */
 

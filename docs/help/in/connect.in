@@ -15,6 +15,8 @@
     -tls_cafile:        The file with the list of CA certificates.
     -tls_capath:        The directory which contains the CA certificates.
     -tls_ciphers:       TLS cipher suite preference lists.
+    -tls_pinned_cert:   Pinned x509 certificate fingerprint.
+    -tls_pinned_pubkey: Pinned public key fingerprint.
     -noproxy:           Ignores the global proxy configuration.
     -network:           The network this connection belongs to.
     -host:              The hostname you would like to connect from.

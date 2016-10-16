@@ -165,6 +165,8 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "tls_cafile", server->connrec->tls_cafile);
 	config_node_set_str(config, node, "tls_capath", server->connrec->tls_capath);
 	config_node_set_str(config, node, "tls_ciphers", server->connrec->tls_ciphers);
+	config_node_set_str(config, node, "tls_pinned_cert", server->connrec->tls_pinned_cert);
+	config_node_set_str(config, node, "tls_pinned_pubkey", server->connrec->tls_pinned_pubkey);
 
 	handle = g_io_channel_unix_get_fd(net_sendbuffer_handle(server->handle));
 	config_node_set_int(config, node, "handle", handle);

@@ -633,6 +633,8 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->tls_cafile);
 	g_free_not_null(conn->tls_capath);
 	g_free_not_null(conn->tls_ciphers);
+	g_free_not_null(conn->tls_pinned_cert);
+	g_free_not_null(conn->tls_pinned_pubkey);
 
 	g_free_not_null(conn->channels);
 	g_free_not_null(conn->away_reason);

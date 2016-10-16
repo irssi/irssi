@@ -196,6 +196,17 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 	if (value != NULL && *value != '\0')
 		rec->tls_ciphers = g_strdup(value);
 
+	value = g_hash_table_lookup(optlist, "tls_pinned_cert");
+	if (value == NULL)
+		value = g_hash_table_lookup(optlist, "ssl_pinned_cert");
+	if (value != NULL && *value != '\0')
+		rec->tls_pinned_cert = g_strdup(value);
+
+	value = g_hash_table_lookup(optlist, "tls_pinned_pubkey");
+	if (value == NULL)
+		value = g_hash_table_lookup(optlist, "ssl_pinned_pubkey");
+	if (value != NULL && *value != '\0')
+		rec->tls_pinned_pubkey = g_strdup(value);
 
 	if ((rec->tls_cafile != NULL && rec->tls_cafile[0] != '\0')
 	||  (rec->tls_capath != NULL && rec->tls_capath[0] != '\0'))
@@ -423,8 +434,8 @@ void fe_server_init(void)
 	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
 	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) server_command);
 
-	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers auto noauto proxy noproxy -host -port noautosendcmd");
-	command_set_options("server modify", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers auto noauto proxy noproxy -host -port noautosendcmd");
+	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey auto noauto proxy noproxy -host -port noautosendcmd");
+	command_set_options("server modify", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey auto noauto proxy noproxy -host -port noautosendcmd");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);

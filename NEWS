@@ -25,6 +25,27 @@ v0.8.21-head 2016-xx-xx  The Irssi team <staff@irssi.org>
 	  configuration.
 	+ Display TLS connection information upon connect. You can disable this by
 	  setting tls_verbose_connect to FALSE.
+	+ Add -tls_pinned_cert and -tls_pinned_pubkey for x509 and public key pinning.
+
+	  The values needed for -tls_pinned_cert and -tls_pinned_pubkey is shown
+	  when connecting to a TLS enabled IRC server, but you can also find the
+	  values like this: Start by downloading the certificate from a given IRC
+	  server:
+
+	      $ openssl s_client -connect chat.freenode.net:6697 < /dev/null 2>/dev/null | \
+	        openssl x509 > freenode.cert
+
+	  Find the value for -tls_pinned_cert:
+
+	      $ openssl x509 -in freenode.cert -fingerprint -sha256 -noout
+
+	  Find the value for -tls_pinned_pubkey:
+
+	      $ openssl x509 -in freenode.cert -pubkey -noout | \
+	        openssl pkey -pubin -outform der | \
+	        openssl dgst -sha256 -c | \
+	        tr a-z A-Z
+
 	- IP addresses are no longer stored when resolve_reverse_lookup is
 	  used.
 	- /names and $[...] now uses utf8 string operations (#40, #411).

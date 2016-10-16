@@ -181,6 +181,10 @@ static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
 		conn->tls_capath = g_strdup(sserver->tls_capath);
 	if (conn->tls_ciphers == NULL && sserver->tls_ciphers != NULL && sserver->tls_ciphers[0] != '\0')
 		conn->tls_ciphers = g_strdup(sserver->tls_ciphers);
+	if (conn->tls_pinned_cert == NULL && sserver->tls_pinned_cert != NULL && sserver->tls_pinned_cert[0] != '\0')
+		conn->tls_pinned_cert = g_strdup(sserver->tls_pinned_cert);
+	if (conn->tls_pinned_pubkey == NULL && sserver->tls_pinned_pubkey != NULL && sserver->tls_pinned_pubkey[0] != '\0')
+		conn->tls_pinned_pubkey = g_strdup(sserver->tls_pinned_pubkey);
 
 	server_setup_fill_reconn(conn, sserver);
 
@@ -435,6 +439,16 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 		value = config_node_get_str(node, "ssl_ciphers", NULL);
 	rec->tls_ciphers = g_strdup(value);
 
+	value = config_node_get_str(node, "tls_pinned_cert", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_pinned_cert", NULL);
+	rec->tls_pinned_cert = g_strdup(value);
+
+	value = config_node_get_str(node, "tls_pinned_pubkey", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_pinned_pubkey", NULL);
+	rec->tls_pinned_pubkey = g_strdup(value);
+
 	if (rec->tls_cafile || rec->tls_capath)
 		rec->tls_verify = TRUE;
 	if (rec->tls_cert != NULL || rec->tls_verify)
@@ -500,6 +514,8 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 	iconfig_node_set_str(node, "tls_cafile", rec->tls_cafile);
 	iconfig_node_set_str(node, "tls_capath", rec->tls_capath);
 	iconfig_node_set_str(node, "tls_ciphers", rec->tls_ciphers);
+	iconfig_node_set_str(node, "tls_pinned_cert", rec->tls_pinned_cert);
+	iconfig_node_set_str(node, "tls_pinned_pubkey", rec->tls_pinned_pubkey);
 
 	iconfig_node_set_str(node, "own_host", rec->own_host);
 
@@ -550,6 +566,8 @@ static void server_setup_destroy(SERVER_SETUP_REC *rec)
 	g_free_not_null(rec->tls_cafile);
 	g_free_not_null(rec->tls_capath);
 	g_free_not_null(rec->tls_ciphers);
+	g_free_not_null(rec->tls_pinned_cert);
+	g_free_not_null(rec->tls_pinned_pubkey);
 	g_free(rec->address);
 	g_free(rec);
 }

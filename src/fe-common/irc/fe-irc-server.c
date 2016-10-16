@@ -125,6 +125,10 @@ static void cmd_server_list(const char *data)
 				g_string_append_printf(str, "tls_capath: %s, ", rec->tls_capath);
 			if (rec->tls_ciphers)
 				g_string_append_printf(str, "tls_ciphers: %s, ", rec->tls_ciphers);
+			if (rec->tls_pinned_cert)
+				g_string_append_printf(str, "tls_pinned_cert: %s, ", rec->tls_pinned_cert);
+			if (rec->tls_pinned_pubkey)
+				g_string_append_printf(str, "tls_pinned_pubkey: %s, ", rec->tls_pinned_pubkey);
 
 		}
 		if (rec->max_cmds_at_once > 0)

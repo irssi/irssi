@@ -753,6 +753,8 @@ int irssi_ssl_handshake(GIOChannel *handle)
 	unsigned int pubkey_fingerprint_size;
 	unsigned char cert_fingerprint[EVP_MAX_MD_SIZE];
 	unsigned int cert_fingerprint_size;
+	const char *pinned_cert_fingerprint = chan->server->connrec->tls_pinned_cert;
+	const char *pinned_pubkey_fingerprint = chan->server->connrec->tls_pinned_pubkey;
 	TLS_REC *tls = NULL;
 
 	ERR_clear_error();
@@ -814,6 +816,24 @@ int irssi_ssl_handshake(GIOChannel *handle)
 	ret = 1;
 
 	do {
+		if (pinned_cert_fingerprint != NULL && pinned_cert_fingerprint[0] != '\0') {
+			ret = g_ascii_strcasecmp(pinned_cert_fingerprint, tls->certificate_fingerprint) == 0;
+
+			if (! ret) {
+				g_warning("  Pinned certificate mismatch");
+				continue;
+			}
+		}
+
+		if (pinned_pubkey_fingerprint != NULL && pinned_pubkey_fingerprint[0] != '\0') {
+			ret = g_ascii_strcasecmp(pinned_pubkey_fingerprint, tls->public_key_fingerprint) == 0;
+
+			if (! ret) {
+				g_warning("  Pinned public key mismatch");
+				continue;
+			}
+		}
+
 		if (chan->verify) {
 			ret = irssi_ssl_verify(chan->ssl, chan->ctx, chan->server->connrec->address, chan->port, cert, chan->server, tls);
 

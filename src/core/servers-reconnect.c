@@ -199,6 +199,8 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 	dest->tls_cafile = g_strdup(src->tls_cafile);
 	dest->tls_capath = g_strdup(src->tls_capath);
 	dest->tls_ciphers = g_strdup(src->tls_ciphers);
+	dest->tls_pinned_cert = g_strdup(src->tls_pinned_cert);
+	dest->tls_pinned_pubkey = g_strdup(src->tls_pinned_pubkey);
 
 	return dest;
 }

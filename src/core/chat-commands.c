@@ -115,6 +115,10 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 		conn->tls_capath = g_strdup(tmp);
 	if ((tmp = g_hash_table_lookup(optlist, "tls_ciphers")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_ciphers")) != NULL)
 		conn->tls_ciphers = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pinned_cert")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pinned_cert")) != NULL)
+		conn->tls_pinned_cert = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pinned_pubkey")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pinned_pubkey")) != NULL)
+		conn->tls_pinned_pubkey = g_strdup(tmp);
 	if ((conn->tls_capath != NULL && conn->tls_capath[0] != '\0')
 	||  (conn->tls_cafile != NULL && conn->tls_cafile[0] != '\0'))
 		conn->tls_verify = TRUE;
@@ -494,7 +498,7 @@ void chat_commands_init(void)
 	signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 	signal_add("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 
-	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +host noproxy -rawlog noautosendcmd");
+	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_pinned_cert +ssl_pinned_pubkey tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey +host noproxy -rawlog noautosendcmd");
 	command_set_options("msg", "channel nick");
 }
 
