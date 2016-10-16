@@ -5,23 +5,24 @@
 
 %9Parameters:%9
 
-    -4:             Connects using IPv4.
-    -6:             Connects using IPv6.
-    -ssl:           Connects using SSL encryption.
-    -ssl_cert:      The SSL client certificate file.
-    -ssl_pkey:      The SSL client private key, if not included in the
-                    certificate file.
-    -ssl_pass:      The password for the SSL client private key or certificate.
-    -ssl_verify:    Verifies the SSL certificate of the server.
-    -ssl_cafile:    The file with the list of CA certificates.
-    -ssl_capath:    The directory which contains the CA certificates.
-    -ssl_ciphers:   SSL cipher suite preference lists.
-    -noproxy:       Ignores the global proxy configuration.
-    -network:       The network this connection belongs to.
-    -host:          The hostname you would like to connect from.
-    -rawlog:        Immediately open rawlog after connecting.
-    -!:             Doesn't autojoin channels.
-    -noautosendcmd: Doesn't execute autosendcmd.
+    -4:                 Connects using IPv4.
+    -6:                 Connects using IPv6.
+    -tls:               Connects using TLS encryption.
+    -tls_cert:          The TLS client certificate file.
+    -tls_pkey:          The TLS client private key, if not included in the certificate file.
+    -tls_pass:          The password for the TLS client private key or certificate.
+    -tls_verify:        Verifies the TLS certificate of the server.
+    -tls_cafile:        The file with the list of CA certificates.
+    -tls_capath:        The directory which contains the CA certificates.
+    -tls_ciphers:       TLS cipher suite preference lists.
+    -tls_pinned_cert:   Pinned x509 certificate fingerprint.
+    -tls_pinned_pubkey: Pinned public key fingerprint.
+    -noproxy:           Ignores the global proxy configuration.
+    -network:           The network this connection belongs to.
+    -host:              The hostname you would like to connect from.
+    -rawlog:            Immediately open rawlog after connecting.
+    -!:                 Doesn't autojoin channels.
+    -noautosendcmd:     Doesn't execute autosendcmd.
 
     A network or server to connect to; you can optionally specify a custom port,
     password and nickname.

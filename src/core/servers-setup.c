@@ -167,20 +167,24 @@ static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
 	if (sserver->port > 0 && conn->port <= 0)
 		conn->port = sserver->port;
 
-	conn->use_ssl = sserver->use_ssl;
-	if (conn->ssl_cert == NULL && sserver->ssl_cert != NULL && sserver->ssl_cert[0] != '\0')
-		conn->ssl_cert = g_strdup(sserver->ssl_cert);
-	if (conn->ssl_pkey == NULL && sserver->ssl_pkey != NULL && sserver->ssl_pkey[0] != '\0')
-		conn->ssl_pkey = g_strdup(sserver->ssl_pkey);
-	if (conn->ssl_pass == NULL && sserver->ssl_pass != NULL && sserver->ssl_pass[0] != '\0')
-		conn->ssl_pass = g_strdup(sserver->ssl_pass);
-	conn->ssl_verify = sserver->ssl_verify;
-	if (conn->ssl_cafile == NULL && sserver->ssl_cafile != NULL && sserver->ssl_cafile[0] != '\0')
-		conn->ssl_cafile = g_strdup(sserver->ssl_cafile);
-	if (conn->ssl_capath == NULL && sserver->ssl_capath != NULL && sserver->ssl_capath[0] != '\0')
-		conn->ssl_capath = g_strdup(sserver->ssl_capath);
-	if (conn->ssl_ciphers == NULL && sserver->ssl_ciphers != NULL && sserver->ssl_ciphers[0] != '\0')
-		conn->ssl_ciphers = g_strdup(sserver->ssl_ciphers);
+	conn->use_tls = sserver->use_tls;
+	if (conn->tls_cert == NULL && sserver->tls_cert != NULL && sserver->tls_cert[0] != '\0')
+		conn->tls_cert = g_strdup(sserver->tls_cert);
+	if (conn->tls_pkey == NULL && sserver->tls_pkey != NULL && sserver->tls_pkey[0] != '\0')
+		conn->tls_pkey = g_strdup(sserver->tls_pkey);
+	if (conn->tls_pass == NULL && sserver->tls_pass != NULL && sserver->tls_pass[0] != '\0')
+		conn->tls_pass = g_strdup(sserver->tls_pass);
+	conn->tls_verify = sserver->tls_verify;
+	if (conn->tls_cafile == NULL && sserver->tls_cafile != NULL && sserver->tls_cafile[0] != '\0')
+		conn->tls_cafile = g_strdup(sserver->tls_cafile);
+	if (conn->tls_capath == NULL && sserver->tls_capath != NULL && sserver->tls_capath[0] != '\0')
+		conn->tls_capath = g_strdup(sserver->tls_capath);
+	if (conn->tls_ciphers == NULL && sserver->tls_ciphers != NULL && sserver->tls_ciphers[0] != '\0')
+		conn->tls_ciphers = g_strdup(sserver->tls_ciphers);
+	if (conn->tls_pinned_cert == NULL && sserver->tls_pinned_cert != NULL && sserver->tls_pinned_cert[0] != '\0')
+		conn->tls_pinned_cert = g_strdup(sserver->tls_pinned_cert);
+	if (conn->tls_pinned_pubkey == NULL && sserver->tls_pinned_pubkey != NULL && sserver->tls_pinned_pubkey[0] != '\0')
+		conn->tls_pinned_pubkey = g_strdup(sserver->tls_pinned_pubkey);
 
 	server_setup_fill_reconn(conn, sserver);
 
@@ -362,9 +366,10 @@ SERVER_SETUP_REC *server_setup_find(const char *address, int port,
 static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 {
 	SERVER_SETUP_REC *rec;
-        CHATNET_REC *chatnetrec;
+	CHATNET_REC *chatnetrec;
 	char *server, *chatnet, *family;
 	int port;
+	char *value = NULL;
 
 	g_return_val_if_fail(node != NULL, NULL);
 
@@ -390,7 +395,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 		chatnet_create(chatnetrec);
 	}
 
-        family = config_node_get_str(node, "family", "");
+	family = config_node_get_str(node, "family", "");
 
 	rec = CHAT_PROTOCOL(chatnetrec)->create_server_setup();
 	rec->type = module_get_uniq_id("SERVER SETUP", 0);
@@ -400,18 +405,55 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 		(g_ascii_strcasecmp(family, "inet") == 0 ? AF_INET : 0);
 	rec->address = g_strdup(server);
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
-	rec->use_ssl = config_node_get_bool(node, "use_ssl", FALSE);
-	rec->ssl_cert = g_strdup(config_node_get_str(node, "ssl_cert", NULL));
-	rec->ssl_pkey = g_strdup(config_node_get_str(node, "ssl_pkey", NULL));
-	rec->ssl_pass = g_strdup(config_node_get_str(node, "ssl_pass", NULL));
-	rec->ssl_verify = config_node_get_bool(node, "ssl_verify", FALSE);
-	rec->ssl_cafile = g_strdup(config_node_get_str(node, "ssl_cafile", NULL));
-	rec->ssl_capath = g_strdup(config_node_get_str(node, "ssl_capath", NULL));
-	rec->ssl_ciphers = g_strdup(config_node_get_str(node, "ssl_ciphers", NULL));
-	if (rec->ssl_cafile || rec->ssl_capath)
-		rec->ssl_verify = TRUE;
-	if (rec->ssl_cert != NULL || rec->ssl_verify)
-		rec->use_ssl = TRUE;
+
+	rec->use_tls = config_node_get_bool(node, "use_tls", FALSE) || config_node_get_bool(node, "use_ssl", FALSE);
+	rec->tls_verify = config_node_get_bool(node, "tls_verify", FALSE) || config_node_get_bool(node, "ssl_verify", FALSE);
+
+	value = config_node_get_str(node, "tls_cert", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_cert", NULL);
+	rec->tls_cert = g_strdup(value);
+
+	value = config_node_get_str(node, "tls_pkey", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_pkey", NULL);
+	rec->tls_pkey = g_strdup(value);
+
+	value = config_node_get_str(node, "tls_pass", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_pass", NULL);
+	rec->tls_pass = g_strdup(value);
+
+	value = config_node_get_str(node, "tls_cafile", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_cafile", NULL);
+	rec->tls_cafile = g_strdup(value);
+
+	value = config_node_get_str(node, "tls_capath", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_capath", NULL);
+	rec->tls_capath = g_strdup(value);
+
+	value = config_node_get_str(node, "tls_ciphers", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_ciphers", NULL);
+	rec->tls_ciphers = g_strdup(value);
+
+	value = config_node_get_str(node, "tls_pinned_cert", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_pinned_cert", NULL);
+	rec->tls_pinned_cert = g_strdup(value);
+
+	value = config_node_get_str(node, "tls_pinned_pubkey", NULL);
+	if (value == NULL)
+		value = config_node_get_str(node, "ssl_pinned_pubkey", NULL);
+	rec->tls_pinned_pubkey = g_strdup(value);
+
+	if (rec->tls_cafile || rec->tls_capath)
+		rec->tls_verify = TRUE;
+	if (rec->tls_cert != NULL || rec->tls_verify)
+		rec->use_tls = TRUE;
+
 	rec->port = port;
 	rec->autoconnect = config_node_get_bool(node, "autoconnect", FALSE);
 	rec->no_proxy = config_node_get_bool(node, "no_proxy", FALSE);
@@ -463,14 +505,18 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 
 	iconfig_node_set_int(node, "port", rec->port);
 	iconfig_node_set_str(node, "password", rec->password);
-	iconfig_node_set_bool(node, "use_ssl", rec->use_ssl);
-	iconfig_node_set_str(node, "ssl_cert", rec->ssl_cert);
-	iconfig_node_set_str(node, "ssl_pkey", rec->ssl_pkey);
-	iconfig_node_set_str(node, "ssl_pass", rec->ssl_pass);
-	iconfig_node_set_bool(node, "ssl_verify", rec->ssl_verify);
-	iconfig_node_set_str(node, "ssl_cafile", rec->ssl_cafile);
-	iconfig_node_set_str(node, "ssl_capath", rec->ssl_capath);
-	iconfig_node_set_str(node, "ssl_ciphers", rec->ssl_ciphers);
+
+	iconfig_node_set_bool(node, "use_tls", rec->use_tls);
+	iconfig_node_set_str(node, "tls_cert", rec->tls_cert);
+	iconfig_node_set_str(node, "tls_pkey", rec->tls_pkey);
+	iconfig_node_set_str(node, "tls_pass", rec->tls_pass);
+	iconfig_node_set_bool(node, "tls_verify", rec->tls_verify);
+	iconfig_node_set_str(node, "tls_cafile", rec->tls_cafile);
+	iconfig_node_set_str(node, "tls_capath", rec->tls_capath);
+	iconfig_node_set_str(node, "tls_ciphers", rec->tls_ciphers);
+	iconfig_node_set_str(node, "tls_pinned_cert", rec->tls_pinned_cert);
+	iconfig_node_set_str(node, "tls_pinned_pubkey", rec->tls_pinned_pubkey);
+
 	iconfig_node_set_str(node, "own_host", rec->own_host);
 
 	iconfig_node_set_str(node, "family",
@@ -514,12 +560,14 @@ static void server_setup_destroy(SERVER_SETUP_REC *rec)
 	g_free_not_null(rec->own_ip6);
 	g_free_not_null(rec->chatnet);
 	g_free_not_null(rec->password);
-	g_free_not_null(rec->ssl_cert);
-	g_free_not_null(rec->ssl_pkey);
-	g_free_not_null(rec->ssl_pass);
-	g_free_not_null(rec->ssl_cafile);
-	g_free_not_null(rec->ssl_capath);
-	g_free_not_null(rec->ssl_ciphers);
+	g_free_not_null(rec->tls_cert);
+	g_free_not_null(rec->tls_pkey);
+	g_free_not_null(rec->tls_pass);
+	g_free_not_null(rec->tls_cafile);
+	g_free_not_null(rec->tls_capath);
+	g_free_not_null(rec->tls_ciphers);
+	g_free_not_null(rec->tls_pinned_cert);
+	g_free_not_null(rec->tls_pinned_pubkey);
 	g_free(rec->address);
 	g_free(rec);
 }

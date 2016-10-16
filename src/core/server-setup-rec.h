@@ -11,12 +11,14 @@ char *password;
 int sasl_mechanism;
 char *sasl_password;
 
-char *ssl_cert;
-char *ssl_pkey;
-char *ssl_pass;
-char *ssl_cafile;
-char *ssl_capath;
-char *ssl_ciphers;
+char *tls_cert;
+char *tls_pkey;
+char *tls_pass;
+char *tls_cafile;
+char *tls_capath;
+char *tls_ciphers;
+char *tls_pinned_cert;
+char *tls_pinned_pubkey;
 
 char *own_host; /* address to use when connecting this server */
 IPADDR *own_ip4, *own_ip6; /* resolved own_address if not NULL */
@@ -28,7 +30,7 @@ unsigned int no_proxy:1;
 unsigned int last_failed:1; /* if last connection attempt failed */
 unsigned int banned:1; /* if we're banned from this server */
 unsigned int dns_error:1; /* DNS said the host doesn't exist */
-unsigned int use_ssl:1; /* this connection uses SSL */
-unsigned int ssl_verify:1;
+unsigned int use_tls:1; /* this connection uses TLS */
+unsigned int tls_verify:1;
 
 GHashTable *module_data;

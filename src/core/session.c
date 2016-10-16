@@ -150,8 +150,7 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 
 	node = config_node_section(config, node, NULL, NODE_TYPE_BLOCK);
 
-	config_node_set_str(config, node, "chat_type",
-			    chat_protocol_find_id(server->chat_type)->name);
+	config_node_set_str(config, node, "chat_type", chat_protocol_find_id(server->chat_type)->name);
 	config_node_set_str(config, node, "address", server->connrec->address);
 	config_node_set_int(config, node, "port", server->connrec->port);
 	config_node_set_str(config, node, "chatnet", server->connrec->chatnet);
@@ -159,13 +158,15 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "nick", server->nick);
 	config_node_set_str(config, node, "version", server->version);
 
-	config_node_set_bool(config, node, "use_ssl", server->connrec->use_ssl);
-	config_node_set_str(config, node, "ssl_cert", server->connrec->ssl_cert);
-	config_node_set_str(config, node, "ssl_pkey", server->connrec->ssl_pkey);
-	config_node_set_bool(config, node, "ssl_verify", server->connrec->ssl_verify);
-	config_node_set_str(config, node, "ssl_cafile", server->connrec->ssl_cafile);
-	config_node_set_str(config, node, "ssl_capath", server->connrec->ssl_capath);
-	config_node_set_str(config, node, "ssl_ciphers", server->connrec->ssl_ciphers);
+	config_node_set_bool(config, node, "use_tls", server->connrec->use_tls);
+	config_node_set_str(config, node, "tls_cert", server->connrec->tls_cert);
+	config_node_set_str(config, node, "tls_pkey", server->connrec->tls_pkey);
+	config_node_set_bool(config, node, "tls_verify", server->connrec->tls_verify);
+	config_node_set_str(config, node, "tls_cafile", server->connrec->tls_cafile);
+	config_node_set_str(config, node, "tls_capath", server->connrec->tls_capath);
+	config_node_set_str(config, node, "tls_ciphers", server->connrec->tls_ciphers);
+	config_node_set_str(config, node, "tls_pinned_cert", server->connrec->tls_pinned_cert);
+	config_node_set_str(config, node, "tls_pinned_pubkey", server->connrec->tls_pinned_pubkey);
 
 	handle = g_io_channel_unix_get_fd(net_sendbuffer_handle(server->handle));
 	config_node_set_int(config, node, "handle", handle);
