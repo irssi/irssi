@@ -17,6 +17,7 @@ v0.8.21-head 2016-xx-xx  The Irssi team <staff@irssi.org>
 	+ autolog_ignore_targets and activity_hide_targets learn a new syntax
 	      tag/* and * to ignore whole networks or everything.
 	+ /hilight got a -matchcase flag to hilight case sensitively (#421).
+	+ Always build irssi with TLS support.
 	- IP addresses are no longer stored when resolve_reverse_lookup is
 	  used.
 	- /names and $[...] now uses utf8 string operations (#40, #411).

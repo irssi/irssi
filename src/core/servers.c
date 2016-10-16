@@ -167,7 +167,6 @@ static void server_connect_callback_init(SERVER_REC *server, GIOChannel *handle)
 	server_connect_finished(server);
 }
 
-#ifdef HAVE_OPENSSL
 static void server_connect_callback_init_ssl(SERVER_REC *server, GIOChannel *handle)
 {
 	int error;
@@ -198,7 +197,6 @@ static void server_connect_callback_init_ssl(SERVER_REC *server, GIOChannel *han
 
 	server_connect_finished(server);
 }
-#endif
 
 static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 				const char *unix_socket)
@@ -247,11 +245,9 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		g_free(errmsg2);
 	} else {
 		server->handle = net_sendbuffer_create(handle, 0);
-#ifdef HAVE_OPENSSL
 		if (server->connrec->use_ssl)
 			server_connect_callback_init_ssl(server, handle);
 		else
-#endif
 		server->connect_tag =
 			g_input_add(handle, G_INPUT_WRITE | G_INPUT_READ,
 				    (GInputFunction)

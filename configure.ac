@@ -154,14 +154,6 @@ AC_ARG_ENABLE(true-color,
 	want_truecolor=no)
 
 dnl **
-dnl ** SSL Library checks (OpenSSL)
-dnl **
-
-AC_ARG_ENABLE(ssl,
-[  --disable-ssl           Disable Secure Sockets Layer support],,
-	enable_ssl=yes)
-
-dnl **
 dnl ** just some generic stuff...
 dnl **
 
@@ -239,6 +231,11 @@ if test "x$want_socks" = "xyes"; then
 fi
 
 dnl **
+dnl ** OpenSSL checks
+dnl **
+AC_CHECK_LIB([ssl], [SSL_library_init])
+
+dnl **
 dnl ** fe-text checks
 dnl **
 
@@ -279,27 +276,7 @@ if test -z "$GLIB_LIBS"; then
   AC_ERROR([GLIB is required to build irssi.])
 fi
 
-LIBS="$LIBS $GLIB_LIBS"
-
-have_openssl=no
-if test "$enable_ssl" = "yes"; then
-  PKG_CHECK_MODULES(SSL, openssl, :, :)
-  if test "$SSL_LIBS"; then
-    CFLAGS="$CFLAGS $SSL_CFLAGS"
-    have_openssl=yes
-  else
-    AC_CHECK_LIB(ssl, SSL_read, [
-      AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h, [
-	SSL_LIBS="-lssl -lcrypto"
-	have_openssl=yes
-      ])
-    ],, -lcrypto)
-  fi
-  if test "$have_openssl" = "yes"; then
-    AC_DEFINE(HAVE_OPENSSL,, Build with OpenSSL support)
-    LIBS="$LIBS $SSL_LIBS"
-  fi
-fi
+LIBS="$LIBS $GLIB_LIBS -lssl -lcrypto"
 
 dnl **
 dnl ** curses checks
@@ -569,12 +546,6 @@ if test "x$want_dane" = "xyes"; then
 		AC_DEFINE([HAVE_DANE], [], [DANE support])
 		have_dane=yes
 	], [], [-lssl -lcrypto -lsres -lpthread])
-
-	if test x$have_dane = "xyes" ; then
-		if test x$have_openssl = "xno" ; then
-			AC_ERROR([SSL is required to build Irssi with DANE support enabled.])
-		fi
-	fi
 fi
 
 if test "x$want_truecolor" = "xyes"; then
@@ -695,16 +666,6 @@ echo "Install prefix ................... : $prefix"
 
 echo
 
-echo "Building with SSL support ........ : $have_openssl"
-if test "x$have_openssl" = "xno" -a "x$enable_ssl" = "xyes"; then
-  if test -f /etc/debian_version; then
-    echo " - Try: sudo apt-get install libssl-dev"
-  elif test -f /etc/redhat-release; then
-    echo " - Try installing openssl-devel"
-  else
-    echo " - Try installing OpenSSL development headers"
-  fi
-fi
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with DANE support ....... : $have_dane"
 echo "Building with true color support.. : $want_truecolor"
