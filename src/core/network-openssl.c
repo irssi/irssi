@@ -615,8 +615,16 @@ static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
 	g_return_if_fail(tls != NULL);
 	g_return_if_fail(ssl != NULL);
 
+	int nid;
+	char *key = NULL;
+	char *value = NULL;
 	STACK_OF(X509) *chain = NULL;
 	int i;
+	int j;
+	TLS_CERT_REC *cert_rec = NULL;
+	X509_NAME *name = NULL;
+	X509_NAME_ENTRY *entry = NULL;
+	TLS_CERT_ENTRY_REC *tls_cert_entry_rec = NULL;
 
 	chain = SSL_get_peer_cert_chain(ssl);
 
@@ -624,24 +632,12 @@ static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
 		return;
 
 	for (i = 0; i < sk_X509_num(chain); i++) {
-		TLS_CERT_REC *cert_rec = NULL;
-		X509_NAME *name = NULL;
-
-		int j;
-		int nid;
-
-		char *key = NULL;
-		char *value = NULL;
-
 		cert_rec = tls_cert_create_rec();
 
 		// Subject.
 		name = X509_get_subject_name(sk_X509_value(chain, i));
 
 		for (j = 0; j < X509_NAME_entry_count(name); j++) {
-			X509_NAME_ENTRY *entry = NULL;
-			TLS_CERT_ENTRY_REC *tls_cert_entry_rec = NULL;
-
 			entry = X509_NAME_get_entry(name, j);
 
 			nid = OBJ_obj2nid(X509_NAME_ENTRY_get_object(entry));
@@ -661,9 +657,6 @@ static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
 		name = X509_get_issuer_name(sk_X509_value(chain, i));
 
 		for (j = 0; j < X509_NAME_entry_count(name); j++) {
-			X509_NAME_ENTRY *entry = NULL;
-			TLS_CERT_ENTRY_REC *tls_cert_entry_rec = NULL;
-
 			entry = X509_NAME_get_entry(name, j);
 
 			nid = OBJ_obj2nid(X509_NAME_ENTRY_get_object(entry));
@@ -691,6 +684,9 @@ static void set_server_temporary_key_info(TLS_REC *tls, SSL *ssl)
 #ifdef SSL_get_server_tmp_key
 	// Show ephemeral key information.
 	EVP_PKEY *ephemeral_key = NULL;
+	char *ephemeral_key_algorithm = NULL;
+	char *cname = NULL;
+	int nid;
 
 	if (SSL_get_server_tmp_key(ssl, &ephemeral_key)) {
 		switch (EVP_PKEY_id(ephemeral_key)) {
@@ -702,12 +698,10 @@ static void set_server_temporary_key_info(TLS_REC *tls, SSL *ssl)
 			case EVP_PKEY_EC:
 			{
 				EC_KEY *ec = EVP_PKEY_get1_EC_KEY(ephemeral_key);
-				int nid;
-				const char *cname;
 				nid = EC_GROUP_get_curve_name(EC_KEY_get0_group(ec));
 				EC_KEY_free(ec);
-				cname = OBJ_nid2sn(nid);
-				char *ephemeral_key_algorithm = g_strdup_printf("ECDH: %s", cname);
+				cname = (char *)OBJ_nid2sn(nid);
+				ephemeral_key_algorithm = g_strdup_printf("ECDH: %s", cname);
 
 				tls_rec_set_ephemeral_key_algorithm(tls, ephemeral_key_algorithm);
 				tls_rec_set_ephemeral_key_size(tls, EVP_PKEY_bits(ephemeral_key));
