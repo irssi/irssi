@@ -197,7 +197,7 @@ static void create_module_dir(void)
 		g_error("Unable to allocate memory for OTR directory path.");
 
 	if (stat(dir_path, &statbuf) != 0) {
-		if (mkpath(dir_path, 0700) != 0)
+		if (g_mkdir_with_parents(dir_path, 0700) != 0)
 			g_error("Unable to create OTR directory path.");
 	} else if (!S_ISDIR(statbuf.st_mode))
 		g_error("%s is not a directory.\nYou should remove it with command: rm %s", dir_path, dir_path);

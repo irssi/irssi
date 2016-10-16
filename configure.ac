@@ -597,6 +597,7 @@ fi
 AH_TEMPLATE(HAVE_GMODULE)
 AH_TEMPLATE(HAVE_SOCKS_H, [misc..])
 AH_TEMPLATE(HAVE_STATIC_PERL)
+AH_TEMPLATE(HAVE_STATIC_OTR)
 AH_TEMPLATE(PRIuUOFF_T, [printf()-format for uoff_t, eg. "u" or "lu" or "llu"])
 AH_TEMPLATE(UOFF_T_INT, [What type should be used for uoff_t])
 AH_TEMPLATE(UOFF_T_LONG)
