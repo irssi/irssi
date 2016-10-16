@@ -22,6 +22,8 @@
 #include "network.h"
 #include "misc.h"
 #include "servers.h"
+#include "signals.h"
+#include "tls.h"
 
 #include <openssl/crypto.h>
 #include <openssl/x509.h>
@@ -201,9 +203,10 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 	return matched;
 }
 
-static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, int port, X509 *cert, SERVER_REC *server)
+static gboolean irssi_ssl_verify(SSL *ssl, SSL_CTX *ctx, const char* hostname, int port, X509 *cert, SERVER_REC *server, TLS_REC *tls_rec)
 {
 	long result;
+
 #ifdef HAVE_DANE
 	int dane_ret;
 	struct val_daneparams daneparams;
@@ -564,6 +567,197 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 	return gchan;
 }
 
+static void set_cipher_info(TLS_REC *tls, SSL *ssl)
+{
+	g_return_if_fail(tls != NULL);
+	g_return_if_fail(ssl != NULL);
+
+	tls_rec_set_protocol_version(tls, SSL_get_version(ssl));
+
+	tls_rec_set_cipher(tls, SSL_CIPHER_get_name(SSL_get_current_cipher(ssl)));
+	tls_rec_set_cipher_size(tls, SSL_get_cipher_bits(ssl, NULL));
+}
+
+static void set_pubkey_info(TLS_REC *tls, X509 *cert, unsigned char *cert_fingerprint, size_t cert_fingerprint_size, unsigned char *public_key_fingerprint, size_t public_key_fingerprint_size)
+{
+	g_return_if_fail(tls != NULL);
+	g_return_if_fail(cert != NULL);
+
+	EVP_PKEY *pubkey = NULL;
+	char *cert_fingerprint_hex = NULL;
+	char *public_key_fingerprint_hex = NULL;
+
+	BIO *bio = NULL;
+	char buffer[128];
+	size_t length;
+
+	pubkey = X509_get_pubkey(cert);
+
+	cert_fingerprint_hex = binary_to_hex(cert_fingerprint, cert_fingerprint_size);
+	tls_rec_set_certificate_fingerprint(tls, cert_fingerprint_hex);
+	tls_rec_set_certificate_fingerprint_algorithm(tls, "SHA256");
+
+	// Show algorithm.
+	switch (EVP_PKEY_id(pubkey)) {
+		case EVP_PKEY_RSA:
+			tls_rec_set_public_key_algorithm(tls, "RSA");
+			break;
+
+		case EVP_PKEY_DSA:
+			tls_rec_set_public_key_algorithm(tls, "DSA");
+			break;
+
+		case EVP_PKEY_EC:
+			tls_rec_set_public_key_algorithm(tls, "EC");
+			break;
+
+		default:
+			tls_rec_set_public_key_algorithm(tls, "Unknown");
+			break;
+	}
+
+	public_key_fingerprint_hex = binary_to_hex(public_key_fingerprint, public_key_fingerprint_size);
+	tls_rec_set_public_key_fingerprint(tls, public_key_fingerprint_hex);
+	tls_rec_set_public_key_size(tls, EVP_PKEY_bits(pubkey));
+	tls_rec_set_public_key_fingerprint_algorithm(tls, "SHA256");
+
+	// Read the NotBefore timestamp.
+	bio = BIO_new(BIO_s_mem());
+	ASN1_TIME_print(bio, X509_get_notBefore(cert));
+	length = BIO_read(bio, buffer, sizeof(buffer));
+	buffer[length] = '\0';
+	BIO_free(bio);
+	tls_rec_set_not_before(tls, buffer);
+
+	// Read the NotAfter timestamp.
+	bio = BIO_new(BIO_s_mem());
+	ASN1_TIME_print(bio, X509_get_notAfter(cert));
+	length = BIO_read(bio, buffer, sizeof(buffer));
+	buffer[length] = '\0';
+	BIO_free(bio);
+	tls_rec_set_not_after(tls, buffer);
+
+	g_free(cert_fingerprint_hex);
+	g_free(public_key_fingerprint_hex);
+	EVP_PKEY_free(pubkey);
+}
+
+static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
+{
+	g_return_if_fail(tls != NULL);
+	g_return_if_fail(ssl != NULL);
+
+	STACK_OF(X509) *chain = NULL;
+	int i;
+
+	chain = SSL_get_peer_cert_chain(ssl);
+
+	if (chain == NULL)
+		return;
+
+	for (i = 0; i < sk_X509_num(chain); i++) {
+		TLS_CERT_REC *cert_rec = NULL;
+		X509_NAME *name = NULL;
+
+		int j;
+		int nid;
+
+		char *key = NULL;
+		char *value = NULL;
+
+		cert_rec = tls_cert_create_rec();
+
+		// Subject.
+		name = X509_get_subject_name(sk_X509_value(chain, i));
+
+		for (j = 0; j < X509_NAME_entry_count(name); j++) {
+			X509_NAME_ENTRY *entry = NULL;
+			TLS_CERT_ENTRY_REC *tls_cert_entry_rec = NULL;
+
+			entry = X509_NAME_get_entry(name, j);
+
+			nid = OBJ_obj2nid(X509_NAME_ENTRY_get_object(entry));
+			key = (char *)OBJ_nid2sn(nid);
+
+			if (key == NULL)
+				key = (char *)OBJ_nid2ln(nid);
+
+			ASN1_STRING *d = X509_NAME_ENTRY_get_data(entry);
+			value = (char *)ASN1_STRING_data(d);
+
+			tls_cert_entry_rec = tls_cert_entry_create_rec(key, value);
+			tls_cert_rec_append_subject_entry(cert_rec, tls_cert_entry_rec);
+		}
+
+		// Issuer.
+		name = X509_get_issuer_name(sk_X509_value(chain, i));
+
+		for (j = 0; j < X509_NAME_entry_count(name); j++) {
+			X509_NAME_ENTRY *entry = NULL;
+			TLS_CERT_ENTRY_REC *tls_cert_entry_rec = NULL;
+
+			entry = X509_NAME_get_entry(name, j);
+
+			nid = OBJ_obj2nid(X509_NAME_ENTRY_get_object(entry));
+			key = (char *)OBJ_nid2sn(nid);
+
+			if (key == NULL)
+				key = (char *)OBJ_nid2ln(nid);
+
+			ASN1_STRING *d = X509_NAME_ENTRY_get_data(entry);
+			value = (char *)ASN1_STRING_data(d);
+
+			tls_cert_entry_rec = tls_cert_entry_create_rec(key, value);
+			tls_cert_rec_append_issuer_entry(cert_rec, tls_cert_entry_rec);
+		}
+
+		tls_rec_append_cert(tls, cert_rec);
+	}
+}
+
+static void set_server_temporary_key_info(TLS_REC *tls, SSL *ssl)
+{
+	g_return_if_fail(tls != NULL);
+	g_return_if_fail(ssl != NULL);
+
+#ifdef SSL_get_server_tmp_key
+	// Show ephemeral key information.
+	EVP_PKEY *ephemeral_key = NULL;
+
+	if (SSL_get_server_tmp_key(ssl, &ephemeral_key)) {
+		switch (EVP_PKEY_id(ephemeral_key)) {
+			case EVP_PKEY_DH:
+				tls_rec_set_ephemeral_key_algorithm(tls, "DH");
+				tls_rec_set_ephemeral_key_size(tls, EVP_PKEY_bits(ephemeral_key));
+				break;
+
+			case EVP_PKEY_EC:
+			{
+				EC_KEY *ec = EVP_PKEY_get1_EC_KEY(ephemeral_key);
+				int nid;
+				const char *cname;
+				nid = EC_GROUP_get_curve_name(EC_KEY_get0_group(ec));
+				EC_KEY_free(ec);
+				cname = OBJ_nid2sn(nid);
+				char *ephemeral_key_algorithm = g_strdup_printf("ECDH: %s", cname);
+
+				tls_rec_set_ephemeral_key_algorithm(tls, ephemeral_key_algorithm);
+				tls_rec_set_ephemeral_key_size(tls, EVP_PKEY_bits(ephemeral_key));
+
+				g_free_and_null(ephemeral_key_algorithm);
+				break;
+
+			default:
+				tls_rec_set_ephemeral_key_algorithm(tls, "Unknown");
+				tls_rec_set_ephemeral_key_size(tls, EVP_PKEY_bits(ephemeral_key));
+				break;
+		}
+
+		EVP_PKEY_free(ephemeral_key);
+	}
+#endif // SSL_get_server_tmp_key.
+}
+
 GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *server)
 {
 	GIOChannel *handle, *ssl_handle;
@@ -581,8 +775,17 @@ int irssi_ssl_handshake(GIOChannel *handle)
 {
 	GIOSSLChannel *chan = (GIOSSLChannel *)handle;
 	int ret, err;
-	X509 *cert;
-	const char *errstr;
+	const char *errstr = NULL;
+	X509 *cert = NULL;
+	X509_PUBKEY *pubkey = NULL;
+	int pubkey_size = 0;
+	unsigned char *pubkey_der = NULL;
+	unsigned char *pubkey_der_tmp = NULL;
+	unsigned char pubkey_fingerprint[EVP_MAX_MD_SIZE];
+	unsigned int pubkey_fingerprint_size;
+	unsigned char cert_fingerprint[EVP_MAX_MD_SIZE];
+	unsigned int cert_fingerprint_size;
+	TLS_REC *tls = NULL;
 
 	ERR_clear_error();
 	ret = SSL_connect(chan->ssl);
@@ -610,14 +813,55 @@ int irssi_ssl_handshake(GIOChannel *handle)
 	}
 
 	cert = SSL_get_peer_certificate(chan->ssl);
+	pubkey = X509_get_X509_PUBKEY(cert);
+
 	if (cert == NULL) {
 		g_warning("SSL server supplied no certificate");
 		return -1;
 	}
-	ret = !chan->verify || irssi_ssl_verify(chan->ssl, chan->ctx, chan->server->connrec->address, chan->port, cert, chan->server);
+
+	if (pubkey == NULL) {
+		g_warning("SSL server supplied no certificate public key");
+		return -1;
+	}
+
+	if (! X509_digest(cert, EVP_sha256(), cert_fingerprint, &cert_fingerprint_size)) {
+		g_warning("Unable to generate certificate fingerprint");
+		X509_free(cert);
+		return -1;
+	}
+
+	pubkey_size = i2d_X509_PUBKEY(pubkey, NULL);
+	pubkey_der = pubkey_der_tmp = g_new(unsigned char, pubkey_size);
+	i2d_X509_PUBKEY(pubkey, &pubkey_der_tmp);
+
+	EVP_Digest(pubkey_der, pubkey_size, pubkey_fingerprint, &pubkey_fingerprint_size, EVP_sha256(), 0);
+
+	tls = tls_create_rec();
+	set_cipher_info(tls, chan->ssl);
+	set_pubkey_info(tls, cert, cert_fingerprint, cert_fingerprint_size, pubkey_fingerprint, pubkey_fingerprint_size);
+	set_peer_cert_chain_info(tls, chan->ssl);
+	set_server_temporary_key_info(tls, chan->ssl);
+
+	ret = 1;
+
+	do {
+		if (chan->verify) {
+			ret = irssi_ssl_verify(chan->ssl, chan->ctx, chan->server->connrec->address, chan->port, cert, chan->server, tls);
+
+			if (! ret) {
+				// irssi_ssl_verify emits a warning itself.
+				continue;
+			}
+		}
+	} while (0);
+
+	// Emit the TLS rec.
+	signal_emit("tls handshake finished", 2, chan->server, tls);
+
+	tls_rec_free(tls);
 	X509_free(cert);
+	g_free(pubkey_der);
+
 	return ret ? 0 : -1;
 }
-
-
-
