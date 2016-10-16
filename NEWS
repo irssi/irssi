@@ -21,6 +21,8 @@ v0.8.21-head 2016-xx-xx  The Irssi team <staff@irssi.org>
 	+ Rename SSL to TLS in the code and add -tls_* versions of the -ssl_*
 	  options to /CONNECT and /SERVER, but make sure the -ssl_* options continue
 	  to work.
+	+ Use TLS for Freenode, EFnet, EsperNet, OFTC, Rizon, and IRC6 in the default
+	  configuration.
 	- IP addresses are no longer stored when resolve_reverse_lookup is
 	  used.
 	- /names and $[...] now uses utf8 string operations (#40, #411).
