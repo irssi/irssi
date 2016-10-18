@@ -22,6 +22,7 @@ libfe_common_core_a_SOURCES = \
 	fe-messages.c \
 	fe-modules.c \
 	fe-queries.c \
+	fe-proxy.c \
 	fe-server.c \
 	fe-settings.c \
 	fe-tls.c \

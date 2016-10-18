@@ -304,5 +304,15 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "tls_cert_fingerprint", "Certificate Fingerprint: {hilight $0} ({hilight $1})", 2, { 0, 0 } },
 	{ "tls_protocol_version", "Protocol: {hilight $0} ({hilight $1} bit, {hilight $2})", 3, { 0, 1, 0 } },
 
+	/* ---- */
+	{ NULL, "Proxy", 0 },
+
+	{ "proxy_added", "Proxy $0 added", 1, { 0 } },
+	{ "proxy_not_found", "Proxy $0 not found", 1, { 0 } },
+	{ "proxy_removed", "Proxy $0 removed", 1, { 0 } },
+	{ "proxy_header", "%#Proxy      Server               Port   Settings", 0 },
+	{ "proxy_line", "%#%|$[!10]0 $[20]1 $[5]2 $3", 4, { 0, 0, 1, 0 } },
+	{ "proxy_footer", "", 0 },
+
 	{ NULL, NULL, 0 }
 };

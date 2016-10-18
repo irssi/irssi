@@ -103,6 +103,8 @@ typedef struct _RAWLOG_REC RAWLOG_REC;
 
 typedef struct _CHAT_PROTOCOL_REC CHAT_PROTOCOL_REC;
 typedef struct _CHATNET_REC CHATNET_REC;
+typedef struct _PROXY_REC PROXY_REC;
+typedef struct _PROXY_PROTOCOL_REC PROXY_PROTOCOL_REC;
 typedef struct _SERVER_REC SERVER_REC;
 typedef struct _WI_ITEM_REC WI_ITEM_REC;
 typedef struct _CHANNEL_REC CHANNEL_REC;

@@ -33,6 +33,8 @@
 #include "chat-protocols.h"
 #include "servers.h"
 #include "chatnets.h"
+#include "proxy.h"
+#include "proxy-protocols.h"
 #include "commands.h"
 #include "expandos.h"
 #include "write-buffer.h"
@@ -239,6 +241,8 @@ void core_init(void)
 	chat_protocols_init();
 	chatnets_init();
         expandos_init();
+	proxy_init();
+	proxy_protocols_init();
 	ignore_init();
 	servers_init();
         write_buffer_init();
@@ -290,6 +294,8 @@ void core_deinit(void)
 	ignore_deinit();
         expandos_deinit();
 	chatnets_deinit();
+	proxy_deinit();
+	proxy_protocols_deinit();
 	chat_protocols_deinit();
 
         session_deinit();

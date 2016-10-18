@@ -34,6 +34,8 @@ libcore_a_SOURCES = \
 	nicklist.c \
 	nickmatch-cache.c \
 	pidwait.c \
+	proxy.c \
+	proxy-protocols.c \
 	queries.c \
 	rawlog.c \
 	recode.c \
@@ -53,6 +55,7 @@ structure_headers = \
 	channel-rec.h \
 	channel-setup-rec.h \
 	chatnet-rec.h \
+	proxy-rec.h \
 	query-rec.h \
 	server-rec.h \
 	server-setup-rec.h \
@@ -86,6 +89,8 @@ pkginc_core_HEADERS = \
 	nicklist.h \
 	nickmatch-cache.h \
 	pidwait.h \
+	proxy.h \
+	proxy-protocols.h \
 	queries.h \
 	rawlog.h \
 	recode.h \
