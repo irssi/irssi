@@ -217,8 +217,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 
 	if (ip != NULL) {
 		own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
-		port = server->connrec->proxy != NULL ?
-			server->connrec->proxy_port : server->connrec->port;
+		port = server->connrec->port;
 		handle = server->connrec->use_tls ?
 			net_connect_ip_ssl(ip, port, own_ip, server) : net_connect_ip(ip, port, own_ip);
 	} else {
@@ -414,8 +413,7 @@ int server_start_connect(SERVER_REC *server)
 		server->connect_pipe[0] = g_io_channel_new(fd[0]);
 		server->connect_pipe[1] = g_io_channel_new(fd[1]);
 
-		connect_address = server->connrec->proxy != NULL ?
-			server->connrec->proxy : server->connrec->address;
+		connect_address = server->connrec->address;
 		server->connect_pid =
 			net_gethostbyname_nonblock(connect_address,
 						   server->connect_pipe[1],
@@ -609,11 +607,6 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 
 	if (conn->connect_handle != NULL)
 		net_disconnect(conn->connect_handle);
-
-	g_free_not_null(conn->proxy);
-	g_free_not_null(conn->proxy_string);
-	g_free_not_null(conn->proxy_string_after);
-	g_free_not_null(conn->proxy_password);
 
 	g_free_not_null(conn->tag);
 	g_free_not_null(conn->address);

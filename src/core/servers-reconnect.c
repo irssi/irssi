@@ -157,12 +157,6 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
         server_connect_ref(dest);
 	dest->type = module_get_uniq_id("SERVER CONNECT", 0);
 	dest->reconnection = src->reconnection;
-	dest->proxy = g_strdup(src->proxy);
-        dest->proxy_port = src->proxy_port;
-	dest->proxy_string = g_strdup(src->proxy_string);
-	dest->proxy_string_after = g_strdup(src->proxy_string_after);
-	dest->proxy_password = g_strdup(src->proxy_password);
-
 	dest->tag = g_strdup(src->tag);
 
 	if (connect_info) {

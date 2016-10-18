@@ -36,7 +36,6 @@
     -cmdmax:            Specifies the maximum number of commands to perform
                         before starting the internal flood protection.
     -port:              Specifies the port to connect to the server.
-    -noproxy:           Ignores the global proxy configuration.
     -rawlog:            Immediately open rawlog after connecting.
     -noautosendcmd:     Doesn't execute autosendcmd.
 
@@ -64,7 +63,7 @@
     /SERVER CONNECT chat.freenode.net
     /SERVER CONNECT +chat.freenode.net
     /SERVER ADD -network Freenode -noautosendcmd orwell.freenode.net
-    /SERVER ADD -! -auto -host staff.irssi.org -port 6667 -4 -network Freenode -noproxy orwell.freenode.net
+    /SERVER ADD -! -auto -host staff.irssi.org -port 6667 -4 -network Freenode orwell.freenode.net
     /SERVER MODIFY -network Freenode -noauto orwell.freenode.net
     /SERVER REMOVE orwell.freenode.net 6667 Freenode
     /SERVER PURGE

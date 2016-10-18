@@ -25,15 +25,6 @@ AC_CHECK_HEADERS(sys/socket.h sys/time.h sys/utsname.h regex.h)
 
 AC_SYS_LARGEFILE
 
-AC_ARG_WITH(socks,
-[  --with-socks            Build with socks support],
-	if test x$withval = xno; then
-		want_socks=no
-	else
-		want_socks=yes
-	fi,
-	want_socks=no)
-
 AC_ARG_WITH(textui,
 [  --without-textui        Build without text frontend],
 	if test x$withval = xno; then
@@ -202,24 +193,6 @@ else
   AC_ERROR([Couldn't find integer type for off_t])
 fi
 
-dnl **
-dnl ** check for socks
-dnl **
-
-if test "x$want_socks" = "xyes"; then
-	AC_CHECK_LIB(socks, connect, [
-		AC_DEFINE(HAVE_SOCKS,, Build with socks support)
-		LIBS="$LIBS -lsocks"
-		AC_CHECK_HEADER(socks.h, [
-			AC_DEFINE(HAVE_SOCKS_H)
-			CFLAGS="$CFLAGS -DSOCKS"
-			AC_MSG_RESULT(["socks5 library found, building with it"])
-		], [
-			AC_MSG_RESULT(["socks4 library found, building with it"])
-			CFLAGS="$CFLAGS -Dconnect=Rconnect -Dgetsockname=Rgetsockname -Dgetpeername=Rgetpeername -Dbind=Rbind -Daccept=Raccept -Dlisten=Rlisten -Dselect=Rselect"
-		])
-	])
-fi
 
 dnl **
 dnl ** OpenSSL checks

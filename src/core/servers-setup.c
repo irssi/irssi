@@ -129,15 +129,6 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 	conn->username = g_strdup(settings_get_str("user_name"));
 	conn->realname = g_strdup(settings_get_str("real_name"));
 
-	/* proxy settings */
-	if (settings_get_bool("use_proxy")) {
-		conn->proxy = g_strdup(settings_get_str("proxy_address"));
-		conn->proxy_port = settings_get_int("proxy_port");
-		conn->proxy_string = g_strdup(settings_get_str("proxy_string"));
-		conn->proxy_string_after = g_strdup(settings_get_str("proxy_string_after"));
-		conn->proxy_password = g_strdup(settings_get_str("proxy_password"));
-	}
-
 	/* source IP */
 	if (source_host_ip4 != NULL) {
 		conn->own_ip4 = g_new(IPADDR, 1);
@@ -158,9 +149,6 @@ static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
 	g_return_if_fail(IS_SERVER_SETUP(sserver));
 
 	sserver->last_connect = time(NULL);
-
-        if (sserver->no_proxy)
-		g_free_and_null(conn->proxy);
 
 	if (sserver->family != 0 && conn->family == 0)
                 conn->family = sserver->family;
@@ -456,7 +444,6 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 
 	rec->port = port;
 	rec->autoconnect = config_node_get_bool(node, "autoconnect", FALSE);
-	rec->no_proxy = config_node_get_bool(node, "no_proxy", FALSE);
 	rec->own_host = g_strdup(config_node_get_str(node, "own_host", NULL));
 
 	signal_emit("server setup read", 2, rec, node);
@@ -525,8 +512,6 @@ static void server_setup_save(SERVER_SETUP_REC *rec)
 
 	if (rec->autoconnect)
 		iconfig_node_set_bool(node, "autoconnect", TRUE);
-	if (rec->no_proxy)
-		iconfig_node_set_bool(node, "no_proxy", TRUE);
 
 	signal_emit("server setup saved", 2, rec, node);
 }
@@ -639,13 +624,6 @@ void servers_setup_init(void)
 	settings_add_str("server", "nick", NULL);
 	settings_add_str("server", "user_name", NULL);
 	settings_add_str("server", "real_name", NULL);
-
-	settings_add_bool("proxy", "use_proxy", FALSE);
-	settings_add_str("proxy", "proxy_address", "");
-	settings_add_int("proxy", "proxy_port", 6667);
-	settings_add_str("proxy", "proxy_string", "CONNECT %s %d");
-	settings_add_str("proxy", "proxy_string_after", "");
-	settings_add_str("proxy", "proxy_password", "");
 
         setupservers = NULL;
 	source_host_ip4 = source_host_ip6 = NULL;
