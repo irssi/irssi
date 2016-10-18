@@ -215,6 +215,10 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 	if ((rec->tls_cert != NULL && rec->tls_cert[0] != '\0') || rec->tls_verify == TRUE)
 		rec->use_tls = TRUE;
 
+	value = g_hash_table_lookup(optlist, "proxy");
+	if (value != NULL && *value != '\0')
+		rec->proxy = g_strdup(value);
+
 	if (g_hash_table_lookup(optlist, "auto")) rec->autoconnect = TRUE;
 	if (g_hash_table_lookup(optlist, "noauto")) rec->autoconnect = FALSE;
 
@@ -432,8 +436,8 @@ void fe_server_init(void)
 	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
 	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) server_command);
 
-	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey auto noauto -host -port noautosendcmd");
-	command_set_options("server modify", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey auto noauto -host -port noautosendcmd");
+	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey +proxy auto noauto -host -port noautosendcmd");
+	command_set_options("server modify", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey +proxy auto noauto -host -port noautosendcmd");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);

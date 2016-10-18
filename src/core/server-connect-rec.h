@@ -27,6 +27,8 @@ char *tls_ciphers;
 char *tls_pinned_cert;
 char *tls_pinned_pubkey;
 
+char *proxy;
+
 GIOChannel *connect_handle; /* connect using this handle */
 
 /* when reconnecting, the old server status */

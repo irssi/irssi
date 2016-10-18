@@ -20,6 +20,8 @@ char *tls_ciphers;
 char *tls_pinned_cert;
 char *tls_pinned_pubkey;
 
+char *proxy;
+
 char *own_host; /* address to use when connecting this server */
 IPADDR *own_ip4, *own_ip6; /* resolved own_address if not NULL */
 

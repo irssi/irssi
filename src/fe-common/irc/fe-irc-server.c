@@ -54,6 +54,7 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 /* SYNTAX: SERVER ADD|MODIFY [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
                              [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
                              [-ssl_ciphers <list>]
+                             [-proxy <proxy>]
                              [-auto | -noauto] [-network <network>] [-host <hostname>]
                              [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
                              <address> [<port> [<password>]] */
@@ -127,7 +128,6 @@ static void cmd_server_list(const char *data)
 				g_string_append_printf(str, "tls_pinned_cert: %s, ", rec->tls_pinned_cert);
 			if (rec->tls_pinned_pubkey)
 				g_string_append_printf(str, "tls_pinned_pubkey: %s, ", rec->tls_pinned_pubkey);
-
 		}
 		if (rec->max_cmds_at_once > 0)
 			g_string_append_printf(str, "cmdmax: %d, ", rec->max_cmds_at_once);
@@ -137,6 +137,8 @@ static void cmd_server_list(const char *data)
 			g_string_append_printf(str, "querychans: %d, ", rec->max_query_chans);
 		if (rec->own_host != NULL)
 			g_string_append_printf(str, "host: %s, ", rec->own_host);
+		if (rec->proxy)
+			g_string_append_printf(str, "proxy: %s, ", rec->proxy);
 
 		if (str->len > 1) g_string_truncate(str, str->len-2);
 		printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_SETUPSERVER_LINE,

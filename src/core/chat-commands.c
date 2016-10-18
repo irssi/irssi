@@ -124,6 +124,8 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 		conn->tls_verify = TRUE;
 	if ((conn->tls_cert != NULL && conn->tls_cert[0] != '\0') || conn->tls_verify)
 		conn->use_tls = TRUE;
+	if ((tmp = g_hash_table_lookup(optlist, "proxy")) != NULL)
+		conn->proxy = g_strdup(tmp);
 
 	if (g_hash_table_lookup(optlist, "!") != NULL)
 		conn->no_autojoin_channels = TRUE;
@@ -148,6 +150,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 /* SYNTAX: CONNECT [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
                    [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
                    [-ssl_ciphers <list>]
+                   [-proxy <proxy>]
                    [-!] [-noautosendcmd]
 		   [-network <network>] [-host <hostname>]
 		   [-rawlog <file>]
@@ -255,6 +258,7 @@ static void sig_default_command_server(const char *data, SERVER_REC *server,
 /* SYNTAX: SERVER [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
                   [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
                   [-ssl_ciphers <list>]
+                  [-proxy <proxy>]
                   [-!] [-noautosendcmd]
 		  [-network <network>] [-host <hostname>]
 		  [-rawlog <file>]
@@ -494,7 +498,7 @@ void chat_commands_init(void)
 	signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 	signal_add("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 
-	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_pinned_cert +ssl_pinned_pubkey tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey +host -rawlog noautosendcmd");
+	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_pinned_cert +ssl_pinned_pubkey tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey +host +proxy -rawlog noautosendcmd");
 	command_set_options("msg", "channel nick");
 }
 
