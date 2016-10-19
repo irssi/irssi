@@ -685,6 +685,7 @@ static void set_server_temporary_key_info(TLS_REC *tls, SSL *ssl)
 #ifdef SSL_get_server_tmp_key
 	// Show ephemeral key information.
 	EVP_PKEY *ephemeral_key = NULL;
+	EC_KEY *ec_key = NULL;
 	char *ephemeral_key_algorithm = NULL;
 	char *cname = NULL;
 	int nid;
@@ -697,10 +698,9 @@ static void set_server_temporary_key_info(TLS_REC *tls, SSL *ssl)
 				break;
 
 			case EVP_PKEY_EC:
-			{
-				EC_KEY *ec = EVP_PKEY_get1_EC_KEY(ephemeral_key);
-				nid = EC_GROUP_get_curve_name(EC_KEY_get0_group(ec));
-				EC_KEY_free(ec);
+				ec_key = EVP_PKEY_get1_EC_KEY(ephemeral_key);
+				nid = EC_GROUP_get_curve_name(EC_KEY_get0_group(ec_key));
+				EC_KEY_free(ec_key);
 				cname = (char *)OBJ_nid2sn(nid);
 				ephemeral_key_algorithm = g_strdup_printf("ECDH: %s", cname);
 
