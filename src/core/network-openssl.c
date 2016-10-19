@@ -625,6 +625,7 @@ static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
 	X509_NAME *name = NULL;
 	X509_NAME_ENTRY *entry = NULL;
 	TLS_CERT_ENTRY_REC *tls_cert_entry_rec = NULL;
+	ASN1_STRING *data = NULL;
 
 	chain = SSL_get_peer_cert_chain(ssl);
 
@@ -646,8 +647,8 @@ static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
 			if (key == NULL)
 				key = (char *)OBJ_nid2ln(nid);
 
-			ASN1_STRING *d = X509_NAME_ENTRY_get_data(entry);
-			value = (char *)ASN1_STRING_data(d);
+			data = X509_NAME_ENTRY_get_data(entry);
+			value = (char *)ASN1_STRING_data(data);
 
 			tls_cert_entry_rec = tls_cert_entry_create_rec(key, value);
 			tls_cert_rec_append_subject_entry(cert_rec, tls_cert_entry_rec);
@@ -665,8 +666,8 @@ static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
 			if (key == NULL)
 				key = (char *)OBJ_nid2ln(nid);
 
-			ASN1_STRING *d = X509_NAME_ENTRY_get_data(entry);
-			value = (char *)ASN1_STRING_data(d);
+			data = X509_NAME_ENTRY_get_data(entry);
+			value = (char *)ASN1_STRING_data(data);
 
 			tls_cert_entry_rec = tls_cert_entry_create_rec(key, value);
 			tls_cert_rec_append_issuer_entry(cert_rec, tls_cert_entry_rec);
