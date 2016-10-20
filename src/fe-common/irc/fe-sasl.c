@@ -42,7 +42,7 @@ static void sig_cap_end(IRC_SERVER_REC *server)
 {
 	/* The negotiation has now been terminated, if we didn't manage to
 	 * authenticate successfully with the server just disconnect. */
-	if (server->sasl_success == FALSE &&
+	if (!server->sasl_success &&
 	    settings_get_bool("sasl_disconnect_on_failure"))
 		server_disconnect(SERVER(server));
 
