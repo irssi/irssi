@@ -771,6 +771,9 @@ int irssi_ssl_handshake(GIOChannel *handle)
 	set_peer_cert_chain_info(tls, chan->ssl);
 	set_server_temporary_key_info(tls, chan->ssl);
 
+	// Emit the TLS rec.
+	signal_emit("tls handshake finished", 2, chan->server, tls);
+
 	ret = 1;
 
 	do {
@@ -801,9 +804,6 @@ int irssi_ssl_handshake(GIOChannel *handle)
 			}
 		}
 	} while (0);
-
-	// Emit the TLS rec.
-	signal_emit("tls handshake finished", 2, chan->server, tls);
 
 done:
 	tls_rec_free(tls);
