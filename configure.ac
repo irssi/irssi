@@ -135,15 +135,6 @@ AC_ARG_WITH(perl,
 	fi,
 	want_perl=static)
 
-AC_ARG_ENABLE(dane,
-[  --enable-dane           Enable DANE support],
-	if test x$enableval = xno ; then
-		want_dane=no
-	else
-		want_dane=yes
-	fi,
-	want_dane=no)
-
 AC_ARG_ENABLE(true-color,
 [  --enable-true-color     Build with true color support in terminal],
 	if test x$enableval = xno ; then
@@ -537,17 +528,6 @@ COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS"
 AC_SUBST(COMMON_NOUI_LIBS)
 AC_SUBST(COMMON_LIBS)
 
-have_dane=no
-if test "x$want_dane" = "xyes"; then
-	AC_MSG_CHECKING([for DANE])
-	AC_CHECK_LIB(val-threads, val_getdaneinfo,
-	[
-		LIBS="$LIBS -lval-threads -lsres"
-		AC_DEFINE([HAVE_DANE], [], [DANE support])
-		have_dane=yes
-	], [], [-lssl -lcrypto -lsres -lpthread])
-fi
-
 if test "x$want_truecolor" = "xyes"; then
 	AC_DEFINE([TERM_TRUECOLOR], [], [true color support in terminal])
 else
@@ -667,7 +647,6 @@ echo "Install prefix ................... : $prefix"
 echo
 
 echo "Building with 64bit DCC support .. : $offt_64bit"
-echo "Building with DANE support ....... : $have_dane"
 echo "Building with true color support.. : $want_truecolor"
 
 echo

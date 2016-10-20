@@ -56,9 +56,6 @@ modules.c:
  "module error", int error, char *text, char *rootmodule, char *submodule
 
 network-openssl.c:
- "tlsa available", SERVER_REC
- "tlsa verification success", SERVER_REC
- "tlsa verification failed", SERVER_REC
  "tls handshake finished", SERVER_REC, TLS_REC
 
 nicklist.c:

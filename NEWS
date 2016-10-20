@@ -46,6 +46,14 @@ v0.8.21-head 2016-xx-xx  The Irssi team <staff@irssi.org>
 	        openssl dgst -sha256 -c | \
 	        tr a-z A-Z
 
+	+ Remove support for DANE validation of TLS certificates.
+
+	  There wasn't enough support in the IRC community to push for this on the
+	  majority of bigger IRC networks. If you believe this should be
+	  reintroduced into irssi, then please come up with an implementation that
+	  does not rely on the libval library. It is causing a lot of troubles for
+	  our downstream maintainers.
+
 	- IP addresses are no longer stored when resolve_reverse_lookup is
 	  used.
 	- /names and $[...] now uses utf8 string operations (#40, #411).
