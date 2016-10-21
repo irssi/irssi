@@ -776,34 +776,32 @@ int irssi_ssl_handshake(GIOChannel *handle)
 
 	ret = 1;
 
-	do {
-		if (pinned_cert_fingerprint != NULL && pinned_cert_fingerprint[0] != '\0') {
-			ret = g_ascii_strcasecmp(pinned_cert_fingerprint, tls->certificate_fingerprint) == 0;
+	if (pinned_cert_fingerprint != NULL && pinned_cert_fingerprint[0] != '\0') {
+		ret = g_ascii_strcasecmp(pinned_cert_fingerprint, tls->certificate_fingerprint) == 0;
 
-			if (! ret) {
-				g_warning("  Pinned certificate mismatch");
-				continue;
-			}
+		if (! ret) {
+			g_warning("  Pinned certificate mismatch");
+			goto done;
 		}
+	}
 
-		if (pinned_pubkey_fingerprint != NULL && pinned_pubkey_fingerprint[0] != '\0') {
-			ret = g_ascii_strcasecmp(pinned_pubkey_fingerprint, tls->public_key_fingerprint) == 0;
+	if (pinned_pubkey_fingerprint != NULL && pinned_pubkey_fingerprint[0] != '\0') {
+		ret = g_ascii_strcasecmp(pinned_pubkey_fingerprint, tls->public_key_fingerprint) == 0;
 
-			if (! ret) {
-				g_warning("  Pinned public key mismatch");
-				continue;
-			}
+		if (! ret) {
+			g_warning("  Pinned public key mismatch");
+			goto done;
 		}
+	}
 
-		if (chan->verify) {
-			ret = irssi_ssl_verify(chan->ssl, chan->ctx, chan->server->connrec->address, chan->port, cert, chan->server, tls);
+	if (chan->verify) {
+		ret = irssi_ssl_verify(chan->ssl, chan->ctx, chan->server->connrec->address, chan->port, cert, chan->server, tls);
 
-			if (! ret) {
-				// irssi_ssl_verify emits a warning itself.
-				continue;
-			}
+		if (! ret) {
+			// irssi_ssl_verify emits a warning itself.
+			goto done;
 		}
-	} while (0);
+	}
 
 done:
 	tls_rec_free(tls);
