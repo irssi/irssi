@@ -59,12 +59,10 @@ static void tls_handshake_finished(SERVER_REC *server, TLS_REC *tls)
 
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_PROTOCOL_VERSION, tls->protocol_version, tls->cipher_size, tls->cipher);
 
-#ifdef SSL_get_server_tmp_key
 	if (tls->ephemeral_key_algorithm != NULL)
 		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_EPHEMERAL_KEY, tls->ephemeral_key_size, tls->ephemeral_key_algorithm);
 	else
 		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_EPHEMERAL_KEY_UNAVAILBLE);
-#endif
 
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_PUBKEY, tls->public_key_size, tls->public_key_algorithm, tls->not_before, tls->not_after);
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_PUBKEY_FINGERPRINT, tls->public_key_fingerprint, tls->public_key_fingerprint_algorithm);

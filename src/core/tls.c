@@ -42,10 +42,7 @@ void tls_rec_free(TLS_REC *tls_rec)
 	g_free_and_null(tls_rec->certificate_fingerprint_algorithm);
 	g_free_and_null(tls_rec->not_after);
 	g_free_and_null(tls_rec->not_before);
-
-#ifdef SSL_get_server_tmp_key
 	g_free_and_null(tls_rec->ephemeral_key_algorithm);
-#endif
 
 	if (tls_rec->certs != NULL) {
 		g_slist_foreach(tls_rec->certs, (GFunc)tls_cert_rec_free, NULL);
@@ -130,7 +127,6 @@ void tls_rec_set_not_before(TLS_REC *tls_rec, const char *not_before)
 	tls_rec->not_before = g_strdup(not_before);
 }
 
-#ifdef SSL_get_server_tmp_key
 void tls_rec_set_ephemeral_key_algorithm(TLS_REC *tls_rec, const char *algorithm)
 {
 	g_return_if_fail(tls_rec != NULL);
@@ -142,7 +138,6 @@ void tls_rec_set_ephemeral_key_size(TLS_REC *tls_rec, size_t size)
 	g_return_if_fail(tls_rec != NULL);
 	tls_rec->ephemeral_key_size = size;
 }
-#endif
 
 void tls_rec_append_cert(TLS_REC *tls_rec, TLS_CERT_REC *tls_cert_rec)
 {

@@ -43,10 +43,8 @@ struct _TLS_REC {
 	char *not_after;
 	char *not_before;
 
-#ifdef SSL_get_server_tmp_key
 	char *ephemeral_key_algorithm;
 	size_t ephemeral_key_size;
-#endif
 
 	GSList *certs;
 };
@@ -75,11 +73,8 @@ void tls_rec_set_certificate_fingerprint(TLS_REC *tls_rec, const char *fingerpri
 void tls_rec_set_certificate_fingerprint_algorithm(TLS_REC *tls_rec, const char *algorithm);
 void tls_rec_set_not_after(TLS_REC *tls_rec, const char *not_after);
 void tls_rec_set_not_before(TLS_REC *tls_rec, const char *not_before);
-
-#ifdef SSL_get_server_tmp_key
 void tls_rec_set_ephemeral_key_algorithm(TLS_REC *tls_rec, const char *algorithm);
 void tls_rec_set_ephemeral_key_size(TLS_REC *tls_rec, size_t size);
-#endif
 
 void tls_rec_append_cert(TLS_REC *tls_rec, TLS_CERT_REC *tls_cert_rec);
 
