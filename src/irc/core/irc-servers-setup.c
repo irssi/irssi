@@ -30,6 +30,44 @@
 #include "irc-servers.h"
 #include "sasl.h"
 
+#include <errno.h>
+
+static void read_password_file(char *str, char **password)
+{
+	char **values = g_strsplit(str, ":", -1);
+	char *path;
+	GIOChannel *handle;
+	GString *buf;
+	GError *err = NULL;
+	gsize tpos;
+
+	path = g_strdup(values[1]);
+	if (!g_str_has_prefix(path, "/"))
+		path = g_strdup_printf("%s/%s", get_irssi_dir(), path);
+	handle = g_io_channel_new_file(path, "r", &err);
+	g_free(path);
+	g_strfreev(values);
+
+	if (handle == NULL) {
+		/* file not found */
+		g_warning("Could not read sasl password from file: %s", (err ? err->message : "No GError set"));
+		g_error_free(err);
+		return;
+	}
+
+	g_io_channel_set_encoding(handle, NULL, NULL);
+	buf = g_string_sized_new(64);
+	if (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
+		buf->str[tpos] = '\0';
+		*password = g_strdup(buf->str);
+	}
+	else
+		*password = g_strdup("");
+
+	g_string_free(buf, TRUE);
+	g_io_channel_unref(handle);
+}
+
 /* Fill information to connection from server setup record */
 static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
 					 IRC_SERVER_SETUP_REC *sserver)
@@ -97,7 +135,13 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 			    ircnet->sasl_password != NULL && *ircnet->sasl_password) {
 				conn->sasl_mechanism = SASL_MECHANISM_PLAIN;
 				conn->sasl_username = ircnet->sasl_username;
-				conn->sasl_password = ircnet->sasl_password;
+				char *password = NULL;
+				if (g_str_has_prefix(ircnet->sasl_password, "file:"))
+					read_password_file(ircnet->sasl_password, &password);
+				else
+					password = g_strdup(ircnet->sasl_password);
+				conn->sasl_password = g_strdup(password);
+				g_free(password);
 			} else
 				g_warning("The fields sasl_username and sasl_password are either missing or empty");
 		}
