@@ -52,6 +52,7 @@ static void read_password_file(char *str, char **password)
 		/* file not found */
 		g_warning("Could not read sasl password from file: %s", (err ? err->message : "No GError set"));
 		g_error_free(err);
+		*password = g_strdup("");
 		return;
 	}
 
