@@ -32,6 +32,7 @@ static void tls_handshake_finished(SERVER_REC *server, TLS_REC *tls)
 	GSList *certs = NULL;
 	GSList *subject = NULL;
 	GSList *issuer = NULL;
+	GString *str = NULL;
 	TLS_CERT_ENTRY_REC *data = NULL;
 
 	if (! settings_get_bool("tls_verbose_connect"))
@@ -41,20 +42,31 @@ static void tls_handshake_finished(SERVER_REC *server, TLS_REC *tls)
 
 	for (certs = tls->certs; certs != NULL; certs = certs->next) {
 		TLS_CERT_REC *tls_cert_rec = certs->data;
-
-		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_CERT_SUBJECT_HEADER);
+		str = g_string_new(NULL);
 
 		for (subject = tls_cert_rec->subject; subject != NULL; subject = subject->next) {
 			data = subject->data;
-			printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_CERT_NAMED_ENTRY, data->name, data->value);
+			g_string_append_printf(str, "%s: %s, ", data->name, data->value);
 		}
 
-		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_CERT_ISSUER_HEADER);
+		if (str->len > 1)
+			g_string_truncate(str, str->len - 2);
+
+		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_CERT_SUBJECT, str->str);
+		g_string_free(str, TRUE);
+
+		str = g_string_new(NULL);
 
 		for (issuer = tls_cert_rec->issuer; issuer != NULL; issuer = issuer->next) {
 			data = issuer->data;
-			printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_CERT_NAMED_ENTRY, data->name, data->value);
+			g_string_append_printf(str, "%s: %s, ", data->name, data->value);
 		}
+
+		if (str->len > 1)
+			g_string_truncate(str, str->len - 2);
+
+		printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_CERT_ISSUER, str->str);
+		g_string_free(str, TRUE);
 	}
 
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE, TXT_TLS_PROTOCOL_VERSION, tls->protocol_version, tls->cipher_size, tls->cipher);
