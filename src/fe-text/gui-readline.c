@@ -611,12 +611,8 @@ static void key_yank_next_cutbuffer(void)
 	guint length = 0;
 	char *cutbuffer;
 
-	if (!previous_yank_preceded) {
-		if (settings_get_bool("bell_beeps")) {
-			signal_emit("beep", 0);
-		}
+	if (!previous_yank_preceded)
 		return;
-	}
 
 	if (active_entry->kill_ring == NULL)
 		return;
