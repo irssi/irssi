@@ -50,7 +50,8 @@ static void read_password_file(char *str, char **password)
 		*password = g_strchomp(*password);
 
 	g_free(path);
-	g_error_free(err);
+	g_strfreev(values);
+	if (err) g_error_free(err);
 }
 
 /* Fill information to connection from server setup record */
