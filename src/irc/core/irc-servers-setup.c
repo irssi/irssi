@@ -36,37 +36,21 @@ static void read_password_file(char *str, char **password)
 {
 	char **values = g_strsplit(str, ":", -1);
 	char *path;
-	GIOChannel *handle;
-	GString *buf;
 	GError *err = NULL;
-	gsize tpos;
 
 	path = g_strdup(values[1]);
 	if (!g_str_has_prefix(path, "/"))
 		path = g_strdup_printf("%s/%s", get_irssi_dir(), path);
-	handle = g_io_channel_new_file(path, "r", &err);
-	g_free(path);
-	g_strfreev(values);
 
-	if (handle == NULL) {
-		/* file not found */
+	if (!g_file_get_contents(path, password, NULL, &err)) {
 		g_warning("Could not read sasl password from file: %s", (err ? err->message : "No GError set"));
-		g_error_free(err);
 		*password = g_strdup("");
-		return;
-	}
-
-	g_io_channel_set_encoding(handle, NULL, NULL);
-	buf = g_string_sized_new(64);
-	if (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
-		buf->str[tpos] = '\0';
-		*password = g_strdup(buf->str);
 	}
 	else
-		*password = g_strdup("");
+		*password = g_strchomp(*password);
 
-	g_string_free(buf, TRUE);
-	g_io_channel_unref(handle);
+	g_free(path);
+	g_error_free(err);
 }
 
 /* Fill information to connection from server setup record */
