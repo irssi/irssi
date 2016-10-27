@@ -132,7 +132,7 @@ static void chatnet_read(CONFIG_NODE *node)
 	CHATNET_REC *rec;
         char *type;
 
-	if (node == NULL || node->key == NULL)
+	if (node == NULL || node->key == NULL || !is_node_list(node))
 		return;
 
 	type = config_node_get_str(node, "type", NULL);
