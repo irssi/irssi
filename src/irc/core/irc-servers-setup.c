@@ -38,9 +38,10 @@ static void read_password_file(char *str, char **password)
 	char *path;
 	GError *err = NULL;
 
-	path = g_strdup(values[1]);
-	if (!g_str_has_prefix(path, "/"))
-		path = g_strdup_printf("%s/%s", get_irssi_dir(), path);
+	if (!g_str_has_prefix(values[1], "/"))
+		path = g_strdup_printf("%s/%s", get_irssi_dir(), values[1]);
+	else
+		path = g_strdup(values[1]);
 
 	if (!g_file_get_contents(path, password, NULL, &err)) {
 		g_warning("Could not read sasl password from file: %s", (err ? err->message : "No GError set"));
