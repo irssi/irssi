@@ -108,23 +108,27 @@ static void cmd_server_list(const char *data)
 			g_string_append(str, "autoconnect, ");
 		if (rec->no_proxy)
 			g_string_append(str, "noproxy, ");
-		if (rec->use_ssl) {
-			g_string_append(str, "ssl, ");
-			if (rec->ssl_cert) {
-				g_string_append_printf(str, "ssl_cert: %s, ", rec->ssl_cert);
-				if (rec->ssl_pkey)
-					g_string_append_printf(str, "ssl_pkey: %s, ", rec->ssl_pkey);
-				if (rec->ssl_pass)
+		if (rec->use_tls) {
+			g_string_append(str, "tls, ");
+			if (rec->tls_cert) {
+				g_string_append_printf(str, "tls_cert: %s, ", rec->tls_cert);
+				if (rec->tls_pkey)
+					g_string_append_printf(str, "tls_pkey: %s, ", rec->tls_pkey);
+				if (rec->tls_pass)
 					g_string_append_printf(str, "(pass), ");
 			}
-			if (rec->ssl_verify)
-				g_string_append(str, "ssl_verify, ");
-			if (rec->ssl_cafile)
-				g_string_append_printf(str, "ssl_cafile: %s, ", rec->ssl_cafile);
-			if (rec->ssl_capath)
-				g_string_append_printf(str, "ssl_capath: %s, ", rec->ssl_capath);
-			if (rec->ssl_ciphers)
-				g_string_append_printf(str, "ssl_ciphers: %s, ", rec->ssl_ciphers);
+			if (rec->tls_verify)
+				g_string_append(str, "tls_verify, ");
+			if (rec->tls_cafile)
+				g_string_append_printf(str, "tls_cafile: %s, ", rec->tls_cafile);
+			if (rec->tls_capath)
+				g_string_append_printf(str, "tls_capath: %s, ", rec->tls_capath);
+			if (rec->tls_ciphers)
+				g_string_append_printf(str, "tls_ciphers: %s, ", rec->tls_ciphers);
+			if (rec->tls_pinned_cert)
+				g_string_append_printf(str, "tls_pinned_cert: %s, ", rec->tls_pinned_cert);
+			if (rec->tls_pinned_pubkey)
+				g_string_append_printf(str, "tls_pinned_pubkey: %s, ", rec->tls_pinned_pubkey);
 
 		}
 		if (rec->max_cmds_at_once > 0)

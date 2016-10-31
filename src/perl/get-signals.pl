@@ -37,6 +37,7 @@ while (<STDIN>) {
 		RAWLOG_REC    => 'Irssi::Rawlog',
 		IGNORE_REC    => 'Irssi::Ignore',
 		MODULE_REC    => 'Irssi::Module',
+		TLS_REC       => 'iobject',
 
 		# irc
 		BAN_REC		    => 'Irssi::Irc::Ban',

@@ -17,6 +17,43 @@ v0.8.21-head 2016-xx-xx  The Irssi team <staff@irssi.org>
 	+ autolog_ignore_targets and activity_hide_targets learn a new syntax
 	      tag/* and * to ignore whole networks or everything.
 	+ /hilight got a -matchcase flag to hilight case sensitively (#421).
+	+ Always build irssi with TLS support.
+	+ Rename SSL to TLS in the code and add -tls_* versions of the -ssl_*
+	  options to /CONNECT and /SERVER, but make sure the -ssl_* options continue
+	  to work.
+	+ Use TLS for Freenode, EFnet, EsperNet, OFTC, Rizon, and IRC6 in the default
+	  configuration.
+	+ Display TLS connection information upon connect. You can disable this by
+	  setting tls_verbose_connect to FALSE.
+	+ Add -tls_pinned_cert and -tls_pinned_pubkey for x509 and public key pinning.
+
+	  The values needed for -tls_pinned_cert and -tls_pinned_pubkey is shown
+	  when connecting to a TLS enabled IRC server, but you can also find the
+	  values like this: Start by downloading the certificate from a given IRC
+	  server:
+
+	      $ openssl s_client -connect chat.freenode.net:6697 < /dev/null 2>/dev/null | \
+	        openssl x509 > freenode.cert
+
+	  Find the value for -tls_pinned_cert:
+
+	      $ openssl x509 -in freenode.cert -fingerprint -sha256 -noout
+
+	  Find the value for -tls_pinned_pubkey:
+
+	      $ openssl x509 -in freenode.cert -pubkey -noout | \
+	        openssl pkey -pubin -outform der | \
+	        openssl dgst -sha256 -c | \
+	        tr a-z A-Z
+
+	+ Remove support for DANE validation of TLS certificates.
+
+	  There wasn't enough support in the IRC community to push for this on the
+	  majority of bigger IRC networks. If you believe this should be
+	  reintroduced into irssi, then please come up with an implementation that
+	  does not rely on the libval library. It is causing a lot of troubles for
+	  our downstream maintainers.
+
 	- IP addresses are no longer stored when resolve_reverse_lookup is
 	  used.
 	- /names and $[...] now uses utf8 string operations (#40, #411).

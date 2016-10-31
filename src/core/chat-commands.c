@@ -99,27 +99,31 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 	else if (g_hash_table_lookup(optlist, "4") != NULL)
 		conn->family = AF_INET;
 
-	if (g_hash_table_lookup(optlist, "ssl") != NULL)
-		conn->use_ssl = TRUE;
-	if ((tmp = g_hash_table_lookup(optlist, "ssl_cert")) != NULL)
-		conn->ssl_cert = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "ssl_pkey")) != NULL)
-		conn->ssl_pkey = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "ssl_pass")) != NULL)
-		conn->ssl_pass = g_strdup(tmp);
-	if (g_hash_table_lookup(optlist, "ssl_verify") != NULL)
-		conn->ssl_verify = TRUE;
-	if ((tmp = g_hash_table_lookup(optlist, "ssl_cafile")) != NULL)
-		conn->ssl_cafile = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "ssl_capath")) != NULL)
-		conn->ssl_capath = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "ssl_ciphers")) != NULL)
-		conn->ssl_ciphers = g_strdup(tmp);
-	if ((conn->ssl_capath != NULL && conn->ssl_capath[0] != '\0')
-	||  (conn->ssl_cafile != NULL && conn->ssl_cafile[0] != '\0'))
-		conn->ssl_verify = TRUE;
-	if ((conn->ssl_cert != NULL && conn->ssl_cert[0] != '\0') || conn->ssl_verify)
-		conn->use_ssl = TRUE;
+	if (g_hash_table_lookup(optlist, "tls") != NULL || g_hash_table_lookup(optlist, "ssl") != NULL)
+		conn->use_tls = TRUE;
+	if ((tmp = g_hash_table_lookup(optlist, "tls_cert")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_cert")) != NULL)
+		conn->tls_cert = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pkey")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pkey")) != NULL)
+		conn->tls_pkey = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pass")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pass")) != NULL)
+		conn->tls_pass = g_strdup(tmp);
+	if (g_hash_table_lookup(optlist, "tls_verify") != NULL || g_hash_table_lookup(optlist, "ssl_verify") != NULL)
+		conn->tls_verify = TRUE;
+	if ((tmp = g_hash_table_lookup(optlist, "tls_cafile")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_cafile")) != NULL)
+		conn->tls_cafile = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_capath")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_capath")) != NULL)
+		conn->tls_capath = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_ciphers")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_ciphers")) != NULL)
+		conn->tls_ciphers = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pinned_cert")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pinned_cert")) != NULL)
+		conn->tls_pinned_cert = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pinned_pubkey")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pinned_pubkey")) != NULL)
+		conn->tls_pinned_pubkey = g_strdup(tmp);
+	if ((conn->tls_capath != NULL && conn->tls_capath[0] != '\0')
+	||  (conn->tls_cafile != NULL && conn->tls_cafile[0] != '\0'))
+		conn->tls_verify = TRUE;
+	if ((conn->tls_cert != NULL && conn->tls_cert[0] != '\0') || conn->tls_verify)
+		conn->use_tls = TRUE;
 
 	if (g_hash_table_lookup(optlist, "!") != NULL)
 		conn->no_autojoin_channels = TRUE;
@@ -494,7 +498,7 @@ void chat_commands_init(void)
 	signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 	signal_add("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 
-	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +host noproxy -rawlog noautosendcmd");
+	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_pinned_cert +ssl_pinned_pubkey tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey +host noproxy -rawlog noautosendcmd");
 	command_set_options("msg", "channel nick");
 }
 

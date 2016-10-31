@@ -24,6 +24,7 @@ libfe_common_core_a_SOURCES = \
 	fe-queries.c \
 	fe-server.c \
 	fe-settings.c \
+	fe-tls.c \
 	formats.c \
 	hilight-text.c \
 	keyboard.c \
@@ -48,6 +49,7 @@ pkginc_fe_common_core_HEADERS = \
 	fe-exec.h \
 	fe-messages.h \
 	fe-queries.h \
+	fe-tls.h \
 	formats.h \
 	hilight-text.h \
 	keyboard.h \
