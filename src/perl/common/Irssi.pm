@@ -159,6 +159,7 @@ if (!in_irssi()) {
 
   @Irssi::Channel::ISA = qw(Irssi::Windowitem);
   @Irssi::Query::ISA = qw(Irssi::Windowitem);
+  @Irssi::UI::Exec::ISA = qw(Irssi::Windowitem);
   @Irssi::Chatnet::ISA = qw();
   @Irssi::Nick::ISA = qw();
 
