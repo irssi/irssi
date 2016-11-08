@@ -48,7 +48,7 @@ static int keep_privates_count, keep_publics_count;
 static int completion_lowercase;
 static char *completion_char, *cmdchars;
 static GSList *global_lastmsgs;
-static int completion_auto, completion_strict;
+static int completion_auto, completion_strict, completion_empty_line;
 static int completion_match_case;
 
 #define SERVER_LAST_MSG_ADD(server, nick) \
@@ -669,6 +669,8 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 		return;
 
 	if (*linestart == '\0' && *word == '\0') {
+		if (!completion_empty_line)
+			return;
 		/* pressed TAB at the start of line - add /MSG */
                 prefix = g_strdup_printf("%cmsg", *cmdchars);
 		*list = completion_msg(server, NULL, "", prefix);
@@ -1157,6 +1159,7 @@ static void read_settings(void)
 
 	completion_auto = settings_get_bool("completion_auto");
 	completion_strict = settings_get_bool("completion_strict");
+	completion_empty_line = settings_get_bool("completion_empty_line");
 
 	completion_match_case = settings_get_choice("completion_nicks_match_case");
 
@@ -1180,6 +1183,7 @@ void chat_completion_init(void)
 	settings_add_int("completion", "completion_keep_privates", 10);
 	settings_add_bool("completion", "completion_nicks_lowercase", FALSE);
 	settings_add_bool("completion", "completion_strict", FALSE);
+	settings_add_bool("completion", "completion_empty_line", TRUE);
 	settings_add_choice("completion", "completion_nicks_match_case", COMPLETE_MCASE_AUTO, "never;always;auto");
 
 	settings_add_bool("lookandfeel", "expand_escapes", FALSE);
