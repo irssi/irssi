@@ -318,7 +318,16 @@ static char *irc_parse_prefix(char *line, char **nick, char **address)
 
 	*nick = *address = NULL;
 
-	/* :<nick> [["!" <user>] "@" <host>] SPACE */
+	/* [@tags] :<nick> [["!" <user>] "@" <host>] SPACE */
+
+	if (*line == '@') {
+		while (*line != '\0' && *line != ' ')
+			line++;
+		if (*line == ' ') {
+			*line++ = '\0';
+			while (*line == ' ') line++;
+		}
+	}
 
 	if (*line != ':')
 		return line;
