@@ -164,7 +164,7 @@ static void print_channel_netjoins(char *channel, TEMP_PRINT_REC *rec,
 	g_free(channel);
 }
 
-static void print_netjoins(NETJOIN_SERVER_REC *server, const char *channel)
+static void print_netjoins(NETJOIN_SERVER_REC *server, const char *filter_channel)
 {
 	TEMP_PRINT_REC *temp;
 	GHashTable *channels;
@@ -189,7 +189,9 @@ static void print_netjoins(NETJOIN_SERVER_REC *server, const char *channel)
 
 			next2 = g_slist_next(tmp2);
 
-			if (channel != NULL && strcasecmp(realchannel, channel) != 0)
+			/* Filter the results by channel if asked to do so */
+			if (filter_channel != NULL &&
+			    strcasecmp(realchannel, filter_channel) != 0)
 				continue;
 
 			temp = g_hash_table_lookup(channels, realchannel);
