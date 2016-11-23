@@ -249,13 +249,13 @@ static void sig_print_starting(TEXT_DEST_REC *dest)
 	if (printing_splits)
 		return;
 
-	if (IS_IRC_SERVER(dest->server) == FALSE)
+	if (!IS_IRC_SERVER(dest->server))
 		return;
 
-	if (dest->level != MSGLEVEL_PUBLIC)
+	if (!(dest->level & MSGLEVEL_PUBLIC))
 		return;
 
-	if (server_ischannel(dest->server, dest->target) == FALSE)
+	if (!server_ischannel(dest->server, dest->target))
 		return;
 
 	rec = IRC_SERVER(dest->server);

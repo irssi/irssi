@@ -251,7 +251,7 @@ static void sig_print_starting(TEXT_DEST_REC *dest)
 	if (!IS_IRC_SERVER(dest->server))
 		return;
 
-	if (dest->level != MSGLEVEL_PUBLIC)
+	if (!(dest->level & MSGLEVEL_PUBLIC))
 		return;
 
 	if (!server_ischannel(dest->server, dest->target))
