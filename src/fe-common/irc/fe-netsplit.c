@@ -142,7 +142,7 @@ static void get_server_splits(void *key, NETSPLIT_REC *split,
 	}
 }
 
-static void print_server_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec, const char *channel)
+static void print_server_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec, const char *filter_channel)
 {
 	GString *destservers;
 	char *sourceserver;
@@ -168,7 +168,8 @@ static void print_server_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec, con
 	for (tmp = rec->channels; tmp != NULL; tmp = tmp->next) {
 		TEMP_SPLIT_CHAN_REC *chan = tmp->data;
 
-		if (channel != NULL && strcasecmp(channel, chan->name) != 0)
+		if (filter_channel != NULL &&
+		    strcasecmp(chan->name, filter_channel) != 0)
 			continue;
 
 		g_string_truncate(chan->nicks, chan->nicks->len-2);
@@ -249,13 +250,13 @@ static void sig_print_starting(TEXT_DEST_REC *dest)
 	if (printing_splits)
 		return;
 
-	if (IS_IRC_SERVER(dest->server) == FALSE)
+	if (!IS_IRC_SERVER(dest->server))
 		return;
 
-	if (dest->level != MSGLEVEL_PUBLIC)
+	if (!(dest->level & MSGLEVEL_PUBLIC))
 		return;
 
-	if (server_ischannel(dest->server, dest->target) == FALSE)
+	if (!server_ischannel(dest->server, dest->target))
 		return;
 
 	rec = IRC_SERVER(dest->server);
