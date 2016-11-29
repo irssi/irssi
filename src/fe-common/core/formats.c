@@ -1224,11 +1224,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 			}
 		}
 
-		if (type == 7) {
-			/* bell */
-			if (settings_get_bool("bell_beeps"))
-				signal_emit("beep", 0);
-		} else if (type == 4 && *ptr == FORMAT_STYLE_CLRTOEOL) {
+		if (type == 4 && *ptr == FORMAT_STYLE_CLRTOEOL) {
 			/* clear to end of line */
 			flags |= GUI_PRINT_FLAG_CLRTOEOL;
 		}
