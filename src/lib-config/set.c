@@ -82,6 +82,7 @@ void config_node_clear(CONFIG_REC *rec, CONFIG_NODE *node)
 void config_nodes_remove_all(CONFIG_REC *rec)
 {
 	g_return_if_fail(rec != NULL);
+	g_return_if_fail(is_node_list(rec->mainnode));
 
 	while (rec->mainnode->value != NULL)
 		config_node_remove(rec, rec->mainnode, ((GSList *) rec->mainnode->value)->data);
@@ -94,6 +95,7 @@ void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, 
 
 	g_return_if_fail(rec != NULL);
 	g_return_if_fail(parent != NULL);
+	g_return_if_fail(is_node_list(parent));
 
 	no_key = key == NULL;
 	node = no_key ? NULL : config_node_find(parent, key);
