@@ -143,16 +143,34 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 static void item_act(SBAR_ITEM_REC *item, int get_size_only)
 {
 	char *actlist;
+	int max_size;
 
-	actlist = get_activity_list(item->bar->parent_window, TRUE, TRUE);
-	if (actlist == NULL) {
-		if (get_size_only)
+	if (get_size_only) {
+		if (activity_list == NULL)
 			item->min_size = item->max_size = 0;
+		/* Skip activity calculation on regular trigger, only
+		   set dirty */
 		return;
 	}
 
-	statusbar_item_default_handler(item, get_size_only,
+	actlist = get_activity_list(item->bar->parent_window, TRUE, TRUE);
+	if (actlist == NULL) {
+		return;
+	}
+
+	max_size = item->max_size;
+	statusbar_item_default_handler(item, TRUE,
 				       NULL, actlist, FALSE);
+	statusbar_item_default_handler(item, FALSE,
+				       NULL, actlist, FALSE);
+	if (max_size != item->max_size) {
+		/* Due to above hack of skipping the calculation, we
+		   need to manually trigger the redraw process now or
+		   we won't see the item */
+		item->bar->dirty = item->dirty = TRUE;
+		statusbar_redraw(item->bar, TRUE);
+		statusbar_redraw_dirty();
+	}
 
 	g_free_not_null(actlist);
 }
