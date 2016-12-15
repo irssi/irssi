@@ -194,6 +194,8 @@ static void statusbar_read_group(CONFIG_NODE *node)
 	STATUSBAR_GROUP_REC *group;
 	GSList *tmp;
 
+	g_return_if_fail(is_node_list(node));
+
 	group = statusbar_group_find(node->key);
 	if (group == NULL) {
 		group = statusbar_group_create(node->key);
