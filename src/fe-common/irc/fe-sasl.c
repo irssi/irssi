@@ -43,8 +43,15 @@ static void sig_cap_end(IRC_SERVER_REC *server)
 	/* The negotiation has now been terminated, if we didn't manage to
 	 * authenticate successfully with the server just disconnect. */
 	if (!server->sasl_success &&
-	    settings_get_bool("sasl_disconnect_on_failure"))
-		server_disconnect(SERVER(server));
+	    settings_get_bool("sasl_disconnect_on_failure")) {
+		/* We can't use server_disconnect() here because we'd end up
+		 * freeing the 'server' object and be guilty of a slew of UaF. */
+		server->connection_lost = TRUE;
+		/* By setting connection_lost we make sure the communication is
+		 * halted and when the control goes back to irc_parse_incoming
+		 * the server object is safely destroyed. */
+		signal_stop();
+	}
 
 }
 
