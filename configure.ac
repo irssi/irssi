@@ -466,7 +466,7 @@ dnl **
 have_otr=no
 if test "x$want_otr" != "xno"; then
 	AM_PATH_LIBGCRYPT(1:1.2.0, [], [AC_ERROR(libgcrypt 1.2.0 or newer is required.)])
-	AM_PATH_LIBOTR(4.0.0, [], [AC_ERROR([libotr 4.0.0 or newer is required.])])
+	AM_PATH_LIBOTR(4.1.0, [], [AC_ERROR([libotr 4.1.0 or newer is required.])])
 
 	OTR_CFLAGS="$LIBOTR_CFLAGS $LIBGCRYPT_CFLAGS"
 	OTR_LDFLAGS="$LIBOTR_LIBS $LIBGCRYPT_LIBS"
