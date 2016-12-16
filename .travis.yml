@@ -16,15 +16,14 @@ addons:
 
 before_install:
     - perl -V
-    - ./autogen.sh --with-proxy --with-bot --with-perl=module
+    - ./autogen.sh --with-proxy --with-bot --with-perl=module --with-otr=no
     - make dist
     - cd ..
     - tar xaf */irssi-*.tar.*
     - cd irssi-*
 
 install:
-    - ./autogen.sh --with-proxy --with-bot --with-perl=module --with-otr=no --prefix=$HOME/irssi-build
-    - cat config.log
+    - ./configure --with-proxy --with-bot --with-perl=module --with-otr=no --prefix=$HOME/irssi-build
     - make CFLAGS="-Wall -Werror"
     - make install
 
