@@ -42,6 +42,16 @@ static int daytag;
 static int daycheck; /* 0 = don't check, 1 = time is 00:00, check,
                         2 = time is 00:00, already checked */
 
+static GSequenceIter *windows_seq_begin(void)
+{
+	return g_sequence_get_begin_iter(windows_seq);
+}
+
+static GSequenceIter *windows_seq_end(void)
+{
+	return g_sequence_get_end_iter(windows_seq);
+}
+
 static int window_get_new_refnum(void)
 {
 	WINDOW_REC *win;
@@ -49,8 +59,8 @@ static int window_get_new_refnum(void)
 	int refnum;
 
 	refnum = 1;
-	for (iter = g_sequence_get_begin_iter(windows_seq),
-	     end = g_sequence_get_end_iter(windows_seq);
+	for (iter = windows_seq_begin(),
+	     end = windows_seq_end();
 
 	     iter != end;
 
@@ -67,6 +77,11 @@ static int window_get_new_refnum(void)
 	return refnum;
 }
 
+static GSequenceIter *windows_seq_insert(WINDOW_REC *rec)
+{
+	return g_sequence_insert_sorted(windows_seq, rec, (GCompareDataFunc)window_refnum_cmp, NULL);
+}
+
 WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic)
 {
 	WINDOW_REC *rec;
@@ -76,7 +91,7 @@ WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic)
 	rec->level = settings_get_level("window_default_level");
 
 	windows = g_slist_prepend(windows, rec);
-	g_sequence_insert_sorted(windows_seq, rec, (GCompareDataFunc)window_refnum_cmp, NULL);
+	windows_seq_insert(rec);
 	signal_emit("window created", 2, rec, GINT_TO_POINTER(automatic));
 
 	if (item != NULL) window_item_add(rec, item, automatic);
@@ -107,6 +122,16 @@ static int window_refnum_lookup(WINDOW_REC *window, void *refnum_p)
 	return window->refnum == refnum ? 0 : window->refnum < refnum ? -1 : 1;
 }
 
+static GSequenceIter *windows_seq_refnum_lookup(int refnum)
+{
+	return g_sequence_lookup(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
+}
+
+static void windows_seq_changed(GSequenceIter *iter)
+{
+	g_sequence_sort_changed(iter, (GCompareDataFunc)window_refnum_cmp, NULL);
+}
+
 /* removed_refnum was removed from the windows list, pack the windows so
    there won't be any holes. If there is any holes after removed_refnum,
    leave the windows behind it alone. */
@@ -117,9 +142,9 @@ static void windows_pack(int removed_refnum)
 	GSequenceIter *iter, *end;
 
 	refnum = removed_refnum+1;
-	end = g_sequence_get_end_iter(windows_seq);
-	iter = g_sequence_lookup(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
-	if (iter == NULL) iter = end;
+	end = windows_seq_end();
+	iter = windows_seq_refnum_lookup(refnum);
+	if (iter == NULL) return;
 
 	for (; iter != end; refnum++, iter = g_sequence_iter_next(iter)) {
 		window = g_sequence_get(iter);
@@ -128,8 +153,13 @@ static void windows_pack(int removed_refnum)
 			break;
 
 		window_set_refnum0(window, refnum-1);
-		g_sequence_sort_changed(iter, (GCompareDataFunc)window_refnum_cmp, NULL);
+		windows_seq_changed(iter);
 	}
+}
+
+static GSequenceIter *windows_seq_window_lookup(WINDOW_REC *rec)
+{
+	return g_sequence_lookup(windows_seq, rec, (GCompareDataFunc)window_refnum_cmp, NULL);
 }
 
 void window_destroy(WINDOW_REC *window)
@@ -140,7 +170,7 @@ void window_destroy(WINDOW_REC *window)
 	if (window->destroying) return;
 	window->destroying = TRUE;
 	windows = g_slist_remove(windows, window);
-	iter = g_sequence_lookup(windows_seq, window, (GCompareDataFunc)window_refnum_cmp, NULL);
+	iter = windows_seq_window_lookup(window);
 	if (iter != NULL) g_sequence_remove(iter);
 
 	if (active_win == window) {
@@ -223,18 +253,18 @@ void window_change_server(WINDOW_REC *window, void *server)
 
 void window_set_refnum(WINDOW_REC *window, int refnum)
 {
-	GSequenceIter *oiter, *witer;
+	GSequenceIter *other_iter, *window_iter;
 	int old_refnum;
 
 	g_return_if_fail(window != NULL);
 	g_return_if_fail(refnum >= 1);
 	if (window->refnum == refnum) return;
 
-	oiter = g_sequence_lookup(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
-	witer = g_sequence_lookup(windows_seq, GINT_TO_POINTER(window->refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
+	other_iter = windows_seq_refnum_lookup(refnum);
+	window_iter = windows_seq_refnum_lookup(window->refnum);
 
-	if (oiter != NULL) {
-		WINDOW_REC *rec = g_sequence_get(oiter);
+	if (other_iter != NULL) {
+		WINDOW_REC *rec = g_sequence_get(other_iter);
 
 		rec->refnum = window->refnum;
 		signal_emit("window refnum changed", 2, rec, GINT_TO_POINTER(refnum));
@@ -244,10 +274,10 @@ void window_set_refnum(WINDOW_REC *window, int refnum)
 	window->refnum = refnum;
 	signal_emit("window refnum changed", 2, window, GINT_TO_POINTER(old_refnum));
 
-	if (witer != NULL && oiter != NULL) {
-		g_sequence_swap(oiter, witer);
+	if (window_iter != NULL && other_iter != NULL) {
+		g_sequence_swap(other_iter, window_iter);
 	} else {
-		g_sequence_sort_changed(witer, (GCompareDataFunc)window_refnum_cmp, NULL);
+		windows_seq_changed(window_iter);
 	}
 }
 
@@ -388,7 +418,7 @@ WINDOW_REC *window_find_refnum(int refnum)
 {
 	GSequenceIter *iter;
 
-	iter = g_sequence_lookup(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
+	iter = windows_seq_refnum_lookup(refnum);
 	if (iter != NULL) {
 		WINDOW_REC *rec = g_sequence_get(iter);
 
@@ -438,12 +468,17 @@ WINDOW_REC *window_find_item(SERVER_REC *server, const char *name)
 	return window_item_window(item);
 }
 
+static GSequenceIter *windows_seq_refnum_search_right(int refnum)
+{
+	return g_sequence_search(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
+}
+
 int window_refnum_prev(int refnum, int wrap)
 {
 	GSequenceIter *iter, *end;
 
-	iter = g_sequence_search(windows_seq, GINT_TO_POINTER(refnum-1), (GCompareDataFunc)window_refnum_lookup, NULL);
-	end = g_sequence_get_end_iter(windows_seq);
+	iter = windows_seq_refnum_search_right(refnum-1);
+	end = windows_seq_end();
 
 	if (iter != NULL) {
 		WINDOW_REC *rec;
@@ -478,8 +513,8 @@ int window_refnum_next(int refnum, int wrap)
 {
 	GSequenceIter *iter, *end;
 
-	iter = g_sequence_search(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
-	end = g_sequence_get_end_iter(windows_seq);
+	iter = windows_seq_refnum_search_right(refnum);
+	end = windows_seq_end();
 
 	if (iter != NULL && iter != end) {
 		WINDOW_REC *rec = g_sequence_get(iter);
@@ -498,7 +533,7 @@ int window_refnum_next(int refnum, int wrap)
 
 	if (wrap) {
 		WINDOW_REC *rec;
-		iter = g_sequence_get_begin_iter(windows_seq);
+		iter = windows_seq_begin();
 		if (iter != end) {
 			rec = g_sequence_get(iter);
 
@@ -514,7 +549,7 @@ int windows_refnum_last(void)
 	GSequenceIter *end, *iter;
 	WINDOW_REC *rec;
 
-	end = g_sequence_get_end_iter(windows_seq);
+	end = windows_seq_end();
 	iter = g_sequence_iter_prev(end);
 	if (iter != end) {
 		rec = g_sequence_get(iter);
@@ -536,8 +571,8 @@ GSList *windows_get_sorted(void)
 	GSList *sorted;
 
         sorted = NULL;
-	for (iter = g_sequence_get_end_iter(windows_seq),
-	     begin = g_sequence_get_begin_iter(windows_seq);
+	for (iter = windows_seq_end(),
+	     begin = windows_seq_begin();
 
 	     iter != begin;
 
