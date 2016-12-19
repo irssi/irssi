@@ -314,7 +314,11 @@ static void event_whois_ircop(SERVER_REC *server, const char *data)
 static void event_nick_invalid(IRC_SERVER_REC *server, const char *data)
 {
 	if (!server->connected)
-		server_disconnect((SERVER_REC *) server);
+		/* we used to call server_disconnect but that crashes
+		   irssi because of undefined memory access. instead,
+		   indicate that the connection should be dropped and
+		   let the irc method to the clean-up. */
+		server->connection_lost = server->no_reconnect = TRUE;
 }
 
 static void event_nick_in_use(IRC_SERVER_REC *server, const char *data)
