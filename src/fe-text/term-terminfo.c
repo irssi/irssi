@@ -539,9 +539,16 @@ int term_addstr(TERM_WINDOW *window, const char *str)
 
 	if (term_type == TERM_TYPE_UTF8) {
 		while (*ptr != '\0') {
-			tmp = g_utf8_get_char(ptr);
-			len += unichar_isprint(tmp) ? mk_wcwidth(tmp) : 1;
-			ptr = g_utf8_next_char(ptr);
+			tmp = g_utf8_get_char_validated(ptr, -1);
+			/* On utf8 error, treat as single byte and try to
+			   continue interpretting rest of string as utf8 */
+			if (tmp == (gunichar)-1 || tmp == (gunichar)-2) {
+				len++;
+				ptr++;
+			} else {
+				len += unichar_isprint(tmp) ? mk_wcwidth(tmp) : 1;
+				ptr = g_utf8_next_char(ptr);
+			}
 		}
 	} else
 		len = raw_len;
