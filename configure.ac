@@ -148,7 +148,7 @@ AC_ARG_WITH(otr,
 	else
 		want_otr=no
 	fi,
-	want_otr=static)
+	want_otr=no)
 
 AC_ARG_ENABLE(true-color,
 [  --enable-true-color     Build with true color support in terminal],
