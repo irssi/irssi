@@ -165,7 +165,7 @@ static void windows_pack(int removed_refnum)
 	iter = windows_seq_refnum_lookup(refnum);
 	if (iter == NULL) return;
 
-	for (; iter != end; refnum++, iter = g_sequence_iter_next(iter)) {
+	while (iter != end) {
 		window = g_sequence_get(iter);
 
 		if (window == NULL || window->sticky_refnum || window->refnum != refnum)
@@ -173,6 +173,9 @@ static void windows_pack(int removed_refnum)
 
 		window_set_refnum0(window, refnum - 1);
 		windows_seq_changed(iter);
+
+		refnum++;
+		iter = g_sequence_iter_next(iter);
 	}
 }
 
@@ -556,12 +559,10 @@ GSList *windows_get_sorted(void)
 	GSList *sorted;
 
         sorted = NULL;
-	for (iter = windows_seq_end(),
-	     begin = windows_seq_begin();
+	iter = windows_seq_end();
+	begin = windows_seq_begin();
 
-	     iter != begin;
-
-	     ) {
+	while (iter != begin) {
 		iter = g_sequence_iter_prev(iter);
 		WINDOW_REC *rec = g_sequence_get(iter);
 
