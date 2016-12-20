@@ -473,35 +473,29 @@ static GSequenceIter *windows_seq_refnum_search_right(int refnum)
 	return g_sequence_search(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
 }
 
+static GSequenceIter *windows_seq_refnum_search_left(int refnum)
+{
+	GSequenceIter *iter = windows_seq_refnum_search_right(refnum-1);
+	return iter == windows_seq_begin() ? NULL : g_sequence_iter_prev(iter);
+}
+
 int window_refnum_prev(int refnum, int wrap)
 {
+	WINDOW_REC *rec;
 	GSequenceIter *iter, *end;
 
-	iter = windows_seq_refnum_search_right(refnum-1);
+	iter = windows_seq_refnum_search_left(refnum);
 	end = windows_seq_end();
 
 	if (iter != NULL) {
-		WINDOW_REC *rec;
-		if (iter != end) {
-			rec = g_sequence_get(iter);
-
-			if (rec->refnum < refnum)
-				return rec->refnum;
-		}
-
-		iter = g_sequence_iter_prev(iter);
 		rec = g_sequence_get(iter);
-
-		if (rec->refnum < refnum)
-			return rec->refnum;
+		return rec->refnum;
 	}
 
 	if (wrap) {
-		WINDOW_REC *rec;
 		iter = g_sequence_iter_prev(end);
 		if (iter != end) {
 			rec = g_sequence_get(iter);
-
 			return rec->refnum;
 		}
 	}
@@ -511,32 +505,21 @@ int window_refnum_prev(int refnum, int wrap)
 
 int window_refnum_next(int refnum, int wrap)
 {
+	WINDOW_REC *rec;
 	GSequenceIter *iter, *end;
 
 	iter = windows_seq_refnum_search_right(refnum);
 	end = windows_seq_end();
 
-	if (iter != NULL && iter != end) {
-		WINDOW_REC *rec = g_sequence_get(iter);
-
-		if (rec->refnum > refnum)
-			return rec->refnum;
-
-		iter = g_sequence_iter_next(iter);
-		if (iter != end) {
-			rec = g_sequence_get(iter);
-
-			if (rec->refnum > refnum)
-				return rec->refnum;
-		}
+	if (iter != end) {
+		rec = g_sequence_get(iter);
+		return rec->refnum;
 	}
 
 	if (wrap) {
-		WINDOW_REC *rec;
 		iter = windows_seq_begin();
 		if (iter != end) {
 			rec = g_sequence_get(iter);
-
 			return rec->refnum;
 		}
 	}
@@ -546,14 +529,13 @@ int window_refnum_next(int refnum, int wrap)
 
 int windows_refnum_last(void)
 {
-	GSequenceIter *end, *iter;
 	WINDOW_REC *rec;
+	GSequenceIter *end, *iter;
 
 	end = windows_seq_end();
 	iter = g_sequence_iter_prev(end);
 	if (iter != end) {
 		rec = g_sequence_get(iter);
-
 		return rec->refnum;
 	}
 
