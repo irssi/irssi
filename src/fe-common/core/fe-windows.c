@@ -42,6 +42,12 @@ static int daytag;
 static int daycheck; /* 0 = don't check, 1 = time is 00:00, check,
                         2 = time is 00:00, already checked */
 
+static int window_refnum_lookup(WINDOW_REC *window, void *refnum_p)
+{
+	int refnum = GPOINTER_TO_INT(refnum_p);
+	return window->refnum == refnum ? 0 : window->refnum < refnum ? -1 : 1;
+}
+
 static GSequenceIter *windows_seq_begin(void)
 {
 	return g_sequence_get_begin_iter(windows_seq);
@@ -50,6 +56,42 @@ static GSequenceIter *windows_seq_begin(void)
 static GSequenceIter *windows_seq_end(void)
 {
 	return g_sequence_get_end_iter(windows_seq);
+}
+
+static GSequenceIter *windows_seq_insert(WINDOW_REC *rec)
+{
+	return g_sequence_insert_sorted(windows_seq, rec, (GCompareDataFunc)window_refnum_cmp, NULL);
+}
+
+static GSequenceIter *windows_seq_refnum_lookup(int refnum)
+{
+	return g_sequence_lookup(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
+}
+
+static void windows_seq_changed(GSequenceIter *iter)
+{
+	g_sequence_sort_changed(iter, (GCompareDataFunc)window_refnum_cmp, NULL);
+}
+
+static GSequenceIter *windows_seq_window_lookup(WINDOW_REC *rec)
+{
+	return g_sequence_lookup(windows_seq, rec, (GCompareDataFunc)window_refnum_cmp, NULL);
+}
+
+/* search to the numerically right iterator of refnum */
+static GSequenceIter *windows_seq_refnum_search_right(int refnum)
+{
+	return g_sequence_search(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
+}
+
+/* we want to find the numerically left iterator of refnum, so we
+   search the right of the previous refnum. but we need to figure out
+   the case where the iterator is already at the beginning, i.e
+   iter->refnum >= refnum */
+static GSequenceIter *windows_seq_refnum_search_left(int refnum)
+{
+	GSequenceIter *iter = windows_seq_refnum_search_right(refnum - 1);
+	return iter == windows_seq_begin() ? NULL : g_sequence_iter_prev(iter);
 }
 
 static int window_get_new_refnum(void)
@@ -73,11 +115,6 @@ static int window_get_new_refnum(void)
 	}
 
 	return refnum;
-}
-
-static GSequenceIter *windows_seq_insert(WINDOW_REC *rec)
-{
-	return g_sequence_insert_sorted(windows_seq, rec, (GCompareDataFunc)window_refnum_cmp, NULL);
 }
 
 WINDOW_REC *window_create(WI_ITEM_REC *item, int automatic)
@@ -114,22 +151,6 @@ static void window_set_refnum0(WINDOW_REC *window, int refnum)
 	signal_emit("window refnum changed", 2, window, GINT_TO_POINTER(old_refnum));
 }
 
-static int window_refnum_lookup(WINDOW_REC *window, void *refnum_p)
-{
-	int refnum = GPOINTER_TO_INT(refnum_p);
-	return window->refnum == refnum ? 0 : window->refnum < refnum ? -1 : 1;
-}
-
-static GSequenceIter *windows_seq_refnum_lookup(int refnum)
-{
-	return g_sequence_lookup(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
-}
-
-static void windows_seq_changed(GSequenceIter *iter)
-{
-	g_sequence_sort_changed(iter, (GCompareDataFunc)window_refnum_cmp, NULL);
-}
-
 /* removed_refnum was removed from the windows list, pack the windows so
    there won't be any holes. If there is any holes after removed_refnum,
    leave the windows behind it alone. */
@@ -153,11 +174,6 @@ static void windows_pack(int removed_refnum)
 		window_set_refnum0(window, refnum - 1);
 		windows_seq_changed(iter);
 	}
-}
-
-static GSequenceIter *windows_seq_window_lookup(WINDOW_REC *rec)
-{
-	return g_sequence_lookup(windows_seq, rec, (GCompareDataFunc)window_refnum_cmp, NULL);
 }
 
 void window_destroy(WINDOW_REC *window)
@@ -464,22 +480,6 @@ WINDOW_REC *window_find_item(SERVER_REC *server, const char *name)
 		return NULL;
 
 	return window_item_window(item);
-}
-
-/* search to the numerically right iterator of refnum */
-static GSequenceIter *windows_seq_refnum_search_right(int refnum)
-{
-	return g_sequence_search(windows_seq, GINT_TO_POINTER(refnum), (GCompareDataFunc)window_refnum_lookup, NULL);
-}
-
-/* we want to find the numerically left iterator of refnum, so we
-   search the right of the previous refnum. but we need to figure out
-   the case where the iterator is already at the beginning, i.e
-   iter->refnum >= refnum */
-static GSequenceIter *windows_seq_refnum_search_left(int refnum)
-{
-	GSequenceIter *iter = windows_seq_refnum_search_right(refnum - 1);
-	return iter == windows_seq_begin() ? NULL : g_sequence_iter_prev(iter);
 }
 
 int window_refnum_prev(int refnum, int wrap)
