@@ -32,6 +32,7 @@ static void perl_irc_server_fill_hash(HV *hv, IRC_SERVER_REC *server)
 	(void) hv_store(hv, "isupport_sent", 13, newSViv(server->isupport_sent), 0);
 
 	(void) hv_store(hv, "cap_complete", 12, newSViv(server->cap_complete), 0);
+	(void) hv_store(hv, "sasl_success", 12, newSViv(server->sasl_success), 0);
 
 	av = newAV();
 	for (tmp = server->cap_supported; tmp != NULL; tmp = tmp->next)
