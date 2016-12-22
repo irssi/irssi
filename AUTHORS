@@ -13,6 +13,7 @@ Irssi staff (current maintainers) <staff@irssi.org>:
   Jase Thew (bazerka)
   dequis (dx)
   Ailin Nemui (Nei)
+  Giuseppe (TheLemonMan, lemonboy)
 
 Former developers:
 
@@ -26,7 +27,6 @@ Large feature patches by:
   Heikki Orsila : DCC SEND queueing
   Mark Trumbull : DCC SERVER
   Francesco Fracassi : Passive DCC
-  Giuseppe (The Lemon Man)
 
 Other patches (grep for "patch" in ChangeLog) by:
 
