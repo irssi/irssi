@@ -27,6 +27,8 @@ Large feature patches by:
   Mark Trumbull : DCC SERVER
   Francesco Fracassi : Passive DCC
   Giuseppe (The Lemon Man)
+  Uli Meis : OTR support
+  David Goulet : OTR support
 
 Other patches (grep for "patch" in ChangeLog) by:
 
