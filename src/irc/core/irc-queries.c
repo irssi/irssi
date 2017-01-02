@@ -81,20 +81,6 @@ static void check_query_changes(IRC_SERVER_REC *server, const char *nick,
 	}
 }
 
-static void event_privmsg(IRC_SERVER_REC *server, const char *data,
-			  const char *nick, const char *address)
-{
-	char *params, *target, *msg;
-
-	g_return_if_fail(data != NULL);
-	if (nick == NULL)
-		return;
-
-	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &target, &msg);
-        check_query_changes(server, nick, address, target);
-	g_free(params);
-}
-
 static void ctcp_action(IRC_SERVER_REC *server, const char *msg,
 			const char *nick, const char *address,
 			const char *target)
@@ -119,14 +105,12 @@ static void event_nick(SERVER_REC *server, const char *data,
 
 void irc_queries_init(void)
 {
-	signal_add_last("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_add_last("ctcp action", (SIGNAL_FUNC) ctcp_action);
 	signal_add("event nick", (SIGNAL_FUNC) event_nick);
 }
 
 void irc_queries_deinit(void)
 {
-	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_remove("ctcp action", (SIGNAL_FUNC) ctcp_action);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 }

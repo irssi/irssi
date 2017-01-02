@@ -21,7 +21,7 @@ AC_PATH_PROG(perlpath, perl)
 AC_CHECK_HEADERS(unistd.h dirent.h sys/ioctl.h sys/resource.h)
 
 # check posix headers..
-AC_CHECK_HEADERS(sys/socket.h sys/time.h sys/utsname.h regex.h)
+AC_CHECK_HEADERS(sys/socket.h sys/time.h sys/utsname.h)
 
 AC_SYS_LARGEFILE
 
@@ -144,6 +144,15 @@ AC_ARG_ENABLE(true-color,
 	fi,
 	want_truecolor=no)
 
+AC_ARG_ENABLE(gregex,
+[  --disable-gregex     Build without GRegex (fall back to regex.h)],
+	if test x$enableval = xno ; then
+		want_gregex=no
+	else
+		want_gregex=yes
+	fi,
+	want_gregex=yes)
+
 dnl **
 dnl ** just some generic stuff...
 dnl **
@@ -237,7 +246,7 @@ for try in 1 2; do
     echo "*** trying without -lgmodule"
     glib_modules=
   fi
-  AM_PATH_GLIB_2_0(2.16.0,,, $glib_modules)
+  AM_PATH_GLIB_2_0(2.28.0,,, $glib_modules)
   if test "$GLIB_LIBS"; then
     if test $glib_modules = gmodule; then
       AC_DEFINE(HAVE_GMODULE)
@@ -534,6 +543,12 @@ else
 	want_truecolor=no
 fi
 
+if test "x$want_gregex" = "xyes"; then
+	AC_DEFINE([USE_GREGEX], [], [use GRegex for regular expressions])
+else
+	want_gregex=no
+fi
+
 AH_TEMPLATE(HAVE_GMODULE)
 AH_TEMPLATE(HAVE_SOCKS_H, [misc..])
 AH_TEMPLATE(HAVE_STATIC_PERL)
@@ -648,6 +663,7 @@ echo
 
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with true color support.. : $want_truecolor"
+echo "Building with GRegex ............. : $want_gregex"
 
 echo
 echo "If there are any problems, read the INSTALL file."
