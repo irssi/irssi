@@ -45,6 +45,8 @@ QUERY_REC *irc_query_find(IRC_SERVER_REC *server, const char *nick)
 {
 	GSList *tmp;
 
+	g_return_val_if_fail(nick != NULL, NULL);
+
 	for (tmp = server->queries; tmp != NULL; tmp = tmp->next) {
 		QUERY_REC *rec = tmp->data;
 
