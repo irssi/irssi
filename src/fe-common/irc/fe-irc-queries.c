@@ -78,6 +78,13 @@ static void event_privmsg(SERVER_REC *server, const char *data,
 			if (!server_has_nick(server, query->name))
 				query_change_nick(query, nick);
 		}
+	} else {
+		/* process the changes to the query structure now, before the
+		 * privmsg is dispatched. */
+		if (g_strcmp0(query->name, nick) != 0)
+			query_change_nick(query, nick);
+		if (address != NULL && g_strcmp0(query->address, address) != 0)
+			query_change_address(query, address);
 	}
 }
 
