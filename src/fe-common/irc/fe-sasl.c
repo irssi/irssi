@@ -1,7 +1,7 @@
 /*
     fe-sasl.c : irssi
 
-    Copyright (C) 2015 The Lemon Man
+    Copyright (C) 2015-2017 The Lemon Man
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "module-formats.h"
 #include "signals.h"
 #include "levels.h"
+#include "misc.h"
+#include "sasl.h"
 
 #include "irc-servers.h"
 #include "settings.h"
@@ -43,6 +45,7 @@ static void sig_cap_end(IRC_SERVER_REC *server)
 	/* The negotiation has now been terminated, if we didn't manage to
 	 * authenticate successfully with the server just disconnect. */
 	if (!server->sasl_success &&
+	    server->connrec->sasl_mechanism != SASL_MECHANISM_NONE &&
 	    settings_get_bool("sasl_disconnect_on_failure")) {
 		/* We can't use server_disconnect() here because we'd end up
 		 * freeing the 'server' object and be guilty of a slew of UaF. */
