@@ -68,7 +68,7 @@ static void format_expand_code(const char **format, GString *out, int *flags)
 
 	if (flags == NULL) {
 		/* flags are being ignored - skip the code */
-		while (**format != ']')
+		while (**format != ']' && **format != '\0')
 			(*format)++;
 		return;
 	}
@@ -246,6 +246,10 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 	case '[':
 		/* code */
 		format_expand_code(format, out, flags);
+		if ((*format)[0] == '\0')
+			/* oops, reached end prematurely */
+			(*format)--;
+
 		break;
 	case 'x':
 	case 'X':
