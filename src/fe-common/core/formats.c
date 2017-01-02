@@ -956,6 +956,7 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 			str++;
 			for (num2 = 0; i_isdigit(*str); str++)
 				num2 = num2*10 + (*str-'0');
+			if (*str == '\0') return start;
 
 			switch (num2) {
 			case 2:
@@ -973,6 +974,8 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 					for (; i_isdigit(*str); str++)
 						num2 = (num2&~0xff) |
 							(((num2&0xff) * 10 + (*str-'0'))&0xff);
+
+					if (*str == '\0') return start;
 				}
 
 				if (i == -1) break;
@@ -1001,6 +1004,7 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 				str++;
 				for (num2 = 0; i_isdigit(*str); str++)
 					num2 = num2*10 + (*str-'0');
+				if (*str == '\0') return start;
 
 				if (num == 38) {
 					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
