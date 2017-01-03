@@ -68,7 +68,7 @@ static void format_expand_code(const char **format, GString *out, int *flags)
 
 	if (flags == NULL) {
 		/* flags are being ignored - skip the code */
-		while (**format != ']')
+		while (**format != ']' && **format != '\0')
 			(*format)++;
 		return;
 	}
@@ -246,6 +246,10 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 	case '[':
 		/* code */
 		format_expand_code(format, out, flags);
+		if ((*format)[0] == '\0')
+			/* oops, reached end prematurely */
+			(*format)--;
+
 		break;
 	case 'x':
 	case 'X':
@@ -972,6 +976,7 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 			str++;
 			for (num2 = 0; i_isdigit(*str); str++)
 				num2 = num2*10 + (*str-'0');
+			if (*str == '\0') return start;
 
 			switch (num2) {
 			case 2:
@@ -989,6 +994,8 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 					for (; i_isdigit(*str); str++)
 						num2 = (num2&~0xff) |
 							(((num2&0xff) * 10 + (*str-'0'))&0xff);
+
+					if (*str == '\0') return start;
 				}
 
 				if (i == -1) break;
@@ -1017,6 +1024,7 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 				str++;
 				for (num2 = 0; i_isdigit(*str); str++)
 					num2 = num2*10 + (*str-'0');
+				if (*str == '\0') return start;
 
 				if (num == 38) {
 					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
