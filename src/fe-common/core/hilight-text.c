@@ -101,7 +101,11 @@ static void hilight_destroy(HILIGHT_REC *rec)
 {
 	g_return_if_fail(rec != NULL);
 
+#ifdef USE_GREGEX
 	if (rec->preg != NULL) g_regex_unref(rec->preg);
+#else
+	if (rec->regexp_compiled) regfree(&rec->preg);
+#endif
 	if (rec->channels != NULL) g_strfreev(rec->channels);
 	g_free_not_null(rec->color);
 	g_free_not_null(rec->act_color);
@@ -118,10 +122,19 @@ static void hilights_destroy_all(void)
 
 static void hilight_init_rec(HILIGHT_REC *rec)
 {
+#ifdef USE_GREGEX
 	if (rec->preg != NULL)
 		g_regex_unref(rec->preg);
 
 	rec->preg = g_regex_new(rec->text, G_REGEX_OPTIMIZE | G_REGEX_RAW | G_REGEX_CASELESS, 0, NULL);
+#else
+	if (rec->regexp_compiled) regfree(&rec->preg);
+	if (!rec->regexp)
+		rec->regexp_compiled = FALSE;
+	else
+		rec->regexp_compiled = regcomp(&rec->preg, rec->text,
+				rec->case_sensitive ? REG_EXTENDED : (REG_EXTENDED|REG_ICASE)) == 0;
+#endif
 }
 
 void hilight_create(HILIGHT_REC *rec)
@@ -194,6 +207,7 @@ static gboolean hilight_match_text(HILIGHT_REC *rec, const char *text,
 	gboolean ret = FALSE;
 
 	if (rec->regexp) {
+#ifdef USE_GREGEX
 		if (rec->preg != NULL) {
 			GMatchInfo *match;
 
@@ -204,6 +218,19 @@ static gboolean hilight_match_text(HILIGHT_REC *rec, const char *text,
 
 			g_match_info_free(match);
 		}
+#else
+		regmatch_t rmatch[1];
+
+		if (rec->regexp_compiled &&
+			regexec(&rec->preg, text, 1, rmatch, 0) == 0) {
+			if (rmatch[0].rm_so > 0 &&
+				match_beg != NULL && match_end != NULL) {
+				*match_beg = rmatch[0].rm_so;
+				*match_end = rmatch[0].rm_eo;
+			}
+			ret = TRUE;
+		}
+#endif
 	} else {
 		char *match;
 
@@ -502,8 +529,13 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 	if (rec->case_sensitive) g_string_append(options, "-matchcase ");
 	if (rec->regexp) {
 		g_string_append(options, "-regexp ");
+#ifdef USE_GREGEX
 		if (rec->preg == NULL)
 			g_string_append(options, "[INVALID!] ");
+#else
+		if (!rec->regexp_compiled)
+			g_string_append(options, "[INVALID!] ");
+#endif
 	}
 
 	if (rec->priority != 0)

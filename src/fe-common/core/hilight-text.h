@@ -1,6 +1,10 @@
 #ifndef __HILIGHT_TEXT_H
 #define __HILIGHT_TEXT_H
 
+#ifndef USE_GREGEX
+#  include <regex.h>
+#endif
+
 #include "formats.h"
 
 struct _HILIGHT_REC {
@@ -20,7 +24,12 @@ struct _HILIGHT_REC {
 	unsigned int fullword:1; /* match `text' only for full words */
 	unsigned int regexp:1; /* `text' is a regular expression */
 	unsigned int case_sensitive:1;/* `text' must match case */
+#ifdef USE_GREGEX
 	GRegex *preg;
+#else
+	unsigned int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
+	regex_t preg;
+#endif
 	char *servertag;
 };
 

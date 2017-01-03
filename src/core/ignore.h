@@ -1,6 +1,10 @@
 #ifndef __IGNORE_H
 #define __IGNORE_H
 
+#ifndef USE_GREGEX
+#  include <regex.h>
+#endif
+
 typedef struct _IGNORE_REC IGNORE_REC;
 
 struct _IGNORE_REC {
@@ -16,7 +20,12 @@ struct _IGNORE_REC {
 	unsigned int regexp:1;
 	unsigned int fullword:1;
 	unsigned int replies:1; /* ignore replies to nick in channel */
+#ifdef USE_GREGEX
 	GRegex *preg;
+#else
+	unsigned int regexp_compiled:1; /* should always be TRUE, unless regexp is invalid */
+	regex_t preg;
+#endif
 };
 
 extern GSList *ignores;
