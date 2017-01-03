@@ -332,7 +332,7 @@ static void ignore_init_rec(IGNORE_REC *rec)
 		g_regex_unref(rec->preg);
 
 	if (rec->regexp && rec->pattern != NULL) {
-		GError *re_error;
+		GError *re_error = NULL;
 
 		rec->preg = g_regex_new(rec->pattern, G_REGEX_OPTIMIZE | G_REGEX_RAW | G_REGEX_CASELESS, 0, &re_error);
 
