@@ -67,11 +67,12 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 		return FALSE;
 
 	if (rec->regexp) {
-#ifdef HAVE_REGEX_H
+#ifdef USE_GREGEX
+		return rec->preg != NULL &&
+			g_regex_match(rec->preg, text, 0, NULL);
+#else
 		return rec->regexp_compiled &&
 			regexec(&rec->preg, text, 0, NULL, 0) == 0;
-#else
-                return FALSE;
 #endif
 	}
 
@@ -326,12 +327,27 @@ static void ignore_remove_config(IGNORE_REC *rec)
 
 static void ignore_init_rec(IGNORE_REC *rec)
 {
-#ifdef HAVE_REGEX_H
+#ifdef USE_GREGEX
+	if (rec->preg != NULL)
+		g_regex_unref(rec->preg);
+
+	if (rec->regexp && rec->pattern != NULL) {
+		GError *re_error;
+
+		rec->preg = g_regex_new(rec->pattern, G_REGEX_OPTIMIZE | G_REGEX_RAW | G_REGEX_CASELESS, 0, &re_error);
+
+		if (rec->preg == NULL) {
+			g_warning("Failed to compile regexp '%s': %s", rec->pattern, re_error->message);
+			g_error_free(re_error);
+		}
+	}
+#else
 	char *errbuf;
 	int errcode, errbuf_len;
 
 	if (rec->regexp_compiled) regfree(&rec->preg);
 	rec->regexp_compiled = FALSE;
+
 	if (rec->regexp && rec->pattern != NULL) {
 		errcode = regcomp(&rec->preg, rec->pattern,
 				REG_EXTENDED|REG_ICASE|REG_NOSUB);
@@ -365,7 +381,9 @@ static void ignore_destroy(IGNORE_REC *rec, int send_signal)
 	if (send_signal)
 		signal_emit("ignore destroyed", 1, rec);
 
-#ifdef HAVE_REGEX_H
+#ifdef USE_GREGEX
+	if (rec->preg != NULL) g_regex_unref(rec->preg);
+#else
 	if (rec->regexp_compiled) regfree(&rec->preg);
 #endif
 	if (rec->channels != NULL) g_strfreev(rec->channels);

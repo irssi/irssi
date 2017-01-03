@@ -22,7 +22,7 @@
 #include "misc.h"
 #include "commands.h"
 
-#ifdef HAVE_REGEX_H
+#ifndef USE_GREGEX
 #  include <regex.h>
 #endif
 
