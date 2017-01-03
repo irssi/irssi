@@ -1,3 +1,5 @@
+v1.1-head 2017-xx-xx  The Irssi team <staff@irssi.org>
+
 v1.0.0 2017-01-03  The Irssi team <staff@irssi.org>
 	* Removed --disable-ipv6 (#408).
 	* /connect Network now aborts with an error if no servers have been
