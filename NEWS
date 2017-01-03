@@ -1,4 +1,4 @@
-v0.8.21-head 2016-xx-xx  The Irssi team <staff@irssi.org>
+v0.8.22-head 2017-xx-xx  The Irssi team <staff@irssi.org>
 	* Removed --disable-ipv6
 	* /connect Network now aborts with an error if no servers have been
 	  added to that network.
@@ -58,6 +58,15 @@ v0.8.21-head 2016-xx-xx  The Irssi team <staff@irssi.org>
 	  used.
 	- /names and $[...] now uses utf8 string operations (#40, #411).
 	- Removed broken support for curses.
+
+v0.8.21 2017-01-03  The Irssi team <staff@irssi.org>
+	- Correct a NULL pointer dereference in the nickcmp function found by
+	  Joseph Bisch (GL#1)
+	- Correct an out of bounds read in certain incomplete control codes
+	  found by Joseph Bisch (GL#2)
+	- Correct an out of bounds read in certain incomplete character
+	  sequences found by Hanno Böck and independently by J. Bisch (GL#3)
+	- Correct an error when receiving invalid nick message (GL#4, #466)
 
 v0.8.20 2016-09-16  The Irssi team <staff@irssi.org>
 	- Correct the name of an emitted sasl signal (#484)
