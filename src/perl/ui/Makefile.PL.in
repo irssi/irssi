@@ -1,4 +1,4 @@
-use ExtUtils::MakeMaker;our $AM_DEFAULT_VERBOSITY='@AM_DEFAULT_VERBOSITY@';require "../Makefile_silent.pm";
+use ExtUtils::MakeMaker;our $AM_DEFAULT_VERBOSITY='@AM_DEFAULT_VERBOSITY@';require "@top_srcdir@/src/perl/Makefile_silent.pm";
 
 WriteMakefile('NAME' => 'Irssi::UI',
               'LIBS' => '',
