@@ -743,6 +743,7 @@ static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
 			    g_hash_table_lookup(optlist, "yes") == NULL) {
                                 /* too many matches */
 				g_string_free(str, TRUE);
+				g_strfreev(matches);
 				cmd_params_free(free_arg);
 
 				signal_emit("error command", 1,
@@ -756,7 +757,7 @@ static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
         if (str->len > 0) g_string_truncate(str, str->len-1);
 	ret = str->str;
 	g_string_free(str, FALSE);
-
+	g_strfreev(matches);
 	cmd_params_free(free_arg);
 
 	*ret_channel = channel;
