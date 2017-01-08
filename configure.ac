@@ -52,6 +52,19 @@ AC_ARG_WITH(bot,
 	fi,
 	want_irssibot=no)
 
+AC_ARG_WITH(fuzzer,
+[  --with-fuzzer           Build irssi-fuzzer],
+	if test x$withval = xno; then
+		want_irssifuzzer=no
+	else
+		want_irssifuzzer=yes
+	fi,
+	want_irssifuzzer=no)
+
+AC_ARG_WITH(fuzzer-lib,
+[  --with-fuzzer-lib       Specify path to fuzzer library],
+	fuzzerlibpath="$withval")
+
 AC_ARG_WITH(proxy,
 [  --with-proxy            Build irssi-proxy],
 	if test x$withval = xno; then
@@ -298,6 +311,30 @@ if test "x$want_textui" != "xno"; then
 fi
 
 dnl **
+dnl ** irssifuzzer checks
+dnl **
+
+if test "$want_irssifuzzer" != "no"; then
+	dnl * we need to build with -fsanitize-coverage=trace-pc-guard
+	dnl * otherwise fuzzer won't be very successful at finding bugs :)
+	if test -z "$SANFLAGS"; then
+		SANFLAGS="-g -fsanitize=address -fsanitize-coverage=trace-pc-guard"
+	fi
+	CFLAGS="$CFLAGS $SANFLAGS"
+	CXXFLAGS="$CXXFLAGS $SANFLAGS"
+
+	AC_MSG_CHECKING(for fuzzer library)
+
+	if test -z "$fuzzerlibpath"; then
+		AC_MSG_RESULT([not found, building without fuzzer front end])
+		want_irssifuzzer=no
+	else
+		FUZZER_LIBS="$fuzzerlibpath"
+		AC_SUBST(FUZZER_LIBS)
+	fi
+fi
+
+dnl **
 dnl ** perl checks
 dnl **
 
@@ -456,6 +493,7 @@ fi
 dnl ** check what we want to build
 AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
+AM_CONDITIONAL(BUILD_IRSSIFUZZER, test "$want_irssifuzzer" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
 
@@ -572,6 +610,7 @@ src/fe-common/core/Makefile
 src/fe-common/irc/Makefile
 src/fe-common/irc/dcc/Makefile
 src/fe-common/irc/notifylist/Makefile
+src/fe-fuzz/Makefile
 src/fe-none/Makefile
 src/fe-text/Makefile
 src/lib-config/Makefile
@@ -611,6 +650,7 @@ echo
 
 echo "Building text frontend ........... : $want_textui"
 echo "Building irssi bot ............... : $want_irssibot"
+echo "Building irssi fuzzer ............ : $want_irssifuzzer"
 echo "Building irssi proxy ............. : $want_irssiproxy"
 if test "x$have_gmodule" = "xyes"; then
 	echo "Building with module support ..... : yes"

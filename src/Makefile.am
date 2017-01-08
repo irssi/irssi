@@ -6,6 +6,10 @@ if BUILD_IRSSIBOT
 BOTUI=fe-none
 endif
 
+if BUILD_IRSSIFUZZER
+FUZZERUI=fe-fuzz
+endif
+
 if HAVE_PERL
 PERLDIR=perl
 endif
@@ -14,4 +18,4 @@ pkginc_srcdir=$(pkgincludedir)/src
 pkginc_src_HEADERS = \
 	common.h
 
-SUBDIRS = lib-config core irc fe-common $(PERLDIR) $(TEXTUI) $(BOTUI)
+SUBDIRS = lib-config core irc fe-common $(PERLDIR) $(TEXTUI) $(BOTUI) $(FUZZERUI)
