@@ -19,7 +19,7 @@ irssi_fuzz_LDADD = \
 
 irssi_fuzz_SOURCES = \
         irssi.c \
-	module-formats.c
+	$(top_srcdir)/src/fe-text/module-formats.c
 
 noinst_HEADERS = \
-	module-formats.h
+	$(top_srcdir)/src/fe-text/module-formats.h
