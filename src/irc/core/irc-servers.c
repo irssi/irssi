@@ -527,12 +527,6 @@ void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 		return;
 	}
 
-	/* Don't reset wait_cmd during connection registration
-	 * (while sending CAP / SASL related commands) */
-	if (!server->connected) {
-		return;
-	}
-
 	g_get_current_time(&server->last_cmd);
 
 	/* A bit kludgy way to do the flood protection. In ircnet, there
