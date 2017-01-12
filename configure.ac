@@ -650,7 +650,6 @@ echo
 
 echo "Building text frontend ........... : $want_textui"
 echo "Building irssi bot ............... : $want_irssibot"
-echo "Building irssi fuzzer ............ : $want_irssifuzzer"
 echo "Building irssi proxy ............. : $want_irssiproxy"
 if test "x$have_gmodule" = "xyes"; then
 	echo "Building with module support ..... : yes"
