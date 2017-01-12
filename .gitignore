@@ -32,6 +32,7 @@ docs/help/[a-z]*
 docs/help/in/Makefile.am
 
 src/fe-text/irssi
+src/fe-fuzz/irssi-fuzz
 
 src/fe-common/irc/irc-modules.c
 src/irc/irc.c
@@ -45,6 +46,9 @@ src/perl/textui/*.c
 src/perl/ui/*.c
 src/perl/*/MYMETA.*
 src/perl/*/Makefile.old
+
+src/fe-fuzz/crash-*
+src/fe-fuzz/oom-*
 
 *.a
 *.bs
