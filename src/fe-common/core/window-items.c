@@ -143,10 +143,10 @@ WindowType window_item_get_type(WI_ITEM_REC *item)
 	g_return_val_if_fail(item != NULL, WI_TYPE_OTHER);
 
 	const char *type = module_find_id_str("WINDOW ITEM TYPE", item->type);
-	if (g_ascii_strcasecmp(type, "CHANNEL") == 0)
+	if (!g_ascii_strcasecmp(type, "CHANNEL"))
 		return WI_TYPE_CHANNEL;
-	else if (g_ascii_strcasecmp(type, "QUERY") == 0) {
-		if (g_str_has_prefix("=", item->name))
+	else if (!g_ascii_strcasecmp(type, "QUERY")) {
+		if (item->name[0] == '=')
 			return WI_TYPE_QUERY | WI_TYPE_DCCCHAT;
 		else
 			return WI_TYPE_QUERY | WI_TYPE_PRIVMSG;
