@@ -469,51 +469,51 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 	if (strarray_find(array, "*") != -1)
 		return TRUE;
 	// we ignore all channels
-	else if (type & WITEM_TYPE_CHANNEL && strarray_find(array, "#") != -1)
+	else if (type & WI_TYPE_CHANNEL && strarray_find(array, "#") != -1)
 		return TRUE;
 	// Is this a dcc chat?
-	else if (type & WITEM_TYPE_DCCCHAT && strarray_find(array, "=") != -1)
+	else if (type & WI_TYPE_DCCCHAT && strarray_find(array, "=") != -1)
 		return TRUE;
 	// Is this a private query window?
-	else if (type & WITEM_TYPE_PRIVMSG && strarray_find(array, "@") != -1)
+	else if (type & WI_TYPE_PRIVMSG && strarray_find(array, "@") != -1)
 		return TRUE;
-	else if (dest->server_tag != NULL) {
-		char *prefix = g_strdup_printf("%s/", dest->server_tag);
-		if (!strarray_find_prefix(array, prefix)) {
-			g_free(prefix);
-			return FALSE;
-		}
 
-		GSList *targets = NULL, *iterator = NULL;
-		gboolean found = FALSE;
-		// create a list of types to look for
-		targets = g_slist_append(targets, g_strdup("*"));
-		if (type & WITEM_TYPE_CHANNEL) {
-			targets = g_slist_append(targets, g_strdup("#"));
-			targets = g_slist_append(targets, g_strdup(dest->target));
-		}
-		else if (type & WITEM_TYPE_QUERY) {
-			if (type & WITEM_TYPE_DCCCHAT)
-				targets = g_slist_append(targets, g_strdup("="));
-			else
-				targets = g_slist_append(targets, g_strdup("@"));
-		}
+	if (dest->server_tag == NULL)
+		return FALSE;
 
-		for (iterator = targets; iterator; iterator = iterator->next) {
-			char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, (char *) iterator->data);
-			int ret = strarray_find(array, tagtarget);
-			g_free(tagtarget);
-			if (ret != -1) {
-				found = TRUE;
-				break;
-			}
-		}
-
-		g_slist_foreach(targets, (GFunc)g_free, NULL);
-		g_slist_free(targets);
+	char *prefix = g_strdup_printf("%s/", dest->server_tag);
+	if (!strarray_find_prefix(array, prefix)) {
 		g_free(prefix);
-		return found;
+		return FALSE;
 	}
 
-	return FALSE;
+	GSList *targets = NULL, *iterator = NULL;
+	gboolean found = FALSE;
+	// create a list of types to look for
+	targets = g_slist_append(targets, g_strdup("*"));
+	if (type & WI_TYPE_CHANNEL) {
+		targets = g_slist_append(targets, g_strdup("#"));
+		targets = g_slist_append(targets, g_strdup(dest->target));
+	}
+	else if (type & WI_TYPE_QUERY) {
+		if (type & WI_TYPE_DCCCHAT)
+			targets = g_slist_append(targets, g_strdup("="));
+		else
+			targets = g_slist_append(targets, g_strdup("@"));
+	}
+
+	for (iterator = targets; iterator; iterator = iterator->next) {
+		char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, (char *) iterator->data);
+		int ret = strarray_find(array, tagtarget);
+		g_free(tagtarget);
+		if (ret != -1) {
+			found = TRUE;
+			break;
+		}
+	}
+
+	g_slist_foreach(targets, (GFunc)g_free, NULL);
+	g_slist_free(targets);
+	g_free(prefix);
+	return found;
 }

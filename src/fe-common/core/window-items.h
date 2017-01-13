@@ -4,11 +4,11 @@
 #include "fe-windows.h"
 
 typedef enum {
-	WITEM_TYPE_CHANNEL = 1,
-	WITEM_TYPE_QUERY = 2,
-	WITEM_TYPE_PRIVMSG = 4,
-	WITEM_TYPE_DCCCHAT = 8,
-	WITEM_TYPE_OTHER = 16
+	WI_TYPE_CHANNEL = 1,
+	WI_TYPE_QUERY = 2,
+	WI_TYPE_PRIVMSG = 4,
+	WI_TYPE_DCCCHAT = 8,
+	WI_TYPE_OTHER = 16
 } WindowType;
 
 /* Add/remove/destroy window item from `window' */
