@@ -3,6 +3,14 @@
 
 #include "fe-windows.h"
 
+typedef enum {
+	WITEM_TYPE_CHANNEL = 1,
+	WITEM_TYPE_QUERY = 2,
+	WITEM_TYPE_PRIVMSG = 4,
+	WITEM_TYPE_DCCCHAT = 8,
+	WITEM_TYPE_OTHER = 16
+} WindowType;
+
 /* Add/remove/destroy window item from `window' */
 void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic);
 void window_item_remove(WI_ITEM_REC *item);
@@ -22,6 +30,9 @@ int window_item_is_active(WI_ITEM_REC *item);
 
 void window_item_prev(WINDOW_REC *window);
 void window_item_next(WINDOW_REC *window);
+
+// return WindowType depending on what WI_ITEM_REC is
+WindowType window_item_get_type(WI_ITEM_REC *item);
 
 /* Find wanted window item by name. `server' can be NULL. */
 WI_ITEM_REC *window_item_find(void *server, const char *name);
