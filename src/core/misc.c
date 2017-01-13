@@ -178,7 +178,6 @@ int strarray_find_prefix(char **array, const char *item)
 
 	index = 0;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
-		//if (g_str_has_prefix(g_ascii_strdown(*tmp, -1), item))
 		if (g_ascii_strncasecmp(*tmp, item, strlen(item)) == 0)
 			return index;
 	}

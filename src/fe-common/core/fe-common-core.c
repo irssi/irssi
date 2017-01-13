@@ -495,16 +495,16 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 	g_free(prefix);
 
 	// create a list of types to look for
-	targets = g_slist_append(targets, g_strdup("*"));
+	targets = g_slist_append(targets, "*");
 	if (type & WI_TYPE_CHANNEL) {
-		targets = g_slist_append(targets, g_strdup("#"));
-		targets = g_slist_append(targets, g_strdup(dest->target));
+		targets = g_slist_append(targets, "#");
+		targets = g_slist_append(targets, dest->target);
 	}
 	else if (type & WI_TYPE_QUERY) {
 		if (type & WI_TYPE_DCCCHAT)
-			targets = g_slist_append(targets, g_strdup("="));
+			targets = g_slist_append(targets, "=");
 		else
-			targets = g_slist_append(targets, g_strdup("@"));
+			targets = g_slist_append(targets, "@");
 	}
 
 	for (iterator = targets; iterator; iterator = iterator->next) {
