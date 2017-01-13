@@ -191,7 +191,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 				g_strdup_printf("%s%c%s",
 						/* do not accidentally duplicate the word separator */
 						line == wordstart - 1 ? "" : linestart,
-						wordstart[-1], word);
+						old_wordstart[-1], word);
 			g_free(old);
 
 			g_free(word);
