@@ -54,6 +54,11 @@ static void sig_cap_end(IRC_SERVER_REC *server)
 		 * halted and when the control goes back to irc_parse_incoming
 		 * the server object is safely destroyed. */
 		signal_stop();
+		/* If the server doesn't support the sasl cap then we print a
+		 * message to let the user know. */
+		if (!gslist_find_string(server->cap_active, "sasl"))
+			printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_SASL_ERROR,
+				    "The server doesn't support SASL authentication");
 	}
 
 }
