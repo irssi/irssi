@@ -168,7 +168,7 @@ int strarray_find(char **array, const char *item)
 	return -1;
 }
 
-int strarray_find_prefix(char **array, const char *item)
+gboolean strarray_find_prefix(char **array, const char *item)
 {
 	char **tmp;
 	int index;
@@ -179,10 +179,10 @@ int strarray_find_prefix(char **array, const char *item)
 	index = 0;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
 		if (g_str_has_prefix(*tmp, item))
-			return index;
+			return TRUE;
 	}
 
-	return -1;
+	return FALSE;
 }
 
 GSList *gslist_find_string(GSList *list, const char *key)
