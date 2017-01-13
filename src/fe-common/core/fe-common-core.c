@@ -498,7 +498,7 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 	targets = g_slist_append(targets, "*");
 	if (type & WI_TYPE_CHANNEL) {
 		targets = g_slist_append(targets, "#");
-		targets = g_slist_append(targets, dest->target);
+		targets = g_slist_append(targets, g_strdup(dest->target));
 	}
 	else if (type & WI_TYPE_QUERY) {
 		if (type & WI_TYPE_DCCCHAT)
