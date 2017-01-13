@@ -101,7 +101,7 @@ char *replace_chars(char *str, char from, char to);
 int strarray_find(char **array, const char *item);
 
 /* return index of element in `array' starting with `item' or -1 if not found */
-gboolean strarray_find_prefix(char **array, const char *item);
+int strarray_find_prefix(char **array, const char *item);
 
 /* string -> uoff_t */
 uoff_t str_to_uofft(const char *str);

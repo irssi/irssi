@@ -462,12 +462,18 @@ void fe_common_core_finish_init(void)
 
 gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 {
+	const WindowType type = window_item_get_type(dest->window->active);
+	GSList *targets = NULL, *iterator = NULL;
+	gboolean found = FALSE;
+
 	g_return_val_if_fail(array != NULL, FALSE);
-	WindowType type = window_item_get_type(dest->window->active);
 
 	// we ignore all targets
 	if (strarray_find(array, "*") != -1)
 		return TRUE;
+	// exit if not a channel or query
+	else if (type & WI_TYPE_OTHER)
+		return FALSE;
 	// we ignore all channels
 	else if (type & WI_TYPE_CHANNEL && strarray_find(array, "#") != -1)
 		return TRUE;
@@ -478,17 +484,16 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 	else if (type & WI_TYPE_PRIVMSG && strarray_find(array, "@") != -1)
 		return TRUE;
 
-	if (dest->server_tag == NULL)
-		return FALSE;
+	g_return_val_if_fail(dest->server_tag != NULL, FALSE);
 
 	char *prefix = g_strdup_printf("%s/", dest->server_tag);
-	if (!strarray_find_prefix(array, prefix)) {
+	if (strarray_find_prefix(array, prefix) == -1) {
 		g_free(prefix);
 		return FALSE;
 	}
 
-	GSList *targets = NULL, *iterator = NULL;
-	gboolean found = FALSE;
+	g_free(prefix);
+
 	// create a list of types to look for
 	targets = g_slist_append(targets, g_strdup("*"));
 	if (type & WI_TYPE_CHANNEL) {
@@ -514,6 +519,6 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 
 	g_slist_foreach(targets, (GFunc)g_free, NULL);
 	g_slist_free(targets);
-	g_free(prefix);
+
 	return found;
 }
