@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "modules.h"
 #include "module-formats.h"
 #include "args.h"
 #include "misc.h"
@@ -462,25 +463,59 @@ void fe_common_core_finish_init(void)
 gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 {
 	g_return_val_if_fail(array != NULL, FALSE);
+	const char *type = module_find_id_str("WINDOW ITEM TYPE", dest->window->active->type);
 
-	if (strarray_find(array, "*") != -1)
+	if ((strarray_find(array, "*") != -1) || // we ignore all targets
+		(g_ascii_strcasecmp(type, "CHANNEL") == 0 && strarray_find(array, "#") != -1) || // we ignore all channels
+		(g_ascii_strcasecmp(type, "QUERY") == 0 && // Is this a query?
+		(g_str_has_prefix("=", dest->target) ? // is it a dcc chat?
+			strarray_find(array, "=") != -1 : // are we ignoring dcc chat?
+			strarray_find(array, "@") != -1)) || // are we ognoring regular queries?
+		(strarray_find(array, dest->target) != -1)) // we ignore all channels with specific name
 		return TRUE;
+	else if (dest->server_tag != NULL) {
+		char *prefix = g_strdup_printf("%s/", dest->server_tag);
+		if (strarray_find_prefix(array, prefix)) {
+			GSList *targets = NULL, *iterator = NULL;
+			gboolean found = FALSE;
 
-	if (strarray_find(array, dest->target) != -1)
-		return TRUE;
+			if (type != NULL) {
+				// create a list of types to look for
+				targets = g_slist_append(targets, g_strdup("*"));
+				if (g_ascii_strcasecmp(type, "CHANNEL") == 0) {
+					targets = g_slist_append(targets, g_strdup("#"));
+					targets = g_slist_append(targets, g_strdup(dest->target));
+				}
+				else if (g_ascii_strcasecmp(type, "QUERY") == 0) {
+					if (g_str_has_prefix("=", dest->target))
+						targets = g_slist_append(targets, g_strdup("="));
+					else
+						targets = g_slist_append(targets, g_strdup("@"));
+				}
 
-	if (dest->server_tag != NULL) {
-		char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, "*");
-		int ret = strarray_find(array, tagtarget);
-		g_free(tagtarget);
-		if (ret != -1)
-			return TRUE;
+				for (iterator = targets; iterator; iterator = iterator->next) {
+					char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, (char *) iterator->data);
+					int ret = strarray_find(array, tagtarget);
+		        	        g_free(tagtarget);
+                			if (ret != -1) {
+						found = TRUE;
+						break;
+					}
+				}
 
-		tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
-		ret = strarray_find(array, tagtarget);
-		g_free(tagtarget);
-		if (ret != -1)
-			return TRUE;
+
+			}
+
+			g_slist_foreach(targets, (GFunc)g_free, NULL);
+			g_slist_free(targets);
+			g_free(prefix);
+
+			return found;
+		}
+		else {
+			g_free(prefix);
+		}
 	}
+
 	return FALSE;
 }
