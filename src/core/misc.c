@@ -178,7 +178,7 @@ gboolean strarray_find_prefix(char **array, const char *item)
 
 	index = 0;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
-		if (g_str_has_prefix(*tmp, item))
+		if (g_str_has_prefix(g_ascii_strdown(*tmp, -1), g_ascii_strdown(item, -1)))
 			return TRUE;
 	}
 
