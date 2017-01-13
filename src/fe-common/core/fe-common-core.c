@@ -518,7 +518,6 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 		}
 	}
 
-	g_slist_foreach(targets, (GFunc)g_free, NULL);
 	g_slist_free(targets);
 
 	return found;
