@@ -41,7 +41,7 @@ GSList *perl_scripts;
 PerlInterpreter *my_perl;
 
 static int print_script_errors;
-static char *perl_args[] = {"", "-e", "0"};
+static char *perl_args[] = {"", "-e", "0", NULL};
 
 #define IS_PERL_SCRIPT(file) \
 	(strlen(file) > 3 && g_strcmp0(file+strlen(file)-3, ".pl") == 0)
@@ -123,7 +123,7 @@ void perl_scripts_init(void)
 	my_perl = perl_alloc();
 	perl_construct(my_perl);
 
-	perl_parse(my_perl, xs_init, G_N_ELEMENTS(perl_args), perl_args, NULL);
+	perl_parse(my_perl, xs_init, G_N_ELEMENTS(perl_args)-1, perl_args, NULL);
 #if PERL_STATIC_LIBS == 1
 	perl_eval_pv("Irssi::Core::->boot_Irssi_Core(0.9);", TRUE);
 #endif
