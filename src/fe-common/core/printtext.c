@@ -446,7 +446,9 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 
 	if (dest->window == NULL) {
                 str = strip_codes(text);
+#ifndef SUPPRESS_PRINTF_FALLBACK
 		printf("NO WINDOWS: %s\n", str);
+#endif
                 g_free(str);
                 return;
 	}
