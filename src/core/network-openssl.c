@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "network.h"
+#include "net-sendbuffer.h"
 #include "misc.h"
 #include "servers.h"
 #include "signals.h"
@@ -700,6 +701,21 @@ GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *
 		g_io_channel_unref(handle);
 	return ssl_handle;
 }
+
+GIOChannel *net_start_ssl(SERVER_REC *server)
+{
+	GIOChannel *handle, *ssl_handle;
+
+	g_return_val_if_fail(server != NULL, NULL);
+
+	handle = net_sendbuffer_handle(server->handle);
+	if (handle == NULL)
+		return NULL;
+
+	ssl_handle  = irssi_ssl_get_iochannel(handle, server->connrec->port, server);
+	return ssl_handle;
+}
+
 
 int irssi_ssl_handshake(GIOChannel *handle)
 {
