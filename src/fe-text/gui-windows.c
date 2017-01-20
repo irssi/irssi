@@ -49,6 +49,7 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 					   settings_get_int("indent"),
 					   !settings_get_bool("indent_always"),
 					   get_default_indent_func());
+	textbuffer_view_set_break_wide(gui->view, settings_get_bool("break_wide"));
 	if (parent->active == window)
 		textbuffer_view_set_window(gui->view, parent->screen_win);
 	return gui;
@@ -201,12 +202,14 @@ void gui_windows_reset_settings(void)
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
-                GUI_WINDOW_REC *gui = WINDOW_GUI(rec);
+		GUI_WINDOW_REC *gui = WINDOW_GUI(rec);
 
-                textbuffer_view_set_default_indent(gui->view,
+		textbuffer_view_set_break_wide(gui->view, settings_get_bool("break_wide"));
+
+		textbuffer_view_set_default_indent(gui->view,
 						   settings_get_int("indent"),
 						   !settings_get_bool("indent_always"),
-                                                   get_default_indent_func());
+						   get_default_indent_func());
 
 		textbuffer_view_set_scroll(gui->view,
 					   gui->use_scroll ? gui->scroll :
@@ -281,6 +284,7 @@ void gui_windows_init(void)
         settings_add_bool("lookandfeel", "autostick_split_windows", TRUE);
 	settings_add_int("lookandfeel", "indent", 10);
 	settings_add_bool("lookandfeel", "indent_always", FALSE);
+	settings_add_bool("lookandfeel", "break_wide", FALSE);
 	settings_add_bool("lookandfeel", "scroll", TRUE);
 
 	window_create_override = -1;

@@ -59,6 +59,7 @@ struct _TEXT_BUFFER_VIEW_REC {
 	unsigned int longword_noindent:1;
 	unsigned int scroll:1; /* scroll down automatically when at bottom */
 	unsigned int utf8:1; /* use UTF8 in this view */
+	unsigned int break_wide:1; /* Break wide chars in this view */
 
 	TEXT_BUFFER_CACHE_REC *cache;
 	int ypos; /* cursor position - visible area is 0..height-1 */
@@ -97,6 +98,8 @@ void textbuffer_view_set_default_indent(TEXT_BUFFER_VIEW_REC *view,
 					int longword_noindent,
 					INDENT_FUNC indent_func);
 void textbuffer_views_unregister_indent_func(INDENT_FUNC indent_func);
+void textbuffer_view_set_break_wide(TEXT_BUFFER_VIEW_REC *view,
+				    gboolean break_wide);
 
 void textbuffer_view_set_scroll(TEXT_BUFFER_VIEW_REC *view, int scroll);
 void textbuffer_view_set_utf8(TEXT_BUFFER_VIEW_REC *view, int utf8);
