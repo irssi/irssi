@@ -30,6 +30,7 @@ $VERSION = "2.92";
 # Check /mailbox help for help.
 
 use Irssi::TextUI;
+use Irssi;
 
 my $maildirmode = 0; # maildir=1, file(spools)=0
 my $old_is_not_new = 0; 
@@ -37,7 +38,7 @@ my $extprog;
 my ($last_refresh_time, $refresh_tag);
 
 # for mbox caching
-my $last_size, $last_mtime, $last_mailcount, $last_mode;
+my ($last_size, $last_mtime, $last_mailcount, $last_mode);
 
 # list of mailboxes
 my %mailboxes = (); 
@@ -101,8 +102,9 @@ sub mbox_count {
   my $old_is_not_new=Irssi::settings_get_bool('mail_oldnotnew');
 
   if ($extprog ne "") {
-     $total = `$extprog`;
-     chomp $unread;
+     my $total = `$extprog`;
+     chomp $total;
+     ($read, $unread) = split ' ', $total, 2;
   } else {
     if (!$maildirmode) {
       if (-f $mailfile) {
@@ -115,8 +117,7 @@ sub mbox_count {
 	$last_size = $size;
 	$last_mtime = $mtime;
 
-	my $f = gensym;
-	return 0 if (!open($f, "<", $mailfile));
+	return 0 if (!open(my $f, "<", $mailfile));
 
 	# count new mails only
 	my $internal_removed = 0;
@@ -205,7 +206,7 @@ sub mail {
   my $total = 0;
 
   # check all mailboxes for new email
-  foreach $name (keys(%mailboxes)) {
+  foreach my $name (keys(%mailboxes)) {
     my $box = $mailboxes{$name};
     # replace "~/" at the beginning by the user's home dir
     $box =~ s/^~\//$ENV{'HOME'}\//;
@@ -233,7 +234,7 @@ sub mail {
     # Show this only if there are any new, unread messages.
     if (Irssi::settings_get_bool('mail_show_message') &&
         $unread > $new_mails_in_box{$name}) {
-      $new_mails = $unread - $new_mails_in_box{$name};
+      my $new_mails = $unread - $new_mails_in_box{$name};
       if ($nummailboxes == 1) {
         Irssi::print("You have $new_mails new message" . ($new_mails != 1 ? "s." : "."), MSGLEVEL_CRAP);
       } else {
@@ -263,11 +264,9 @@ sub add_mailboxes {
   my $boxstring = $_[0];
   my @boxes = split(/,/, $boxstring);
 
-  foreach $dbox(@boxes) {
-    my $name = $dbox;
-    $name = substr($dbox, 0, index($dbox, '='));
-    my $box = $dbox;
-    $box = substr($dbox, index($dbox, '=') + 1, length($dbox));
+  foreach my $dbox(@boxes) {
+    my $name = substr($dbox, 0, index($dbox, '='));
+    my $box = substr($dbox, index($dbox, '=') + 1, length($dbox));
     addmailbox($name, $box);
   }
 }
@@ -306,7 +305,7 @@ sub delmailbox {
 sub update_settings_string {
   my $setting;
 
-  foreach $name (keys(%mailboxes)) {
+  foreach my $name (keys(%mailboxes)) {
     $setting .= $name . "=" . $mailboxes{$name} . ",";
   }
 
@@ -345,7 +344,7 @@ sub cmd_showmailboxes {
     return;
   }
   Irssi::print("Mailboxes:", MSGLEVEL_CRAP);
-  foreach $box (keys(%mailboxes)) {
+  foreach my $box (keys(%mailboxes)) {
     Irssi::print("$box: " . $mailboxes{$box}, MSGLEVEL_CRAP);
   }
 }
