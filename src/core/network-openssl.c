@@ -420,16 +420,38 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 
 	if (mycert && *mycert) {
 		char *scert = NULL, *spkey = NULL;
+		FILE *fp;
 		scert = convert_home(mycert);
 		if (mypkey && *mypkey)
 			spkey = convert_home(mypkey);
-		ERR_clear_error();
-		if (! SSL_CTX_use_certificate_file(ctx, scert, SSL_FILETYPE_PEM))
-			g_warning("Loading of client certificate '%s' failed: %s", mycert, ERR_reason_error_string(ERR_get_error()));
-		else if (! SSL_CTX_use_PrivateKey_file(ctx, spkey ? spkey : scert, SSL_FILETYPE_PEM))
-			g_warning("Loading of private key '%s' failed: %s", mypkey ? mypkey : mycert, ERR_reason_error_string(ERR_get_error()));
-		else if (! SSL_CTX_check_private_key(ctx))
-			g_warning("Private key does not match the certificate");
+
+		if ((fp = fopen(scert, "r"))) {
+			X509 *cert;
+			/* Let's parse the certificate by hand instead of using
+			 * SSL_CTX_use_certificate_file so that we can validate
+			 * some parts of it. */
+			cert = PEM_read_X509(fp, NULL, get_pem_password_callback, (void *)mypass);
+			if (cert != NULL) {
+				/* Only the expiration date is checked right now */
+				if (X509_cmp_current_time(X509_get_notAfter(cert))  <= 0 ||
+				    X509_cmp_current_time(X509_get_notBefore(cert)) >= 0)
+					g_warning("The client certificate is expired");
+
+				ERR_clear_error();
+				if (! SSL_CTX_use_certificate(ctx, cert))
+					g_warning("Loading of client certificate '%s' failed: %s", mycert, ERR_reason_error_string(ERR_get_error()));
+				else if (! SSL_CTX_use_PrivateKey_file(ctx, spkey ? spkey : scert, SSL_FILETYPE_PEM))
+					g_warning("Loading of private key '%s' failed: %s", mypkey ? mypkey : mycert, ERR_reason_error_string(ERR_get_error()));
+				else if (! SSL_CTX_check_private_key(ctx))
+					g_warning("Private key does not match the certificate");
+
+				X509_free(cert);
+			} else
+				g_warning("Loading of client certificate '%s' failed: %s", mycert, ERR_reason_error_string(ERR_get_error()));
+
+			fclose(fp);
+		} else
+			g_warning("Could not find client certificate '%s'", scert);
 		g_free(scert);
 		g_free(spkey);
 	}
