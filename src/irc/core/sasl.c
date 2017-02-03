@@ -174,10 +174,16 @@ static gboolean sasl_reassemble_incoming(IRC_SERVER_REC *server, const char *fra
 		*decoded = g_string_new_len("", 0);
 	} else {
 		gsize dec_len;
-		gchar *tmp;
+		gint state = 0;
+		guint save = 0;
 
-		tmp = (gchar *) g_base64_decode(enc_req->str, &dec_len);
-		*decoded = g_string_new_len(tmp, dec_len);
+		/* Since we're not going to use the enc_req GString anymore we
+		 * can perform the decoding in place. */
+		dec_len = g_base64_decode_step(enc_req->str, enc_req->len,
+					       (guchar *)enc_req->str,
+					       &state, &save);
+		/* A copy of the data is made when the GString is created. */
+		*decoded = g_string_new_len(enc_req->str, dec_len);
 	}
 
 	g_string_free(enc_req, TRUE);
