@@ -6,6 +6,8 @@ v1.0.1 2017-02-03  The Irssi team <staff@irssi.org>
 	- Fix regression that broke second level completion (#613, #609).
 	- Correct missing NULL termination in perl_parse. By Hanno Böck (#619).
 	- Sync broken mail.pl script (#624, #607).
+	- Prevent a memory leak during the processing of the SASL
+	  response (GL!8, GL#5)
 
 v1.0.0 2017-01-03  The Irssi team <staff@irssi.org>
 	* Removed --disable-ipv6 (#408).
