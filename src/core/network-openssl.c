@@ -32,6 +32,17 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+/* OpenSSL 1.1.0 introduced some backward-incompatible changes to the api */
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && !defined(LIBRESSL_VERSION_NUMBER)
+/* The two functions below could be already defined if OPENSSL_API_COMPAT is
+ * below the 1.1.0 version so let's do a clean start */
+#undef  X509_get_notBefore
+#undef  X509_get_notAfter
+#define X509_get_notBefore(x)     X509_get0_notBefore(x)
+#define X509_get_notAfter(x)      X509_get0_notAfter(x)
+#define ASN1_STRING_data(x)       ASN1_STRING_get0_data(x)
+#endif
+
 /* ssl i/o channel object */
 typedef struct
 {
@@ -352,13 +363,19 @@ static GIOFuncs irssi_ssl_channel_funcs = {
 
 static gboolean irssi_ssl_init(void)
 {
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && !defined(LIBRESSL_VERSION_NUMBER)
+	if (!OPENSSL_init_ssl(OPENSSL_INIT_SSL_DEFAULT, NULL)) {
+		g_error("Could not initialize OpenSSL");
+		return FALSE;
+	}
+#else
 	SSL_library_init();
 	SSL_load_error_strings();
 	OpenSSL_add_all_algorithms();
+#endif
 	ssl_inited = TRUE;
 
 	return TRUE;
-
 }
 
 static int get_pem_password_callback(char *buffer, int max_length, int rwflag, void *pass)
