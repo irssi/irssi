@@ -261,8 +261,8 @@ abstracts = {
   # background for topicbar (same default)
   #sb_topic_bg = "%8";
 
-  # text at the beginning of statusbars. sb-item already puts
-  # space there,so we don't use anything by default.
+  # text at the beginning of statusbars. "sb" already puts a space there,
+  # so we don't use anything by default.
   sbstart = "";
   # text at the end of statusbars. Use space so that it's never
   # used for anything.
