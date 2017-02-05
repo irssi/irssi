@@ -1,5 +1,14 @@
 v1.1-head 2017-xx-xx  The Irssi team <staff@irssi.org>
 
+v1.0.1 2017-02-03  The Irssi team <staff@irssi.org>
+	- Fix Perl compilation in object dir. By Martijn Dekker (#602, #623).
+	- Disable EC cryptography on Solaris to fix build (#604, #598).
+	- Fix incorrect HELP SERVER example (#606, #519).
+	- Correct memory leak in /OP and /VOICE. By Tim Konick (#608).
+	- Fix regression that broke second level completion (#613, #609).
+	- Correct missing NULL termination in perl_parse. By Hanno Böck (#619).
+	- Sync broken mail.pl script (#624, #607).
+
 v1.0.0 2017-01-03  The Irssi team <staff@irssi.org>
 	* Removed --disable-ipv6 (#408).
 	* /connect Network now aborts with an error if no servers have been
@@ -41,16 +50,16 @@ v1.0.0 2017-01-03  The Irssi team <staff@irssi.org>
 	  values like this: Start by downloading the certificate from a given IRC
 	  server:
 
-	      $ openssl s_client -connect chat.freenode.net:6697 < /dev/null 2>/dev/null | \
-	        openssl x509 > freenode.cert
+	      $ openssl s_client -connect irc.example.net:6697 < /dev/null 2>/dev/null | \
+	        openssl x509 > example.cert
 
 	  Find the value for -tls_pinned_cert:
 
-	      $ openssl x509 -in freenode.cert -fingerprint -sha256 -noout
+	      $ openssl x509 -in example.cert -fingerprint -sha256 -noout
 
 	  Find the value for -tls_pinned_pubkey:
 
-	      $ openssl x509 -in freenode.cert -pubkey -noout | \
+	      $ openssl x509 -in example.cert -pubkey -noout | \
 	        openssl pkey -pubin -outform der | \
 	        openssl dgst -sha256 -c | \
 	        tr a-z A-Z
