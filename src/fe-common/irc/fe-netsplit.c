@@ -148,6 +148,8 @@ static void print_server_splits(IRC_SERVER_REC *server, TEMP_SPLIT_REC *rec, con
 	char *sourceserver;
 	GSList *tmp;
 
+	g_return_if_fail(rec->servers != NULL);
+
 	destservers = g_string_new(NULL);
 	for (tmp = rec->servers; tmp != NULL; tmp = tmp->next) {
 		NETSPLIT_SERVER_REC *rec = tmp->data;
