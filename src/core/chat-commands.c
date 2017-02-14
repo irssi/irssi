@@ -250,19 +250,14 @@ static void cmd_server(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	command_runsub("server", data, server, item);
 }
 
-static void sig_default_command_server(const char *data, SERVER_REC *server,
-				       WI_ITEM_REC *item)
-{
-        signal_emit("command server connect", 3, data, server, item);
-}
-
-/* SYNTAX: SERVER [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] [-ssl_pass <password>]
-                  [-ssl_verify] [-ssl_cafile <cafile>] [-ssl_capath <capath>]
-                  [-ssl_ciphers <list>]
-                  [-!] [-noautosendcmd]
+/* SYNTAX: SERVER CONNECT [-4 | -6] [-ssl] [-ssl_cert <cert>] [-ssl_pkey <pkey>] 
+		  [-ssl_pass <password>] [-ssl_verify] [-ssl_cafile <cafile>] 
+		  [-ssl_capath <capath>]
+		  [-ssl_ciphers <list>]
+		  [-!] [-noautosendcmd]
 		  [-noproxy] [-network <network>] [-host <hostname>]
 		  [-rawlog <file>]
-                  [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
+		  [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
 /* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_server_connect(const char *data, SERVER_REC *server)
 {
@@ -495,7 +490,6 @@ void chat_commands_init(void)
 	command_bind("foreach channel", NULL, (SIGNAL_FUNC) cmd_foreach_channel);
 	command_bind("foreach query", NULL, (SIGNAL_FUNC) cmd_foreach_query);
 
-	signal_add("default command server", (SIGNAL_FUNC) sig_default_command_server);
 	signal_add("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 
 	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_pinned_cert +ssl_pinned_pubkey tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey +host noproxy -rawlog noautosendcmd");
@@ -515,6 +509,5 @@ void chat_commands_deinit(void)
 	command_unbind("foreach channel", (SIGNAL_FUNC) cmd_foreach_channel);
 	command_unbind("foreach query", (SIGNAL_FUNC) cmd_foreach_query);
 
-        signal_remove("default command server", (SIGNAL_FUNC) sig_default_command_server);
 	signal_remove("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 }

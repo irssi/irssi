@@ -59,8 +59,6 @@
 %9Examples:%9
 
     /SERVER
-    /SERVER chat.freenode.net
-    /SERVER +chat.freenode.net
     /SERVER CONNECT chat.freenode.net
     /SERVER CONNECT +chat.freenode.net
     /SERVER ADD -network Freenode -noautosendcmd orwell.freenode.net
