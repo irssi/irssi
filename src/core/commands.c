@@ -567,13 +567,14 @@ static int get_cmd_options(char **data, int ignore_unknown,
 
 	option = NULL; pos = -1;
 	for (;;) {
-		if (**data == '-') {
+		if (**data == '\0' || **data == '-') {
 			if (option != NULL && *optlist[pos] == '+') {
 				/* required argument missing! */
                                 *data = optlist[pos] + 1;
 				return CMDERR_OPTION_ARG_MISSING;
 			}
-
+		}
+		if (**data == '-') {
 			(*data)++;
 			if (**data == '-' && (*data)[1] == ' ') {
 				/* -- option means end of options even
