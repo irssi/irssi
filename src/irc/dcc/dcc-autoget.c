@@ -70,7 +70,7 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 	file = dcc_get_download_path(dcc->arg);
 	str = g_strdup_printf(settings_get_bool("dcc_autoresume") &&
 			      stat(file, &statbuf) == 0 ?
-			      "RESUME %s %s" : "GET %s %s",
+			      "RESUME %s \"%s\"" : "GET %s \"%s\"",
 			      dcc->nick, dcc->arg);
 	signal_emit("command dcc", 2, str, dcc->server);
         g_free(file);
