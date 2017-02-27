@@ -80,6 +80,10 @@ static void ison_send(IRC_SERVER_REC *server, GString *cmd)
 {
 	MODULE_SERVER_REC *mserver;
 
+	if (!server->connected) {
+		return;
+	}
+
 	mserver = MODULE_DATA(server);
 	mserver->ison_count++;
 
