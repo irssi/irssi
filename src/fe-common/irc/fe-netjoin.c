@@ -470,6 +470,20 @@ static void read_settings(void)
 	}
 }
 
+static void sig_server_disconnected(IRC_SERVER_REC *server)
+{
+	NETJOIN_SERVER_REC *netjoin_server;
+
+	g_return_if_fail(server != NULL);
+
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	if ((netjoin_server = netjoin_find_server(server))) {
+		netjoin_server_remove(netjoin_server);
+	}
+}
+
 void fe_netjoin_init(void)
 {
 	settings_add_bool("misc", "hide_netsplit_quits", TRUE);
@@ -480,6 +494,7 @@ void fe_netjoin_init(void)
 
 	read_settings();
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 }
 
 void fe_netjoin_deinit(void)
@@ -492,6 +507,7 @@ void fe_netjoin_deinit(void)
 	}
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 
 	signal_remove("message quit", (SIGNAL_FUNC) msg_quit);
 	signal_remove("message join", (SIGNAL_FUNC) msg_join);
