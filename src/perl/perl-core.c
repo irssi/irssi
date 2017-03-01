@@ -67,10 +67,10 @@ static void perl_script_destroy(PERL_SCRIPT_REC *script)
 {
 	perl_scripts = g_slist_remove(perl_scripts, script);
 
-	signal_emit("script destroyed", 1, script);
-
 	perl_signal_remove_script(script);
 	perl_source_remove_script(script);
+
+	signal_emit("script destroyed", 1, script);
 
 	g_free(script->name);
 	g_free(script->package);
