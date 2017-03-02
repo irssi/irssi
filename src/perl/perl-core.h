@@ -8,6 +8,10 @@ typedef struct {
         /* Script can be loaded from a file, or from some data in memory */
 	char *path; /* FILE: full path for file */
 	char *data; /* DATA: data used for the script */
+
+	/* internal bookkeeping */
+	char script_error_status; /* script error status */
+	char disable_signals; /* don't deliver signals to this script */
 } PERL_SCRIPT_REC;
 
 extern GSList *perl_scripts;
@@ -54,5 +58,10 @@ int perl_get_api_version(void);
 
 void perl_core_init(void);
 void perl_core_deinit(void);
+
+/* Reports script errors.
+ * Upon return, @param script may have been (and probably was) freed.
+ */
+void perl_report_script_error(PERL_SCRIPT_REC *script, const char *error);
 
 #endif

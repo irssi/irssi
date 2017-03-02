@@ -35,6 +35,17 @@
 #include "XSUB.h"
 #include "irssi-core.pl.h"
 
+/* Values for script_error_status */
+
+/* No script error */
+#define SES_NO_ERROR 0
+/* Script error being emitted */
+#define SES_EMIT_ERROR 1
+/* Script destroyed; free memory */
+#define SES_DESTROY 2
+/* Used to help detect use-after-free */
+#define SES_DEAD 127
+
 extern char **environ;
 
 GSList *perl_scripts;
@@ -45,6 +56,8 @@ static char *perl_args[] = {"", "-e", "0", NULL};
 
 #define IS_PERL_SCRIPT(file) \
 	(strlen(file) > 3 && g_strcmp0(file+strlen(file)-3, ".pl") == 0)
+
+static void perl_script_free(PERL_SCRIPT_REC *script);
 
 static void perl_script_destroy_package(PERL_SCRIPT_REC *script)
 {
@@ -71,6 +84,21 @@ static void perl_script_destroy(PERL_SCRIPT_REC *script)
 	perl_source_remove_script(script);
 
 	signal_emit("script destroyed", 1, script);
+
+	if (script->script_error_status) {
+		/* we're in the middle of a 'script error' signal.
+		 * set the status so perl_report_script_error knows to free
+		 * the script object after everything's finished.
+		 */
+		script->script_error_status = SES_DESTROY;
+	} else
+		perl_script_free(script);
+}
+
+
+static void perl_script_free(PERL_SCRIPT_REC *script)
+{
+	script->script_error_status = SES_DEAD;
 
 	g_free(script->name);
 	g_free(script->package);
@@ -250,7 +278,7 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 
 		if (error != NULL) {
 			error = g_strdup(error);
-			signal_emit("script error", 2, script, error);
+			perl_report_script_error(script, error);
 			g_free(error);
 		}
 	}
@@ -277,6 +305,8 @@ static PERL_SCRIPT_REC *script_load(char *name, const char *path,
 	script->package = g_strdup_printf("Irssi::Script::%s", name);
 	script->path = g_strdup(path);
         script->data = g_strdup(data);
+	script->script_error_status = SES_NO_ERROR;
+	script->disable_signals = FALSE;
 
 	perl_scripts = g_slist_append(perl_scripts, script);
 	signal_emit("script created", 1, script);
@@ -483,4 +513,32 @@ void perl_core_deinit(void)
 void perl_core_abicheck(int *version)
 {
 	*version = IRSSI_ABI_VERSION;
+}
+
+void perl_report_script_error(PERL_SCRIPT_REC *script, const char *error)
+{
+	if (script->script_error_status) {
+		/* while emitting a script error for this script,
+		 * we got another error, which is a recipe for disaster.
+		 * Nip it in the bud.
+		 */
+		script->disable_signals = TRUE;
+		/* We also need to stop the spread of the current signal,
+		 * because after the next call, our script may be gone. */
+		signal_stop();
+		signal_emit("script error", 2, script, error);
+		return;
+	}
+	/* we are now emitting a script error */
+	script->script_error_status = SES_EMIT_ERROR;
+	signal_emit("script error", 2, script, error);
+	if (script->script_error_status == SES_DESTROY) {
+		/* script was destroyed */
+		perl_script_free(script);
+	} else {
+		/* script was not destroyed, clear emit status */
+		script->script_error_status = SES_NO_ERROR;
+		/* also restore signal handlers if we disabled them */
+		script->disable_signals = FALSE;
+	}
 }
