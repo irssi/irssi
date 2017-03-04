@@ -121,6 +121,8 @@ static void sig_layout_restore(void)
 	if (node == NULL) return;
 
 	sorted_config = get_sorted_windows_config(node);
+	if (sorted_config == NULL) return;
+
         windows_count = g_slist_length(sorted_config);
 
         /* calculate the saved terminal height */

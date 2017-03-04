@@ -453,7 +453,7 @@ static void display_sorted_nicks(CHANNEL_REC *channel, GSList *nicklist)
 		}
 	}
 
-	if (str->len > strlen(prefix_format)) {
+	if (prefix_format != NULL && str->len > strlen(prefix_format)) {
 		printtext(channel->server, channel->visible_name,
 		          MSGLEVEL_CLIENTCRAP, "%s", str->str);
 	}
