@@ -88,8 +88,8 @@ char *stristr_full(const char *data, const char *key);
 char *ascii_strup(char *str);
 char *ascii_strdown(char *str);
 
-/* Escape all '"', "'" and '\' chars with '\' */
-char *escape_string(const char *str);
+/* Escape all the characters in `what' with a backslash */
+char *escape_string(const char *str, const char *what);
 
 /* convert all low-ascii (<32) to ^<A..> combinations */
 char *show_lowascii(const char *str);

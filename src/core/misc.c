@@ -724,18 +724,20 @@ int expand_escape(const char **data)
 	}
 }
 
-/* Escape all '"', "'" and '\' chars with '\' */
-char *escape_string(const char *str)
+/* Escape all the characters in `what' with a backslash */
+char *escape_string(const char *str, const char *what)
 {
-	char *ret, *p;
+	const char *p;
+	char *ret;
 
-	p = ret = g_malloc(strlen(str)*2+1);
-	while (*str != '\0') {
-		if (*str == '"' || *str == '\'' || *str == '\\')
-			*p++ = '\\';
-		*p++ = *str++;
+	ret = g_malloc(strlen(str) * 2 + 1);
+	for (p = str; *p != '\0'; p++, ret++) {
+		if (strchr(what, *p) != NULL) {
+			*ret++ = '\\';
+		}
+		*ret = *p;
 	}
-	*p = '\0';
+	*ret = '\0';
 
 	return ret;
 }
