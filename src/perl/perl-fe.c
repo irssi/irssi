@@ -59,7 +59,7 @@ static void cmd_script_exec(const char *data)
 		/* not a permanent script, unload immediately */
                 perl_script_unload(script);
 	}
-
+	perl_script_unref(script);
 
 	cmd_params_free(free_arg);
 }
@@ -87,6 +87,7 @@ static void cmd_script_load(const char *data)
 				    TXT_SCRIPT_LOADED,
 				    script->name, script->path);
 		}
+		perl_script_unref(script);
 		g_free(fname);
 	}
 	cmd_params_free(free_arg);

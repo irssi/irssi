@@ -70,6 +70,11 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 {
 	dSP;
 
+	if (!perl_script_ref(rec->script)) {
+		g_error("Unexpected event for destroyed script %s", rec->script->name);
+		return G_SOURCE_CONTINUE;
+	}
+
 	ENTER;
 	SAVETMPS;
 
@@ -82,9 +87,11 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 
 	if (SvTRUE(ERRSV)) {
                 char *error = g_strdup(SvPV_nolen(ERRSV));
-		signal_emit("script error", 2, rec->script, error);
+		perl_script_error(rec->script, error);
                 g_free(error);
 	}
+
+	perl_script_unref(rec->script);
 
 	if (perl_source_unref(rec) && rec->once)
 		perl_source_destroy(rec);

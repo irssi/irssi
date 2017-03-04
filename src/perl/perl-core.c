@@ -35,6 +35,12 @@
 #include "XSUB.h"
 #include "irssi-core.pl.h"
 
+#ifdef TRACE_SCRIPT_UNLOADS
+#define SCRIPT_UNLOAD_DEBUG g_message
+#else
+#define SCRIPT_UNLOAD_DEBUG while(0)g_message
+#endif
+
 extern char **environ;
 
 GSList *perl_scripts;
@@ -71,6 +77,14 @@ static void perl_script_destroy(PERL_SCRIPT_REC *script)
 	perl_source_remove_script(script);
 
 	signal_emit("script destroyed", 1, script);
+
+	perl_script_unref(script);
+}
+
+
+static void perl_script_free(PERL_SCRIPT_REC *script)
+{
+	g_return_if_fail(script->refcount == 0);
 
 	g_free(script->name);
 	g_free(script->package);
@@ -250,7 +264,7 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 
 		if (error != NULL) {
 			error = g_strdup(error);
-			signal_emit("script error", 2, script, error);
+			perl_script_error(script, error);
 			g_free(error);
 		}
 	}
@@ -258,7 +272,7 @@ static int perl_script_eval(PERL_SCRIPT_REC *script)
 	FREETMPS;
 	LEAVE;
 
-        return error == NULL;
+        return (!script->destroyed);
 }
 
 /* NOTE: name must not be free'd */
@@ -277,12 +291,18 @@ static PERL_SCRIPT_REC *script_load(char *name, const char *path,
 	script->package = g_strdup_printf("Irssi::Script::%s", name);
 	script->path = g_strdup(path);
         script->data = g_strdup(data);
+	script->destroyed = FALSE;
+	script->disable_signals = -1;
+	/* two references: one for the script itself, one for our caller */
+	script->refcount = 2;
 
 	perl_scripts = g_slist_append(perl_scripts, script);
 	signal_emit("script created", 1, script);
 
-	if (!perl_script_eval(script))
+	if (!perl_script_eval(script)) {
+		perl_script_unref(script);
                 script = NULL; /* the script is destroyed in "script error" signal */
+	}
         return script;
 }
 
@@ -312,6 +332,13 @@ PERL_SCRIPT_REC *perl_script_load_data(const char *data)
 void perl_script_unload(PERL_SCRIPT_REC *script)
 {
         g_return_if_fail(script != NULL);
+
+	g_return_if_fail(script->refcount > 0);
+
+	if (script->destroyed)
+		return;
+
+	script->destroyed = 1;
 
 	perl_script_destroy_package(script);
         perl_script_destroy(script);
@@ -414,7 +441,7 @@ void perl_scripts_autorun(void)
 
 		fname = g_strdup_printf("%s/%s", path, dp->d_name);
 		if (stat(fname, &statbuf) == 0 && !S_ISDIR(statbuf.st_mode))
-			perl_script_load_file(fname);
+			perl_script_unref(perl_script_load_file(fname));
 		g_free(fname);
 	}
 	closedir(dirp);
@@ -483,4 +510,65 @@ void perl_core_deinit(void)
 void perl_core_abicheck(int *version)
 {
 	*version = IRSSI_ABI_VERSION;
+}
+
+int perl_script_ref(PERL_SCRIPT_REC *script)
+{
+	g_return_val_if_fail(script != NULL, FALSE);
+	g_return_val_if_fail(script->refcount > 0, FALSE);
+
+	/* If the script's been destroyed, there's no point calling into it. */
+
+	if (script->destroyed) {
+		g_warning("rejecting attempt to reference destroyed script %p (%s)\n", script, script->name);
+		return FALSE;
+	}
+
+	if (++script->refcount == UINT8_MAX) {
+		--script->refcount;
+		/* something is almost certainly wrong here. */
+		/* Report an error; that'll most likely cause the offending script to be unloaded. */
+		perl_script_error(script, "Too much signal/command recursion");
+		return FALSE;
+	}
+
+	SCRIPT_UNLOAD_DEBUG("reference count for %p (%s) is now %d\n", script, script->name, script->refcount);
+	return TRUE;
+}
+
+void perl_script_unref(PERL_SCRIPT_REC *script)
+{
+	/* this makes it easier to use perl_load_script_data() and perl_load_script_file() */
+	if (script == NULL)
+		return;
+
+	g_return_if_fail(script->refcount > 0);
+
+	if (--script->refcount == 0) {
+		SCRIPT_UNLOAD_DEBUG("freeing script %p (%s)\n", script, script->name);
+		perl_script_free(script);
+	} else {
+		SCRIPT_UNLOAD_DEBUG("not freeing script %p (%s); refcount is now %d\n",
+			script, script->name, script->refcount);
+	}
+}
+
+void perl_script_error(PERL_SCRIPT_REC *script, const char *error)
+{
+	g_return_if_fail(script != NULL);
+	g_return_if_fail(script->refcount > 0);
+
+	/* Don't bother reporting errors in destroyed scripts */
+	if (script->destroyed) {
+		SCRIPT_UNLOAD_DEBUG("suppressing script error notification for destroyed script");
+		return;
+	}
+
+	if (++script->disable_signals > 0) {
+		g_warning("Recursive error detected in script %s", script->name);
+	}
+
+	signal_emit("script error", 2, script, error);
+
+	--script->disable_signals;
 }

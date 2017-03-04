@@ -302,9 +302,13 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 	perl_call_sv(func, G_EVAL|G_DISCARD);
 	SPAGAIN;
 
+	/* if script->destroyed is nonzero, rec is no longer valid */
+	if (script->destroyed)
+		rec = NULL;
+
 	if (SvTRUE(ERRSV)) {
 		char *error = g_strdup(SvPV_nolen(ERRSV));
-		signal_emit("script error", 2, script, error);
+		perl_script_error(script, error);
                 g_free(error);
                 rec = NULL;
 	}
@@ -354,13 +358,23 @@ static void sig_func(const void *p1, const void *p2,
 		     const void *p5, const void *p6)
 {
 	PERL_SIGNAL_REC *rec;
+	PERL_SCRIPT_REC *script;
 	const void *args[6];
 
 	args[0] = p1; args[1] = p2; args[2] = p3;
 	args[3] = p4; args[4] = p5; args[5] = p6;
 
 	rec = signal_get_user_data();
-	perl_call_signal(rec->script, rec->func, signal_get_emitted_id(), args);
+
+	/* save off rec->script; after perl_call_signal, rec may be gone */
+	script = rec->script;
+
+	if (script->disable_signals > 0)
+		return;
+	if (!perl_script_ref(script))
+		return;
+	perl_call_signal(script, rec->func, signal_get_emitted_id(), args);
+	perl_script_unref(script);
 }
 
 static void perl_signal_add_full_int(const char *signal, SV *func,
