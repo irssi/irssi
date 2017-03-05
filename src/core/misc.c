@@ -728,16 +728,17 @@ int expand_escape(const char **data)
 char *escape_string(const char *str, const char *what)
 {
 	const char *p;
-	char *ret;
+	char *ret, *escaped;
 
 	ret = g_malloc(strlen(str) * 2 + 1);
-	for (p = str; *p != '\0'; p++, ret++) {
+	escaped = ret;
+	for (p = str; *p != '\0'; p++, escaped++) {
 		if (strchr(what, *p) != NULL) {
-			*ret++ = '\\';
+			*escaped++ = '\\';
 		}
-		*ret = *p;
+		*escaped = *p;
 	}
-	*ret = '\0';
+	*escaped = '\0';
 
 	return ret;
 }
