@@ -438,41 +438,66 @@ static void cmd_foreach(const char *data, SERVER_REC *server,
 /* SYNTAX: FOREACH SERVER <command> */
 static void cmd_foreach_server(const char *data, SERVER_REC *server)
 {
-        GSList *list;
+	GSList *list;
+	const char *cmdchars;
+	char *str;
+
+	cmdchars = settings_get_str("cmdchars");
+	str = strchr(cmdchars, *data) != NULL ? g_strdup(data) :
+		g_strdup_printf("%c%s", *cmdchars, data);
 
 	list = g_slist_copy(servers);
 	while (list != NULL) {
-		signal_emit("send command", 3, data, list->data, NULL);
-                list = g_slist_remove(list, list->data);
+		signal_emit("send command", 3, str, list->data, NULL);
+		list = g_slist_remove(list, list->data);
 	}
+
+	g_free(str);
 }
 
 /* SYNTAX: FOREACH CHANNEL <command> */
 static void cmd_foreach_channel(const char *data)
 {
-        GSList *list;
+	GSList *list;
+	const char *cmdchars;
+	char *str;
+
+	cmdchars = settings_get_str("cmdchars");
+	str = strchr(cmdchars, *data) != NULL ? g_strdup(data) :
+		g_strdup_printf("%c%s", *cmdchars, data);
 
 	list = g_slist_copy(channels);
 	while (list != NULL) {
 		CHANNEL_REC *rec = list->data;
 
-		signal_emit("send command", 3, data, rec->server, rec);
-                list = g_slist_remove(list, list->data);
+		signal_emit("send command", 3, str, rec->server, rec);
+		list = g_slist_remove(list, list->data);
 	}
+
+	g_free(str);
 }
 
 /* SYNTAX: FOREACH QUERY <command> */
 static void cmd_foreach_query(const char *data)
 {
-        GSList *list;
+	GSList *list;
+	const char *cmdchars;
+	char *str;
+
+	cmdchars = settings_get_str("cmdchars");
+	str = strchr(cmdchars, *data) != NULL ? g_strdup(data) :
+		g_strdup_printf("%c%s", *cmdchars, data);
+
 
 	list = g_slist_copy(queries);
 	while (list != NULL) {
 		QUERY_REC *rec = list->data;
 
-		signal_emit("send command", 3, data, rec->server, rec);
-                list = g_slist_remove(list, list->data);
+		signal_emit("send command", 3, str, rec->server, rec);
+		list = g_slist_remove(list, list->data);
 	}
+
+	g_free(str);
 }
 
 void chat_commands_init(void)

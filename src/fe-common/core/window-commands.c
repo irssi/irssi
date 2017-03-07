@@ -839,23 +839,31 @@ static void cmd_layout(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 /* SYNTAX: FOREACH WINDOW <command> */
 static void cmd_foreach_window(const char *data)
 {
-        WINDOW_REC *old;
-        GSList *list;
+	WINDOW_REC *old;
+	GSList *list;
+	const char *cmdchars;
+	char *str;
 
-        old = active_win;
+	cmdchars = settings_get_str("cmdchars");
+	str = strchr(cmdchars, *data) != NULL ? g_strdup(data) :
+		g_strdup_printf("%c%s", *cmdchars, data);
+
+	old = active_win;
 
 	list = g_slist_copy(windows);
 	while (list != NULL) {
 		WINDOW_REC *rec = list->data;
 
 		active_win = rec;
-		signal_emit("send command", 3, data, rec->active_server,
+		signal_emit("send command", 3, str, rec->active_server,
 			    rec->active);
-                list = g_slist_remove(list, list->data);
+		list = g_slist_remove(list, list->data);
 	}
 
 	if (g_slist_find(windows, old) != NULL)
 		active_win = old;
+
+	g_free(str);
 }
 
 void window_commands_init(void)
