@@ -23,6 +23,7 @@
 #include "masks.h"
 #include "settings.h"
 #include "servers.h"
+#include "misc.h"
 
 #include "dcc-get.h"
 
@@ -30,7 +31,7 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 {
         struct stat statbuf;
 	const char *masks;
-        char *str, *file;
+        char *str, *file, *esc_arg;
         int max_size;
 
         if (!IS_DCC_GET(dcc)) return;
@@ -68,11 +69,13 @@ static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 
 	/* ok. but do we want/need to resume? */
 	file = dcc_get_download_path(dcc->arg);
+	esc_arg = escape_string(dcc->arg);
 	str = g_strdup_printf(settings_get_bool("dcc_autoresume") &&
 			      stat(file, &statbuf) == 0 ?
-			      "RESUME %s %s" : "GET %s %s",
-			      dcc->nick, dcc->arg);
+			      "RESUME %s \"%s\"" : "GET %s \"%s\"",
+			      dcc->nick, esc_arg);
 	signal_emit("command dcc", 2, str, dcc->server);
+	g_free(esc_arg);
         g_free(file);
 	g_free(str);
 }
