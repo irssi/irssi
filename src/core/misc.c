@@ -690,6 +690,8 @@ int expand_escape(const char **data)
 		return '\n';
 	case 'e':
 		return 27; /* ESC */
+	case '\\':
+		return '\\';
 
 	case 'x':
                 /* hex digit */
