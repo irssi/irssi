@@ -1,5 +1,15 @@
 v1.1-head 2017-xx-xx  The Irssi team <staff@irssi.org>
 
+v1.0.2 2017-03-10  The Irssi team <staff@irssi.org>
+	- Prevent some null-pointer crashes (GL!9).
+	- Fix compilation with OpenSSL 1.1.0 (#628, #597).
+	- Correct dereferencing of already freed server objects during
+	  output of netjoins. Found by APic (GL!10, GL#7).
+	- Fix in command arg parser to detect missing arguments in tail place
+	  (#652, #651).
+	- Fix regression that broke incoming DCC file transfers (#667, #656).
+	- Fix issue with escaping \ in evaluated strings (#669, #520).
+
 v1.0.1 2017-02-03  The Irssi team <staff@irssi.org>
 	- Fix Perl compilation in object dir. By Martijn Dekker (#602, #623).
 	- Disable EC cryptography on Solaris to fix build (#604, #598).
