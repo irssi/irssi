@@ -35,6 +35,7 @@
 
 GSList *keyinfos;
 static GHashTable *keys, *default_keys;
+static int key_timeout;
 
 /* A cache of some sort for key presses that generate a single char only.
    If the key isn't used, used_keys[key] is zero. */
@@ -48,7 +49,8 @@ static int key_config_frozen;
 
 struct _KEYBOARD_REC {
 	char *key_state; /* the ongoing key combo */
-        void *gui_data; /* GUI specific data sent in "key pressed" signal */
+	guint timer_tag; /* used to check when a pending combo has expired */
+	void *gui_data; /* GUI specific data sent in "key pressed" signal */
 };
 
 /* Creates a new "keyboard" - this is used only for keeping track of
@@ -60,6 +62,7 @@ KEYBOARD_REC *keyboard_create(void *data)
 
 	rec = g_new0(KEYBOARD_REC, 1);
 	rec->gui_data = data;
+	rec->timer_tag = 0;
 
 	signal_emit("keyboard created", 1, rec);
         return rec;
@@ -68,6 +71,11 @@ KEYBOARD_REC *keyboard_create(void *data)
 /* Destroys a keyboard */
 void keyboard_destroy(KEYBOARD_REC *keyboard)
 {
+	if (keyboard->timer_tag > 0) {
+		g_source_remove(keyboard->timer_tag);
+		keyboard->timer_tag = 0;
+	}
+
 	signal_emit("keyboard destroyed", 1, keyboard);
 
         g_free_not_null(keyboard->key_state);
@@ -592,6 +600,25 @@ static int key_states_search(const unsigned char *combo,
         return 0;
 }
 
+static gboolean key_timeout_expired(KEYBOARD_REC *keyboard)
+{
+	KEY_REC *rec;
+
+	keyboard->timer_tag = 0;
+
+	/* So, the timeout has expired with the input queue full, let's see if
+	 * what we've got is bound to some action. */
+	rec = g_tree_lookup(key_states, keyboard->key_state);
+	/* Drain the queue anyway. */
+	g_free_and_null(keyboard->key_state);
+
+	if (rec != NULL) {
+		(void)key_emit_signal(keyboard, rec);
+	}
+
+	return FALSE;
+}
+
 int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 {
 	KEY_REC *rec;
@@ -600,6 +627,11 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 
 	g_return_val_if_fail(keyboard != NULL, FALSE);
 	g_return_val_if_fail(key != NULL && *key != '\0', FALSE);
+
+	if (keyboard->timer_tag > 0) {
+		g_source_remove(keyboard->timer_tag);
+		keyboard->timer_tag = 0;
+	}
 
 	if (keyboard->key_state == NULL && key[1] == '\0' &&
 	    !used_keys[(int) (unsigned char) key[0]]) {
@@ -625,6 +657,13 @@ int key_pressed(KEYBOARD_REC *keyboard, const char *key)
 	if (g_tree_lookup(key_states, combo) != rec) {
 		/* key combo continues.. */
 		keyboard->key_state = combo;
+		/* respect the timeout if specified by the user */
+		if (key_timeout > 0) {
+			keyboard->timer_tag =
+				g_timeout_add(key_timeout,
+					      (GSourceFunc) key_timeout_expired,
+					      keyboard);
+		}
                 return 0;
 	}
 
@@ -870,6 +909,9 @@ static void read_keyboard_config(void)
 		key_config_read(tmp->data);
 
         key_configure_thaw();
+
+	/* any positive value other than 0 enables the timeout (in ms). */
+	key_timeout = settings_get_int("key_timeout");
 }
 
 void keyboard_init(void)
@@ -882,6 +924,8 @@ void keyboard_init(void)
 	key_states = g_tree_new((GCompareFunc) g_strcmp0);
         key_config_frozen = 0;
 	memset(used_keys, 0, sizeof(used_keys));
+
+	settings_add_int("misc", "key_timeout", 0);
 
 	key_bind("command", "Run any command", NULL, NULL, (SIGNAL_FUNC) sig_command);
 	key_bind("key", "Specify name for key binding", NULL, NULL, (SIGNAL_FUNC) sig_key);
