@@ -191,9 +191,9 @@ static void cmd_set(char *data)
 				/* Unpossible! */
 				break;
 			}
-			signal_emit("setup changed", 0);
 			printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_SET_TITLE, rec->section);
 			set_print(rec);
+			signal_emit("setup changed", 0);
 		} else
 			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_SET_UNKNOWN, key);
 	}
