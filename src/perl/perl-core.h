@@ -16,7 +16,7 @@ typedef struct {
 	 */
 	uint8_t destroyed;
 	/** Script signal suppression counter. If greater than zero,
-	 *  signals and commands should not be delivered to the script.e
+	 *  signals and commands should not be delivered to the script.
 	 */
 	int8_t disable_signals;
 	/** PERL_SCRIPT_REC reference counter. */
@@ -33,13 +33,13 @@ void perl_scripts_deinit(void);
 void perl_scripts_autorun(void);
 
 /** Load a perl script, path must be a full path.
- *  If an error occurs while loading the script, the return value is null.
+ *  If an error occurs while loading the script, the return value is NULL.
  *  Otherwise, the returned pointer has an extra reference that must be
  *  released with perl_script_unref().
  */
 PERL_SCRIPT_REC *perl_script_load_file(const char *path);
 /** Load a perl script from given data.
- *  If an error occurs while loading the script, the return value is null.
+ *  If an error occurs while loading the script, the return value is NULL.
  *  Otherwise, the returned pointer has an extra reference that must be
  *  released with perl_script_unref().
  */
