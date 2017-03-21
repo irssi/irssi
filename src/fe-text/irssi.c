@@ -318,21 +318,21 @@ int main(int argc, char **argv)
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
 		if (reload_config) {
-                        /* SIGHUP received, do /RELOAD */
+			/* SIGHUP received, do /RELOAD */
 			reload_config = FALSE;
-                        signal_emit("command reload", 1, "");
+			signal_emit("command reload", 1, "");
 		}
 
 		dirty_check();
 
 		term_refresh_freeze();
 		g_main_iteration(TRUE);
-                term_refresh_thaw();
+		term_refresh_thaw();
 	}
 
 	g_main_destroy(main_loop);
 	textui_deinit();
 
-        session_upgrade(); /* if we /UPGRADEd, start the new process */
+	session_upgrade(); /* if we /UPGRADEd, start the new process */
 	return 0;
 }
