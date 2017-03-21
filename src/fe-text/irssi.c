@@ -317,10 +317,6 @@ int main(int argc, char **argv)
 	/* Does the same as g_main_run(main_loop), except we
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
-		term_refresh_freeze();
-		g_main_iteration(TRUE);
-                term_refresh_thaw();
-
 		if (reload_config) {
                         /* SIGHUP received, do /RELOAD */
 			reload_config = FALSE;
@@ -328,6 +324,10 @@ int main(int argc, char **argv)
 		}
 
 		dirty_check();
+
+		term_refresh_freeze();
+		g_main_iteration(TRUE);
+                term_refresh_thaw();
 	}
 
 	g_main_destroy(main_loop);
