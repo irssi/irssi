@@ -462,7 +462,7 @@ void fe_common_core_finish_init(void)
 
 gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 {
-	const WindowType type = window_item_get_type(dest->window->active);
+	const WindowType type = dest->window->active ? window_item_get_type(dest->window->active) : WI_ITEM_OTHER;
 	GSList *targets = NULL, *iterator = NULL;
 	gboolean found = FALSE;
 

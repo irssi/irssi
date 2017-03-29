@@ -140,8 +140,6 @@ void window_item_set_active(WINDOW_REC *window, WI_ITEM_REC *item)
 
 WindowType window_item_get_type(WI_ITEM_REC *item)
 {
-	g_return_val_if_fail(item != NULL, WI_TYPE_OTHER);
-
 	const char *type = module_find_id_str("WINDOW ITEM TYPE", item->type);
 	if (!g_ascii_strcasecmp(type, "CHANNEL"))
 		return WI_TYPE_CHANNEL;
