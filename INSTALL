@@ -30,10 +30,6 @@ configure options
 
   Build the irssi proxy (see startup-HOWTO).
 
-  --disable-ssl
-
-  Disable SSL support.
-
   --with-perl=[yes|no|module]
 
   Enable Perl support

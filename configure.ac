@@ -231,11 +231,6 @@ if test "x$want_socks" = "xyes"; then
 fi
 
 dnl **
-dnl ** OpenSSL checks
-dnl **
-AC_CHECK_LIB([ssl], [SSL_library_init])
-
-dnl **
 dnl ** fe-text checks
 dnl **
 
@@ -276,7 +271,21 @@ if test -z "$GLIB_LIBS"; then
   AC_ERROR([GLIB is required to build irssi.])
 fi
 
-LIBS="$LIBS $GLIB_LIBS -lssl -lcrypto"
+LIBS="$LIBS $GLIB_LIBS"
+
+dnl **
+dnl ** OpenSSL checks
+dnl **
+PKG_CHECK_MODULES([OPENSSL], [openssl], [
+	CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
+	LIBS="$LIBS $OPENSSL_LIBS"
+], [
+	AC_CHECK_LIB([ssl], [SSL_library_init], [
+		LIBS="$LIBS -lssl -lcrypto"
+	], [
+		AC_MSG_ERROR([The OpenSSL library was not found])
+	])
+])
 
 dnl **
 dnl ** curses checks
