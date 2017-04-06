@@ -116,6 +116,8 @@ const char *command_history_prev(WINDOW_REC *window, const char *text)
 		history->pos = history->pos->prev;
 		if (history->pos == NULL)
                         history->over_counter++;
+	} else if (history->lines == 0) {
+		history->over_counter++;
 	} else {
 		history->pos = g_list_last(history->list);
 	}
