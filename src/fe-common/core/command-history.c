@@ -150,7 +150,6 @@ const char *command_history_next(WINDOW_REC *window, const char *text)
 
 void command_history_clear_pos_func(HISTORY_REC *history, gpointer user_data)
 {
-	history->over_counter = 0;
 	history->pos = NULL;
 }
 

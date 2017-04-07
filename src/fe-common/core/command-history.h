@@ -7,7 +7,7 @@ typedef struct {
 	char *name;
 
 	GList *list, *pos;
-	int lines, over_counter;
+	int lines;
 
 	int refcount;
 } HISTORY_REC;
