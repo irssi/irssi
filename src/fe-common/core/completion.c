@@ -784,6 +784,7 @@ static void sig_complete_command(GList **list, WINDOW_REC *window,
 	if (*list != NULL) signal_stop();
 }
 
+/* SYNTAX: COMPLETION [-auto] [-delete] <key> <value> */
 static void cmd_completion(const char *data)
 {
 	GHashTable *optlist;
