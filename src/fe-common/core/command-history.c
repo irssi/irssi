@@ -113,11 +113,9 @@ const char *command_history_prev(WINDOW_REC *window, const char *text)
 	pos = history->pos;
 
 	if (pos != NULL) {
-		history->pos = history->pos->prev;
-		if (history->pos == NULL)
-                        history->over_counter++;
-	} else if (history->lines == 0) {
-		history->over_counter++;
+		/* don't go past the first entry (no wrap around) */
+		if (history->pos->prev != NULL)
+			history->pos = history->pos->prev;
 	} else {
 		history->pos = g_list_last(history->list);
 	}
@@ -128,7 +126,7 @@ const char *command_history_prev(WINDOW_REC *window, const char *text)
 		command_history_add(history, text);
 	}
 
-	return history->pos == NULL ? "" : history->pos->data;
+	return history->pos == NULL ? text : history->pos->data;
 }
 
 const char *command_history_next(WINDOW_REC *window, const char *text)
@@ -141,10 +139,6 @@ const char *command_history_next(WINDOW_REC *window, const char *text)
 
 	if (pos != NULL)
 		history->pos = history->pos->next;
-	else if (history->over_counter > 0) {
-		history->over_counter--;
-		history->pos = history->list;
-	}
 
 	if (*text != '\0' &&
 	    (pos == NULL || g_strcmp0(pos->data, text) != 0)) {
@@ -156,7 +150,6 @@ const char *command_history_next(WINDOW_REC *window, const char *text)
 
 void command_history_clear_pos_func(HISTORY_REC *history, gpointer user_data)
 {
-	history->over_counter = 0;
 	history->pos = NULL;
 }
 
