@@ -9,5 +9,6 @@ void window_item_activity(WI_ITEM_REC *item, int data_level,
 
 void window_activity_init(void);
 void window_activity_deinit(void);
+int window_activity_target_is_hidden(TEXT_DEST_REC *dest);
 
 #endif
