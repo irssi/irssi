@@ -71,5 +71,6 @@ QUERY_REC *(*query_find_func)(SERVER_REC *server, const char *nick);
 int (*mask_match_func)(const char *mask, const char *data);
 /* returns true if `msg' was meant for `nick' */
 int (*nick_match_msg)(const char *nick, const char *msg);
+void (*send_data_func)(SERVER_REC *server, const char *data, int len);
 
 #undef STRUCT_SERVER_CONNECT_REC
