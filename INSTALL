@@ -10,7 +10,13 @@ To compile irssi you need:
 - perl-5.6 or greater (for perl support)
 - terminfo or ncurses (for text frontend)
 
-For most people, this should work just fine:
+First, download the project's zip file from GitHub, by using the
+ "Download ZIP" button, or clicking this link to download from the
+ master branch: https://github.com/irssi/irssi/archive/master.zip
+ 
+Next, extract this ZIP file.
+
+For most people, running these commands should work just fine:
 
  ./autogen.sh     (for people who just cloned the repository)
  ./configure      (if this script already exists, skip ./autogen.sh)
