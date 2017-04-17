@@ -511,6 +511,11 @@ static void event_bad_channel_mask(IRC_SERVER_REC *server, const char *data)
 	cannot_join(server, data, IRCTXT_JOINERROR_BAD_MASK);
 }
 
+static void event_operators_only(IRC_SERVER_REC *server, const char *data)
+{
+	cannot_join(server, data, IRCTXT_JOINERROR_OPERSONLY);
+}
+
 static void event_477(IRC_SERVER_REC *server, const char *data,
 		      const char *nick)
 {
@@ -688,6 +693,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 372", (SIGNAL_FUNC) event_motd);
 	signal_add("event 422", (SIGNAL_FUNC) event_motd);
 	signal_add("event 439", (SIGNAL_FUNC) event_target_too_fast);
+	signal_add("event 520", (SIGNAL_FUNC) event_operators_only);
 	signal_add("event 707", (SIGNAL_FUNC) event_target_too_fast);
 
         signal_add("default event numeric", (SIGNAL_FUNC) event_numeric);
@@ -781,6 +787,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 372", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 422", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 439", (SIGNAL_FUNC) event_target_too_fast);
+	signal_remove("event 520", (SIGNAL_FUNC) event_operators_only);
 	signal_remove("event 707", (SIGNAL_FUNC) event_target_too_fast);
 
         signal_remove("default event numeric", (SIGNAL_FUNC) event_numeric);
