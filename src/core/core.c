@@ -46,11 +46,6 @@
 #include "nicklist.h"
 #include "nickmatch-cache.h"
 
-#ifdef HAVE_SYS_RESOURCE_H
-#  include <sys/resource.h>
-   static struct rlimit orig_core_rlimit;
-#endif
-
 void chat_commands_init(void);
 void chat_commands_deinit(void);
 
@@ -110,19 +105,6 @@ static void read_settings(void)
 			SIG_IGN : SIG_DFL;
 		sigaction(signals[n], &act, NULL);
 	}
-
-#ifdef HAVE_SYS_RESOURCE_H
-	if (!settings_get_bool("override_coredump_limit"))
-		setrlimit(RLIMIT_CORE, &orig_core_rlimit);
-	else {
-		struct rlimit rlimit;
-
-                rlimit.rlim_cur = RLIM_INFINITY;
-                rlimit.rlim_max = RLIM_INFINITY;
-		if (setrlimit(RLIMIT_CORE, &rlimit) == -1)
-                        settings_set_bool("override_coredump_limit", FALSE);
-	}
-#endif
 }
 
 static void sig_gui_dialog(const char *type, const char *text)
@@ -254,11 +236,7 @@ void core_init(void)
 	chat_commands_init();
 
 	settings_add_str("misc", "ignore_signals", "");
-	settings_add_bool("misc", "override_coredump_limit", FALSE);
 
-#ifdef HAVE_SYS_RESOURCE_H
-	getrlimit(RLIMIT_CORE, &orig_core_rlimit);
-#endif
 	read_settings();
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_irssi_init_finished);
