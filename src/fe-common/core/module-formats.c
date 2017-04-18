@@ -31,7 +31,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "line_start_irssi", "{line_start}{hilight Irssi:} ", 0 },
         { "timestamp", "{timestamp $Z} ", 0 },
 	{ "servertag", "[$0] ", 1, { 0 } },
-	{ "daychange", "Day changed to %%d %%b %%Y", 0 },
+	{ "daychange", "Day changed to %%x", 0 },
 	{ "talking_with", "You are now talking with {nick $0}", 1, { 0 } },
 	{ "refnum_too_low", "Window number must be greater than 1", 0 },
 	{ "error_server_sticky", "Window's server is sticky and it cannot be changed without -unsticky option", 0 },
