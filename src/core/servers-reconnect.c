@@ -250,7 +250,10 @@ static void sig_reconnect(SERVER_REC *server)
                 sserver->dns_error = server->dns_error;
 	}
 
-	if (sserver == NULL || conn->chatnet == NULL) {
+	/* server_setup_fill fails if we've reverse-resolved the connrec
+	 * address, so let's pick another server from the chatnet if possible. */
+	if ((sserver == NULL && server->dns_reverse == FALSE) ||
+	    conn->chatnet == NULL) {
 		/* not in any chatnet, just reconnect back to same server */
                 conn->family = server->connrec->family;
 		conn->address = g_strdup(server->connrec->address);
