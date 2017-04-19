@@ -83,7 +83,10 @@ static void print_mode(MODE_REC *rec)
 
 	tmp = modes; modes = NULL;
 
-	nicks = gslist_to_string(rec->nicks, ", ");
+	if (gslist_is_unique(rec->nicks, (GCompareFunc)g_strcmp0))
+		nicks = g_strdup(rec->nicks->data);
+	else
+		nicks = gslist_to_string(rec->nicks, ", ");
 	printformat(rec->channel->server, rec->channel->visible_name,
 		    MSGLEVEL_MODES, IRCTXT_CHANMODE_CHANGE,
 		    rec->channel->visible_name, rec->mode, nicks, "");

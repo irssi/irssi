@@ -31,6 +31,8 @@ void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data
 char *gslistptr_to_string(GSList *list, int offset, const char *delimiter);
 /* `list' contains char* */
 char *gslist_to_string(GSList *list, const char *delimiter);
+/* 'list' elements are all the same */
+gboolean gslist_is_unique(GSList *list, GCompareFunc func);
 
 GList *optlist_remove_known(const char *cmd, GHashTable *optlist);
 

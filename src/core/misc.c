@@ -261,6 +261,23 @@ char *gslist_to_string(GSList *list, const char *delimiter)
 	return ret;
 }
 
+gboolean gslist_is_unique(GSList *list, GCompareFunc func)
+{
+	const char *prev;
+
+	if (list == NULL)
+		return TRUE;
+
+	prev = (const char *)list->data;
+
+	for (list = list->next; list != NULL; list = list->next) {
+		if (func(list->data, prev) != 0)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
 void hash_save_key(char *key, void *value, GSList **list)
 {
         *list = g_slist_append(*list, key);
