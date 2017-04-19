@@ -293,6 +293,9 @@ PERL_SCRIPT_REC *perl_script_load_file(const char *path)
 
         g_return_val_if_fail(path != NULL, NULL);
 
+	if (g_file_test(path, G_FILE_TEST_IS_REGULAR) == FALSE)
+		return NULL;
+
         name = script_file_get_name(path);
         return script_load(name, path, NULL);
 }
@@ -354,10 +357,11 @@ PERL_SCRIPT_REC *perl_script_find_package(const char *package)
 /* Returns full path for the script */
 char *perl_script_get_path(const char *name)
 {
-	struct stat statbuf;
 	char *file, *path;
 
-	if (g_path_is_absolute(name) || (name[0] == '~' && name[1] == '/')) {
+	if (g_path_is_absolute(name) ||
+	    (name[0] == '~' && name[1] == '/') ||
+	    (name[0] == '.' && name[1] == G_DIR_SEPARATOR)) {
 		/* full path specified */
                 return convert_home(name);
 	}
@@ -366,19 +370,25 @@ char *perl_script_get_path(const char *name)
 	file = IS_PERL_SCRIPT(name) ? g_strdup(name) :
 		g_strdup_printf("%s.pl", name);
 
-	/* check from ~/.irssi/scripts/ */
-	path = g_strdup_printf("%s/scripts/%s", get_irssi_dir(), file);
-	if (stat(path, &statbuf) != 0) {
-		/* check from SCRIPTDIR */
-		g_free(path);
-		path = g_strdup_printf(SCRIPTDIR"/%s", file);
-		if (stat(path, &statbuf) != 0) {
-			g_free(path);
-			path = NULL;
-		}
+	/* check in ~/.irssi/scripts/ */
+	path = g_build_filename(get_irssi_dir(), "scripts", file, NULL);
+	if (g_file_test(path, G_FILE_TEST_IS_REGULAR)) {
+		g_free(file);
+		return path;
 	}
+	g_free(path);
+
+	/* check in SCRIPTDIR */
+	path = g_build_filename(SCRIPTDIR, file, NULL);
+	if (g_file_test(path, G_FILE_TEST_IS_REGULAR)) {
+		g_free(file);
+		return path;
+	}
+	g_free(path);
+
 	g_free(file);
-	return path;
+
+	return NULL;
 }
 
 /* If core should handle printing script errors */
