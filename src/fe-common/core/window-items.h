@@ -28,6 +28,8 @@ WI_ITEM_REC *window_item_find(void *server, const char *name);
 WI_ITEM_REC *window_item_find_window(WINDOW_REC *window,
                                      void *server, const char *name);
 
+int window_bind_has_sticky(WINDOW_REC *window);
+
 void window_items_init(void);
 void window_items_deinit(void);
 
