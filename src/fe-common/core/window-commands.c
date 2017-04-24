@@ -169,7 +169,7 @@ static void cmd_window(const char *data, void *server, WI_ITEM_REC *item)
 		command_runsub("window", data, server, item);
 }
 
-/* SYNTAX: WINDOW NEW [HIDDEN|SPLIT] */
+/* SYNTAX: WINDOW NEW [HIDDEN|SPLIT|RSPLIT] */
 static void cmd_window_new(const char *data, void *server, WI_ITEM_REC *item)
 {
 	WINDOW_REC *window;
@@ -177,8 +177,9 @@ static void cmd_window_new(const char *data, void *server, WI_ITEM_REC *item)
 
 	g_return_if_fail(data != NULL);
 
-	type = (g_ascii_strncasecmp(data, "hid", 3) == 0 || g_ascii_strcasecmp(data, "tab") == 0) ? 1 :
-		(g_ascii_strcasecmp(data, "split") == 0 ? 2 : 0);
+	type = (g_ascii_strncasecmp(data, "hid", 3) == 0 || g_ascii_strcasecmp(data, "tab") == 0) ? MAIN_WINDOW_TYPE_HIDDEN :
+		g_ascii_strcasecmp(data, "split") == 0 ? MAIN_WINDOW_TYPE_SPLIT :
+		g_ascii_strncasecmp(data, "rs", 2) == 0 ? MAIN_WINDOW_TYPE_RSPLIT : MAIN_WINDOW_TYPE_DEFAULT;
 	signal_emit("gui window create override", 1, GINT_TO_POINTER(type));
 
 	window = window_create(NULL, FALSE);

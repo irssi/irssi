@@ -24,6 +24,7 @@
 
 #include "formats.h"
 #include "printtext.h"
+#include "themes.h"
 
 #include "term.h"
 #include "gui-printtext.h"
@@ -138,6 +139,39 @@ void gui_printtext_after(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str)
 	gui_printtext_after_time(dest, prev, str, 0);
 }
 
+void gui_printtext_window_border(int x, int y)
+{
+	char *v0, *v1;
+	int len;
+	if (current_theme != NULL) {
+		v1 = theme_format_expand(current_theme, "{window_border} ");
+		len = format_real_length(v1, 1);
+		v1[len] = '\0';
+	}
+	else {
+		v1 = g_strdup(" ");
+	}
+
+	if (*v1 == '\0') {
+		g_free(v1);
+		v1 = g_strdup(" ");
+	}
+
+	if (clrtoeol_info->color != NULL) {
+		char *color = g_strdup(clrtoeol_info->color);
+		len = format_real_length(color, 0);
+		color[len] = '\0';
+		v0 = g_strconcat(color, v1, NULL);
+		g_free(color);
+		g_free(v1);
+	} else {
+		v0 = v1;
+	}
+
+	gui_printtext(x, y, v0);
+	g_free(v0);
+}
+
 static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 {
 	LINE_REC *line;
@@ -236,8 +270,13 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 		term_set_color2(root_window, attr, fg, bg);
 
 		term_move(root_window, next_xpos, next_ypos);
-		if (flags & GUI_PRINT_FLAG_CLRTOEOL)
-			term_clrtoeol(root_window);
+		if (flags & GUI_PRINT_FLAG_CLRTOEOL) {
+			if (clrtoeol_info->window != NULL) {
+				term_window_clrtoeol_abs(clrtoeol_info->window, next_ypos);
+			} else {
+				term_clrtoeol(root_window);
+			}
+		}
 		next_xpos += term_addstr(root_window, str);
 		return;
 	}

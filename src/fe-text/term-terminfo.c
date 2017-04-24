@@ -23,6 +23,7 @@
 #include "term.h"
 #include "terminfo-core.h"
 #include "fe-windows.h"
+#include "gui-printtext.h"
 #include "utf8.h"
 
 #include <signal.h>
@@ -284,10 +285,10 @@ void term_window_clear(TERM_WINDOW *window)
 {
 	int y;
 
-        terminfo_set_normal();
-        if (window->y == 0 && window->height == term_height) {
-        	term_clear();
-        } else {
+	terminfo_set_normal();
+	if (window->y == 0 && window->height == term_height && window->width == term_width) {
+		term_clear();
+	} else {
 		for (y = 0; y < window->height; y++) {
 			term_move(window, 0, y);
 			term_clrtoeol(window);
@@ -452,14 +453,14 @@ void term_set_color(TERM_WINDOW *window, int col)
 void term_move(TERM_WINDOW *window, int x, int y)
 {
 	if (x >= 0 && y >= 0) {
-	vcmove = TRUE;
-	vcx = x+window->x;
-        vcy = y+window->y;
+		vcmove = TRUE;
+		vcx = x+window->x;
+		vcy = y+window->y;
 
-	if (vcx >= term_width)
-		vcx = term_width-1;
-	if (vcy >= term_height)
-                vcy = term_height-1;
+		if (vcx >= term_width)
+			vcx = term_width-1;
+		if (vcy >= term_height)
+			vcy = term_height-1;
 	}
 }
 
@@ -552,7 +553,7 @@ int term_addstr(TERM_WINDOW *window, const char *str)
 		while (*ptr != '\0') {
 			tmp = g_utf8_get_char_validated(ptr, -1);
 			/* On utf8 error, treat as single byte and try to
-			   continue interpretting rest of string as utf8 */
+			   continue interpreting rest of string as utf8 */
 			if (tmp == (gunichar)-1 || tmp == (gunichar)-2) {
 				len++;
 				ptr++;
@@ -574,21 +575,47 @@ int term_addstr(TERM_WINDOW *window, const char *str)
 
 void term_clrtoeol(TERM_WINDOW *window)
 {
-	/* clrtoeol() doesn't necessarily understand colors */
-	if (last_fg == -1 && last_bg == -1 &&
-	    (last_attrs & (ATTR_UNDERLINE|ATTR_REVERSE|ATTR_ITALIC)) == 0) {
-		if (!term_lines_empty[vcy]) {
-			if (vcmove) term_move_real();
-			terminfo_clrtoeol();
-			if (vcx == 0) term_lines_empty[vcy] = TRUE;
-		}
-	} else if (vcx < term_width) {
-		/* we'll need to fill the line ourself. */
-		if (vcmove) term_move_real();
-		terminfo_repeat(' ', term_width-vcx);
-		terminfo_move(vcx, vcy);
-                term_lines_empty[vcy] = FALSE;
+	if (vcx < window->x) {
+		/* we just wrapped outside of the split, put the cursor back into the window */
+		vcx += window->x;
 	}
+	if (window->x + window->width < term_width) {
+		/* we need to fill a vertical split */
+		if (vcmove) term_move_real();
+		terminfo_repeat(' ', window->x + window->width - vcx + 1);
+		terminfo_move(vcx, vcy);
+		term_lines_empty[vcy] = FALSE;
+	} else {
+		/* clrtoeol() doesn't necessarily understand colors */
+		if (last_fg == -1 && last_bg == -1 &&
+		    (last_attrs & (ATTR_UNDERLINE|ATTR_REVERSE|ATTR_ITALIC)) == 0) {
+			if (!term_lines_empty[vcy]) {
+				if (vcmove) term_move_real();
+				terminfo_clrtoeol();
+				if (vcx == 0) term_lines_empty[vcy] = TRUE;
+			}
+		} else if (vcx < term_width) {
+			/* we'll need to fill the line ourself. */
+			if (vcmove) term_move_real();
+			terminfo_repeat(' ', term_width-vcx);
+			terminfo_move(vcx, vcy);
+			term_lines_empty[vcy] = FALSE;
+		}
+	}
+}
+
+void term_window_clrtoeol(TERM_WINDOW* window, int ypos)
+{
+	term_clrtoeol(window);
+	if (window->x + window->width < term_width) {
+		gui_printtext_window_border(window->x + window->width, window->y + ypos);
+		term_set_color(window, ATTR_RESET);
+	}
+}
+
+void term_window_clrtoeol_abs(TERM_WINDOW* window, int ypos)
+{
+	term_window_clrtoeol(window, ypos - window->y);
 }
 
 void term_move_cursor(int x, int y)

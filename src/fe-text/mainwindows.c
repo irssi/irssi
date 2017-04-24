@@ -34,24 +34,27 @@
 
 GSList *mainwindows;
 MAIN_WINDOW_REC *active_mainwin;
+MAIN_WINDOW_BORDER_REC *clrtoeol_info;
 
 int screen_reserved_top, screen_reserved_bottom;
-static int old_screen_width, old_screen_height;
+int screen_reserved_left, screen_reserved_right;
+static int screen_width, screen_height;
 
 #define mainwindow_create_screen(window) \
-	term_window_create(0, \
+	term_window_create((window)->first_column + (window)->statusbar_columns_left, \
 			   (window)->first_line + (window)->statusbar_lines_top, \
-			   (window)->width, \
+			   (window)->width - (window)->statusbar_columns, \
 			   (window)->height - (window)->statusbar_lines)
 
 #define mainwindow_set_screen_size(window) \
-	term_window_move((window)->screen_win, 0, \
+	term_window_move((window)->screen_win, \
+			 (window)->first_column + (window)->statusbar_columns_left, \
 			 (window)->first_line + (window)->statusbar_lines_top, \
-			 (window)->width, \
+			 (window)->width - (window)->statusbar_columns, \
 			 (window)->height - (window)->statusbar_lines);
 
 
-static MAIN_WINDOW_REC *find_window_with_room(void)
+static MAIN_WINDOW_REC *find_window_with_room()
 {
 	MAIN_WINDOW_REC *biggest_rec;
 	GSList *tmp;
@@ -71,14 +74,34 @@ static MAIN_WINDOW_REC *find_window_with_room(void)
 	return biggest_rec;
 }
 
+static MAIN_WINDOW_REC *find_window_with_room_right(void)
+{
+	MAIN_WINDOW_REC *biggest_rec;
+	GSList *tmp;
+	int space, biggest;
+
+	biggest = 0; biggest_rec = NULL;
+	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+		MAIN_WINDOW_REC *rec = tmp->data;
+
+		space = MAIN_WINDOW_TEXT_WIDTH(rec);
+		if (space >= 2 * NEW_WINDOW_WIDTH && space > biggest) {
+			biggest = space;
+			biggest_rec = rec;
+		}
+	}
+
+	return biggest_rec;
+}
+
 #define window_size_equals(window, mainwin) \
-	((window)->width == (mainwin)->width && \
+	((window)->width == MAIN_WINDOW_TEXT_WIDTH(mainwin) && \
 	 (window)->height == MAIN_WINDOW_TEXT_HEIGHT(mainwin))
 
 static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 {
 	GSList *tmp;
-        int resized;
+	int resized;
 
 	mainwindow_set_screen_size(window);
 
@@ -89,24 +112,31 @@ static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 		if (rec->gui_data != NULL &&
 		    WINDOW_GUI(rec)->parent == window &&
 		    !window_size_equals(rec, window)) {
-                        resized = TRUE;
-			gui_window_resize(rec, window->width,
+			resized = TRUE;
+			gui_window_resize(rec, MAIN_WINDOW_TEXT_WIDTH(window),
 					  MAIN_WINDOW_TEXT_HEIGHT(window));
 		}
 	}
 
-        if (resized)
+	if (resized)
 		signal_emit("mainwindow resized", 1, window);
 }
 
 static void mainwindow_resize(MAIN_WINDOW_REC *window, int xdiff, int ydiff)
 {
+	int height, width;
 	if (quitting || (xdiff == 0 && ydiff == 0))
-                return;
+		return;
 
-        window->width += xdiff;
+	height = window->height + ydiff;
+	width = window->width + xdiff;
+	window->width = window->last_column-window->first_column+1;
 	window->height = window->last_line-window->first_line+1;
-        window->size_dirty = TRUE;
+	if (height != window->height || width != window->width) {
+		g_warning("Resizing window %p W:%d expected:%d H:%d expected:%d",
+			  window, window->width, width, window->height, height);
+	}
+	window->size_dirty = TRUE;
 }
 
 static GSList *get_sticky_windows_sorted(MAIN_WINDOW_REC *mainwin)
@@ -178,14 +208,13 @@ void mainwindows_recreate(void)
 	}
 }
 
-MAIN_WINDOW_REC *mainwindow_create(void)
+MAIN_WINDOW_REC *mainwindow_create(int right)
 {
 	MAIN_WINDOW_REC *rec, *parent;
 	int space;
 
 	rec = g_new0(MAIN_WINDOW_REC, 1);
 	rec->dirty = TRUE;
-	rec->width = term_width;
 
 	if (mainwindows == NULL) {
 		active_mainwin = rec;
@@ -193,21 +222,53 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 		rec->first_line = screen_reserved_top;
 		rec->last_line = term_height-1 - screen_reserved_bottom;
 		rec->height = rec->last_line-rec->first_line+1;
+		rec->first_column = screen_reserved_left;
+		rec->last_column = screen_width-1 - screen_reserved_right;
+		rec->width = rec->last_column-rec->first_column+1;
 	} else {
 		parent = WINDOW_MAIN(active_win);
-		if (MAIN_WINDOW_TEXT_HEIGHT(parent) <
-		    WINDOW_MIN_SIZE+NEW_WINDOW_SIZE)
-			parent = find_window_with_room();
-		if (parent == NULL)
-			return NULL; /* not enough space */
 
-		space = parent->height / 2;
-		rec->first_line = parent->first_line;
-		rec->last_line = rec->first_line + space;
-		rec->height = rec->last_line-rec->first_line+1;
+		if (!right) {
+			GSList *tmp, *line;
+			if (MAIN_WINDOW_TEXT_HEIGHT(parent) <
+			    WINDOW_MIN_SIZE+NEW_WINDOW_SIZE)
+				parent = find_window_with_room();
+			if (parent == NULL)
+				return NULL; /* not enough space */
 
-		parent->first_line += space+1;
-		mainwindow_resize(parent, 0, -space-1);
+			space = parent->height / 2;
+			rec->first_line = parent->first_line;
+			rec->last_line = rec->first_line + space;
+			rec->height = rec->last_line-rec->first_line+1;
+			rec->first_column = screen_reserved_left;
+			rec->last_column = screen_width-1 - screen_reserved_right;
+			rec->width = rec->last_column-rec->first_column+1;
+
+			line = mainwindows_get_line(parent);
+			for (tmp = line; tmp != NULL; tmp = tmp->next) {
+				MAIN_WINDOW_REC *rec = tmp->data;
+				rec->first_line += space+1;
+				mainwindow_resize(rec, 0, -space-1);
+			}
+			g_slist_free(line);
+		} else {
+			if (MAIN_WINDOW_TEXT_WIDTH(parent) <
+			    2* NEW_WINDOW_WIDTH)
+				parent = find_window_with_room_right();
+			if (parent == NULL)
+				return NULL; /* not enough space */
+
+			space = parent->width / 2;
+			rec->first_line = parent->first_line;
+			rec->last_line = parent->last_line;
+			rec->height = parent->height;
+			rec->first_column = parent->last_column - space + 1;
+			rec->last_column = parent->last_column;
+			rec->width = rec->last_column-rec->first_column+1;
+
+			parent->last_column -= space+1;
+			mainwindow_resize(parent, -space-1, 0);
+		}
 	}
 
 	rec->screen_win = mainwindow_create_screen(rec);
@@ -218,16 +279,22 @@ MAIN_WINDOW_REC *mainwindow_create(void)
 	return rec;
 }
 
-static MAIN_WINDOW_REC *mainwindows_find_lower(int line)
+static MAIN_WINDOW_REC *mainwindows_find_lower(MAIN_WINDOW_REC *window)
 {
+	int last_line;
 	MAIN_WINDOW_REC *best;
 	GSList *tmp;
+
+	if (window != NULL)
+		last_line = window->last_line;
+	else
+		last_line = -1;
 
 	best = NULL;
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		if (rec->first_line > line &&
+		if (rec->first_line > last_line &&
 		    (best == NULL || rec->first_line < best->first_line))
 			best = rec;
 	}
@@ -235,16 +302,64 @@ static MAIN_WINDOW_REC *mainwindows_find_lower(int line)
 	return best;
 }
 
-static MAIN_WINDOW_REC *mainwindows_find_upper(int line)
+static MAIN_WINDOW_REC *mainwindows_find_right(MAIN_WINDOW_REC *window, int find_first)
 {
+	int first_line, last_line, last_column;
 	MAIN_WINDOW_REC *best;
 	GSList *tmp;
+
+	if (window != NULL) {
+		first_line = window->first_line;
+		last_line = window->last_line;
+		last_column = window->last_column;
+	} else {
+		first_line = last_line = last_column = -1;
+	}
+
+	if (find_first)
+		last_column = -1;
 
 	best = NULL;
 	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
 		MAIN_WINDOW_REC *rec = tmp->data;
 
-		if (rec->last_line < line &&
+		if (rec->first_line >= first_line &&
+		    rec->last_line <= last_line &&
+		    rec->first_column > last_column &&
+		    (best == NULL || rec->first_column < best->first_column))
+			best = rec;
+	}
+
+	return best;
+}
+
+static MAIN_WINDOW_REC *mainwindows_find_lower_right(MAIN_WINDOW_REC *window)
+{
+	MAIN_WINDOW_REC *best;
+
+	best = mainwindows_find_right(window, FALSE);
+	if (best == NULL)
+		best = mainwindows_find_lower(window);
+
+	return best;
+}
+
+static MAIN_WINDOW_REC *mainwindows_find_upper(MAIN_WINDOW_REC *window)
+{
+	int first_line;
+	MAIN_WINDOW_REC *best;
+	GSList *tmp;
+
+	if (window != NULL)
+		first_line = window->first_line;
+	else
+		first_line = screen_height;
+
+	best = NULL;
+	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+		MAIN_WINDOW_REC *rec = tmp->data;
+
+		if (rec->last_line < first_line &&
 		    (best == NULL || rec->last_line > best->last_line))
 			best = rec;
 	}
@@ -252,27 +367,142 @@ static MAIN_WINDOW_REC *mainwindows_find_upper(int line)
 	return best;
 }
 
-static void mainwindows_add_space(int first_line, int last_line)
+static MAIN_WINDOW_REC *mainwindows_find_left(MAIN_WINDOW_REC *window, int find_last)
+{
+	int first_line, last_line, first_column;
+	MAIN_WINDOW_REC *best;
+	GSList *tmp;
+
+	if (window != NULL) {
+		first_line = window->first_line;
+		last_line = window->last_line;
+		first_column = window->first_column;
+	} else {
+		first_line = last_line = screen_height;
+		first_column = screen_width;
+	}
+
+	if (find_last)
+		first_column = screen_width;
+
+	best = NULL;
+	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+		MAIN_WINDOW_REC *rec = tmp->data;
+
+		if (rec->first_line >= first_line &&
+		    rec->last_line <= last_line &&
+		    rec->last_column < first_column &&
+		    (best == NULL || rec->last_column > best->last_column))
+			best = rec;
+	}
+
+	return best;
+}
+
+static MAIN_WINDOW_REC *mainwindows_find_upper_left(MAIN_WINDOW_REC *window)
+{
+	MAIN_WINDOW_REC *best;
+
+	best = mainwindows_find_left(window, FALSE);
+	if (best == NULL)
+		best = mainwindows_find_upper(window);
+
+	return best;
+}
+
+static MAIN_WINDOW_REC *mainwindows_find_left_upper(MAIN_WINDOW_REC *window)
+{
+	MAIN_WINDOW_REC *best;
+
+	best = mainwindows_find_left(window, FALSE);
+	if (best == NULL)
+		best = mainwindows_find_left(mainwindows_find_upper(window), TRUE);
+
+	return best;
+}
+
+GSList *mainwindows_get_line(MAIN_WINDOW_REC *rec)
+{
+	MAIN_WINDOW_REC *win;
+	GSList *list;
+
+	list = NULL;
+
+	for (win = mainwindows_find_left(rec, FALSE);
+	     win != NULL;
+	     win = mainwindows_find_left(win, FALSE)) {
+		list = g_slist_append(list, win);
+	}
+
+	if (rec != NULL)
+		list = g_slist_append(list, rec);
+
+	for (win = mainwindows_find_right(rec, FALSE);
+	     win != NULL;
+	     win = mainwindows_find_right(win, FALSE)) {
+		list = g_slist_append(list, win);
+	}
+
+	return list;
+}
+
+/* add back the space which was occupied by destroyed mainwindow first_line .. last_line */
+static void mainwindows_add_space(MAIN_WINDOW_REC *destroy_win)
 {
 	MAIN_WINDOW_REC *rec;
-	int size;
+	int size, rsize;
 
-	if (last_line < first_line)
+	if (destroy_win->last_line < destroy_win->first_line)
 		return;
 
-	size = last_line-first_line+1;
+	if (destroy_win->last_column < destroy_win->first_column)
+		return;
 
-	rec = mainwindows_find_lower(last_line);
+	rsize = destroy_win->last_column-destroy_win->first_column+1;
+	rec = mainwindows_find_left(destroy_win, FALSE);
 	if (rec != NULL) {
-		rec->first_line = first_line;
-		mainwindow_resize(rec, 0, size);
+		rec->last_column = destroy_win->last_column;
+		mainwindow_resize(rec, rsize+1, 0);
 		return;
 	}
 
-	rec = mainwindows_find_upper(first_line);
+	rec = mainwindows_find_right(destroy_win, FALSE);
 	if (rec != NULL) {
-		rec->last_line = last_line;
-		mainwindow_resize(rec, 0, size);
+		rec->first_column = destroy_win->first_column;
+		mainwindow_resize(rec, rsize+1, 0);
+		return;
+	}
+
+	size = destroy_win->last_line-destroy_win->first_line+1;
+
+	rec = mainwindows_find_lower(destroy_win);
+	if (rec != NULL) {
+		GSList *tmp, *list;
+		list = mainwindows_get_line(rec);
+
+		for (tmp = list; tmp != NULL; tmp = tmp->next) {
+			MAIN_WINDOW_REC *rec = tmp->data;
+			rec->first_line = destroy_win->first_line;
+			mainwindow_resize(rec, 0, size);
+		}
+
+		g_slist_free(list);
+		return;
+	}
+
+	rec = mainwindows_find_upper(destroy_win);
+	if (rec != NULL) {
+		GSList *tmp, *list;
+		list = mainwindows_get_line(rec);
+
+		for (tmp = list; tmp != NULL; tmp = tmp->next) {
+			MAIN_WINDOW_REC *rec = tmp->data;
+			rec->last_line = destroy_win->last_line;
+			mainwindow_resize(rec, 0, size);
+		}
+
+		g_slist_free(list);
+		return;
 	}
 }
 
@@ -302,8 +532,7 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 	if (mainwindows != NULL) {
 		gui_windows_remove_parent(window);
 		if (!quitting) {
-			mainwindows_add_space(window->first_line,
-					      window->last_line);
+			mainwindows_add_space(window);
 			mainwindows_redraw();
 		}
 	}
@@ -311,6 +540,14 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 	g_free(window);
 
 	if (active_mainwin == window) active_mainwin = NULL;
+}
+
+void mainwindow_destroy_half(MAIN_WINDOW_REC *window)
+{
+	int really_quitting = quitting;
+	quitting = TRUE;
+	mainwindow_destroy(window);
+	quitting = really_quitting;
 }
 
 void mainwindows_redraw(void)
@@ -327,12 +564,20 @@ void mainwindows_redraw(void)
 
 static int mainwindows_compare(MAIN_WINDOW_REC *w1, MAIN_WINDOW_REC *w2)
 {
-	return w1->first_line < w2->first_line ? -1 : 1;
+	return    w1->first_line   < w2->first_line   ? -1
+		: w1->first_line   > w2->first_line   ?  1
+		: w1->first_column < w2->first_column ? -1
+		: w1->first_column > w2->first_column ?  1
+		: 0;
 }
 
 static int mainwindows_compare_reverse(MAIN_WINDOW_REC *w1, MAIN_WINDOW_REC *w2)
 {
-	return w1->first_line < w2->first_line ? 1 : -1;
+	return    w1->first_line   < w2->first_line   ?  1
+		: w1->first_line   > w2->first_line   ? -1
+		: w1->first_column < w2->first_column ?  1
+		: w1->first_column > w2->first_column ? -1
+		: 0;
 }
 
 GSList *mainwindows_get_sorted(int reverse)
@@ -348,123 +593,235 @@ GSList *mainwindows_get_sorted(int reverse)
 	return list;
 }
 
-static void mainwindows_resize_smaller(int xdiff, int ydiff)
+static void mainwindows_resize_smaller(int ydiff)
 {
-        MAIN_WINDOW_REC *rec;
+	MAIN_WINDOW_REC *rec;
 	GSList *sorted, *tmp;
-        int space;
+	int space;
 
-	sorted = mainwindows_get_sorted(TRUE);
+	sorted = NULL;
+	for (rec = mainwindows_find_lower(NULL);
+	     rec != NULL;
+	     rec = mainwindows_find_lower(rec)) {
+		sorted = g_slist_prepend(sorted, rec);
+	}
 	if (sorted == NULL)
 		return;
 
 	for (;;) {
+		int skip_active = FALSE;
 		space = 0;
-		for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+		/* for each line of windows, calculate the space that can be reduced still */
+		for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
+			int min;
+			GSList *line, *ltmp;
 			rec = tmp->data;
-			space += MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
+			line = mainwindows_get_line(rec);
+			min = screen_height - ydiff;
+			for (ltmp = line; ltmp != NULL; ltmp = ltmp->next) {
+				int lmin;
+				MAIN_WINDOW_REC *win = ltmp->data;
+				if (win == active_mainwin && tmp == sorted)
+					skip_active = TRUE;
+
+				lmin = MAIN_WINDOW_TEXT_HEIGHT(win)-WINDOW_MIN_SIZE;
+				if (lmin < min)
+					min = lmin;
+			}
+			g_slist_free(line);
+			space += min;
 		}
 
 		if (space >= -ydiff)
 			break;
 
 		rec = sorted->data;
-		if (rec == active_mainwin && sorted->next != NULL)
+		if (skip_active && sorted->next != NULL)
 			rec = sorted->next->data;
 		sorted = g_slist_remove(sorted, rec);
 
 		if (sorted != NULL) {
 			/* terminal is too small - destroy the
 			   uppest window and try again */
-			mainwindow_destroy(rec);
+			GSList *line, *ltmp;
+			line = mainwindows_get_line(rec);
+			for (ltmp = line; ltmp != NULL; ltmp = ltmp->next) {
+				MAIN_WINDOW_REC *win = ltmp->data;
+				mainwindow_destroy(win);
+			}
+			g_slist_free(line);
 		} else {
-			/* only one window in screen.. just force the resize */
-			rec->last_line += ydiff;
-			mainwindow_resize(rec, xdiff, ydiff);
-                        return;
+			/* only one line of window in screen.. just force the resize */
+			GSList *line, *ltmp;
+			line = mainwindows_get_line(rec);
+			for (ltmp = line; ltmp != NULL; ltmp = ltmp->next) {
+				MAIN_WINDOW_REC *win = ltmp->data;
+				win->last_line += ydiff;
+				mainwindow_resize(win, 0, ydiff);
+			}
+			g_slist_free(line);
+			return;
 		}
 	}
 
 	/* resize windows that have space */
 	for (tmp = sorted; tmp != NULL && ydiff < 0; tmp = tmp->next) {
+		int min;
+		GSList *line, *ltmp;
+
 		rec = tmp->data;
+		line = mainwindows_get_line(rec);
+		min = screen_height - ydiff;
+		for (ltmp = line; ltmp != NULL; ltmp = ltmp->next) {
+			int lmin;
+			MAIN_WINDOW_REC *win = ltmp->data;
+			lmin = MAIN_WINDOW_TEXT_HEIGHT(win)-WINDOW_MIN_SIZE;
+			if (lmin < min)
+				min = lmin;
+		}
+		space = min;
 
-		space = MAIN_WINDOW_TEXT_HEIGHT(rec)-WINDOW_MIN_SIZE;
 		if (space == 0) {
-			mainwindow_resize(rec, xdiff, 0);
+			/* move the line */
+			for (ltmp = line; ltmp != NULL; ltmp = ltmp->next) {
+				MAIN_WINDOW_REC *win = ltmp->data;
+				mainwindow_resize(win, 0, 0);
+				win->size_dirty = TRUE;
+				win->first_line += ydiff;
+				win->last_line += ydiff;
+				signal_emit("mainwindow moved", 1, win);
+			}
+		} else {
+			if (space > -ydiff) space = -ydiff;
+			for (ltmp = line; ltmp != NULL; ltmp = ltmp->next) {
+				MAIN_WINDOW_REC *win = ltmp->data;
+				win->last_line += ydiff;
+				win->first_line += ydiff + space;
 
-			rec->first_line += ydiff;
-			rec->last_line += ydiff;
-			signal_emit("mainwindow moved", 1, rec);
-			continue;
+				mainwindow_resize(win, 0, -space);
+			}
+			ydiff += space;
 		}
-
-		if (space > -ydiff) space = -ydiff;
-		rec->last_line += ydiff;
-		ydiff += space;
-		rec->first_line += ydiff;
-
-		mainwindow_resize(rec, xdiff, -space);
-	}
-
-	if (xdiff != 0) {
-		while (tmp != NULL) {
-			mainwindow_resize(tmp->data, xdiff, 0);
-			tmp = tmp->next;
-		}
+		g_slist_free(line);
 	}
 
 	g_slist_free(sorted);
 }
 
-static void mainwindows_resize_bigger(int xdiff, int ydiff)
+static void mainwindows_rresize_line(int xdiff, MAIN_WINDOW_REC *win)
 {
-	GSList *sorted, *tmp;
+	int windows, i, extra_width, next_column, shrunk;
+	int *widths;
+	GSList *line, *tmp;
 
-	sorted = mainwindows_get_sorted(FALSE);
-	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
+	line = mainwindows_get_line(win);
+	windows = g_slist_length(line);
+	widths = g_new0(int, windows);
+
+	extra_width = screen_width - windows + 1;
+	for (tmp = line, i = 0; tmp != NULL; tmp = tmp->next, i++) {
 		MAIN_WINDOW_REC *rec = tmp->data;
-
-		if (ydiff == 0 || tmp->next != NULL) {
-			mainwindow_resize(rec, xdiff, 0);
-			continue;
+		widths[i] = (MAIN_WINDOW_TEXT_WIDTH(rec) * (screen_width - windows + 1)) / (screen_width - xdiff - windows + 1);
+		extra_width -= widths[i] + rec->statusbar_columns;
+	}
+	shrunk = FALSE;
+	for (i = windows; extra_width < 0; i = i > 1 ? i - 1 : windows) {
+		if (widths[i-1] > NEW_WINDOW_WIDTH || (i == 1 && !shrunk)) {
+			widths[i-1]--;
+			extra_width++;
+			shrunk = i == 1;
 		}
-
-		/* lowest window - give all the extra space for it */
-		rec->last_line += ydiff;
-		mainwindow_resize(rec, xdiff, ydiff);
 	}
-	g_slist_free(sorted);
-}
 
-static void mainwindows_resize_horiz(int xdiff)
-{
-	GSList *tmp;
+	next_column = 0;
 
-	for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+#define extra ( (i >= screen_width % windows && i < extra_width + (screen_width % windows)) \
+		|| i + windows < extra_width + (screen_width % windows) ? 1 : 0 )
+
+	for (tmp = line, i = 0; tmp != NULL; tmp = tmp->next, i++) {
 		MAIN_WINDOW_REC *rec = tmp->data;
-
-		mainwindow_resize(rec, xdiff, 0);
+		rec->first_column = next_column;
+		rec->last_column = rec->first_column + widths[i] + rec->statusbar_columns + extra - 1;
+		next_column = rec->last_column + 2;
+		mainwindow_resize(rec, widths[i] + rec->statusbar_columns + extra - rec->width, 0);
+		rec->size_dirty = TRUE;
 	}
+#undef extra
+
+	g_free(widths);
+	g_slist_free(line);
 }
 
 void mainwindows_resize(int width, int height)
 {
 	int xdiff, ydiff;
 
-	xdiff = width-old_screen_width;
-	ydiff = height-old_screen_height;
-        old_screen_width = width;
-        old_screen_height = height;
+	xdiff = width-screen_width;
+	ydiff = height-screen_height;
+	screen_width = width;
+	screen_height = height;
 
-	if (ydiff < 0)
-		mainwindows_resize_smaller(xdiff, ydiff);
-	else if (ydiff > 0)
-		mainwindows_resize_bigger(xdiff, ydiff);
-        else if (xdiff != 0)
-		mainwindows_resize_horiz(xdiff);
+	if (ydiff > 0) {
+		/* algorithm: enlarge bottom window */
+		MAIN_WINDOW_REC *rec;
+		GSList *line, *tmp;
+		line = mainwindows_get_line(mainwindows_find_upper(NULL));
+		for (tmp = line; tmp != NULL; tmp = tmp->next) {
+			rec = tmp->data;
+			rec->last_line += ydiff;
+			mainwindow_resize(rec, 0, ydiff);
+		}
+		g_slist_free(line);
+	}
 
-        signal_emit("terminal resized", 0);
+	if (xdiff > 0) {
+		/* algorithm: distribute new space on each line */
+		MAIN_WINDOW_REC *win;
+
+		for (win = mainwindows_find_lower(NULL);
+		     win != NULL;
+		     win = mainwindows_find_lower(win)) {
+			mainwindows_rresize_line(xdiff, win);
+		}
+	}
+
+	if (xdiff < 0) {
+		/* algorithm: shrink each window,
+		   destroy windows on the right if no room */
+		MAIN_WINDOW_REC *win;
+
+		for (win = mainwindows_find_lower(NULL);
+		     win != NULL;
+		     win = mainwindows_find_lower(win)) {
+			int max_windows, i, last_column;
+			GSList *line, *tmp;
+
+			line = mainwindows_get_line(win);
+			max_windows = (screen_width + 1) / (NEW_WINDOW_WIDTH + 1);
+			if (max_windows < 1)
+				max_windows = 1;
+			last_column = screen_width - 1;
+			for (tmp = line, i = 0; tmp != NULL; tmp = tmp->next, i++) {
+				MAIN_WINDOW_REC *rec = tmp->data;
+				if (i >= max_windows)
+					mainwindow_destroy_half(rec);
+				else
+					last_column = rec->last_column;
+			}
+			win = line->data;
+			g_slist_free(line);
+
+			mainwindows_rresize_line(screen_width - last_column + 1, win);
+		}
+	}
+
+	if (ydiff < 0) {
+		/* algorithm: shrink windows starting from bottom,
+		   destroy windows starting from top if no room */
+		mainwindows_resize_smaller(ydiff);
+	}
+
+	signal_emit("terminal resized", 0);
 
 	irssi_redraw();
 }
@@ -474,31 +831,37 @@ int mainwindows_reserve_lines(int top, int bottom)
 	MAIN_WINDOW_REC *window;
 	int ret;
 
-        ret = -1;
+	ret = -1;
 	if (top != 0) {
+		GSList *list, *tmp;
 		g_return_val_if_fail(top > 0 || screen_reserved_top > top, -1);
 
 		ret = screen_reserved_top;
 		screen_reserved_top += top;
 
-		window = mainwindows_find_lower(-1);
-		if (window != NULL) {
+		list = mainwindows_get_line(mainwindows_find_lower(NULL));
+		for (tmp = list; tmp != NULL; tmp = tmp->next) {
+			window = tmp->data;
 			window->first_line += top;
 			mainwindow_resize(window, 0, -top);
 		}
+		g_slist_free(list);
 	}
 
 	if (bottom != 0) {
+		GSList *list, *tmp;
 		g_return_val_if_fail(bottom > 0 || screen_reserved_bottom > bottom, -1);
 
 		ret = screen_reserved_bottom;
 		screen_reserved_bottom += bottom;
 
-		window = mainwindows_find_upper(term_height);
-		if (window != NULL) {
+		list = mainwindows_get_line(mainwindows_find_upper(NULL));
+		for (tmp = list; tmp != NULL; tmp = tmp->next) {
+			window = tmp->data;
 			window->last_line -= bottom;
 			mainwindow_resize(window, 0, -bottom);
 		}
+		g_slist_free(list);
 	}
 
 	return ret;
@@ -528,47 +891,109 @@ int mainwindow_set_statusbar_lines(MAIN_WINDOW_REC *window,
         return ret;
 }
 
-static void mainwindows_resize_two(MAIN_WINDOW_REC *grow_win,
-				   MAIN_WINDOW_REC *shrink_win, int count)
+static void mainwindows_resize_two(GSList *grow_list,
+				   GSList *shrink_list, int count)
 {
-        irssi_set_dirty();
+	GSList *tmp;
+	MAIN_WINDOW_REC *win;
 
-	mainwindow_resize(grow_win, 0, count);
-	mainwindow_resize(shrink_win, 0, -count);
-	grow_win->dirty = TRUE;
-	shrink_win->dirty = TRUE;
+	irssi_set_dirty();
+
+	for (tmp = shrink_list; tmp != NULL; tmp = tmp->next) {
+		win = tmp->data;
+		mainwindow_resize(win, 0, -count);
+		win->dirty = TRUE;
+	}
+	for (tmp = grow_list; tmp != NULL; tmp = tmp->next) {
+		win = tmp->data;
+		mainwindow_resize(win, 0, count);
+		win->dirty = TRUE;
+	}
 }
 
 static int try_shrink_lower(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
 
-	shrink_win = mainwindows_find_lower(window->last_line);
-	if (shrink_win != NULL &&
-	    MAIN_WINDOW_TEXT_HEIGHT(shrink_win)-count >= WINDOW_MIN_SIZE) {
-                window->last_line += count;
-		shrink_win->first_line += count;
-		mainwindows_resize_two(window, shrink_win, count);
-                return TRUE;
+	shrink_win = mainwindows_find_lower(window);
+	if (shrink_win != NULL) {
+		int ok;
+		GSList *shrink_list, *tmp;
+		MAIN_WINDOW_REC *win;
+
+		ok = TRUE;
+		shrink_list = mainwindows_get_line(shrink_win);
+
+		for (tmp = shrink_list; tmp != NULL; tmp = tmp->next) {
+			win = tmp->data;
+			if (MAIN_WINDOW_TEXT_HEIGHT(win)-count < WINDOW_MIN_SIZE) {
+				ok = FALSE;
+				break;
+			}
+		}
+		if (ok) {
+			GSList *grow_list;
+			grow_list = mainwindows_get_line(window);
+
+			for (tmp = shrink_list; tmp != NULL; tmp = tmp->next) {
+				win = tmp->data;
+				win->first_line += count;
+			}
+			for (tmp = grow_list; tmp != NULL; tmp = tmp->next) {
+				win = tmp->data;
+				win->last_line += count;
+			}
+
+			mainwindows_resize_two(grow_list, shrink_list, count);
+			g_slist_free(grow_list);
+		}
+
+		g_slist_free(shrink_list);
+		return ok;
 	}
 
-        return FALSE;
+	return FALSE;
 }
 
 static int try_shrink_upper(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
 
-	shrink_win = mainwindows_find_upper(window->first_line);
-	if (shrink_win != NULL &&
-	    MAIN_WINDOW_TEXT_HEIGHT(shrink_win)-count >= WINDOW_MIN_SIZE) {
-		window->first_line -= count;
-		shrink_win->last_line -= count;
-		mainwindows_resize_two(window, shrink_win, count);
-                return TRUE;
+	shrink_win = mainwindows_find_upper(window);
+	if (shrink_win != NULL) {
+		int ok;
+		GSList *shrink_list, *tmp;
+		MAIN_WINDOW_REC *win;
+
+		ok = TRUE;
+		shrink_list = mainwindows_get_line(shrink_win);
+
+		for (tmp = shrink_list; tmp != NULL; tmp = tmp->next) {
+			win = tmp->data;
+			if (MAIN_WINDOW_TEXT_HEIGHT(win)-count < WINDOW_MIN_SIZE) {
+				ok = FALSE;
+				break;
+			}
+		}
+		if (ok) {
+			GSList *grow_list;
+			grow_list = mainwindows_get_line(window);
+			for (tmp = grow_list; tmp != NULL; tmp = tmp->next) {
+				win = tmp->data;
+				win->first_line -= count;
+			}
+			for (tmp = shrink_list; tmp != NULL; tmp = tmp->next) {
+				win = tmp->data;
+				win->last_line -= count;
+			}
+			mainwindows_resize_two(grow_list, shrink_list, count);
+			g_slist_free(grow_list);
+		}
+		g_slist_free(shrink_list);
+		return ok;
 	}
 
-        return FALSE;
+	return FALSE;
 }
 
 static int mainwindow_grow(MAIN_WINDOW_REC *window, int count,
@@ -588,28 +1013,52 @@ static int try_grow_lower(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *grow_win;
 
-	grow_win = mainwindows_find_lower(window->last_line);
+	grow_win = mainwindows_find_lower(window);
 	if (grow_win != NULL) {
-                window->last_line -= count;
-		grow_win->first_line -= count;
-		mainwindows_resize_two(grow_win, window, count);
+		MAIN_WINDOW_REC *win;
+		GSList *grow_list, *shrink_list, *tmp;
+		grow_list = mainwindows_get_line(grow_win);
+		shrink_list = mainwindows_get_line(window);
+		for (tmp = grow_list; tmp != NULL; tmp = tmp->next) {
+			win = tmp->data;
+			win->first_line -= count;
+		}
+		for (tmp = shrink_list; tmp != NULL; tmp = tmp->next) {
+			win = tmp->data;
+			win->last_line -= count;
+		}
+		mainwindows_resize_two(grow_list, shrink_list, count);
+		g_slist_free(shrink_list);
+		g_slist_free(grow_list);
 	}
 
-        return grow_win != NULL;
+	return grow_win != NULL;
 }
 
 static int try_grow_upper(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *grow_win;
 
-	grow_win = mainwindows_find_upper(window->first_line);
+	grow_win = mainwindows_find_upper(window);
 	if (grow_win != NULL) {
-		window->first_line += count;
-		grow_win->last_line += count;
-		mainwindows_resize_two(grow_win, window, count);
+		MAIN_WINDOW_REC *win;
+		GSList *grow_list, *shrink_list, *tmp;
+		grow_list = mainwindows_get_line(grow_win);
+		shrink_list = mainwindows_get_line(window);
+		for (tmp = grow_list; tmp != NULL; tmp = tmp->next) {
+			win = tmp->data;
+			win->last_line += count;
+		}
+		for (tmp = shrink_list; tmp != NULL; tmp = tmp->next) {
+			win = tmp->data;
+			win->first_line += count;
+		}
+		mainwindows_resize_two(grow_list, shrink_list, count);
+		g_slist_free(shrink_list);
+		g_slist_free(grow_list);
 	}
 
-        return grow_win != NULL;
+	return grow_win != NULL;
 }
 
 static int mainwindow_shrink(MAIN_WINDOW_REC *window, int count, int resize_lower)
@@ -627,6 +1076,109 @@ static int mainwindow_shrink(MAIN_WINDOW_REC *window, int count, int resize_lowe
         return TRUE;
 }
 
+static void mainwindows_rresize_two(MAIN_WINDOW_REC *grow_win,
+				    MAIN_WINDOW_REC *shrink_win, int count)
+{
+	irssi_set_dirty();
+
+	mainwindow_resize(grow_win, count, 0);
+	mainwindow_resize(shrink_win, -count, 0);
+	grow_win->dirty = TRUE;
+	shrink_win->dirty = TRUE;
+}
+
+static int try_rshrink_right(MAIN_WINDOW_REC *window, int count)
+{
+	MAIN_WINDOW_REC *shrink_win;
+
+	shrink_win = mainwindows_find_right(window, FALSE);
+	if (shrink_win != NULL) {
+		if (MAIN_WINDOW_TEXT_WIDTH(shrink_win)-count < NEW_WINDOW_WIDTH) {
+			return FALSE;
+		}
+
+		shrink_win->first_column += count;
+		window->last_column += count;
+
+		mainwindows_rresize_two(window, shrink_win, count);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+static int try_rshrink_left(MAIN_WINDOW_REC *window, int count)
+{
+	MAIN_WINDOW_REC *shrink_win;
+
+	shrink_win = mainwindows_find_left(window, FALSE);
+	if (shrink_win != NULL) {
+		if (MAIN_WINDOW_TEXT_WIDTH(shrink_win)-count < NEW_WINDOW_WIDTH) {
+			return FALSE;
+		}
+		window->first_column -= count;
+		shrink_win->last_column -= count;
+
+		mainwindows_rresize_two(window, shrink_win, count);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+static int mainwindow_rgrow(MAIN_WINDOW_REC *window, int count)
+{
+	if (!try_rshrink_right(window, count)) {
+		if (!try_rshrink_left(window, count))
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+static int try_rgrow_right(MAIN_WINDOW_REC *window, int count)
+{
+	MAIN_WINDOW_REC *grow_win;
+
+	grow_win = mainwindows_find_right(window, FALSE);
+	if (grow_win != NULL) {
+		grow_win->first_column -= count;
+		window->last_column -= count;
+		mainwindows_rresize_two(grow_win, window, count);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+static int try_rgrow_left(MAIN_WINDOW_REC *window, int count)
+{
+	MAIN_WINDOW_REC *grow_win;
+
+	grow_win = mainwindows_find_left(window, FALSE);
+	if (grow_win != NULL) {
+		grow_win->last_column += count;
+		window->first_column += count;
+		mainwindows_rresize_two(grow_win, window, count);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+static int mainwindow_rshrink(MAIN_WINDOW_REC *window, int count)
+{
+	if (MAIN_WINDOW_TEXT_WIDTH(window)-count < NEW_WINDOW_WIDTH)
+		return FALSE;
+
+	if (!try_rgrow_right(window, count)) {
+		if (!try_rgrow_left(window, count))
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
 /* Change the window height - the height includes the lines needed for
    statusbars. If resize_lower is TRUE, the lower window is first tried
    to be resized instead of upper window. */
@@ -637,6 +1189,15 @@ void mainwindow_set_size(MAIN_WINDOW_REC *window, int height, int resize_lower)
 		mainwindow_shrink(window, -height, resize_lower);
 	else
 		mainwindow_grow(window, height, resize_lower);
+}
+
+void mainwindow_set_rsize(MAIN_WINDOW_REC *window, int width)
+{
+	width -= window->width;
+	if (width < 0)
+		mainwindow_rshrink(window, -width);
+	else
+		mainwindow_rgrow(window, width);
 }
 
 void mainwindows_redraw_dirty(void)
@@ -707,35 +1268,52 @@ static void cmd_window_size(const char *data)
 /* SYNTAX: WINDOW BALANCE */
 static void cmd_window_balance(void)
 {
-	GSList *sorted, *tmp;
+	GSList *sorted, *stmp, *line, *ltmp;
 	int avail_size, unit_size, bigger_units;
 	int windows, last_line, old_size;
+	MAIN_WINDOW_REC *win;
 
 	windows = g_slist_length(mainwindows);
 	if (windows == 1) return;
+
+	sorted = NULL;
+	windows = 0;
+	for (win = mainwindows_find_lower(NULL);
+	     win != NULL;
+	     win = mainwindows_find_lower(win)) {
+		windows++;
+		sorted = g_slist_append(sorted, win);
+	}
 
 	avail_size = term_height - screen_reserved_top-screen_reserved_bottom;
 	unit_size = avail_size/windows;
 	bigger_units = avail_size%windows;
 
-	sorted = mainwindows_get_sorted(FALSE);
-        last_line = screen_reserved_top;
-	for (tmp = sorted; tmp != NULL; tmp = tmp->next) {
-		MAIN_WINDOW_REC *rec = tmp->data;
+	last_line = screen_reserved_top;
+	for (stmp = sorted; stmp != NULL; stmp = stmp->next) {
+		win = stmp->data;
+		line = mainwindows_get_line(win);
 
-		old_size = rec->height;
-		rec->first_line = last_line;
-		rec->last_line = rec->first_line + unit_size-1;
+		for (ltmp = line; ltmp != NULL; ltmp = ltmp->next) {
+			MAIN_WINDOW_REC *rec = ltmp->data;
+			old_size = rec->height;
+			rec->first_line = last_line;
+			rec->last_line = rec->first_line + unit_size-1;
 
-		if (bigger_units > 0) {
-			rec->last_line++;
-                        bigger_units--;
+			if (bigger_units > 0) {
+				rec->last_line++;
+			}
+
+			rec->height = rec->last_line-rec->first_line+1;
+
+			mainwindow_resize(rec, 0, rec->height-old_size);
 		}
+		if (line != NULL && bigger_units > 0) {
+			bigger_units--;
+		}
+		last_line = win->last_line+1;
 
-		rec->height = rec->last_line-rec->first_line+1;
-		last_line = rec->last_line+1;
-
-		mainwindow_resize(rec, 0, rec->height-old_size);
+		g_slist_free(line);
 	}
 	g_slist_free(sorted);
 
@@ -769,29 +1347,30 @@ static void cmd_window_hide(const char *data)
 		return;
 
 	if (WINDOW_MAIN(window)->sticky_windows) {
-		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
-				   TXT_CANT_HIDE_STICKY_WINDOWS);
-                return;
+		if (!settings_get_bool("autounstick_windows")) {
+			printformat_window(active_win, MSGLEVEL_CLIENTERROR,
+					   TXT_CANT_HIDE_STICKY_WINDOWS);
+			return;
+		}
 	}
 
 	mainwindow_destroy(WINDOW_MAIN(window));
 
 	if (active_mainwin == NULL) {
 		active_mainwin = WINDOW_MAIN(active_win);
-                window_set_active(active_mainwin->active);
+		window_set_active(active_mainwin->active);
 	}
 }
 
-/* SYNTAX: WINDOW SHOW <number>|<name> */
-static void cmd_window_show(const char *data)
+static void _cmd_window_show_opt(const char *data, int right)
 {
-        MAIN_WINDOW_REC *parent;
+	MAIN_WINDOW_REC *parent;
 	WINDOW_REC *window;
 
 	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (is_numeric(data, '\0')) {
-                window = window_find_refnum(atoi(data));
+		window = window_find_refnum(atoi(data));
 		if (window == NULL) {
 			printformat_window(active_win, MSGLEVEL_CLIENTERROR,
 					   TXT_REFNUM_NOT_FOUND, data);
@@ -804,20 +1383,116 @@ static void cmd_window_show(const char *data)
 		return;
 
 	if (WINDOW_GUI(window)->sticky) {
-		printformat_window(active_win, MSGLEVEL_CLIENTERROR,
-				   TXT_CANT_SHOW_STICKY_WINDOWS);
-                return;
+		if (!settings_get_bool("autounstick_windows")) {
+			printformat_window(active_win, MSGLEVEL_CLIENTERROR,
+					   TXT_CANT_SHOW_STICKY_WINDOWS);
+			return;
+		}
 	}
 
-	parent = mainwindow_create();
+	parent = mainwindow_create(right);
 	parent->active = window;
-        gui_window_reparent(window, parent);
+	gui_window_reparent(window, parent);
 
 	if (settings_get_bool("autostick_split_windows"))
-                gui_window_set_sticky(window);
+		gui_window_set_sticky(window);
 
 	active_mainwin = NULL;
 	window_set_active(window);
+}
+
+/* SYNTAX: WINDOW SHOW <number>|<name> */
+static void cmd_window_show(const char *data)
+{
+	_cmd_window_show_opt(data, FALSE);
+}
+
+/* SYNTAX: WINDOW RSHOW <number>|<name> */
+static void cmd_window_rshow(const char *data)
+{
+	_cmd_window_show_opt(data, TRUE);
+}
+
+/* SYNTAX: WINDOW RGROW [<columns>] */
+static void cmd_window_rgrow(const char *data)
+{
+	int count;
+
+	count = *data == '\0' ? 1 : atoi(data);
+	if (!mainwindow_rgrow(WINDOW_MAIN(active_win), count)) {
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_WINDOW_TOO_SMALL);
+	}
+}
+
+/* SYNTAX: WINDOW RSHRINK [<lines>] */
+static void cmd_window_rshrink(const char *data)
+{
+	int count;
+
+	count = *data == '\0' ? 1 : atoi(data);
+	if (!mainwindow_rshrink(WINDOW_MAIN(active_win), count)) {
+		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+				   TXT_WINDOW_TOO_SMALL);
+	}
+}
+
+/* SYNTAX: WINDOW RSIZE <columns> */
+static void cmd_window_rsize(const char *data)
+{
+	char rsizestr[MAX_INT_STRLEN];
+	int rsize;
+
+	if (!is_numeric(data, 0)) return;
+	rsize = atoi(data);
+
+	rsize -= MAIN_WINDOW_TEXT_WIDTH(WINDOW_MAIN(active_win));
+	if (rsize == 0) return;
+
+	ltoa(rsizestr, rsize < 0 ? -rsize : rsize);
+	if (rsize < 0)
+		cmd_window_rshrink(rsizestr);
+	else
+		cmd_window_rgrow(rsizestr);
+}
+
+/* SYNTAX: WINDOW RBALANCE */
+static void cmd_window_rbalance(void)
+{
+	GSList *line, *ltmp;
+	int avail_width, unit_width, bigger_units;
+	int windows, last_column, old_width;
+	MAIN_WINDOW_REC *win;
+
+	line = mainwindows_get_line(WINDOW_MAIN(active_win));
+	windows = g_slist_length(line);
+	if (windows == 1) {
+		g_slist_free(line);
+		return;
+	}
+
+	avail_width = term_width - screen_reserved_left-screen_reserved_right - windows + 1;
+	unit_width = avail_width/windows;
+	bigger_units = avail_width%windows;
+
+	last_column = screen_reserved_left;
+	for (ltmp = line; ltmp != NULL; ltmp = ltmp->next) {
+		win = ltmp->data;
+		old_width = win->width;
+		win->first_column = last_column;
+		win->last_column = win->first_column + unit_width-1;
+
+		if (bigger_units > 0) {
+			win->last_column++;
+			bigger_units--;
+		}
+
+		mainwindow_resize(win, win->last_column - win->first_column + 1 - old_width, 0);
+		last_column = win->last_column+2;
+	}
+	g_slist_free(line);
+
+	mainwindows_redraw();
 }
 
 /* SYNTAX: WINDOW UP */
@@ -825,9 +1500,33 @@ static void cmd_window_up(void)
 {
 	MAIN_WINDOW_REC *rec;
 
-	rec = mainwindows_find_upper(active_mainwin->first_line);
+	rec = mainwindows_find_left_upper(active_mainwin);
 	if (rec == NULL)
-		rec = mainwindows_find_upper(term_height);
+		rec = mainwindows_find_left_upper(NULL);
+	if (rec != NULL)
+		window_set_active(rec->active);
+}
+
+/* SYNTAX: WINDOW DUP */
+static void cmd_window_dup(void)
+{
+	MAIN_WINDOW_REC *rec;
+
+	rec = mainwindows_find_upper(active_mainwin);
+	if (rec == NULL)
+		rec = mainwindows_find_upper(NULL);
+	if (rec != NULL)
+		window_set_active(rec->active);
+}
+
+/* SYNTAX: WINDOW DLEFT */
+static void cmd_window_dleft(void)
+{
+	MAIN_WINDOW_REC *rec;
+
+	rec = mainwindows_find_left(active_mainwin, FALSE);
+	if (rec == NULL)
+		rec = mainwindows_find_left(active_mainwin, TRUE);
 	if (rec != NULL)
 		window_set_active(rec->active);
 }
@@ -837,9 +1536,33 @@ static void cmd_window_down(void)
 {
 	MAIN_WINDOW_REC *rec;
 
-	rec = mainwindows_find_lower(active_mainwin->last_line);
+	rec = mainwindows_find_lower_right(active_mainwin);
 	if (rec == NULL)
-		rec = mainwindows_find_lower(-1);
+		rec = mainwindows_find_lower_right(NULL);
+	if (rec != NULL)
+		window_set_active(rec->active);
+}
+
+/* SYNTAX: WINDOW DDOWN */
+static void cmd_window_ddown(void)
+{
+	MAIN_WINDOW_REC *rec;
+
+	rec = mainwindows_find_lower(active_mainwin);
+	if (rec == NULL)
+		rec = mainwindows_find_lower(NULL);
+	if (rec != NULL)
+		window_set_active(rec->active);
+}
+
+/* SYNTAX: WINDOW DRIGHT */
+static void cmd_window_dright(void)
+{
+	MAIN_WINDOW_REC *rec;
+
+	rec = mainwindows_find_right(active_mainwin, FALSE);
+	if (rec == NULL)
+		rec = mainwindows_find_right(active_mainwin, TRUE);
 	if (rec != NULL)
 		window_set_active(rec->active);
 }
@@ -997,13 +1720,37 @@ static void cmd_window_move_right(void)
 		window_set_refnum(active_win, refnum);
 }
 
+/* SYNTAX: WINDOW MOVE DLEFT */
+static void cmd_window_move_dleft(void)
+{
+	MAIN_WINDOW_REC *rec;
+
+	rec = mainwindows_find_left(active_mainwin, FALSE);
+	if (rec == NULL)
+		rec = mainwindows_find_left(active_mainwin, TRUE);
+	if (rec != NULL)
+		window_reparent(active_win, rec);
+}
+
+/* SYNTAX: WINDOW MOVE DRIGHT */
+static void cmd_window_move_dright(void)
+{
+	MAIN_WINDOW_REC *rec;
+
+	rec = mainwindows_find_right(active_mainwin, FALSE);
+	if (rec == NULL)
+		rec = mainwindows_find_right(active_mainwin, TRUE);
+	if (rec != NULL)
+		window_reparent(active_win, rec);
+}
+
 /* SYNTAX: WINDOW MOVE UP */
 static void cmd_window_move_up(void)
 {
 	MAIN_WINDOW_REC *rec;
 
-	rec = mainwindows_find_upper(active_mainwin->first_line);
-        if (rec != NULL)
+	rec = mainwindows_find_upper_left(active_mainwin);
+	if (rec != NULL)
 		window_reparent(active_win, rec);
 }
 
@@ -1012,7 +1759,7 @@ static void cmd_window_move_down(void)
 {
 	MAIN_WINDOW_REC *rec;
 
-	rec = mainwindows_find_lower(active_mainwin->last_line);
+	rec = mainwindows_find_lower_right(active_mainwin);
 	if (rec != NULL)
 		window_reparent(active_win, rec);
 }
@@ -1058,12 +1805,14 @@ static void sig_window_print_info(WINDOW_REC *win)
 
 void mainwindows_init(void)
 {
-	old_screen_width = term_width;
-	old_screen_height = term_height;
+	screen_width = term_width;
+	screen_height = term_height;
 
 	mainwindows = NULL;
 	active_mainwin = NULL;
+	clrtoeol_info = g_new0(MAIN_WINDOW_BORDER_REC, 1);
 	screen_reserved_top = screen_reserved_bottom = 0;
+	screen_reserved_left = screen_reserved_right = 0;
 
 	command_bind("window grow", NULL, (SIGNAL_FUNC) cmd_window_grow);
 	command_bind("window shrink", NULL, (SIGNAL_FUNC) cmd_window_shrink);
@@ -1075,18 +1824,30 @@ void mainwindows_init(void)
 	command_bind("window down", NULL, (SIGNAL_FUNC) cmd_window_down);
 	command_bind("window left", NULL, (SIGNAL_FUNC) cmd_window_left);
 	command_bind("window right", NULL, (SIGNAL_FUNC) cmd_window_right);
+	command_bind("window dup", NULL, (SIGNAL_FUNC) cmd_window_dup);
+	command_bind("window ddown", NULL, (SIGNAL_FUNC) cmd_window_ddown);
+	command_bind("window dleft", NULL, (SIGNAL_FUNC) cmd_window_dleft);
+	command_bind("window dright", NULL, (SIGNAL_FUNC) cmd_window_dright);
 	command_bind("window stick", NULL, (SIGNAL_FUNC) cmd_window_stick);
 	command_bind("window move left", NULL, (SIGNAL_FUNC) cmd_window_move_left);
 	command_bind("window move right", NULL, (SIGNAL_FUNC) cmd_window_move_right);
 	command_bind("window move up", NULL, (SIGNAL_FUNC) cmd_window_move_up);
 	command_bind("window move down", NULL, (SIGNAL_FUNC) cmd_window_move_down);
-        signal_add("window print info", (SIGNAL_FUNC) sig_window_print_info);
+	command_bind("window move dleft", NULL, (SIGNAL_FUNC) cmd_window_move_dleft);
+	command_bind("window move dright", NULL, (SIGNAL_FUNC) cmd_window_move_dright);
+	command_bind("window rgrow", NULL, (SIGNAL_FUNC) cmd_window_rgrow);
+	command_bind("window rshrink", NULL, (SIGNAL_FUNC) cmd_window_rshrink);
+	command_bind("window rsize", NULL, (SIGNAL_FUNC) cmd_window_rsize);
+	command_bind("window rbalance", NULL, (SIGNAL_FUNC) cmd_window_rbalance);
+	command_bind("window rshow", NULL, (SIGNAL_FUNC) cmd_window_rshow);
+	signal_add("window print info", (SIGNAL_FUNC) sig_window_print_info);
 }
 
 void mainwindows_deinit(void)
 {
 	while (mainwindows != NULL)
 		mainwindow_destroy(mainwindows->data);
+	g_free(clrtoeol_info);
 
 	command_unbind("window grow", (SIGNAL_FUNC) cmd_window_grow);
 	command_unbind("window shrink", (SIGNAL_FUNC) cmd_window_shrink);
@@ -1098,10 +1859,21 @@ void mainwindows_deinit(void)
 	command_unbind("window down", (SIGNAL_FUNC) cmd_window_down);
 	command_unbind("window left", (SIGNAL_FUNC) cmd_window_left);
 	command_unbind("window right", (SIGNAL_FUNC) cmd_window_right);
+	command_unbind("window dup", (SIGNAL_FUNC) cmd_window_dup);
+	command_unbind("window ddown", (SIGNAL_FUNC) cmd_window_ddown);
+	command_unbind("window dleft", (SIGNAL_FUNC) cmd_window_dleft);
+	command_unbind("window dright", (SIGNAL_FUNC) cmd_window_dright);
 	command_unbind("window stick", (SIGNAL_FUNC) cmd_window_stick);
 	command_unbind("window move left", (SIGNAL_FUNC) cmd_window_move_left);
 	command_unbind("window move right", (SIGNAL_FUNC) cmd_window_move_right);
 	command_unbind("window move up", (SIGNAL_FUNC) cmd_window_move_up);
 	command_unbind("window move down", (SIGNAL_FUNC) cmd_window_move_down);
-        signal_remove("window print info", (SIGNAL_FUNC) sig_window_print_info);
+	command_unbind("window move dleft", (SIGNAL_FUNC) cmd_window_move_dleft);
+	command_unbind("window move dright", (SIGNAL_FUNC) cmd_window_move_dright);
+	command_unbind("window rgrow", (SIGNAL_FUNC) cmd_window_rgrow);
+	command_unbind("window rshrink", (SIGNAL_FUNC) cmd_window_rshrink);
+	command_unbind("window rsize", (SIGNAL_FUNC) cmd_window_rsize);
+	command_unbind("window rbalance", (SIGNAL_FUNC) cmd_window_rbalance);
+	command_unbind("window rshow", (SIGNAL_FUNC) cmd_window_rshow);
+	signal_remove("window print info", (SIGNAL_FUNC) sig_window_print_info);
 }

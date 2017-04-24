@@ -11,6 +11,14 @@ enum {
         DATA_LEVEL_HILIGHT
 };
 
+enum {
+	MAIN_WINDOW_TYPE_NONE = -1,
+	MAIN_WINDOW_TYPE_DEFAULT = 0,
+	MAIN_WINDOW_TYPE_HIDDEN = 1,
+	MAIN_WINDOW_TYPE_SPLIT = 2,
+	MAIN_WINDOW_TYPE_RSPLIT = 3
+};
+
 typedef struct {
 	char *servertag;
         char *name;

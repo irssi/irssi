@@ -388,9 +388,9 @@ static void view_reset_cache(TEXT_BUFFER_VIEW_REC *view)
 static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			  int subline, int ypos, int max)
 {
-        INDENT_FUNC indent_func;
+	INDENT_FUNC indent_func;
 	LINE_CACHE_REC *cache;
-        const unsigned char *text, *end, *text_newline;
+	const unsigned char *text, *end, *text_newline;
 	unsigned char *tmp;
 	unichar chr;
 	int xpos, color, drawcount, first, need_move, need_clrtoeol, char_width;
@@ -399,54 +399,54 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 #endif
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
-                return 0;
+		return 0;
 
 	cache = textbuffer_view_get_line_cache(view, line);
 	if (subline >= cache->count)
-                return 0;
+		return 0;
 
-        color = ATTR_RESET;
-        need_move = TRUE; need_clrtoeol = FALSE;
+	color = ATTR_RESET;
+	need_move = TRUE; need_clrtoeol = FALSE;
 	xpos = drawcount = 0; first = TRUE;
 	text_newline = text =
 		subline == 0 ? line->text : cache->lines[subline-1].start;
 	for (;;) {
 		if (text == text_newline) {
-			if (need_clrtoeol && xpos < term_width) {
+			if (need_clrtoeol && xpos < view->width + (view->width == term_width ? 0 : 1)) {
 				term_set_color(view->window, ATTR_RESET);
-				term_clrtoeol(view->window);
+				term_window_clrtoeol(view->window, ypos);
 			}
 
 			if (first)
 				first = FALSE;
 			else {
 				ypos++;
-                                if (--max == 0)
+				if (--max == 0)
 					break;
 			}
 
 			if (subline > 0) {
-                                /* continuing previous line - indent it */
+				/* continuing previous line - indent it */
 				indent_func = cache->lines[subline-1].indent_func;
 				if (indent_func == NULL)
 					xpos = cache->lines[subline-1].indent;
-                                color = cache->lines[subline-1].color;
+				color = cache->lines[subline-1].color;
 #ifdef TERM_TRUECOLOR
-                                fg24 = cache->lines[subline-1].fg24;
-                                bg24 = cache->lines[subline-1].bg24;
+				fg24 = cache->lines[subline-1].fg24;
+				bg24 = cache->lines[subline-1].bg24;
 #endif
 			} else {
 				indent_func = NULL;
 			}
 
 			if (xpos == 0 && indent_func == NULL)
-                                need_clrtoeol = TRUE;
+				need_clrtoeol = TRUE;
 			else {
 				/* line was indented - need to clear the
-                                   indented area first */
+				   indented area first */
 				term_set_color(view->window, ATTR_RESET);
 				term_move(view->window, 0, ypos);
-				term_clrtoeol(view->window);
+				term_window_clrtoeol(view->window, ypos);
 
 				if (indent_func != NULL)
 					xpos = indent_func(view, line, ypos);
@@ -463,9 +463,17 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			} else {
 				/* get the beginning of the next subline */
 				text_newline = cache->lines[subline].start;
-				need_move = !cache->lines[subline].continues;
+				if (view->width == term_width) {
+					/* ensure that links / long words are not broken */
+					need_move = !cache->lines[subline].continues;
+				} else {
+					/* we cannot use the need_move
+					   optimisation unless the split spans
+					   the whole width */
+					need_move = TRUE;
+				}
 			}
-                        drawcount++;
+			drawcount++;
 			subline++;
 		}
 
@@ -473,10 +481,10 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			/* command */
 			text++;
 			if (*text == LINE_CMD_EOL)
-                                break;
+				break;
 
 			if (*text == LINE_CMD_CONTINUE) {
-                                /* jump to next block */
+				/* jump to next block */
 				memcpy(&tmp, text+1, sizeof(unsigned char *));
 				text = tmp;
 				continue;
@@ -511,13 +519,13 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		}
 
 		xpos += char_width;
-		if (xpos <= term_width) {
+		if (xpos <= view->width) {
 			if (unichar_isprint(chr)) {
 				if (view->utf8)
-				term_add_unichar(view->window, chr);
+					term_add_unichar(view->window, chr);
 				else
-				for (; text < end; text++)
-					term_addch(view->window, *text);
+					for (; text < end; text++)
+						term_addch(view->window, *text);
 			} else {
 				/* low-ascii */
 				term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);
@@ -528,12 +536,12 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		text = end;
 	}
 
-	if (need_clrtoeol && xpos < term_width) {
+	if (need_clrtoeol && xpos < view->width + (view->width == term_width ? 0 : 1)) {
 		term_set_color(view->window, ATTR_RESET);
-		term_clrtoeol(view->window);
+		term_window_clrtoeol(view->window, ypos);
 	}
 
-        return drawcount;
+	return drawcount;
 }
 
 /* Recalculate view's bottom line information - try to keep the
@@ -738,7 +746,7 @@ static void view_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		term_set_color(view->window, ATTR_RESET);
 		while (lines > 0) {
 			term_move(view->window, 0, ypos);
-			term_clrtoeol(view->window);
+			term_window_clrtoeol(view->window, ypos);
 			ypos++; lines--;
 		}
 	}
@@ -775,51 +783,51 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
 	int linecount, realcount, scroll_visible;
 
 	if (*lines == NULL)
-                return 0;
+		return 0;
 
 	/* scroll down */
 	scroll_visible = lines == &view->startline;
 
 	realcount = -*subline;
 	scrollcount += *subline;
-        *subline = 0;
+	*subline = 0;
 	while (scrollcount > 0) {
 		linecount = view_get_linecount(view, *lines);
 
 		if ((scroll_visible && *lines == view->bottom_startline) &&
 		    (scrollcount >= view->bottom_subline)) {
 			*subline = view->bottom_subline;
-                        realcount += view->bottom_subline;
-                        scrollcount = 0;
-                        break;
+			realcount += view->bottom_subline;
+			scrollcount = 0;
+			break;
 		}
 
-                realcount += linecount;
+		realcount += linecount;
 		scrollcount -= linecount;
 		if (scrollcount < 0) {
-                        realcount += scrollcount;
+			realcount += scrollcount;
 			*subline = linecount+scrollcount;
-                        scrollcount = 0;
-                        break;
+			scrollcount = 0;
+			break;
 		}
 
 		if ((*lines)->next == NULL)
 			break;
 
-                *lines = (*lines)->next;
+		*lines = (*lines)->next;
 	}
 
-        /* scroll up */
+	/* scroll up */
 	while (scrollcount < 0 && (*lines)->prev != NULL) {
 		*lines = (*lines)->prev;
 		linecount = view_get_linecount(view, *lines);
 
-                realcount -= linecount;
+		realcount -= linecount;
 		scrollcount += linecount;
 		if (scrollcount > 0) {
-                        realcount += scrollcount;
+			realcount += scrollcount;
 			*subline = scrollcount;
-                        break;
+			break;
 		}
 	}
 
@@ -827,19 +835,27 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
 		if (realcount <= -view->height || realcount >= view->height) {
 			/* scrolled more than screenful, redraw the
 			   whole view */
-                        textbuffer_view_redraw(view);
+			textbuffer_view_redraw(view);
 		} else {
-			term_set_color(view->window, ATTR_RESET);
-			term_window_scroll(view->window, realcount);
+			if (view->width == term_width) {
+				/* we can try to use vt100 scroll regions */
+				term_set_color(view->window, ATTR_RESET);
+				term_window_scroll(view->window, realcount);
 
-			if (draw_nonclean) {
-				if (realcount < 0)
-                                        view_draw_top(view, -realcount, TRUE);
-				else
-					view_draw_bottom(view, realcount);
+				if (draw_nonclean) {
+					if (realcount < 0)
+						view_draw_top(view, -realcount, TRUE);
+					else
+						view_draw_bottom(view, realcount);
+				}
+
+				term_refresh(view->window);
+			} else {
+				/* do not bother with vt400 scroll
+				   rectangles for now, redraw the
+				   whole view */
+				textbuffer_view_redraw(view);
 			}
-
-			term_refresh(view->window);
 		}
 	}
 
