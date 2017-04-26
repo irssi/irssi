@@ -242,7 +242,6 @@ static void event_pong(IRC_SERVER_REC *server, const char *data, const char *nic
 	char *params, *host, *reply;
 
 	g_return_if_fail(data != NULL);
-	if (nick == NULL) nick = server->real_address;
 
 	params = event_get_params(data, 2 | PARAM_FLAG_GETREST, &host, &reply);
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_PONG, host, reply);
