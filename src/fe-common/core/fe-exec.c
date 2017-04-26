@@ -175,6 +175,8 @@ static PROCESS_REC *process_find(const char *name, int verbose)
 
 static void process_destroy(PROCESS_REC *rec, int status)
 {
+	if (rec == NULL) return;
+
 	processes = g_slist_remove(processes, rec);
 
 	signal_emit("exec remove", 2, rec, GINT_TO_POINTER(status));
