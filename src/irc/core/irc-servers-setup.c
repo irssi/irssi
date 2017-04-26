@@ -138,8 +138,6 @@ static void init_userinfo(void)
 	if (nick == NULL || *nick == '\0') {
 		str = g_getenv("IRCNICK");
 		settings_set_str("nick", str != NULL ? str : user_name);
-
-		nick = settings_get_str("nick");
 	}
 
 	/* host name */
