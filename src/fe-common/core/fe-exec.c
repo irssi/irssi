@@ -249,8 +249,6 @@ static int cmd_options_get_signal(const char *cmd,
 		return -1;
 
 	signame = list->data;
-	signum = -1;
-
 	signum = is_numeric(signame, 0) ? atol(signame) :
 		signal_name_to_id(signame);
 
