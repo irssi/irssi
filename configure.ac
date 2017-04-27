@@ -308,7 +308,7 @@ if test "x$want_textui" != "xno"; then
 
 	TEXTUI_NO_LIBS="$LIBS"
 	LIBS=
-	AC_SEARCH_LIBS([setupterm], [tinfo ncursesw ncurses], [want_textui=yes], [
+	AC_SEARCH_LIBS([setupterm], [tinfo terminfo ncursesw ncurses], [want_textui=yes], [
 		AC_ERROR(Terminfo not found - install libncurses-dev or ncurses-devel package)
 		want_textui="no, Terminfo not found"
 	])
