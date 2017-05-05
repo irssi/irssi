@@ -480,27 +480,30 @@ int format_real_length(const char *str, int len)
 
 	start = str;
 	tmp = g_string_new(NULL);
-	while (*str != '\0' && len > 0) {
+	while (*str != '\0') {
+		oldstr = str;
 		if (*str == '%' && str[1] != '\0') {
 			str++;
 			if (*str != '%') {
 			     adv = format_expand_styles(tmp, &str, NULL);
-			     str += adv;
-			     if (adv)
-				continue;
-			}
-
-			/* %% or unknown %code, written as-is */
-			if (*str != '%') {
-				if (--len == 0)
-					break;
+			     if (adv) {
+				     str += adv;
+				     continue;
+			     }
+			     /* discount for unknown % */
+			     if (--len < 0) {
+				     str = oldstr;
+				     break;
+			     }
+			     oldstr = str;
 			}
 		}
 
-		oldstr = str;
 		len -= string_advance(&str, utf8);
-		if (len < 0)
+		if (len < 0) {
 			str = oldstr;
+			break;
+		}
 	}
 
 	g_string_free(tmp, TRUE);
