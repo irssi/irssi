@@ -426,13 +426,21 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 	}
 
 	if (get_size_only) {
-		item->min_size = 2+term_width/10;
-                item->max_size = term_width;
+		WINDOW_REC *window;
+
+		window = active_win;
+		if (item->bar->parent_window != NULL)
+			window = item->bar->parent_window->active;
+
+		const int max_width = (window != NULL) ? window->width : term_width;
+
+		item->min_size = 2 + max_width / 10;
+                item->max_size = max_width;
+
                 return;
 	}
 
-	gui_entry_move(rec, item->xpos, item->bar->real_ypos,
-		       item->size);
+	gui_entry_move(rec, item->xpos, item->bar->real_ypos, item->size);
 	gui_entry_redraw(rec); /* FIXME: this is only necessary with ^L.. */
 }
 

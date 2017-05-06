@@ -56,14 +56,11 @@ static TERMINFO_REC tcaps[] = {
 	{ "cnorm",  "ve",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_cnorm) },
 
 	/* Scrolling */
-	{ "csr",    "cs",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_csr) },
 	{ "wind",   "wi",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_wind) },
 	{ "ri",     "sr",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_ri) },
 	{ "rin",    "SR",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_rin) },
 	{ "ind",    "sf",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_ind) },
 	{ "indn",   "SF",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_indn) },
-	{ "il",     "AL",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_il) },
-	{ "il1",    "al",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_il1) },
 	{ "dl",     "DL",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_dl) },
 	{ "dl1",    "dl",  CAP_TYPE_STR,  G_STRUCT_OFFSET(TERM_REC, TI_dl1) },
 
@@ -153,99 +150,6 @@ static void _move_relative(TERM_REC *term, int oldx, int oldy, int x, int y)
 static void _set_cursor_visible(TERM_REC *term, int set)
 {
 	tput(tparm(set ? term->TI_cnorm : term->TI_civis));
-}
-
-#define scroll_region_setup(term, y1, y2) \
-	if ((term)->TI_csr != NULL) \
-		tput(tparm((term)->TI_csr, y1, y2)); \
-	else if ((term)->TI_wind != NULL) \
-		tput(tparm((term)->TI_wind, y1, y2, 0, (term)->width-1));
-
-/* Scroll (change_scroll_region+parm_rindex+parm_index / csr+rin+indn) */
-static void _scroll_region(TERM_REC *term, int y1, int y2, int count)
-{
-        /* setup the scrolling region to wanted area */
-        scroll_region_setup(term, y1, y2);
-
-	term->move(term, 0, y1);
-	if (count > 0) {
-		term->move(term, 0, y2);
-		tput(tparm(term->TI_indn, count, count));
-	} else if (count < 0) {
-		term->move(term, 0, y1);
-		tput(tparm(term->TI_rin, -count, -count));
-	}
-
-        /* reset the scrolling region to full screen */
-        scroll_region_setup(term, 0, term->height-1);
-}
-
-/* Scroll (change_scroll_region+scroll_reverse+scroll_forward / csr+ri+ind) */
-static void _scroll_region_1(TERM_REC *term, int y1, int y2, int count)
-{
-	int i;
-
-        /* setup the scrolling region to wanted area */
-        scroll_region_setup(term, y1, y2);
-
-	if (count > 0) {
-		term->move(term, 0, y2);
-		for (i = 0; i < count; i++)
-			tput(tparm(term->TI_ind));
-	} else if (count < 0) {
-		term->move(term, 0, y1);
-		for (i = count; i < 0; i++)
-			tput(tparm(term->TI_ri));
-	}
-
-        /* reset the scrolling region to full screen */
-        scroll_region_setup(term, 0, term->height-1);
-}
-
-/* Scroll (parm_insert_line+parm_delete_line / il+dl) */
-static void _scroll_line(TERM_REC *term, int y1, int y2, int count)
-{
-	/* setup the scrolling region to wanted area -
-	   this might not necessarily work with il/dl, but at least it
-	   looks better if it does */
-        scroll_region_setup(term, y1, y2);
-
-	if (count > 0) {
-		term->move(term, 0, y1);
-		tput(tparm(term->TI_dl, count, count));
-		term->move(term, 0, y2-count+1);
-		tput(tparm(term->TI_il, count, count));
-	} else if (count < 0) {
-		term->move(term, 0, y2+count+1);
-		tput(tparm(term->TI_dl, -count, -count));
-		term->move(term, 0, y1);
-		tput(tparm(term->TI_il, -count, -count));
-	}
-
-        /* reset the scrolling region to full screen */
-        scroll_region_setup(term, 0, term->height-1);
-}
-
-/* Scroll (insert_line+delete_line / il1+dl1) */
-static void _scroll_line_1(TERM_REC *term, int y1, int y2, int count)
-{
-	int i;
-
-	if (count > 0) {
-		term->move(term, 0, y1);
-                for (i = 0; i < count; i++)
-			tput(tparm(term->TI_dl1));
-		term->move(term, 0, y2-count+1);
-                for (i = 0; i < count; i++)
-			tput(tparm(term->TI_il1));
-	} else if (count < 0) {
-		term->move(term, 0, y2+count+1);
-		for (i = count; i < 0; i++)
-			tput(tparm(term->TI_dl1));
-		term->move(term, 0, y1);
-		for (i = count; i < 0; i++)
-			tput(tparm(term->TI_il1));
-	}
 }
 
 /* Clear screen (clear_screen / clear) */
@@ -598,20 +502,6 @@ static int term_setup(TERM_REC *term)
 	term->move_relative = _move_relative;
 	term->set_cursor_visible = term->TI_civis && term->TI_cnorm ?
 		_set_cursor_visible : _ignore_parm;
-
-        /* Scrolling */
-	if ((term->TI_csr || term->TI_wind) && term->TI_rin && term->TI_indn)
-		term->scroll = _scroll_region;
-	else if (term->TI_il && term->TI_dl)
-		term->scroll = _scroll_line;
-	else if ((term->TI_csr || term->TI_wind) && term->TI_ri && term->TI_ind)
-		term->scroll = _scroll_region_1;
-	else if (term->scroll == NULL && (term->TI_il1 && term->TI_dl1))
-		term->scroll = _scroll_line_1;
-	else if (term->scroll == NULL) {
-                fprintf(stderr, "Terminal doesn't support scrolling\n");
-		return 0;
-	}
 
 	/* Clearing screen */
 	if (term->TI_clear)

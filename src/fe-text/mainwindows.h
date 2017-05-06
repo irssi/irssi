@@ -16,6 +16,7 @@ typedef struct {
         int sticky_windows; /* number of sticky windows */
 
 	int first_line, last_line; /* first/last line used by this window (0..x) (includes statusbars) */
+	int first_column, last_column;
 	int width, height; /* width/height of the window (includes statusbars) */
 
 	GSList *statusbars;
