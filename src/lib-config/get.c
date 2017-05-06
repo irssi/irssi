@@ -20,19 +20,27 @@
 
 #include "module.h"
 
-CONFIG_NODE *config_node_find(CONFIG_NODE *node, const char *key)
+CONFIG_NODE *config_node_find(CONFIG_NODE *parent, const char *key)
 {
 	GSList *tmp;
 
-	g_return_val_if_fail(node != NULL, NULL);
+	g_return_val_if_fail(parent != NULL, NULL);
 	g_return_val_if_fail(key != NULL, NULL);
-	g_return_val_if_fail(is_node_list(node), NULL);
+	g_return_val_if_fail(is_node_list(parent), NULL);
 
-	for (tmp = node->value; tmp != NULL; tmp = tmp->next) {
+	for (tmp = parent->value; tmp != NULL; tmp = tmp->next) {
 		CONFIG_NODE *node = tmp->data;
 
 		if (node->key != NULL && g_ascii_strcasecmp(node->key, key) == 0)
 			return node;
+
+		/* the primary children of an include node should also be searched */
+		if (node->type == NODE_TYPE_INCLUDE) {
+			CONFIG_INCLUDE *inc = node->value;
+			node = config_node_find(inc->rec->mainnode, key);
+			if (node)
+				return node;
+		}
 	}
 
 	return NULL;
