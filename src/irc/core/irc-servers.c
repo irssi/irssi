@@ -109,6 +109,10 @@ static char **split_line(const SERVER_REC *server, const char *line,
 	char *recoded_end = recode_out(server, end, target);
 	char **lines;
 	int i;
+	int split_max_length = settings_get_int("split_max_length");
+
+	if (split_max_length > 0)
+		len = split_max_length;
 
 	/*
 	 * Having the same length limit on all lines will make the first line
@@ -1019,6 +1023,7 @@ void irc_servers_init(void)
 {
 	settings_add_choice("servers", "rejoin_channels_on_reconnect", 1, "off;on;auto");
 	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
+	settings_add_int("misc", "split_max_length", 0);
 	settings_add_str("misc", "split_line_start", "");
 	settings_add_str("misc", "split_line_end", "");
 	settings_add_bool("misc", "split_line_on_space", TRUE);
