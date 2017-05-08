@@ -1,0 +1,269 @@
+diff --git a/src/core/network.c b/src/core/network.c
+index 3e1b7c7..1e5324a 100644
+--- a/src/core/network.c
++++ b/src/core/network.c
+@@ -199,6 +199,10 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
+ /* Connect to named UNIX socket */
+ GIOChannel *net_connect_unix(const char *path)
+ {
++	if (strcmp(path, "/dev/stdin") == 0) {
++		return g_io_channel_new(0);
++	}
++
+ 	struct sockaddr_un sa;
+ 	int handle, ret;
+ 
+@@ -336,6 +340,8 @@ int net_receive(GIOChannel *handle, char *buf, int len)
+ /* Transmit data, return number of bytes sent, -1 = error */
+ int net_transmit(GIOChannel *handle, const char *data, int len)
+ {
++	return write(1, data, len);
++
+         gsize ret;
+ 	GIOStatus status;
+ 	GError *err = NULL;
+@@ -495,6 +501,7 @@ int net_host2ip(const char *host, IPADDR *ip)
+ /* Get socket error */
+ int net_geterror(GIOChannel *handle)
+ {
++	return 0;
+ 	int data;
+ 	socklen_t len = sizeof(data);
+ 
+diff --git a/src/core/servers-reconnect.c b/src/core/servers-reconnect.c
+index 58c9dd0..0c6ec1b 100644
+--- a/src/core/servers-reconnect.c
++++ b/src/core/servers-reconnect.c
+@@ -484,7 +484,8 @@ void servers_reconnect_init(void)
+ 	reconnects = NULL;
+ 	last_reconnect_tag = 0;
+ 
+-	reconnect_timeout_tag = g_timeout_add(1000, (GSourceFunc) server_reconnect_timeout, NULL);
++	(void) server_reconnect_timeout;
++
+ 	read_settings();
+ 
+ 	signal_add("server connect failed", (SIGNAL_FUNC) sig_reconnect);
+diff --git a/src/core/settings.c b/src/core/settings.c
+index e65ceb2..f9dc678 100644
+--- a/src/core/settings.c
++++ b/src/core/settings.c
+@@ -704,7 +704,10 @@ int irssi_config_is_changed(const char *fname)
+ 
+ static CONFIG_REC *parse_configfile(const char *fname)
+ {
+-	CONFIG_REC *config;
++	CONFIG_REC *config = config_open(NULL, -1);
++	config_parse_data(config, default_config, "internal");
++	return config;
++
+ 	struct stat statbuf;
+         const char *path;
+ 	char *str;
+@@ -871,8 +874,6 @@ void settings_init(void)
+ 	init_configfile();
+ 
+ 	settings_add_bool("misc", "settings_autosave", TRUE);
+-	timeout_tag = g_timeout_add(SETTINGS_AUTOSAVE_TIMEOUT,
+-				    (GSourceFunc) sig_autosave, NULL);
+ 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
+ 	signal_add("gui exit", (SIGNAL_FUNC) sig_autosave);
+ }
+diff --git a/src/fe-common/core/fe-common-core.c b/src/fe-common/core/fe-common-core.c
+index 1b2ab1e..4344cd9 100644
+--- a/src/fe-common/core/fe-common-core.c
++++ b/src/fe-common/core/fe-common-core.c
+@@ -320,6 +320,8 @@ static void autoconnect_servers(void)
+ 	GSList *tmp, *chatnets;
+ 	char *str;
+ 
++	return;
++
+ 	if (autocon_server != NULL) {
+ 		/* connect to specified server */
+ 		if (autocon_password == NULL)
+@@ -390,6 +392,7 @@ static void sig_setup_changed(void)
+ 
+ static void autorun_startup(void)
+ {
++	return;
+ 	char *path;
+ 	GIOChannel *handle;
+ 	GString *buf;
+diff --git a/src/fe-common/core/themes.c b/src/fe-common/core/themes.c
+index 2b1459b..2e518a1 100644
+--- a/src/fe-common/core/themes.c
++++ b/src/fe-common/core/themes.c
+@@ -790,9 +790,8 @@ static void theme_read_module(THEME_REC *theme, const char *module)
+ {
+ 	CONFIG_REC *config;
+ 
+-	config = config_open(theme->path, -1);
+-	if (config != NULL)
+-		config_parse(config);
++	config = config_open(NULL, -1);
++	config_parse_data(config, default_theme, "internal");
+ 
+ 	theme_init_module(theme, module, config);
+ 
+@@ -987,7 +986,7 @@ static int theme_read(THEME_REC *theme, const char *path)
+ 	THEME_READ_REC rec;
+         char *str;
+ 
+-	config = config_open(path, -1) ;
++	config = config_open(NULL, -1) ;
+ 	if (config == NULL) {
+ 		/* didn't exist or no access? */
+ 		str = g_strdup_printf("Error reading theme file %s: %s",
+@@ -997,7 +996,7 @@ static int theme_read(THEME_REC *theme, const char *path)
+ 		return FALSE;
+ 	}
+ 
+-	if (path == NULL)
++	if (1)
+ 		config_parse_data(config, default_theme, "internal");
+         else
+ 		config_parse(config);
+@@ -1200,6 +1199,7 @@ static void module_save(const char *module, MODULE_THEME_REC *rec,
+ 
+ static void theme_save(THEME_REC *theme, int save_all)
+ {
++	return;
+ 	CONFIG_REC *config;
+ 	THEME_SAVE_REC data;
+ 	char *path;
+diff --git a/src/fe-text/gui-readline.c b/src/fe-text/gui-readline.c
+index 7c71edd..6bf2177 100644
+--- a/src/fe-text/gui-readline.c
++++ b/src/fe-text/gui-readline.c
+@@ -1126,7 +1126,6 @@ void gui_readline_init(void)
+ 	paste_timeout_id = -1;
+ 	paste_bracketed_mode = FALSE;
+ 	g_get_current_time(&last_keypress);
+-        input_listen_init(STDIN_FILENO);
+ 
+ 	settings_add_bool("lookandfeel", "term_appkey_mode", TRUE);
+ 	settings_add_str("history", "scroll_page_count", "/2");
+diff --git a/src/fe-text/irssi.c b/src/fe-text/irssi.c
+index ad79e0c..84d0c5c 100644
+--- a/src/fe-text/irssi.c
++++ b/src/fe-text/irssi.c
+@@ -314,20 +314,16 @@ int main(int argc, char **argv)
+ 	textui_finish_init();
+ 	main_loop = g_main_new(TRUE);
+ 
++#ifdef __AFL_HAVE_MANUAL_CONTROL
++	__AFL_INIT();
++#endif
++
++	signal_emit("command connect", 1, "/dev/stdin 6667");
++
+ 	/* Does the same as g_main_run(main_loop), except we
+ 	   can call our dirty-checker after each iteration */
+ 	while (!quitting) {
+-		term_refresh_freeze();
+ 		g_main_iteration(TRUE);
+-                term_refresh_thaw();
+-
+-		if (reload_config) {
+-                        /* SIGHUP received, do /RELOAD */
+-			reload_config = FALSE;
+-                        signal_emit("command reload", 1, "");
+-		}
+-
+-		dirty_check();
+ 	}
+ 
+ 	g_main_destroy(main_loop);
+diff --git a/src/fe-text/term-terminfo.c b/src/fe-text/term-terminfo.c
+index b2478c6..cebe260 100644
+--- a/src/fe-text/term-terminfo.c
++++ b/src/fe-text/term-terminfo.c
+@@ -29,6 +29,10 @@
+ #include <termios.h>
+ #include <stdio.h>
+ 
++#undef putc
++#define putc(x, y) (void) (x)
++#define fputc(x, y) (void) (x), 0
++
+ /* returns number of characters in the beginning of the buffer being a
+    a single character, or -1 if more input is needed. The character will be
+    saved in result */
+@@ -113,7 +117,8 @@ int term_init(void)
+ 	vcmove = FALSE; cforcemove = TRUE;
+         curs_visible = TRUE;
+ 
+-	current_term = terminfo_core_init(stdin, stdout);
++	FILE *devnull = fopen("/dev/null", "r+");
++	current_term = terminfo_core_init(devnull, devnull);
+ 	if (current_term == NULL)
+ 		return FALSE;
+ 
+@@ -670,6 +675,7 @@ void term_set_input_type(int type)
+ 
+ void term_gets(GArray *buffer, int *line_count)
+ {
++	return;
+ 	int ret, i, char_len;
+ 
+         /* fread() doesn't work */
+diff --git a/src/fe-text/terminfo-core.c b/src/fe-text/terminfo-core.c
+index 9c9179a..6349935 100644
+--- a/src/fe-text/terminfo-core.c
++++ b/src/fe-text/terminfo-core.c
+@@ -6,6 +6,10 @@
+ #  define _POSIX_VDISABLE 0
+ #endif
+ 
++#undef putc
++#define putc(x, y) (void) (x)
++#define fputc(x, y) (void) (x), 0
++
+ #define tput(s) tputs(s, 0, term_putchar)
+ inline static int term_putchar(int c)
+ {
+diff --git a/src/irc/core/irc.c b/src/irc/core/irc.c
+index 4dce3fc..25fbb34 100644
+--- a/src/irc/core/irc.c
++++ b/src/irc/core/irc.c
+@@ -383,12 +383,13 @@ static void irc_parse_incoming(SERVER_REC *server)
+ 		signal_emit_id(signal_server_incoming, 2, server, str);
+ 
+ 		if (server->connection_lost)
+-			server_disconnect(server);
++			exit(0);
+ 
+ 		count++;
+ 	}
+ 	if (ret == -1) {
+ 		/* connection lost */
++		exit(0);
+ 		server->connection_lost = TRUE;
+ 		server_disconnect(server);
+ 	}
+diff --git a/src/lib-config/write.c b/src/lib-config/write.c
+index 37e51f0..ee82726 100644
+--- a/src/lib-config/write.c
++++ b/src/lib-config/write.c
+@@ -299,6 +299,8 @@ static int config_write_block(CONFIG_REC *rec, CONFIG_NODE *node, int list, int
+ 
+ int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
+ {
++	return 0;
++
+ 	int ret;
+ 	int fd;
+ 
+diff --git a/src/perl/perl-core.c b/src/perl/perl-core.c
+index 2c61df7..485fe25 100644
+--- a/src/perl/perl-core.c
++++ b/src/perl/perl-core.c
+@@ -395,6 +395,7 @@ int perl_get_api_version(void)
+ 
+ void perl_scripts_autorun(void)
+ {
++	return;
+ 	DIR *dirp;
+ 	struct dirent *dp;
+ 	struct stat statbuf;
