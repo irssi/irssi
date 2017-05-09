@@ -576,8 +576,9 @@ int term_addstr(TERM_WINDOW *window, const char *str)
 void term_clrtoeol(TERM_WINDOW *window)
 {
 	if (vcx < window->x) {
-		/* we just wrapped outside of the split, put the cursor back into the window */
+		/* we just wrapped outside of the split, warp the cursor back into the window */
 		vcx += window->x;
+		vcmove = TRUE;
 	}
 	if (window->x + window->width < term_width) {
 		/* we need to fill a vertical split */
@@ -606,6 +607,10 @@ void term_clrtoeol(TERM_WINDOW *window)
 
 void term_window_clrtoeol(TERM_WINDOW* window, int ypos)
 {
+	if (ypos >= 0 && window->y + ypos != vcy) {
+		/* the line is already full */
+		return;
+	}
 	term_clrtoeol(window);
 	if (window->x + window->width < term_width) {
 		gui_printtext_window_border(window->x + window->width, window->y + ypos);
