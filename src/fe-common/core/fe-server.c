@@ -154,8 +154,9 @@ static void cmd_server_add_modify(const char *data, gboolean add)
         else if (g_hash_table_lookup(optlist, "4"))
 		rec->family = AF_INET;
 
-	if (g_hash_table_lookup(optlist, "tls") || g_hash_table_lookup(optlist, "ssl"))
+	if (g_hash_table_lookup(optlist, "tls") || g_hash_table_lookup(optlist, "ssl")) {
 		rec->use_tls = TRUE;
+	}
 	else if (g_hash_table_lookup(optlist, "notls") || g_hash_table_lookup(optlist, "nossl")) {
 		rec->use_tls = FALSE;
 		rec->tls_verify = FALSE;
