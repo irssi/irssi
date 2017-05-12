@@ -166,41 +166,50 @@ void nicklist_rename_unique(SERVER_REC *server,
 			     nicklist_get_same_unique(server, old_nick_id));
 }
 
+#define NICKLIST_GETNICKS_LOOP_INIT(hashtable)			 \
+	do {							 \
+		GHashTableIter _iter;				 \
+		g_hash_table_iter_init(&_iter, (hashtable));		\
+		while (g_hash_table_iter_next(&_iter, NULL, (void*)&nick)) { \
+			while (nick != NULL) {
+#define NICKLIST_GETNICKS_LOOP_END					\
+				nick = nick->next;			\
+			}						\
+		}							\
+	} while (0)
+
 static NICK_REC *nicklist_find_wildcards(CHANNEL_REC *channel,
 					 const char *mask)
 {
-	GSList *nicks, *tmp;
 	NICK_REC *nick;
 
-	nicks = nicklist_getnicks(channel);
-	nick = NULL;
-	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
-		nick = tmp->data;
+	NICKLIST_GETNICKS_LOOP_INIT(channel->nicks);
 
-		if (mask_match_address(channel->server, mask,
-				       nick->nick, nick->host))
-			break;
-	}
-	g_slist_free(nicks);
-	return tmp == NULL ? NULL : nick;
+	if (mask_match_address(channel->server, mask,
+			       nick->nick, nick->host))
+		return nick;
+
+	NICKLIST_GETNICKS_LOOP_END;
+	return NULL;
 }
 
 GSList *nicklist_find_multiple(CHANNEL_REC *channel, const char *mask)
 {
-	GSList *nicks, *tmp, *next;
+	GSList *nicks;
+	NICK_REC *nick;
 
 	g_return_val_if_fail(IS_CHANNEL(channel), NULL);
 	g_return_val_if_fail(mask != NULL, NULL);
 
-	nicks = nicklist_getnicks(channel);
-	for (tmp = nicks; tmp != NULL; tmp = next) {
-		NICK_REC *nick = tmp->data;
+	nicks = NULL;
 
-		next = tmp->next;
-		if (!mask_match_address(channel->server, mask,
-					nick->nick, nick->host))
-                        nicks = g_slist_remove(nicks, tmp->data);
-	}
+	NICKLIST_GETNICKS_LOOP_INIT(channel->nicks);
+
+	if (mask_match_address(channel->server, mask,
+			       nick->nick, nick->host))
+		nicks = g_slist_prepend(nicks, nick);
+
+	NICKLIST_GETNICKS_LOOP_END;
 
 	return nicks;
 }
@@ -264,8 +273,8 @@ NICK_REC *nicklist_find_mask(CHANNEL_REC *channel, const char *mask)
 static void get_nicks_hash(gpointer key, NICK_REC *rec, GSList **list)
 {
 	while (rec != NULL) {
-		*list = g_slist_append(*list, rec);
-                rec = rec->next;
+		*list = g_slist_prepend(*list, rec);
+		rec = rec->next;
 	}
 }
 
