@@ -721,6 +721,13 @@ int expand_escape(const char **data)
 			}
 		}
 		return strtol(digit, NULL, 8);
+
+	case '\\':
+		/* escaped sequence, if the next character isn't part of a valid
+		 * sequence then we don't skip the leading slash. */
+		if (strchr("trnexc01234567", (*data)[1]) != NULL)
+			*data += 1;
+		return -1;
 	default:
 		return -1;
 	}
