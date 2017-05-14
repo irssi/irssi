@@ -154,8 +154,14 @@ static void cmd_server_add_modify(const char *data, gboolean add)
         else if (g_hash_table_lookup(optlist, "4"))
 		rec->family = AF_INET;
 
-	if (g_hash_table_lookup(optlist, "tls") || g_hash_table_lookup(optlist, "ssl"))
+	if (g_hash_table_lookup(optlist, "tls") || g_hash_table_lookup(optlist, "ssl")) {
 		rec->use_tls = TRUE;
+	}
+	else if (g_hash_table_lookup(optlist, "notls") || g_hash_table_lookup(optlist, "nossl")) {
+		rec->use_tls = FALSE;
+		/* tls_verify implies use_tls, disable it explicitly */
+		rec->tls_verify = FALSE;
+	}
 
 	value = g_hash_table_lookup(optlist, "tls_cert");
 	if (value == NULL)
@@ -177,6 +183,8 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 
 	if (g_hash_table_lookup(optlist, "tls_verify") || g_hash_table_lookup(optlist, "ssl_verify"))
 		rec->tls_verify = TRUE;
+	else if (g_hash_table_lookup(optlist, "notls_verify") || g_hash_table_lookup(optlist, "nossl_verify"))
+		rec->tls_verify = FALSE;
 
 	value = g_hash_table_lookup(optlist, "tls_cafile");
 	if (value == NULL)
@@ -434,8 +442,8 @@ void fe_server_init(void)
 	command_bind_first("server", NULL, (SIGNAL_FUNC) server_command);
 	command_bind_first("disconnect", NULL, (SIGNAL_FUNC) server_command);
 
-	command_set_options("server add", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey auto noauto proxy noproxy -host -port noautosendcmd");
-	command_set_options("server modify", "4 6 !! ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey auto noauto proxy noproxy -host -port noautosendcmd");
+	command_set_options("server add", "4 6 !! ssl nossl +ssl_cert +ssl_pkey +ssl_pass ssl_verify nossl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls notls +tls_cert +tls_pkey +tls_pass tls_verify notls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey auto noauto proxy noproxy -host -port noautosendcmd");
+	command_set_options("server modify", "4 6 !! ssl nossl +ssl_cert +ssl_pkey +ssl_pass ssl_verify nossl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_fingerprint tls notls +tls_cert +tls_pkey +tls_pass tls_verify notls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey auto noauto proxy noproxy -host -port noautosendcmd");
 
 	signal_add("server looking", (SIGNAL_FUNC) sig_server_looking);
 	signal_add("server connecting", (SIGNAL_FUNC) sig_server_connecting);
