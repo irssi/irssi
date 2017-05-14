@@ -159,8 +159,7 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 	}
 	else if (g_hash_table_lookup(optlist, "notls") || g_hash_table_lookup(optlist, "nossl")) {
 		rec->use_tls = FALSE;
-		/* if rec has tls_verify = TRUE then use_tls will be set to true on lines 224-225
-		   so explicitly set tls_verify to FALSE when -notls is used */
+		/* tls_verify implies use_tls, disable it explicitly */
 		rec->tls_verify = FALSE;
 	}
 
