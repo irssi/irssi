@@ -118,9 +118,9 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-        value = g_hash_table_lookup(optlist, "port");
-        port = *portstr == '\0' ?
-                (value != NULL && *value != '\0' ? atoi(value) : DEFAULT_SERVER_ADD_PORT)
+	value = g_hash_table_lookup(optlist, "port");
+	port = *portstr == '\0' ?
+		(value != NULL && *value != '\0' ? atoi(value) : DEFAULT_SERVER_ADD_PORT)
 		: atoi(portstr);
 
 	chatnet = g_hash_table_lookup(optlist, "network");
