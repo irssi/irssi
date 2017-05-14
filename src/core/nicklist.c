@@ -169,37 +169,39 @@ void nicklist_rename_unique(SERVER_REC *server,
 static NICK_REC *nicklist_find_wildcards(CHANNEL_REC *channel,
 					 const char *mask)
 {
-	GSList *nicks, *tmp;
 	NICK_REC *nick;
+	GHashTableIter iter;
 
-	nicks = nicklist_getnicks(channel);
-	nick = NULL;
-	for (tmp = nicks; tmp != NULL; tmp = tmp->next) {
-		nick = tmp->data;
-
-		if (mask_match_address(channel->server, mask,
-				       nick->nick, nick->host))
-			break;
+	g_hash_table_iter_init(&iter, channel->nicks);
+	while (g_hash_table_iter_next(&iter, NULL, (void*)&nick)) {
+		for (; nick != NULL; nick = nick->next) {
+			if (mask_match_address(channel->server, mask,
+					       nick->nick, nick->host))
+				return nick;
+		}
 	}
-	g_slist_free(nicks);
-	return tmp == NULL ? NULL : nick;
+
+	return NULL;
 }
 
 GSList *nicklist_find_multiple(CHANNEL_REC *channel, const char *mask)
 {
-	GSList *nicks, *tmp, *next;
+	GSList *nicks;
+	NICK_REC *nick;
+	GHashTableIter iter;
 
 	g_return_val_if_fail(IS_CHANNEL(channel), NULL);
 	g_return_val_if_fail(mask != NULL, NULL);
 
-	nicks = nicklist_getnicks(channel);
-	for (tmp = nicks; tmp != NULL; tmp = next) {
-		NICK_REC *nick = tmp->data;
+	nicks = NULL;
 
-		next = tmp->next;
-		if (!mask_match_address(channel->server, mask,
-					nick->nick, nick->host))
-                        nicks = g_slist_remove(nicks, tmp->data);
+	g_hash_table_iter_init(&iter, channel->nicks);
+	while (g_hash_table_iter_next(&iter, NULL, (void*)&nick)) {
+		for (; nick != NULL; nick = nick->next) {
+			if (mask_match_address(channel->server, mask,
+					       nick->nick, nick->host))
+				nicks = g_slist_prepend(nicks, nick);
+		}
 	}
 
 	return nicks;
@@ -264,8 +266,8 @@ NICK_REC *nicklist_find_mask(CHANNEL_REC *channel, const char *mask)
 static void get_nicks_hash(gpointer key, NICK_REC *rec, GSList **list)
 {
 	while (rec != NULL) {
-		*list = g_slist_append(*list, rec);
-                rec = rec->next;
+		*list = g_slist_prepend(*list, rec);
+		rec = rec->next;
 	}
 }
 
