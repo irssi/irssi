@@ -120,7 +120,8 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 
 	value = g_hash_table_lookup(optlist, "port");
 	port = *portstr == '\0' ?
-		(value != NULL && *value != '\0' ? atoi(value) : DEFAULT_SERVER_ADD_PORT)
+			(value != NULL && *value != '\0' ?
+			atoi(value) : DEFAULT_SERVER_ADD_PORT)
 		: atoi(portstr);
 
 	chatnet = g_hash_table_lookup(optlist, "network");
@@ -141,15 +142,17 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 			return;
 		}
 		rec->address = g_strdup(addr);
+		rec->port = port;
 	} else {
+		if (*portstr != '\0' || g_hash_table_lookup(optlist, "port"))
+			rec->port = port;
+
 		if (*password != '\0') g_free_and_null(rec->password);
 		if (g_hash_table_lookup(optlist, "host")) {
 			g_free_and_null(rec->own_host);
 			rec->own_ip4 = rec->own_ip6 = NULL;
 		}
 	}
-
-	rec->port = port;
 
 	if (g_hash_table_lookup(optlist, "6"))
 		rec->family = AF_INET6;
