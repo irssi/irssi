@@ -275,6 +275,8 @@ static char *get_special_value(char **cmd, SERVER_REC *server, void *item,
 static int get_alignment_args(char **data, int *align, int *flags, char *pad)
 {
 	char *str;
+	char *endptr;
+	guint align_;
 
 	*align = 0;
 	*flags = ALIGN_CUT|ALIGN_PAD;
@@ -295,10 +297,11 @@ static int get_alignment_args(char **data, int *align, int *flags, char *pad)
 		return FALSE; /* expecting number */
 
 	/* get the alignment size */
-	while (i_isdigit(*str)) {
-		*align = (*align) * 10 + (*str-'0');
-		str++;
+	if (!parse_uint(str, &endptr, 10, &align_)) {
+		return FALSE;
 	}
+	str = endptr;
+	*align = align_;
 
 	/* get the pad character */
 	while (*str != '\0' && *str != ']') {

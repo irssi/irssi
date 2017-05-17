@@ -33,6 +33,7 @@
 #include "themes.h"
 #include "recode.h"
 #include "utf8.h"
+#include "misc.h"
 
 static const char *format_backs = "04261537";
 static const char *format_fores = "kbgcrmyw";
@@ -870,8 +871,9 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 {
 	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	const char *start;
-	int fg, bg, flags, num, i;
-	unsigned int num2;
+	char *endptr;
+	int fg, bg, flags, i;
+	guint num, num2;
 
 	if (*str != '[')
 		return str;
@@ -886,8 +888,10 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 		if (*str == '\0') return start;
 
 		if (i_isdigit(*str)) {
-			num = num*10 + (*str-'0');
-			continue;
+			if (!parse_uint(str, &endptr, 10, &num)) {
+				return start;
+			}
+			str = endptr;
 		}
 
 		if (*str != ';' && *str != 'm')
@@ -958,8 +962,12 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 			/* ANSI indexed color or RGB color */
 			if (*str != ';') break;
 			str++;
-			for (num2 = 0; i_isdigit(*str); str++)
-				num2 = num2*10 + (*str-'0');
+
+			if (!parse_uint(str, &endptr, 10, &num2)) {
+				return start;
+			}
+			str = endptr;
+
 			if (*str == '\0') return start;
 
 			switch (num2) {
@@ -1006,8 +1014,12 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 				/* indexed */
 				if (*str != ';') break;
 				str++;
-				for (num2 = 0; i_isdigit(*str); str++)
-					num2 = num2*10 + (*str-'0');
+
+				if (!parse_uint(str, &endptr, 10, &num2)) {
+					return start;
+				}
+				str = endptr;
+
 				if (*str == '\0') return start;
 
 				if (num == 38) {
