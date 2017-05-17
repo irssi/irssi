@@ -428,6 +428,10 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 	int p_id = -1;
 	int passive = FALSE;
 
+	if (addr == NULL) {
+		addr = "";
+	}
+
 	/* SEND <file name> <address> <port> <size> [...] */
 	/* SEND <file name> <address> 0 <size> <id> (DCC SEND passive protocol) */
 	params = g_strsplit(data, " ", -1);
