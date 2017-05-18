@@ -902,6 +902,8 @@ void window_commands_init(void)
 	command_bind("layout save", NULL, (SIGNAL_FUNC) windows_layout_save);
 	/* SYNTAX: LAYOUT RESET */
 	command_bind("layout reset", NULL, (SIGNAL_FUNC) windows_layout_reset);
+	/* SYNTAX: LAYOUT RESTORE */
+	command_bind("layout restore", NULL, (SIGNAL_FUNC) windows_layout_restore);
 	command_bind("foreach window", NULL, (SIGNAL_FUNC) cmd_foreach_window);
 
 	command_set_options("window number", "sticky");
@@ -942,5 +944,6 @@ void window_commands_deinit(void)
 	command_unbind("layout", (SIGNAL_FUNC) cmd_layout);
 	command_unbind("layout save", (SIGNAL_FUNC) windows_layout_save);
 	command_unbind("layout reset", (SIGNAL_FUNC) windows_layout_reset);
+	command_unbind("layout restore", (SIGNAL_FUNC) windows_layout_restore);
 	command_unbind("foreach window", (SIGNAL_FUNC) cmd_foreach_window);
 }
