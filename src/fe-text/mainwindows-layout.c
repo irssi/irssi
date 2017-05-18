@@ -183,11 +183,15 @@ static void sig_layout_restore(void)
 		CONFIG_NODE *node = tmp->data;
 		if (node->key == NULL) continue;
 
-		/* create a new window + mainwindow */
-		signal_emit("gui window create override", 1,
+		/* let's reuse the existing windows when possible */
+		window = window_find_refnum(atoi(node->key));
+		if (window == NULL) {
+			/* create a new window + mainwindow */
+			signal_emit("gui window create override", 1,
 			    GINT_TO_POINTER(0));
 
-		window = window_create(NULL, TRUE);
+			window = window_create(NULL, TRUE);
+		}
                 window_set_refnum(window, atoi(node->key));
 
 		if (lower_size > 0)
