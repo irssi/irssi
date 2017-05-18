@@ -27,7 +27,7 @@
     and file transfers.
 
     If you are behind NAT, or if the firewall is too restrictive, you might
-    want to try if using the passive parameter resolved your connection
+    want to try if using the passive parameter resolves your connection
     problem.
 
     You can send files which contain special character or spaces by enclosing
