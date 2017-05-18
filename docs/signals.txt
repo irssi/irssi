@@ -306,6 +306,11 @@ windows.c:
  "window history changed", WINDOW_REC, char *oldname
  "window level changed", WINDOW_REC
 
+windows-layout.c
+ "layout reset"
+ "layout restore"
+ "layout save"
+
 FE IRC
 ------
 
