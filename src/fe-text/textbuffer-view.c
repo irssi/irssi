@@ -114,7 +114,6 @@ static void update_cmd_color(unsigned char cmd, int *color)
 		if (cmd & LINE_COLOR_BG) {
 			/* set background color */
 			*color &= FGATTR;
-			*color &= ~ATTR_FGCOLOR24;
 			if ((cmd & LINE_COLOR_DEFAULT) == 0)
 				*color |= (cmd & 0x0f) << BG_SHIFT;
 			else {
@@ -123,7 +122,6 @@ static void update_cmd_color(unsigned char cmd, int *color)
 		} else {
 			/* set foreground color */
 			*color &= BGATTR;
-			*color &= ~ATTR_BGCOLOR24;
 			if ((cmd & LINE_COLOR_DEFAULT) == 0)
 				*color |= cmd & 0x0f;
 			else {
