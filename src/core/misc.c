@@ -750,10 +750,42 @@ int nearest_power(int num)
 	return n;
 }
 
-int parse_time_interval(const char *time, int *msecs)
+/* Parses unsigned integers from strings with decent error checking.
+ * Returns true on success, false otherwise (overflow, no valid number, etc)
+ * There's a 31 bit limit so the output can be assigned to signed positive ints */
+int parse_uint(const char *nptr, char **endptr, int base, guint *number)
+{
+	char *endptr_;
+	gulong parsed;
+
+	/* strtoul accepts whitespace and plus/minus signs, for some reason */
+	if (!i_isdigit(*nptr)) {
+		return FALSE;
+	}
+
+	errno = 0;
+	parsed = strtoul(nptr, &endptr_, base);
+
+	if (errno || endptr_ == nptr || parsed >= (1U << 31)) {
+		return FALSE;
+	}
+
+	if (endptr) {
+		*endptr = endptr_;
+	}
+
+	if (number) {
+		*number = (guint) parsed;
+	}
+
+	return TRUE;
+}
+
+static int parse_time_interval_uint(const char *time, guint *msecs)
 {
 	const char *desc;
-	int number, sign, len, ret, digits;
+	guint number;
+	int sign, len, ret, digits;
 
 	*msecs = 0;
 
@@ -769,8 +801,11 @@ int parse_time_interval(const char *time, int *msecs)
 	}
 	for (;;) {
 		if (i_isdigit(*time)) {
-			number = number*10 + (*time - '0');
-			time++;
+			char *endptr;
+			if (!parse_uint(time, &endptr, 10, &number)) {
+				return FALSE;
+			}
+			time = endptr;
 			digits = TRUE;
 			continue;
 		}
@@ -835,10 +870,11 @@ int parse_time_interval(const char *time, int *msecs)
 	return ret;
 }
 
-int parse_size(const char *size, int *bytes)
+static int parse_size_uint(const char *size, guint *bytes)
 {
 	const char *desc;
-	int number, len;
+	guint number, multiplier, limit;
+	int len;
 
 	*bytes = 0;
 
@@ -846,8 +882,11 @@ int parse_size(const char *size, int *bytes)
 	number = 0;
 	while (*size != '\0') {
 		if (i_isdigit(*size)) {
-			number = number*10 + (*size - '0');
-			size++;
+			char *endptr;
+			if (!parse_uint(size, &endptr, 10, &number)) {
+				return FALSE;
+			}
+			size = endptr;
 			continue;
 		}
 
@@ -869,14 +908,31 @@ int parse_size(const char *size, int *bytes)
 			return FALSE;
 		}
 
-		if (g_ascii_strncasecmp(desc, "gbytes", len) == 0)
-			*bytes += number * 1024*1024*1024;
-		if (g_ascii_strncasecmp(desc, "mbytes", len) == 0)
-			*bytes += number * 1024*1024;
-		if (g_ascii_strncasecmp(desc, "kbytes", len) == 0)
-			*bytes += number * 1024;
-		if (g_ascii_strncasecmp(desc, "bytes", len) == 0)
-			*bytes += number;
+		multiplier = 0;
+		limit = 0;
+
+		if (g_ascii_strncasecmp(desc, "gbytes", len) == 0) {
+			multiplier = 1U << 30;
+			limit = 2U << 0;
+		}
+		if (g_ascii_strncasecmp(desc, "mbytes", len) == 0) {
+			multiplier = 1U << 20;
+			limit = 2U << 10;
+		}
+		if (g_ascii_strncasecmp(desc, "kbytes", len) == 0) {
+			multiplier = 1U << 10;
+			limit = 2U << 20;
+		}
+		if (g_ascii_strncasecmp(desc, "bytes", len) == 0) {
+			multiplier = 1;
+			limit = 2U << 30;
+		}
+
+		if (limit && number > limit) {
+			return FALSE;
+		}
+
+		*bytes += number * multiplier;
 
 		/* skip punctuation */
 		while (*size != '\0' && i_ispunct(*size))
@@ -885,6 +941,37 @@ int parse_size(const char *size, int *bytes)
 
 	return TRUE;
 }
+
+int parse_size(const char *size, int *bytes)
+{
+	guint bytes_;
+	int ret;
+
+	ret = parse_size_uint(size, &bytes_);
+
+	if (bytes_ > (1U << 31)) {
+		return FALSE;
+	}
+
+	*bytes = bytes_;
+	return ret;
+}
+
+int parse_time_interval(const char *time, int *msecs)
+{
+	guint msecs_;
+	int ret;
+
+	ret = parse_time_interval_uint(time, &msecs_);
+
+	if (msecs_ > (1U << 31)) {
+		return FALSE;
+	}
+
+	*msecs = msecs_;
+	return ret;
+}
+
 
 char *ascii_strup(char *str)
 {
