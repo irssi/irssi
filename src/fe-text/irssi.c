@@ -192,6 +192,9 @@ static void textui_finish_init(void)
 	fe_perl_init();
 #endif
 
+	/* Redraw the screen before emitting "irssi init finished"
+	   signal, so we have input entry created if someone wants to
+	   change prompt. */
 	dirty_check();
 
 	fe_common_core_finish_init();
@@ -313,6 +316,7 @@ int main(int argc, char **argv)
 	g_log_set_always_fatal(loglev);
 	textui_finish_init();
 	main_loop = g_main_new(TRUE);
+	dirty_check(); /* draw the screen prior to the first wait poll */
 
 	/* Does the same as g_main_run(main_loop), except we
 	   can call our dirty-checker after each iteration */
