@@ -124,7 +124,8 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		port = atoi(portstr);
 	else if (value != NULL && *value != '\0')
 		port = atoi(value);
-	else if (g_hash_table_lookup(optlist, "tls"))
+	else if (g_hash_table_lookup(optlist, "tls") ||
+		 g_hash_table_lookup(optlist, "ssl"))
 		port = DEFAULT_SERVER_ADD_TLS_PORT;
 	else
 		port = DEFAULT_SERVER_ADD_PORT;
