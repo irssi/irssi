@@ -7,6 +7,7 @@
 
     SAVE:     Saves your layout to the configuration.
     RESET:    Removes the saved layout from the configuration.
+    RESTORE:  Restores the saved layout from the configuration.
 
 %9Description:%9
 
@@ -23,6 +24,7 @@
 
     /LAYOUT SAVE
     /LAYOUT RESET
+    /LAYOUT RESTORE
 
 %9See also:%9 SAVE, WINDOW
 
