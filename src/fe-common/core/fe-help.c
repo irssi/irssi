@@ -232,7 +232,6 @@ static void show_help(const char *data)
 		if (!header) {
 			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 				  "Irssi commands:");
-			header = TRUE;
 		}
 
 		if (last->category != NULL) {
