@@ -81,20 +81,57 @@ static const char *tls_dns_name(const GENERAL_NAME * gn)
 {
 	const char *dnsname;
 
-	/* We expect the OpenSSL library to construct GEN_DNS extension objects as
-	   ASN1_IA5STRING values. Check we got the right union member. */
-	if (ASN1_STRING_type(gn->d.ia5) != V_ASN1_IA5STRING) {
-		g_warning("Invalid ASN1 value type in subjectAltName");
-		return NULL;
-	}
+	if (gn->type == GEN_DNS) {
+		/* We expect the OpenSSL library to construct GEN_DNS extension objects as
+		   ASN1_IA5STRING values. Check we got the right union member. */
+		if (ASN1_STRING_type(gn->d.ia5) != V_ASN1_IA5STRING) {
+			g_warning("Invalid ASN1 value type in subjectAltName");
+			return NULL;
+		}
 
-	/* Safe to treat as an ASCII string possibly holding a DNS name */
-	dnsname = (char *) ASN1_STRING_data(gn->d.ia5);
+		/* Safe to treat as an ASCII string possibly holding a DNS name */
+		dnsname = (char *) ASN1_STRING_data(gn->d.ia5);
 
-	if (has_internal_nul(dnsname, ASN1_STRING_length(gn->d.ia5))) {
-		g_warning("Internal NUL in subjectAltName");
-		return NULL;
+		if (has_internal_nul(dnsname, ASN1_STRING_length(gn->d.ia5))) {
+			g_warning("Internal NUL in subjectAltName");
+			return NULL;
+		}
 	}
+	else if (gn->type == GEN_IPADD) {
+		static char ip_buf[64];
+		unsigned char *p;
+
+		/* Make sure this is an OCTECT_STRING. */
+		if (ASN1_STRING_type(gn->d.iPAddress) != V_ASN1_OCTET_STRING) {
+			g_warning("Invalid ASN1 value type in subjectAltName");
+			return NULL;
+		}
+
+		p = (unsigned char *) ASN1_STRING_data(gn->d.iPAddress);
+
+		/* Make sure the length is valid. */
+		switch (ASN1_STRING_length(gn->d.iPAddress)) {
+			case 4:  /* ipv4 */
+				snprintf(ip_buf, sizeof(ip_buf), "%d.%d.%d.%d",
+					 p[0], p[1], p[2], p[3]);
+				break;
+			case 16: /* ipv6 */
+				snprintf(ip_buf, sizeof(ip_buf), "%X:%X:%X:%X:%X:%X:%X:%X",
+					 p[0]  << 8 | p[1],  p[2]  << 8 | p[3],
+					 p[4]  << 8 | p[5],  p[6]  << 8 | p[7],
+					 p[8]  << 8 | p[9],  p[10] << 8 | p[11],
+					 p[12] << 8 | p[13], p[14] << 8 | p[15]);
+				break;
+			default:
+				g_warning("Invalid iPAddress length in subjectAltName");
+				return NULL;
+		}
+
+		dnsname = ip_buf;
+	}
+	else
+		/* Should never reach this, let's silence the compiler. */
+		g_assert(0);
 
 	return dnsname;
 }
@@ -171,7 +208,7 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 		gen_count = sk_GENERAL_NAME_num(gens);
 		for (gen_index = 0; gen_index < gen_count && !matched; ++gen_index) {
 			gn = sk_GENERAL_NAME_value(gens, gen_index);
-			if (gn->type != GEN_DNS)
+			if (gn->type != GEN_DNS && gn->type != GEN_IPADD)
 				continue;
 
 			/* Even if we have an invalid DNS name, we still ultimately
