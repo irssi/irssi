@@ -119,10 +119,15 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	value = g_hash_table_lookup(optlist, "port");
-	port = *portstr == '\0' ?
-			(value != NULL && *value != '\0' ?
-			atoi(value) : DEFAULT_SERVER_ADD_PORT)
-		: atoi(portstr);
+
+	if (*portstr != '\0')
+		port = atoi(portstr);
+	else if (value != NULL && *value != '\0')
+		port = atoi(value);
+	else if (g_hash_table_lookup(optlist, "tls"))
+		port = DEFAULT_SERVER_ADD_TLS_PORT;
+	else
+		port = DEFAULT_SERVER_ADD_PORT;
 
 	chatnet = g_hash_table_lookup(optlist, "network");
 
