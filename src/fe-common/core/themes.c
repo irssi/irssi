@@ -1263,7 +1263,7 @@ static void cmd_save(const char *data)
 	cmd_params_free(free_arg);
 }
 
-static void complete_format_list(THEME_SEARCH_REC *rec, const char *key, GList **list)
+static void complete_format_list(THEME_SEARCH_REC *rec, const char *key, const int get_value, GList **list)
 {
 	FORMAT_REC *formats;
 	int n, len;
@@ -1273,13 +1273,14 @@ static void complete_format_list(THEME_SEARCH_REC *rec, const char *key, GList *
 	len = strlen(key);
 	for (n = 1; formats[n].def != NULL; n++) {
 		const char *item = formats[n].tag;
+		const char *value = formats[n].def;
 
 		if (item != NULL && g_ascii_strncasecmp(item, key, len) == 0)
-                        *list = g_list_append(*list, g_strdup(item));
+			*list = g_list_append(*list, g_strdup(get_value? value: item));
 	}
 }
 
-static GList *completion_get_formats(const char *module, const char *key)
+static GList *completion_get_formats(const char *module, const char *key, const int get_value)
 {
 	GSList *modules, *tmp;
 	GList *list;
@@ -1289,12 +1290,12 @@ static GList *completion_get_formats(const char *module, const char *key)
 	list = NULL;
 
 	modules = get_sorted_modules();
-	if (*module == '\0' || theme_search(modules, module) != NULL) {
+	if (module == NULL || theme_search(modules, module) != NULL) {
 		for (tmp = modules; tmp != NULL; tmp = tmp->next) {
 			THEME_SEARCH_REC *rec = tmp->data;
 
-			if (*module == '\0' || g_ascii_strcasecmp(rec->short_name, module) == 0)
-				complete_format_list(rec, key, &list);
+			if (module == NULL || g_ascii_strcasecmp(rec->short_name, module) == 0)
+				complete_format_list(rec, key, get_value, &list);
 		}
 	}
 	g_slist_foreach(modules, (GFunc) g_free, NULL);
@@ -1306,29 +1307,39 @@ static GList *completion_get_formats(const char *module, const char *key)
 static void sig_complete_format(GList **list, WINDOW_REC *window,
 				const char *word, const char *line, int *want_space)
 {
-	const char *ptr;
-	int words;
+	char **words;
+	int n_words;
 
 	g_return_if_fail(list != NULL);
 	g_return_if_fail(word != NULL);
 	g_return_if_fail(line != NULL);
 
-        ptr = line;
+	words = g_strsplit(line, " ", 3);
+	n_words = g_strv_length(words);
 
-	words = 0;
-	if (*ptr != '\0') {
-		do {
-			ptr++;
-			words++;
-			ptr = strchr(ptr, ' ');
-		} while (ptr != NULL);
+	if (n_words > 2) {
+		g_strfreev(words);
+		return;
 	}
 
-	if (words > 2)
-		return;
+	/* Find the matching formats from any module */
+	if (n_words == 0)
+		*list = completion_get_formats(NULL, word, FALSE);
+	/* Get the value of the format */
+	else if (n_words == 1 && word[0] == '\0')
+		*list = completion_get_formats(NULL, words[0], TRUE);
+	/* Find the matching formats from the given module */
+	else if (n_words == 1 && word[0] != '\0')
+		*list = completion_get_formats(words[0], word, FALSE);
+	/* Get the value of the format */
+	else if (n_words == 2 && word[0] == '\0')
+		*list = completion_get_formats(words[0], words[1], TRUE);
 
-	*list = completion_get_formats(line, word);
-	if (*list != NULL) signal_stop();
+	g_strfreev(words);
+
+	if (*list != NULL) {
+		signal_stop();
+	}
 }
 
 static void change_theme(const char *name, int verbose)
