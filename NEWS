@@ -1,3 +1,21 @@
+v1.0.3 2017-06-06  The Irssi team <staff@irssi.org>
+	- Fix out of bounds read when scanning expandos (GL!11).
+	- Fix invalid memory access with quoted filenames in DCC
+	  (GL#8, GL!12).
+	- Fix null-pointer dereference on DCC without address (GL#9, GL!13).
+	- Improve integer overflow handling. Originally reported by
+          oss-fuzz#525 (#706).
+	- Improve nicklist performance from O(N^2) to O(N) (#705).
+	- Fix initial screen redraw delay. By Stephen Oberholtzer
+	  (#680, bdo#856201).
+	- Fix incorrect reset of true colours when resetting background. (#711).
+	- Fix missing -notls option in /SERVER. By Jari Matilainen (#117, #702).
+	- Fix minor history glitch on overcounter (#462, #685).
+	- Improved OpenSSL detection at compile time. By Rodrigo Rebello (#677).
+	- Improved NetBSD Terminfo detection. By Maya Rashish (#694, #698).
+	- Add missing syntax info for COMPLETION (#687, #688).
+	- Minor typo correction in help. By Michael Hansen (#707).
+
 v1.0.2 2017-03-10  The Irssi team <staff@irssi.org>
 	- Prevent some null-pointer crashes (GL!9).
 	- Fix compilation with OpenSSL 1.1.0 (#628, #597).
