@@ -60,7 +60,9 @@ i_regex_unref (Regex *regex)
 }
 
 /* if new_string is present, the caller must free new_string.
-   otherwise, g_match_info_get_string must not be used. */
+   otherwise, g_match_info_get_string must not be used.
+   if string is not vali utf8, new_string will be assigned
+   a similar, but valid utf8, string */
 gboolean
 i_regex_match (const Regex *regex,
                const gchar *string,
@@ -105,6 +107,9 @@ strlen_pua_oddly(const char *str)
 	return ret;
 }
 
+/* new_string should be passed in here from the i_regex_match call. 
+   The start_pos and end_pos will then be calculated as if they were on
+   the original string */
 gboolean
 i_match_info_fetch_pos (const MatchInfo *match_info,
                         gint match_num,
