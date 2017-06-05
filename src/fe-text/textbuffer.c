@@ -616,20 +616,22 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			}
 
 			for (; pre_line != line; pre_line = pre_line->next)
-				matches = g_list_append(matches, pre_line);
+				matches = g_list_prepend(matches, pre_line);
 
 			match_after = after;
 		}
 
 		if (line_matched || match_after > 0) {
 			/* matched */
-			matches = g_list_append(matches, line);
+			matches = g_list_prepend(matches, line);
 
 			if ((!line_matched && --match_after == 0) ||
 			    (line_matched && match_after == 0 && before > 0))
-				matches = g_list_append(matches, NULL);
+				matches = g_list_prepend(matches, NULL);
 		}
 	}
+
+	matches = g_list_reverse(matches);
 
 #ifdef USE_GREGEX
 	if (preg != NULL)
