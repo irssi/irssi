@@ -2,7 +2,7 @@
 
 #include "iregex.h"
 
-const gchar *
+static const gchar *
 make_valid_utf8(const gchar *text, gboolean *free_ret)
 {
 	GString *str;
@@ -82,7 +82,7 @@ i_regex_match (const Regex *regex,
 	return ret;
 }
 
-gsize
+static gsize
 strlen_pua_oddly(const char *str)
 {
 	const gchar *ptr;
