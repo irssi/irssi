@@ -62,6 +62,8 @@ int get_file_params_count_resume(char **params, int paramcount)
 	if (*params[0] == '"') {
 		/* quoted file name? */
 		for (pos = 0; pos < paramcount-2; pos++) {
+			if (strlen(params[pos]) == 0)
+				continue;
 			if (params[pos][strlen(params[pos])-1] == '"' &&
 			    get_params_match_resume(params, pos+1))
 				return pos+1;
