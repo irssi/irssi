@@ -382,6 +382,8 @@ int get_file_params_count(char **params, int paramcount)
 	if (*params[0] == '"') {
 		/* quoted file name? */
 		for (pos = 0; pos < paramcount-3; pos++) {
+			if (strlen(params[pos]) == 0)
+				continue;
 			if (params[pos][strlen(params[pos])-1] == '"' &&
 			    get_params_match(params, pos+1))
 				return pos+1;
@@ -427,6 +429,10 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
         uoff_t size;
 	int p_id = -1;
 	int passive = FALSE;
+
+	if (addr == NULL) {
+		addr = "";
+	}
 
 	/* SEND <file name> <address> <port> <size> [...] */
 	/* SEND <file name> <address> 0 <size> <id> (DCC SEND passive protocol) */
