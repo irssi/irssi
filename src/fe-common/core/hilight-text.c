@@ -197,15 +197,12 @@ static gboolean hilight_match_text(HILIGHT_REC *rec, const char *text,
 	if (rec->regexp) {
 		if (rec->preg != NULL) {
 			MatchInfo *match;
-			const char *new_text = NULL;
-
-			i_regex_match(rec->preg, text, 0, &match, &new_text);
+			i_regex_match(rec->preg, text, 0, &match);
 
 			if (i_match_info_matches(match))
-				ret = i_match_info_fetch_pos(match, 0, match_beg, match_end, new_text);
+				ret = i_match_info_fetch_pos(match, 0, match_beg, match_end);
 
 			i_match_info_free(match);
-			g_free_not_null((char *)new_text);
 		}
 	} else {
 		char *match;

@@ -576,16 +576,13 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			(line->info.level & nolevel) == 0;
 
 		if (*text != '\0') {
-			const char *tmp = NULL;
 			textbuffer_line2text(line, FALSE, str);
 
 			if (line_matched) {
 				line_matched = regexp ?
-					i_regex_match(preg, str->str, 0, NULL, &tmp)
+					i_regex_match(preg, str->str, 0, NULL)
 					: match_func(str->str, text) != NULL;
 			}
-			if (tmp && tmp != str->str)
-				g_free_not_null((char *)tmp);
 		}
 
 		if (line_matched) {

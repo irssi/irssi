@@ -7,10 +7,7 @@
 
 #include <glib.h>
 typedef	GRegex Regex;
-typedef	GMatchInfo MatchInfo;
-
-#define i_match_info_matches g_match_info_matches
-#define i_match_info_free g_match_info_free
+typedef	struct _MatchInfo MatchInfo;
 
 #else
 
@@ -18,13 +15,13 @@ typedef	GMatchInfo MatchInfo;
 typedef	regex_t Regex;
 typedef regmatch_t MatchInfo;
 
+#endif
+
 gboolean
 i_match_info_matches (const MatchInfo *match_info);
 
 void
 i_match_info_free (MatchInfo *match_info);
-
-#endif
 
 Regex *
 i_regex_new (const gchar *pattern,
@@ -39,14 +36,12 @@ gboolean
 i_regex_match (const Regex *regex,
                const gchar *string,
                GRegexMatchFlags match_options,
-               MatchInfo **match_info,
-               const gchar **new_string);
+               MatchInfo **match_info);
 
 gboolean
 i_match_info_fetch_pos (const MatchInfo *match_info,
                         gint match_num,
                         gint *start_pos,
-                        gint *end_pos,
-                        const gchar *new_string);
+                        gint *end_pos);
 
 #endif

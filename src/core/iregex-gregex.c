@@ -2,6 +2,11 @@
 
 #include "iregex.h"
 
+struct _MatchInfo {
+	const char *valid_string;
+	GMatchInfo *g_match_info;
+};
+
 static const gchar *
 make_valid_utf8(const gchar *text, gboolean *free_ret)
 {
@@ -59,28 +64,29 @@ i_regex_unref (Regex *regex)
 	g_regex_unref(regex);
 }
 
-/* if new_string is present, the caller must free new_string.
-   otherwise, g_match_info_get_string must not be used.
-   if string is not vali utf8, new_string will be assigned
-   a similar, but valid utf8, string */
 gboolean
 i_regex_match (const Regex *regex,
                const gchar *string,
                GRegexMatchFlags match_options,
-               MatchInfo **match_info,
-               const gchar **new_string)
+               MatchInfo **match_info)
 {
 	gboolean ret;
 	gboolean free_valid_string;
 	const gchar *valid_string = make_valid_utf8(string, &free_valid_string);
 
-	ret = g_regex_match(regex, valid_string, match_options, match_info);
+	if (match_info != NULL)
+		*match_info = g_new0(MatchInfo, 1);
+
+	ret = g_regex_match(regex, valid_string, match_options,
+			    match_info != NULL ? &(*match_info)->g_match_info : NULL);
+
 	if (free_valid_string) {
-		if (new_string)
-			*new_string = valid_string;
+		if (match_info != NULL)
+			(*match_info)->valid_string = valid_string;
 		else
 			g_free_not_null((gchar *)valid_string);
 	}
+
 	return ret;
 }
 
@@ -114,18 +120,20 @@ gboolean
 i_match_info_fetch_pos (const MatchInfo *match_info,
                         gint match_num,
                         gint *start_pos,
-                        gint *end_pos,
-                        const gchar *new_string)
+                        gint *end_pos)
 {
 	gint tmp_start, tmp_end, new_start_pos;
 	gboolean ret;
 
-	if (!new_string || (!start_pos && !end_pos))
-		return g_match_info_fetch_pos(match_info, match_num, start_pos, end_pos);
+	if (!match_info->valid_string || (!start_pos && !end_pos))
+		return g_match_info_fetch_pos(match_info->g_match_info,
+					      match_num, start_pos, end_pos);
 
-	ret = g_match_info_fetch_pos(match_info, match_num, &tmp_start, &tmp_end);
+	ret = g_match_info_fetch_pos(match_info->g_match_info,
+				     match_num, &tmp_start, &tmp_end);
 	if (start_pos || end_pos) {
-		gchar *to_start = g_strndup(new_string, tmp_start);
+		const gchar *str = match_info->valid_string;
+		gchar *to_start = g_strndup(str, tmp_start);
 		new_start_pos = strlen_pua_oddly(to_start);
 		g_free_not_null(to_start);
 
@@ -133,10 +141,25 @@ i_match_info_fetch_pos (const MatchInfo *match_info,
 			*start_pos = new_start_pos;
 
 		if (end_pos) {
-			gchar *to_end = g_strndup(new_string + tmp_start, tmp_end - tmp_start);
+			gchar *to_end = g_strndup(str + tmp_start, tmp_end - tmp_start);
 			*end_pos = new_start_pos + strlen_pua_oddly(to_end);
 			g_free_not_null(to_end);
 		}
 	}
 	return ret;
+}
+
+gboolean
+i_match_info_matches (const MatchInfo *match_info)
+{
+	g_return_val_if_fail(match_info != NULL, FALSE);
+
+	return g_match_info_matches(match_info->g_match_info);
+}
+
+void
+i_match_info_free (MatchInfo *match_info)
+{
+	g_match_info_free(match_info->g_match_info);
+	g_free(match_info);
 }

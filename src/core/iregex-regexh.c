@@ -47,8 +47,7 @@ gboolean
 i_regex_match (const Regex *regex,
                const gchar *string,
                GRegexMatchFlags match_options,
-               MatchInfo **match_info,
-               const gchar **new_string)
+               MatchInfo **match_info)
 {
 	int groups;
 	int eflags;
@@ -75,8 +74,7 @@ gboolean
 i_match_info_fetch_pos (const MatchInfo *match_info,
                         gint match_num,
                         gint *start_pos,
-                        gint *end_pos,
-                        const gchar *new_string)
+                        gint *end_pos)
 {
 	if (start_pos != NULL)
 		*start_pos = match_info[match_num].rm_so;

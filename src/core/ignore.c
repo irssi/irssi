@@ -69,7 +69,7 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
 
 	if (rec->regexp) {
 		return rec->preg != NULL &&
-			i_regex_match(rec->preg, text, 0, NULL, NULL);
+			i_regex_match(rec->preg, text, 0, NULL);
 	}
 
 	return rec->fullword ?
