@@ -610,7 +610,8 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			pre_line = line;
 			for (i = 0; i < before; i++) {
 				if (pre_line->prev == NULL ||
-				    g_list_find(matches, pre_line->prev) != NULL)
+				    g_list_nth_data(matches, 0) == pre_line->prev ||
+				    g_list_nth_data(matches, 1) == pre_line->prev)
 					break;
                                 pre_line = pre_line->prev;
 			}
