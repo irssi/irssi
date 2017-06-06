@@ -24,11 +24,15 @@
 
 %9Remarks:%9
 
-    Not all networks support server-side filtering and may provide a network
+    Not all networks support server-side filtering. Some provide a network
     service or service bot instead; on IRCnet, you may use the List service:
 
-    /SQUERY List HELP
-    /MSG ALIS HELP
+    /SQUERY Alis HELP
+
+    Other networks with service bots (like ChanServ) may also provide a list
+    service bot (confirm with /WHOIS ALIS):
+
+    /MSG Alis HELP
 
 %9See also:%9 STATS, SQUERY, WHOIS
 
