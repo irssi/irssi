@@ -454,9 +454,12 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	unsigned int i, color;
 
 	terminfo_colors_deinit(term);
-
-	if (force && term->TI_setf == NULL && term->TI_setaf == NULL)
+	if (force == 256)
+		term->TI_colors = 256;
+	else if (force && term->TI_setf == NULL && term->TI_setaf == NULL)
 		term->TI_colors = 8;
+	else /* if we turn off force we'll need to restore the real setting */
+		term->TI_colors = term_getnum(tcaps[25]);
 
 	if ((term->TI_setf || term->TI_setaf || force) &&
 	     term->TI_colors > 0) {
@@ -469,8 +472,15 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 		term->TI_colors = 0;
 		term->set_fg = term->set_bg = _ignore_parm;
 	}
-
-	if (term->TI_setaf) {
+	if (force == 256) {
+		/* force 256-color escapes for base colors as well, lets you
+		 * have bold font in konsole without bright.
+		 */
+		for (i = 0; i < term->TI_colors; i++) {
+			color = i < 16 ? ansitab[i] : i;
+			term->TI_fg[i] = g_strdup_printf("\033[38;5;%dm", color);
+		}
+	} else if (term->TI_setaf) {
 		for (i = 0; i < term->TI_colors; i++) {
 			color = i < 16 ? ansitab[i] : i;
 			term->TI_fg[i] = g_strdup(tparm(term->TI_setaf, color, 0));
@@ -482,8 +492,12 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 		for (i = 0; i < 8; i++)
                         term->TI_fg[i] = g_strdup_printf("\033[%dm", 30+ansitab[i]);
 	}
-
-	if (term->TI_setab) {
+	if (force == 256) {
+		for (i = 0; i < term->TI_colors; i++) {
+			color = i < 16 ? ansitab[i] : i;
+			term->TI_bg[i] = g_strdup_printf("\033[48;5;%dm", color);
+		}
+	} else if (term->TI_setab) {
 		for (i = 0; i < term->TI_colors; i++) {
 			color = i < 16 ? ansitab[i] : i;
 			term->TI_bg[i] = g_strdup(tparm(term->TI_setab, color, 0));
