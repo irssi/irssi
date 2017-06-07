@@ -304,7 +304,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 
 	if (SvTRUE(ERRSV)) {
 		char *error = g_strdup(SvPV_nolen(ERRSV));
-		signal_emit("script error", 2, script, error);
+		perl_report_script_error(script, error);
                 g_free(error);
                 rec = NULL;
 	}
@@ -360,6 +360,8 @@ static void sig_func(const void *p1, const void *p2,
 	args[3] = p4; args[4] = p5; args[5] = p6;
 
 	rec = signal_get_user_data();
+	if (rec->script->disable_signals)
+		return;
 	perl_call_signal(rec->script, rec->func, signal_get_emitted_id(), args);
 }
 
