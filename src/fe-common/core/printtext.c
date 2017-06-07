@@ -167,9 +167,18 @@ static void print_line(TEXT_DEST_REC *dest, const char *text)
 {
         THEME_REC *theme;
 	char *str, *tmp, *stripped;
+	time_t t;
+	struct tm *tm;
 
 	g_return_if_fail(dest != NULL);
 	g_return_if_fail(text != NULL);
+
+	if(dest->window->daychanged) {
+		dest->window->daychanged = 0;
+		t = time(NULL);
+		tm = localtime(&t);
+		window_print_daychange(dest->window, tm);
+	}
 
         theme = window_get_theme(dest->window);
 	tmp = format_get_level_tag(theme, dest);
