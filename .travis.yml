@@ -5,8 +5,13 @@ perl:
     - "5.18-shrplib"
     - "system-perl"
 env:
-    - CC=clang
-    - CC=gcc
+    matrix:
+        - CC=clang
+        - CC=gcc
+    global:
+        # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+        #   via the "travis encrypt" command using the project repo's public key
+        - secure: "AbP529m8aj9PFuyHrABi+byWXbWqBBcdT5CLDBKgcMl+8653WmBbE8hE1whX6PuO5QoJ1BOYD3QpYZxJkiLmQFehFAwTqhvDsuG2VlzyHGvEOtzSTZdOWtWUK5kRXlump0XLhRs4XndyQCFrfCk1GNDcEP3Labi3L+y9ENXg15U="
 
 addons:
     apt:
@@ -15,19 +20,22 @@ addons:
             - elinks
 
 before_install:
+    - test $TRAVIS_BRANCH != coverity_scan -o ${TRAVIS_JOB_NUMBER##*.} = 1 || exit 0
+
+install:
+    - test $TRAVIS_BRANCH != coverity_scan || exit 0
     - perl -V
     - ./autogen.sh --with-proxy --with-bot --with-perl=module
     - make dist
     - cd ..
     - tar xaf */irssi-*.tar.*
     - cd irssi-*
-
-install:
     - ./configure --with-proxy --with-bot --with-perl=module --prefix=$HOME/irssi-build
     - make CFLAGS="-Wall -Werror"
     - make install
 
 before_script:
+    - test $TRAVIS_BRANCH != coverity_scan || exit 0
     - cd
     - mkdir irssi-test
     - echo echo automated irssi launch test > irssi-test/startup;
@@ -44,3 +52,13 @@ before_script:
     - cat irc.log.*
 
 script: true
+
+addons:
+  coverity_scan:
+    project:
+      name: "irssi/irssi"
+      description: "Build submitted via Travis CI"
+    notification_email: no
+    build_command_prepend: "./autogen.sh --with-proxy --with-bot"
+    build_command: "make -j 4"
+    branch_pattern: coverity_scan
