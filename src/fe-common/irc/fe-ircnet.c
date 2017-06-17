@@ -163,11 +163,11 @@ static void cmd_network_add_modify(const char *data, gboolean add)
 
 	/* the validity of the parameters is checked in sig_server_setup_fill_chatnet */
 	value = g_hash_table_lookup(optlist, "sasl_mechanism");
-	if (value != NULL && *value != '\0') rec->sasl_mechanism = g_strdup(value);
+	if (value != NULL) rec->sasl_mechanism = *value != '\0' ? g_strdup(value) : NULL;
 	value = g_hash_table_lookup(optlist, "sasl_username");
-	if (value != NULL && *value != '\0') rec->sasl_username = g_strdup(value);
+	if (value != NULL) rec->sasl_username = *value != '\0' ? g_strdup(value) : NULL;
 	value = g_hash_table_lookup(optlist, "sasl_password");
-	if (value != NULL && *value != '\0') rec->sasl_password = g_strdup(value);
+	if (value != NULL) rec->sasl_password = *value != '\0' ? g_strdup(value) : NULL;
 
 	ircnet_create(rec);
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, IRCTXT_NETWORK_ADDED, name);
