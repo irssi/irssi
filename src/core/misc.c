@@ -781,24 +781,35 @@ int parse_uint(const char *nptr, char **endptr, int base, guint *number)
 	return TRUE;
 }
 
+static int parse_number_sign(const char *input, char **endptr, int *sign)
+{
+	int sign_ = 1;
+
+	while (i_isspace(*input))
+		input++;
+
+	if (*input == '-') {
+		sign_ = -sign_;
+		input++;
+	}
+
+	*sign = sign_;
+	*endptr = (char *) input;
+	return TRUE;
+}
+
 static int parse_time_interval_uint(const char *time, guint *msecs)
 {
 	const char *desc;
 	guint number;
-	int sign, len, ret, digits;
+	int len, ret, digits;
 
 	*msecs = 0;
 
 	/* max. return value is around 24 days */
-	number = 0; sign = 1; ret = TRUE; digits = FALSE;
+	number = 0; ret = TRUE; digits = FALSE;
 	while (i_isspace(*time))
 		time++;
-	if (*time == '-') {
-		sign = -sign;
-		time++;
-		while (i_isspace(*time))
-			time++;
-	}
 	for (;;) {
 		if (i_isdigit(*time)) {
 			char *endptr;
@@ -828,7 +839,6 @@ static int parse_time_interval_uint(const char *time, guint *msecs)
 			if (*time != '\0')
 				return FALSE;
 			*msecs += number * 1000; /* assume seconds */
-			*msecs *= sign;
 			return TRUE;
 		}
 
@@ -866,7 +876,6 @@ static int parse_time_interval_uint(const char *time, guint *msecs)
 		digits = FALSE;
 	}
 
-	*msecs *= sign;
 	return ret;
 }
 
@@ -960,15 +969,18 @@ int parse_size(const char *size, int *bytes)
 int parse_time_interval(const char *time, int *msecs)
 {
 	guint msecs_;
-	int ret;
+	char *number;
+	int ret, sign;
 
-	ret = parse_time_interval_uint(time, &msecs_);
+	parse_number_sign(time, &number, &sign);
+
+	ret = parse_time_interval_uint(number, &msecs_);
 
 	if (msecs_ > (1U << 31)) {
 		return FALSE;
 	}
 
-	*msecs = msecs_;
+	*msecs = msecs_ * sign;
 	return ret;
 }
 
