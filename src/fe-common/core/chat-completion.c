@@ -1041,9 +1041,9 @@ static char *expand_escapes(const char *line, SERVER_REC *server,
 			   event to handle it (or actually the text before
 			   the newline..) */
 			if (prev != line) {
-				const char *prev_line = g_strndup(prev, (line - prev) - 1);
+				char *prev_line = g_strndup(prev, (line - prev) - 1);
 				event_text(prev_line, server, item);
-				g_free((char *)prev_line);
+				g_free(prev_line);
 				prev = line + 1;
 				ptr = ret;
 			}
