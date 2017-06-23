@@ -137,8 +137,9 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
         int old_startpos, old_wordlen;
 
 	GString *result;
-	char *word, *wordstart, *linestart, *ret;
-	int continue_complete, want_space;
+	const char *cmdchars;
+	char *word, *wordstart, *linestart, *ret, *data;
+	int continue_complete, want_space, expand_escapes;
 
 	g_return_val_if_fail(line != NULL, NULL);
 	g_return_val_if_fail(pos != NULL, NULL);
@@ -241,14 +242,24 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 	if (complist == NULL)
 		return NULL;
 
+        /* get the cmd char */
+	cmdchars = settings_get_str("cmdchars");
+
+	/* get the expand_escapes setting */
+	expand_escapes = settings_get_bool("expand_escapes");
+
+	/* escape if the word doesn't begin with '/' and expand_escapes are turned on */
+	data = strchr(cmdchars, *line) == NULL && expand_escapes ?
+		escape_string(complist->data) : g_strdup(complist->data);
+
 	/* word completed */
-	*pos = startpos+strlen(complist->data);
+	*pos = startpos + strlen(data);
 
 	/* replace the word in line - we need to return
 	   a full new line */
 	result = g_string_new(line);
 	g_string_erase(result, startpos, wordlen);
-	g_string_insert(result, startpos, complist->data);
+	g_string_insert(result, startpos, data);
 
 	if (want_space) {
 		if (!isseparator(result->str[*pos]))
@@ -256,13 +267,17 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 		(*pos)++;
 	}
 
-	wordlen = strlen(complist->data);
+	wordlen = strlen(data);
 	last_line_pos = *pos;
 	g_free_not_null(last_line);
 	last_line = g_strdup(result->str);
 
 	ret = result->str;
 	g_string_free(result, FALSE);
+
+	/* free the data */
+	g_free(data);
+
 	return ret;
 }
 
