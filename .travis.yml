@@ -1,8 +1,15 @@
 sudo: false
+dist: trusty
 language: perl
 perl:
-    - "5.20-shrplib"
-    - "5.18-shrplib"
+    # ~stretch
+    - "5.24-shrplib"
+    # ~xenial
+    # - "5.22-shrplib"
+    # ~jessie
+    # - "5.20-shrplib"
+    # ~trusty
+    # - "5.18-shrplib"
     - "system-perl"
 env:
     - CC=clang
