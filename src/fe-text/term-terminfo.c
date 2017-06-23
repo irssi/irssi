@@ -102,6 +102,17 @@ static GSourceFuncs sigcont_funcs = {
 	.dispatch = sigcont_dispatch
 };
 
+static void term_atexit(void)
+{
+	if (!quitting && current_term && current_term->TI_rmcup) {
+		/* Unexpected exit, avoid switching out of alternate screen
+		   to keep any on-screen errors (like noperl_die()'s) */
+		current_term->TI_rmcup = NULL;
+	}
+
+	term_deinit();
+}
+
 int term_init(void)
 {
 	struct sigaction act;
@@ -140,7 +151,7 @@ int term_init(void)
 
         term_set_input_type(TERM_TYPE_8BIT);
 	term_common_init();
-        atexit(term_deinit);
+	atexit(term_atexit);
         return TRUE;
 }
 
