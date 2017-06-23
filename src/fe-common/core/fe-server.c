@@ -117,7 +117,18 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		return;
 
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-	port = *portstr == '\0' ? DEFAULT_SERVER_ADD_PORT : atoi(portstr);
+
+	value = g_hash_table_lookup(optlist, "port");
+
+	if (*portstr != '\0')
+		port = atoi(portstr);
+	else if (value != NULL && *value != '\0')
+		port = atoi(value);
+	else if (g_hash_table_lookup(optlist, "tls") ||
+		 g_hash_table_lookup(optlist, "ssl"))
+		port = DEFAULT_SERVER_ADD_TLS_PORT;
+	else
+		port = DEFAULT_SERVER_ADD_PORT;
 
 	chatnet = g_hash_table_lookup(optlist, "network");
 
@@ -139,8 +150,8 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		rec->address = g_strdup(addr);
 		rec->port = port;
 	} else {
-		value = g_hash_table_lookup(optlist, "port");
-		if (value != NULL && *value != '\0') rec->port = atoi(value);
+		if (*portstr != '\0' || g_hash_table_lookup(optlist, "port"))
+			rec->port = port;
 
 		if (*password != '\0') g_free_and_null(rec->password);
 		if (g_hash_table_lookup(optlist, "host")) {

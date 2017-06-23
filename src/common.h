@@ -9,6 +9,7 @@
 #define IRSSI_ABI_VERSION 9
 
 #define DEFAULT_SERVER_ADD_PORT 6667
+#define DEFAULT_SERVER_ADD_TLS_PORT 6697
 
 #ifdef HAVE_CONFIG_H
 #include "irssi-config.h"
