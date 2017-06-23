@@ -88,14 +88,14 @@ void config_nodes_remove_all(CONFIG_REC *rec)
 		config_node_remove(rec, rec->mainnode, ((GSList *) rec->mainnode->value)->data);
 }
 
-void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value)
+CONFIG_NODE *config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value)
 {
 	CONFIG_NODE *node;
 	int no_key;
 
-	g_return_if_fail(rec != NULL);
-	g_return_if_fail(parent != NULL);
-	g_return_if_fail(is_node_list(parent));
+	g_return_val_if_fail(rec != NULL, NULL);
+	g_return_val_if_fail(parent != NULL, NULL);
+	g_return_val_if_fail(is_node_list(parent), NULL);
 
 	no_key = key == NULL;
 	node = no_key ? NULL : config_node_find(parent, key);
@@ -103,7 +103,7 @@ void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, 
 	if (value == NULL) {
                 /* remove the key */
 		if (node != NULL) config_node_remove(rec, parent, node);
-		return;
+		return NULL;
 	}
 
 	if (node != NULL && !has_node_value(node)) {
@@ -114,7 +114,7 @@ void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, 
 	}
 	if (node != NULL) {
 		if (g_strcmp0(node->value, value) == 0)
-			return;
+			return node;
                 g_free(node->value);
 	} else {
 		node = g_new0(CONFIG_NODE, 1);
@@ -126,19 +126,21 @@ void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, 
 
 	node->value = g_strdup(value);
 	rec->modifycounter++;
+
+	return node;
 }
 
-void config_node_set_int(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value)
+CONFIG_NODE *config_node_set_int(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value)
 {
 	char str[MAX_INT_STRLEN];
 
 	g_snprintf(str, sizeof(str), "%d", value);
-	config_node_set_str(rec, parent, key, str);
+	return config_node_set_str(rec, parent, key, str);
 }
 
-void config_node_set_bool(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value)
+CONFIG_NODE *config_node_set_bool(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value)
 {
-	config_node_set_str(rec, parent, key, value ? "yes" : "no");
+	return config_node_set_str(rec, parent, key, value ? "yes" : "no");
 }
 
 int config_set_str(CONFIG_REC *rec, const char *section, const char *key, const char *value)

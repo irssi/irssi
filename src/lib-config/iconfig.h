@@ -141,9 +141,9 @@ int config_node_get_bool(CONFIG_NODE *parent, const char *key, int def);
  * if a node with key 'key' exists change its value to 'value',
  * otherwise create a new node with type NODE_TYPE_KEY, key 'key' and value 'value'
  * */
-void config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value);
-void config_node_set_int(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
-void config_node_set_bool(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
+CONFIG_NODE *config_node_set_str(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, const char *value);
+CONFIG_NODE *config_node_set_int(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
+CONFIG_NODE *config_node_set_bool(CONFIG_REC *rec, CONFIG_NODE *parent, const char *key, int value);
 
 /* Remove one node from block/list. */
 void config_node_remove(CONFIG_REC *rec, CONFIG_NODE *parent, CONFIG_NODE *node);
