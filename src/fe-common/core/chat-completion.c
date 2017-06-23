@@ -1011,13 +1011,17 @@ static void sig_complete_target(GList **list, WINDOW_REC *window,
 	}
 }
 
+static void event_text(const char *data, SERVER_REC *server, WI_ITEM_REC *item);
+
 /* expand \n, \t and \\ */
 static char *expand_escapes(const char *line, SERVER_REC *server,
 			    WI_ITEM_REC *item)
 {
 	char *ptr, *ret;
-        int chr;
+	const char *prev;
+	int chr;
 
+	prev = line;
 	ret = ptr = g_malloc(strlen(line)+1);
 	for (; *line != '\0'; line++) {
 		if (*line != '\\') {
@@ -1036,9 +1040,11 @@ static char *expand_escapes(const char *line, SERVER_REC *server,
 			/* newline .. we need to send another "send text"
 			   event to handle it (or actually the text before
 			   the newline..) */
-			if (ret != ptr) {
-				*ptr = '\0';
-				signal_emit("send text", 3, ret, server, item);
+			if (prev != line) {
+				char *prev_line = g_strndup(prev, (line - prev) - 1);
+				event_text(prev_line, server, item);
+				g_free(prev_line);
+				prev = line + 1;
 				ptr = ret;
 			}
 		} else if (chr != -1) {
