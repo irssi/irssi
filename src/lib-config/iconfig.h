@@ -18,8 +18,9 @@ typedef struct _CONFIG_NODE CONFIG_NODE;
 typedef struct _CONFIG_REC CONFIG_REC;
 
 struct _CONFIG_NODE {
-	int type;
-        char *key;
+	int type      : 8;
+	int do_filter : 1;
+	char *key;
 	void *value;
 };
 
@@ -45,6 +46,10 @@ struct _CONFIG_NODE {
    written.
 
 */
+
+typedef gboolean (*ConfigFilterFunc)(const char *key,
+				     const char *value,
+				     char **new_value);
 
 struct _CONFIG_REC {
 	char *fname;
@@ -72,6 +77,8 @@ CONFIG_REC *config_open(const char *fname, int create_mode);
 void config_close(CONFIG_REC *rec);
 /* Change file name of config file */
 void config_change_file_name(CONFIG_REC *rec, const char *fname, int create_mode);
+/* Set the default function to handle the variable filtering */
+void config_set_filter_function(ConfigFilterFunc func);
 
 /* Parse configuration file */
 int config_parse(CONFIG_REC *rec);

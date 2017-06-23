@@ -703,6 +703,13 @@ int irssi_config_is_changed(const char *fname)
 		 config_last_checksum != file_checksum(fname));
 }
 
+static gboolean filter_stub(const char *key, const char *value, char **new_value)
+{
+	g_warning("Filtering %s in %s", value, key);
+	*new_value = (char *)value;
+	return TRUE;
+}
+
 static CONFIG_REC *parse_configfile(const char *fname)
 {
 	CONFIG_REC *config;
@@ -735,6 +742,8 @@ static CONFIG_REC *parse_configfile(const char *fname)
 
 		config = config_open(NULL, -1);
 	}
+
+	config_set_filter_function(filter_stub);
 
         if (config->fname != NULL)
 		config_parse(config);

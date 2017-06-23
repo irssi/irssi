@@ -131,7 +131,7 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 {
 	CONFIG_NODE *newnode;
 	GTokenType last_char;
-	int print_warning;
+	int print_warning, do_filter;
 	char *key;
 
 	g_return_val_if_fail(rec != NULL, G_TOKEN_ERROR);
@@ -151,11 +151,20 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 		config_parse_get_token(rec->scanner, node);
 	}
 
+	do_filter = FALSE;
+
  	switch (rec->scanner->token) {
+	case '&':
+		/* substitute value */
+		do_filter = TRUE;
+		config_parse_warn_missing(rec, node, G_TOKEN_STRING, TRUE);
+		g_assert(rec->scanner->token == G_TOKEN_STRING);
 	case G_TOKEN_STRING:
 		/* value */
-		config_node_set_str(rec, node, key, rec->scanner->value.v_string);
+		newnode = config_node_set_str(rec, node, key, rec->scanner->value.v_string);
 		g_free_not_null(key);
+
+		newnode->do_filter = do_filter;
 
 		print_warning = TRUE;
 		if (node->type == NODE_TYPE_LIST) {
@@ -167,7 +176,6 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 
 		config_parse_warn_missing(rec, node, last_char, print_warning);
 		break;
-
 	case '{':
 		/* block */
 		if (key == NULL && node->type != NODE_TYPE_LIST)

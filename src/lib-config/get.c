@@ -20,6 +20,8 @@
 
 #include "module.h"
 
+static ConfigFilterFunc filter_func = NULL;
+
 CONFIG_NODE *config_node_find(CONFIG_NODE *node, const char *key)
 {
 	GSList *tmp;
@@ -165,7 +167,7 @@ CONFIG_NODE *config_node_traverse(CONFIG_REC *rec, const char *section, int crea
 char *config_get_str(CONFIG_REC *rec, const char *section, const char *key, const char *def)
 {
 	CONFIG_NODE *parent, *node;
-	char *path;
+	char *path, *value;
 
 	g_return_val_if_fail(rec != NULL, (char *) def);
 	g_return_val_if_fail(key != NULL, (char *) def);
@@ -190,7 +192,18 @@ char *config_get_str(CONFIG_REC *rec, const char *section, const char *key, cons
 		}
 	}
 
-	return (node == NULL || !has_node_value(node)) ? (char *) def : node->value;
+	if (node == NULL || !has_node_value(node))
+	{
+		return (char *)def;
+	}
+
+	if (node->do_filter && filter_func)
+	{
+		return filter_func(key, node->value, &value) ?
+			value : (char *)def;
+	}
+
+	return node->value;
 }
 
 int config_get_int(CONFIG_REC *rec, const char *section, const char *key, int def)
@@ -216,12 +229,24 @@ int config_get_bool(CONFIG_REC *rec, const char *section, const char *key, int d
 char *config_node_get_str(CONFIG_NODE *parent, const char *key, const char *def)
 {
 	CONFIG_NODE *node;
+	char *value;
 
         if (parent == NULL) return (char *) def;
 
 	node = config_node_find(parent, key);
-	return (char *) ((node != NULL && has_node_value(node)) ?
-			 node->value : def);
+
+	if (node == NULL || !has_node_value(node))
+	{
+		return (char *)def;
+	}
+
+	if (node->do_filter && filter_func)
+	{
+		return filter_func(key, node->value, &value) ?
+			value : (char *)def;
+	}
+
+	return node->value;
 }
 
 int config_node_get_int(CONFIG_NODE *parent, const char *key, int def)
@@ -338,4 +363,9 @@ GSList *config_node_next(GSList *list)
 {
 	list = list->next;
         return config_node_first(list);
+}
+
+void config_set_filter_function(ConfigFilterFunc func)
+{
+	filter_func = func;
 }

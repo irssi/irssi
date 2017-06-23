@@ -142,6 +142,7 @@ static int config_write_node(CONFIG_REC *rec, CONFIG_NODE *node, int line_feeds)
 	case NODE_TYPE_KEY:
 		if (config_write_word(rec, node->key, FALSE) == -1 ||
 		    config_write_str(rec, " = ") == -1 ||
+		    (node->do_filter && config_write_str(rec, "&") == -1) ||
 		    config_write_word(rec, node->value, TRUE) == -1)
 			return -1;
 		break;
@@ -212,6 +213,8 @@ static int config_node_get_length(CONFIG_REC *rec, CONFIG_NODE *node)
 	case NODE_TYPE_KEY:
 		/* "key = value; " */
 		len = 5 + strlen(node->key) + strlen(node->value);
+		/* optional '&' before the value */
+		len += node->do_filter ? 1 : 0;
 		break;
 	case NODE_TYPE_VALUE:
 		/* "value, " */
