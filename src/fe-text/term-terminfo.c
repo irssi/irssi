@@ -733,3 +733,31 @@ void term_gets(GArray *buffer, int *line_count)
 		}
 	}
 }
+
+static const char* term_env_warning =
+	"The TERM environment variable is set to '%s' which can cause display "
+	"glitches when running under %s.\n"
+	"Consider changing TERM to 'screen' or 'screen-256color' instead.";
+
+void term_environment_check(void)
+{
+	const char *term, *sty, *tmux, *multiplexer;
+
+	term = g_getenv("TERM");
+	sty = g_getenv("STY");
+	tmux = g_getenv("TMUX");
+
+	multiplexer = (sty && *sty) ? "screen" :
+	              (tmux && *tmux) ? "tmux" : NULL;
+
+	if (!multiplexer) {
+		return;
+	}
+
+	if (term && (g_str_has_prefix(term, "screen") ||
+	             g_str_has_prefix(term, "tmux"))) {
+		return;
+	}
+
+	g_warning(term_env_warning, term, multiplexer);
+}

@@ -105,4 +105,6 @@ void term_gets(GArray *buffer, int *line_count);
 void term_common_init(void);
 void term_common_deinit(void);
 
+void term_environment_check(void);
+
 #endif
