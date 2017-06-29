@@ -560,6 +560,9 @@ char *my_asctime(time_t t)
         int len;
 
 	tm = localtime(&t);
+	if (tm == NULL)
+	    return g_strdup("???");
+
 	str = g_strdup(asctime(tm));
 
 	len = strlen(str);
