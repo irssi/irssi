@@ -7,6 +7,12 @@ AM_CPPFLAGS = \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DMODULEDIR=\""$(libdir)/irssi/modules"\"
 
+if USE_GREGEX
+regex_impl=iregex-gregex.c
+else
+regex_impl=iregex-regexh.c
+endif
+
 libcore_a_SOURCES = \
 	args.c \
 	channels.c \
@@ -45,6 +51,7 @@ libcore_a_SOURCES = \
 	signals.c \
 	special-vars.c \
 	utf8.c \
+	$(regex_impl) \
 	wcwidth.c \
 	tls.c \
 	write-buffer.c
@@ -97,6 +104,7 @@ pkginc_core_HEADERS = \
 	signals.h \
 	special-vars.h \
 	utf8.h \
+	iregex.h \
 	window-item-def.h \
 	tls.h \
 	write-buffer.h \

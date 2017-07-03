@@ -24,12 +24,9 @@
 #include "misc.h"
 #include "formats.h"
 #include "utf8.h"
+#include "iregex.h"
 
 #include "textbuffer.h"
-
-#ifndef USE_GREGEX
-#  include <regex.h>
-#endif
 
 #define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-(int)sizeof(char*))
 
@@ -545,11 +542,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			    int before, int after,
 			    int regexp, int fullword, int case_sensitive)
 {
-#ifdef USE_GREGEX
-	GRegex *preg;
-#else
-	regex_t preg;
-#endif
+	Regex *preg;
         LINE_REC *line, *pre_line;
 	GList *matches;
 	GString *str;
@@ -559,23 +552,14 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 	g_return_val_if_fail(buffer != NULL, NULL);
 	g_return_val_if_fail(text != NULL, NULL);
 
-#ifdef USE_GREGEX
 	preg = NULL;
 
 	if (regexp) {
-		preg = g_regex_new(text, G_REGEX_RAW | (case_sensitive ? 0 : G_REGEX_CASELESS), 0, NULL);
+		preg = i_regex_new(text, case_sensitive ? 0 : G_REGEX_CASELESS, 0, NULL);
 
 		if (preg == NULL)
 			return NULL;
 	}
-#else
-	if (regexp) {
-		int flags = REG_EXTENDED | REG_NOSUB |
-			(case_sensitive ? 0 : REG_ICASE);
-		if (regcomp(&preg, text, flags) != 0)
-			return NULL;
-	}
-#endif
 
 	matches = NULL; match_after = 0;
         str = g_string_new(NULL);
@@ -596,11 +580,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 
 			if (line_matched) {
 				line_matched = regexp ?
-#ifdef USE_GREGEX
-				    g_regex_match(preg, str->str, 0, NULL)
-#else
-				    regexec(&preg, str->str, 0, NULL, 0) == 0
-#endif
+					i_regex_match(preg, str->str, 0, NULL)
 					: match_func(str->str, text) != NULL;
 			}
 		}
@@ -634,12 +614,8 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 
 	matches = g_list_reverse(matches);
 
-#ifdef USE_GREGEX
 	if (preg != NULL)
-		g_regex_unref(preg);
-#else
-	if (regexp) regfree(&preg);
-#endif
+		i_regex_unref(preg);
         g_string_free(str, TRUE);
 	return matches;
 }
