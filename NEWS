@@ -1,3 +1,16 @@
+v1.0.4 2017-07-07  The Irssi team <staff@irssi.org>
+	- Fix null pointer dereference when parsing invalid timestamp (GL#10,
+	  GL!15). Reported by Brian 'geeknik' Carpenter.
+	- Fix use-after-free condition when removing nicks from the internal
+	  nicklist (GL#11, GL!16). Reported by Brian 'geeknik' Carpenter.
+	- Fix incorrect string comparison in DCC file names (#714).
+	- Fix regression in Irssi 1.0.3 where it would claim "Invalid time '-1'"
+	  (#716, #722).
+	- Fix a bug when using \n to separate lines with expand_escapes (#723).
+	- Retain screen output on improper exit, to better see any error
+	  messages (#287, #721).
+	- Minor help update (#729).
+
 v1.0.3 2017-06-06  The Irssi team <staff@irssi.org>
 	- Fix out of bounds read when scanning expandos (GL!11).
 	- Fix invalid memory access with quoted filenames in DCC
