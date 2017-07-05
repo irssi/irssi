@@ -12,8 +12,8 @@
 
 %9Description:%9
 
-    Clears the window of all text; you may use this to clear a windows that
-    contains sensitive information or has rendered improperly.
+    Scrolls up the text in the window and fills the window with blank lines; you
+    may want to use this to make new text start at the top of the window again.
 
-%9See also:%9 REDRAW
+%9See also:%9 REDRAW, SCROLLBACK CLEAR
 
