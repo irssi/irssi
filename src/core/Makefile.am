@@ -56,6 +56,11 @@ libcore_a_SOURCES = \
 	tls.c \
 	write-buffer.c
 
+if HAVE_CAPSICUM
+libcore_a_SOURCES += \
+	capsicum.c
+endif
+
 structure_headers = \
 	channel-rec.h \
 	channel-setup-rec.h \

@@ -167,7 +167,7 @@ AC_ARG_ENABLE(gregex,
 	want_gregex=yes)
 
 AC_ARG_WITH(capsicum,
-[  --with-capsicum            Build with Capsicum support],
+[  --with-capsicum         Build with Capsicum support],
 	if test x$withval = xno; then
 		want_capsicum=no
 	else
@@ -526,6 +526,7 @@ AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIFUZZER, test "$want_irssifuzzer" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
+AM_CONDITIONAL(HAVE_CAPSICUM, test "x$want_capsicum" = "xyes")
 AM_CONDITIONAL(USE_GREGEX, test "x$want_gregex" = "xyes")
 
 # move LIBS to PROG_LIBS so they're not tried to be used when linking eg. perl libraries
