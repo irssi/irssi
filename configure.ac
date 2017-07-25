@@ -166,6 +166,15 @@ AC_ARG_ENABLE(gregex,
 	fi,
 	want_gregex=yes)
 
+AC_ARG_WITH(capsicum,
+[  --with-capsicum            Build with Capsicum support],
+	if test x$withval = xno; then
+		want_capsicum=no
+	else
+		want_capsicum=yes
+	fi,
+	want_capsicum=yes)
+
 dnl **
 dnl ** just some generic stuff...
 dnl **
@@ -499,6 +508,18 @@ if test "$want_perl" != "no"; then
 	fi
 fi
 
+dnl **
+dnl ** check for capsicum
+dnl **
+
+if test "x$want_capsicum" = "xyes"; then
+	AC_CHECK_LIB(c, cap_enter, [
+		AC_DEFINE(HAVE_CAPSICUM,, Build with Capsicum support)
+	], [
+		want_capsicum="no, cap_enter not found"
+	])
+fi
+
 dnl ** check what we want to build
 AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
@@ -713,6 +734,7 @@ echo
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with true color support.. : $want_truecolor"
 echo "Building with GRegex ............. : $want_gregex"
+echo "Building with Capsicum ........... : $want_capsicum"
 
 echo
 echo "If there are any problems, read the INSTALL file."
