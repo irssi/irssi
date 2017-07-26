@@ -36,6 +36,7 @@
     -sasl_mechanism  Specifies the mechanism to use for the SASL authentication.
                      At the moment irssi only supports the 'plain' and the
                      'external' mechanisms.
+                     Use '' to disable the authentication.
     -sasl_username   Specifies the username to use during the SASL authentication.
     -sasl_password   Specifies the password to use during the SASL authentication.
 

@@ -89,6 +89,8 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 
 	/* Validate the SASL parameters filled by sig_chatnet_read() or cmd_network_add */
 	conn->sasl_mechanism = SASL_MECHANISM_NONE;
+	conn->sasl_username = NULL;
+	conn->sasl_password = NULL;
 
 	if (ircnet->sasl_mechanism != NULL) {
 		if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "plain")) {
@@ -102,9 +104,7 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 				g_warning("The fields sasl_username and sasl_password are either missing or empty");
 		}
 		else if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "external")) {
-				conn->sasl_mechanism = SASL_MECHANISM_EXTERNAL;
-				conn->sasl_username = NULL;
-				conn->sasl_password = NULL;
+			conn->sasl_mechanism = SASL_MECHANISM_EXTERNAL;
 		}
 		else
 			g_warning("Unsupported SASL mechanism \"%s\" selected", ircnet->sasl_mechanism);
