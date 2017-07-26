@@ -32,6 +32,7 @@
 #include "special-vars.h"
 #include "fe-core-commands.h"
 #include "fe-queries.h"
+#include "fe-capsicum.h"
 #include "hilight-text.h"
 #include "command-history.h"
 #include "completion.h"
@@ -179,6 +180,7 @@ void fe_common_core_init(void)
 	fe_server_init();
 	fe_settings_init();
 	fe_tls_init();
+	fe_capsicum_init();
 	windows_init();
 	window_activity_init();
 	window_commands_init();
@@ -221,6 +223,7 @@ void fe_common_core_deinit(void)
 	fe_server_deinit();
 	fe_settings_deinit();
 	fe_tls_deinit();
+	fe_capsicum_deinit();
 	windows_deinit();
 	window_activity_deinit();
 	window_commands_deinit();

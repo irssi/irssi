@@ -30,17 +30,37 @@ static void cmd_cap_enter(void)
 	int error;
 
 	error = cap_enter();
-	if (error != 0)
-		g_error("cap_enter(2) failed: %s", strerror(errno));
+	if (error != 0) {
+		signal_emit("capability mode failed", 1, strerror(errno));
+	} else {
+		signal_emit("capability mode enabled", 0);
+	}
+}
+
+static void cmd_cap_getmode(void)
+{
+	u_int mode;
+	int error;
+
+	error = cap_getmode(&mode);
+	if (error != 0) {
+		signal_emit("capability mode failed", 1, strerror(errno));
+	} else if (mode == 0) {
+		signal_emit("capability mode disabled", 0);
+	} else {
+		signal_emit("capability mode enabled", 0);
+	}
 }
 
 void capsicum_init(void)
 {
 
 	command_bind("cap_enter", NULL, (SIGNAL_FUNC) cmd_cap_enter);
+	command_bind("cap_getmode", NULL, (SIGNAL_FUNC) cmd_cap_getmode);
 }
 
 void capsicum_deinit(void)
 {
 	command_unbind("cap_enter", (SIGNAL_FUNC) cmd_cap_enter);
+	command_unbind("cap_getmode", (SIGNAL_FUNC) cmd_cap_getmode);
 }
