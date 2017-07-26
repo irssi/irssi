@@ -25,7 +25,12 @@
 #include <sys/capsicum.h>
 #include <string.h>
 
-static void cmd_cap_enter(void)
+static void cmd_capsicum(const char *data, SERVER_REC *server, void *item)
+{
+	command_runsub("capsicum", data, server, item);
+}
+
+static void cmd_capsicum_enter(void)
 {
 	int error;
 
@@ -37,7 +42,7 @@ static void cmd_cap_enter(void)
 	}
 }
 
-static void cmd_cap_getmode(void)
+static void cmd_capsicum_status(void)
 {
 	u_int mode;
 	int error;
@@ -55,12 +60,14 @@ static void cmd_cap_getmode(void)
 void capsicum_init(void)
 {
 
-	command_bind("cap_enter", NULL, (SIGNAL_FUNC) cmd_cap_enter);
-	command_bind("cap_getmode", NULL, (SIGNAL_FUNC) cmd_cap_getmode);
+	command_bind("capsicum", NULL, (SIGNAL_FUNC) cmd_capsicum);
+	command_bind("capsicum enter", NULL, (SIGNAL_FUNC) cmd_capsicum_enter);
+	command_bind("capsicum status", NULL, (SIGNAL_FUNC) cmd_capsicum_status);
 }
 
 void capsicum_deinit(void)
 {
-	command_unbind("cap_enter", (SIGNAL_FUNC) cmd_cap_enter);
-	command_unbind("cap_getmode", (SIGNAL_FUNC) cmd_cap_getmode);
+	command_unbind("capsicum", (SIGNAL_FUNC) cmd_capsicum);
+	command_unbind("capsicum enter", (SIGNAL_FUNC) cmd_capsicum_enter);
+	command_unbind("capsicum status", (SIGNAL_FUNC) cmd_capsicum_status);
 }
