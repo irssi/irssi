@@ -86,11 +86,6 @@ int capsicum_net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	return sock;
 }
 
-static void cmd_capsicum(const char *data, SERVER_REC *server, void *item)
-{
-	command_runsub("capsicum", data, server, item);
-}
-
 static int start_symbiont(void)
 {
 	pid_t pid;
@@ -149,6 +144,11 @@ static int start_symbiont(void)
 			exit(1);
 		nvlist_destroy(nvl);
 	}
+}
+
+static void cmd_capsicum(const char *data, SERVER_REC *server, void *item)
+{
+	command_runsub("capsicum", data, server, item);
 }
 
 static void cmd_capsicum_enter(void)
