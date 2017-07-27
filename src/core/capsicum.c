@@ -19,9 +19,10 @@
 */
 
 #include "module.h"
-#include "network.h"
-#include "signals.h"
 #include "commands.h"
+#include "network.h"
+#include "settings.h"
+#include "signals.h"
 
 #include <sys/types.h>
 #include <sys/capsicum.h>
@@ -183,8 +184,17 @@ static void cmd_capsicum_status(void)
 	}
 }
 
+void sig_init_finished(void)
+{
+	if (settings_get_bool("capsicum"))
+		cmd_capsicum_enter();
+}
+
 void capsicum_init(void)
 {
+	settings_add_bool("misc", "capsicum", FALSE);
+
+	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 
 	command_bind("capsicum", NULL, (SIGNAL_FUNC) cmd_capsicum);
 	command_bind("capsicum enter", NULL, (SIGNAL_FUNC) cmd_capsicum_enter);
@@ -193,6 +203,8 @@ void capsicum_init(void)
 
 void capsicum_deinit(void)
 {
+	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
+
 	command_unbind("capsicum", (SIGNAL_FUNC) cmd_capsicum);
 	command_unbind("capsicum enter", (SIGNAL_FUNC) cmd_capsicum_enter);
 	command_unbind("capsicum status", (SIGNAL_FUNC) cmd_capsicum_status);
