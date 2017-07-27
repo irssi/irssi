@@ -20,6 +20,9 @@
 
 #include "module.h"
 #include "network.h"
+#ifdef HAVE_CAPSICUM
+#include "capsicum.h"
+#endif
 
 #include <sys/un.h>
 
@@ -144,8 +147,7 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 	return net_connect_ip(ip, port, my_ip);
 }
 
-/* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
+int net_connect_ip_handle(IPADDR *ip, int port, IPADDR *my_ip)
 {
 	union sockaddr_union so;
 	int handle, ret, opt = 1;
@@ -161,7 +163,7 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	handle = socket(ip->family, SOCK_STREAM, 0);
 
 	if (handle == -1)
-		return NULL;
+		return -1;
 
 	/* set socket options */
 	fcntl(handle, F_SETFL, O_NONBLOCK);
@@ -176,7 +178,7 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 
 			close(handle);
 			errno = old_errno;
-			return NULL;
+			return -1;
 		}
 	}
 
@@ -190,8 +192,29 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 		int old_errno = errno;
 		close(handle);
 		errno = old_errno;
-		return NULL;
+		return -1;
 	}
+
+	return handle;
+}
+
+
+/* Connect to socket with ip address */
+GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
+{
+	int handle = -1;
+
+#ifdef HAVE_CAPSICUM
+	if (capsicum_enabled())
+		handle = capsicum_net_connect_ip(ip, port, my_ip);
+	else
+		handle = net_connect_ip_handle(ip, port, my_ip);
+#else
+	handle = net_connect_ip_handle(ip, port, my_ip);
+#endif
+
+	if (handle == -1)
+		return (NULL);
 
 	return g_io_channel_new(handle);
 }

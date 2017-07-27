@@ -36,6 +36,8 @@ GIOChannel *g_io_channel_new(int handle);
 /* returns 1 if IPADDRs are the same */
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
 
+int net_connect_ip_handle(IPADDR *ip, int port, IPADDR *my_ip);
+
 /* Connect to socket */
 GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip) G_GNUC_DEPRECATED;
 /* Connect to socket with ip address and SSL*/

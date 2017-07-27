@@ -514,7 +514,12 @@ dnl **
 
 if test "x$want_capsicum" = "xyes"; then
 	AC_CHECK_LIB(c, cap_enter, [
-		AC_DEFINE(HAVE_CAPSICUM,, Build with Capsicum support)
+		AC_CHECK_LIB(nv, nvlist_create, [
+			AC_DEFINE(HAVE_CAPSICUM,, Build with Capsicum support)
+			LIBS="$LIBS -lnv"
+		], [
+			want_capsicum="no, nvlist_create not found"
+		])
 	], [
 		want_capsicum="no, cap_enter not found"
 	])
