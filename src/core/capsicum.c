@@ -252,7 +252,14 @@ static void cmd_capsicum(const char *data, SERVER_REC *server, void *item)
 
 static void cmd_capsicum_enter(void)
 {
+	u_int mode;
 	int error;
+
+	error = cap_getmode(&mode);
+	if (error == 0 && mode != 0) {
+		g_warning("Already in capability mode");
+		return;
+	}
 
 	error = start_symbiont();
 	if (error != 0) {
