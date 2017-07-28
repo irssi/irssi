@@ -33,6 +33,8 @@
 #define DEFAULT_LOG_FILE_CREATE_MODE 600
 
 GSList *logs;
+int log_file_create_mode;
+int log_dir_create_mode;
 
 static const char *log_item_types[] = {
 	"target",
@@ -42,8 +44,6 @@ static const char *log_item_types[] = {
 };
 
 static char *log_timestamp;
-static int log_file_create_mode;
-static int log_dir_create_mode;
 static int rotate_tag;
 
 static int log_item_str2type(const char *type)
@@ -562,7 +562,6 @@ static void read_settings(void)
 	log_timestamp = g_strdup(settings_get_str("log_timestamp"));
 
 	log_file_create_mode = octal2dec(settings_get_int("log_create_mode"));
-
 	log_dir_create_mode = log_file_create_mode;
 	if (log_file_create_mode & 0400) log_dir_create_mode |= 0100;
 	if (log_file_create_mode & 0040) log_dir_create_mode |= 0010;
