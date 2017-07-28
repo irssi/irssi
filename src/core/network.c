@@ -406,6 +406,11 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	struct addrinfo hints, *ai, *ailist;
 	int ret, count_v4, count_v6, use_v4, use_v6;
 
+#ifdef HAVE_CAPSICUM
+	if (capsicum_enabled())
+		return (capsicum_net_gethostbyname(addr, ip4, ip6));
+#endif
+
 	g_return_val_if_fail(addr != NULL, -1);
 
 	memset(ip4, 0, sizeof(IPADDR));
