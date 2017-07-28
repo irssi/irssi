@@ -26,6 +26,9 @@
 #include "servers.h"
 #include "log.h"
 #include "write-buffer.h"
+#ifdef HAVE_CAPSICUM
+#include "capsicum.h"
+#endif
 
 #include "lib-config/iconfig.h"
 #include "settings.h"
@@ -71,6 +74,16 @@ static void log_write_timestamp(int handle, const char *format,
 	if (strftime(str, sizeof(str), format, tm) > 0)
 		write_buffer(handle, str, strlen(str));
 	if (text != NULL) write_buffer(handle, text, strlen(text));
+}
+
+static int log_open_wrapper(const char *path, int flags, int mode)
+{
+#ifdef HAVE_CAPSICUM
+	if (capsicum_enabled())
+		return capsicum_open(path, flags, mode);
+#endif
+
+	return open(path, flags, mode);
 }
 
 static char *log_filename(LOG_REC *log)
@@ -119,7 +132,7 @@ int log_start_logging(LOG_REC *log)
 	}
 
 	log->handle = log->real_fname == NULL ? -1 :
-		open(log->real_fname, O_WRONLY | O_APPEND | O_CREAT,
+		log_open_wrapper(log->real_fname, O_WRONLY | O_APPEND | O_CREAT,
 		     log_file_create_mode);
 	if (log->handle == -1) {
 		signal_emit("log create failed", 1, log);

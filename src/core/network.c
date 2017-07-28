@@ -198,7 +198,6 @@ int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip)
 	return handle;
 }
 
-
 /* Connect to socket with ip address */
 GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 {

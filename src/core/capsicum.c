@@ -20,6 +20,8 @@
 
 #include "module.h"
 #include "commands.h"
+#include "log.h"
+#include "misc.h"
 #include "network.h"
 #include "settings.h"
 #include "signals.h"
@@ -34,6 +36,9 @@
 #define	OPCODE_CONNECT		1
 #define	OPCODE_GETHOSTBYNAME	2
 
+static char *irclogs_path;
+static size_t irclogs_path_len;
+static int irclogs_fd;
 static int symbiontfds[2];
 
 gboolean capsicum_enabled(void)
@@ -125,6 +130,23 @@ int capsicum_net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	errno = saved_errno;
 
 	return ret;
+}
+
+int capsicum_open(const char *path, int flags, int mode)
+{
+	int fd;
+
+	/* +1 is for slash separating irclogs_path and the rest. */
+	if (strlen(path) > irclogs_path_len + 1 && strncmp(path, irclogs_path, irclogs_path_len) == 0) {
+		fd = openat(irclogs_fd, path + irclogs_path_len + 1, flags, mode);
+	} else {
+		fd = open(path, flags, mode);
+	}
+
+	if (fd < 0 && (errno == ENOTCAPABLE || errno == ECAPMODE))
+		g_warning("File system access restricted to %s due to capability mode", irclogs_path);
+
+	return (fd);
 }
 
 nvlist_t *symbiont_connect(const nvlist_t *request)
@@ -261,6 +283,16 @@ static void cmd_capsicum_enter(void)
 		return;
 	}
 
+	irclogs_path = convert_home(settings_get_str("capsicum_irclogs_path"));
+	g_mkdir_with_parents(irclogs_path, log_dir_create_mode);
+	irclogs_path_len = strlen(irclogs_path);
+	irclogs_fd = open(irclogs_path, O_DIRECTORY | O_CLOEXEC);
+	if (irclogs_fd < 0) {
+		g_warning("Unable to open %s: %s", irclogs_path, strerror(errno));
+		signal_emit("capability mode failed", 1, strerror(errno));
+		return;
+	}
+
 	error = start_symbiont();
 	if (error != 0) {
 		signal_emit("capability mode failed", 1, strerror(errno));
@@ -299,6 +331,7 @@ void sig_init_finished(void)
 void capsicum_init(void)
 {
 	settings_add_bool("misc", "capsicum", FALSE);
+	settings_add_str("misc", "capsicum_irclogs_path", "~/irclogs");
 
 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 

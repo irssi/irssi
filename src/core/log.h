@@ -38,6 +38,8 @@ extern GSList *logs;
 extern int log_file_create_mode;
 extern int log_dir_create_mode;
 
+extern int log_dir_create_mode;
+
 /* Create log record - you still need to call log_update() to actually add it
    into log list */
 LOG_REC *log_create_rec(const char *fname, int level);

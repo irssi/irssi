@@ -27,11 +27,24 @@
 #include "misc.h"
 #include "write-buffer.h"
 #include "settings.h"
+#ifdef HAVE_CAPSICUM
+#include "capsicum.h"
+#endif
 
 #include "servers.h"
 
 static int rawlog_lines;
 static int signal_rawlog;
+
+static int rawlog_open_wrapper(const char *path, int flags, int mode)
+{
+#ifdef HAVE_CAPSICUM
+	if (capsicum_enabled())
+		return capsicum_open(path, flags, mode);
+#endif
+
+	return open(path, flags, mode);
+}
 
 RAWLOG_REC *rawlog_create(void)
 {
@@ -126,7 +139,7 @@ void rawlog_open(RAWLOG_REC *rawlog, const char *fname)
 		return;
 
 	path = convert_home(fname);
-	rawlog->handle = open(path, O_WRONLY | O_APPEND | O_CREAT,
+	rawlog->handle = rawlog_open_wrapper(path, O_WRONLY | O_APPEND | O_CREAT,
 			      log_file_create_mode);
 	g_free(path);
 
@@ -158,7 +171,7 @@ void rawlog_save(RAWLOG_REC *rawlog, const char *fname)
         g_free(dir);
 
 	path = convert_home(fname);
-	f = open(path, O_WRONLY | O_APPEND | O_CREAT, log_file_create_mode);
+	f = rawlog_open_wrapper(path, O_WRONLY | O_APPEND | O_CREAT, log_file_create_mode);
 	g_free(path);
 
 	if (f < 0) {
