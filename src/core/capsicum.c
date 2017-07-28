@@ -93,7 +93,7 @@ int capsicum_net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 int capsicum_net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 {
 	nvlist_t *nvl;
-	IPADDR *received_ip4, *received_ip6;
+	const IPADDR *received_ip4, *received_ip6;
 	int error, ret, saved_errno;
 
 	/* Send request to the symbiont. */
@@ -130,7 +130,7 @@ int capsicum_net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 nvlist_t *symbiont_connect(const nvlist_t *request)
 {
 	nvlist_t *response;
-	IPADDR *ip, *my_ip;
+	const IPADDR *ip, *my_ip;
 	int port, saved_errno, sock;
 
 	ip = nvlist_get_binary(request, "ip", NULL);

@@ -147,7 +147,7 @@ GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
 	return net_connect_ip(ip, port, my_ip);
 }
 
-int net_connect_ip_handle(IPADDR *ip, int port, IPADDR *my_ip)
+int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip)
 {
 	union sockaddr_union so;
 	int handle, ret, opt = 1;
