@@ -147,6 +147,7 @@ int capsicum_open(const char *path, int flags, int mode)
 
 	/* +1 is for the slash separating irclogs_path and the rest. */
 	if (strlen(path) > irclogs_path_len + 1 &&
+	    path[irclogs_path_len] == '/' &&
 	    strncmp(path, irclogs_path, irclogs_path_len) == 0) {
 		fd = openat(irclogs_fd, path + irclogs_path_len + 1,
 		    flags, mode);
@@ -176,6 +177,7 @@ void capsicum_mkdir_with_parents(const char *path, int mode)
 
 	/* +1 is for the slash separating irclogs_path and the rest. */
 	if (strlen(path) <= irclogs_path_len + 1 ||
+	    path[irclogs_path_len] != '/' ||
 	    strncmp(path, irclogs_path, irclogs_path_len) != 0) {
 		g_warning("Cannot create %s: file system access restricted "
 		    "to %s due to capability mode", path, irclogs_path);
@@ -366,8 +368,15 @@ static void cmd_capsicum_enter(void)
 	port_max = settings_get_int("capsicum_port_max");
 
 	irclogs_path = convert_home(settings_get_str("capsicum_irclogs_path"));
-	g_mkdir_with_parents(irclogs_path, log_dir_create_mode);
 	irclogs_path_len = strlen(irclogs_path);
+
+	/* Strip trailing slashes, if any. */
+	while (irclogs_path_len > 0 && irclogs_path[irclogs_path_len - 1] == '/') {
+		irclogs_path[irclogs_path_len - 1] = '\0';
+		irclogs_path_len--;
+	}
+
+	g_mkdir_with_parents(irclogs_path, log_dir_create_mode);
 	irclogs_fd = open(irclogs_path, O_DIRECTORY | O_CLOEXEC);
 	if (irclogs_fd < 0) {
 		g_warning("Unable to open %s: %s", irclogs_path, strerror(errno));
