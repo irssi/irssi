@@ -167,7 +167,14 @@ void rawlog_save(RAWLOG_REC *rawlog, const char *fname)
 	int f;
 
         dir = g_path_get_dirname(fname);
-        g_mkdir_with_parents(dir, log_dir_create_mode);
+#ifdef HAVE_CAPSICUM
+	if (capsicum_enabled())
+		capsicum_mkdir_with_parents(dir, log_dir_create_mode);
+	else
+		g_mkdir_with_parents(dir, log_dir_create_mode);
+#else
+	g_mkdir_with_parents(dir, log_dir_create_mode);
+#endif
         g_free(dir);
 
 	path = convert_home(fname);

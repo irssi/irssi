@@ -127,7 +127,14 @@ int log_start_logging(LOG_REC *log)
 		/* path may contain variables (%time, $vars),
 		   make sure the directory is created */
 		dir = g_path_get_dirname(log->real_fname);
+#ifdef HAVE_CAPSICUM
+		if (capsicum_enabled())
+			capsicum_mkdir_with_parents(dir, log_dir_create_mode);
+		else
+			g_mkdir_with_parents(dir, log_dir_create_mode);
+#else
 		g_mkdir_with_parents(dir, log_dir_create_mode);
+#endif
 		g_free(dir);
 	}
 

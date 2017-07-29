@@ -136,17 +136,60 @@ int capsicum_open(const char *path, int flags, int mode)
 {
 	int fd;
 
-	/* +1 is for slash separating irclogs_path and the rest. */
-	if (strlen(path) > irclogs_path_len + 1 && strncmp(path, irclogs_path, irclogs_path_len) == 0) {
-		fd = openat(irclogs_fd, path + irclogs_path_len + 1, flags, mode);
+	/* +1 is for the slash separating irclogs_path and the rest. */
+	if (strlen(path) > irclogs_path_len + 1 &&
+	    strncmp(path, irclogs_path, irclogs_path_len) == 0) {
+		fd = openat(irclogs_fd, path + irclogs_path_len + 1,
+		    flags, mode);
 	} else {
 		fd = open(path, flags, mode);
 	}
 
 	if (fd < 0 && (errno == ENOTCAPABLE || errno == ECAPMODE))
-		g_warning("File system access restricted to %s due to capability mode", irclogs_path);
+		g_warning("File system access restricted to %s "
+		    "due to capability mode", irclogs_path);
 
 	return (fd);
+}
+
+void capsicum_mkdir_with_parents(const char *path, int mode)
+{
+	char *component, *copy, *tofree;
+	int error, fd, newfd;
+
+	/* +1 is for the slash separating irclogs_path and the rest. */
+	if (strlen(path) <= irclogs_path_len + 1 ||
+	    strncmp(path, irclogs_path, irclogs_path_len) != 0) {
+		g_warning("Cannot create %s: file system access restricted "
+		    "to %s due to capability mode", path, irclogs_path);
+		return;
+	}
+
+	copy = tofree = g_strdup(path + irclogs_path_len + 1);
+	fd = irclogs_fd;
+	for (;;) {
+		component = strsep(&copy, "/");
+		if (component == NULL)
+			break;
+		error = mkdirat(fd, component, mode);
+		if (error != 0 && errno != EEXIST) {
+			g_warning("cannot create %s: %s",
+			    component, strerror(errno));
+			break;
+		}
+		newfd = openat(fd, component, O_DIRECTORY);
+		if (newfd < 0) {
+			g_warning("cannot open %s: %s",
+			    component, strerror(errno));
+			break;
+		}
+		if (fd != irclogs_fd)
+			close(fd);
+		fd = newfd;
+	}
+	g_free(tofree);
+	if (fd != irclogs_fd)
+		close(fd);
 }
 
 nvlist_t *symbiont_connect(const nvlist_t *request)
