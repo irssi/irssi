@@ -40,6 +40,8 @@ static char *irclogs_path;
 static size_t irclogs_path_len;
 static int irclogs_fd;
 static int symbiontfds[2];
+static int port_min;
+static int port_max;
 
 gboolean capsicum_enabled(void)
 {
@@ -90,6 +92,13 @@ int capsicum_net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	}
 	saved_errno = nvlist_get_number(nvl, "errno");
 	nvlist_destroy(nvl);
+
+	if (sock == -1 && (port < port_min || port > port_max)) {
+		g_warning("Access restricted to ports between %d and %d "
+		    "due to capability mode",
+		    port_min, port_max);
+	}
+
 	errno = saved_errno;
 
 	return sock;
@@ -205,9 +214,19 @@ nvlist_t *symbiont_connect(const nvlist_t *request)
 	else
 		my_ip = NULL;
 
-	/* Connect. */
-	sock = net_connect_ip_handle(ip, port, my_ip);
-	saved_errno = errno;
+	/*
+	 * Check if the port is in allowed range.  This is to minimize
+	 * the chance of the attacker rooting another system in case of
+	 * compromise.
+	 */
+	if (port < port_min || port > port_max) {
+		sock = -1;
+		saved_errno = EPERM;
+	} else {
+		/* Connect. */
+		sock = net_connect_ip_handle(ip, port, my_ip);
+		saved_errno = errno;
+	}
 
 	/* Send back the socket fd. */
 	response = nvlist_create(0);
@@ -326,6 +345,9 @@ static void cmd_capsicum_enter(void)
 		return;
 	}
 
+	port_min = settings_get_int("capsicum_port_min");
+	port_max = settings_get_int("capsicum_port_max");
+
 	irclogs_path = convert_home(settings_get_str("capsicum_irclogs_path"));
 	g_mkdir_with_parents(irclogs_path, log_dir_create_mode);
 	irclogs_path_len = strlen(irclogs_path);
@@ -375,6 +397,8 @@ void capsicum_init(void)
 {
 	settings_add_bool("misc", "capsicum", FALSE);
 	settings_add_str("misc", "capsicum_irclogs_path", "~/irclogs");
+	settings_add_int("misc", "capsicum_port_min", 6667);
+	settings_add_int("misc", "capsicum_port_max", 6697);
 
 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 
