@@ -144,7 +144,7 @@ void rawlog_close(RAWLOG_REC *rawlog)
 	if (rawlog->logging) {
 		write_buffer_flush();
 		close(rawlog->handle);
-		rawlog->logging = 0;
+		rawlog->logging = FALSE;
 	}
 }
 
