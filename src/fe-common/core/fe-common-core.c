@@ -180,7 +180,9 @@ void fe_common_core_init(void)
 	fe_server_init();
 	fe_settings_init();
 	fe_tls_init();
+#ifdef HAVE_CAPSICUM
 	fe_capsicum_init();
+#endif
 	windows_init();
 	window_activity_init();
 	window_commands_init();
@@ -223,7 +225,9 @@ void fe_common_core_deinit(void)
 	fe_server_deinit();
 	fe_settings_deinit();
 	fe_tls_deinit();
+#ifdef HAVE_CAPSICUM
 	fe_capsicum_deinit();
+#endif
 	windows_deinit();
 	window_activity_deinit();
 	window_commands_deinit();

@@ -236,7 +236,9 @@ void core_init(void)
 	commands_init();
 	nickmatch_cache_init();
         session_init();
+#ifdef HAVE_CAPSICUM
 	capsicum_init();
+#endif
 
 	chat_protocols_init();
 	chatnets_init();
@@ -294,7 +296,9 @@ void core_deinit(void)
 	chatnets_deinit();
 	chat_protocols_deinit();
 
+#ifdef HAVE_CAPSICUM
 	capsicum_deinit();
+#endif
         session_deinit();
         nickmatch_cache_deinit();
 	commands_deinit();
