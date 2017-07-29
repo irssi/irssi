@@ -128,13 +128,15 @@ void rawlog_open(RAWLOG_REC *rawlog, const char *fname)
 	path = convert_home(fname);
 	rawlog->handle = open(path, O_WRONLY | O_APPEND | O_CREAT,
 			      log_file_create_mode);
-	if (rawlog->handle == -1) {
-		g_warning("rawlog open() failed: %s", strerror(errno));
-	}
 	g_free(path);
 
+	if (rawlog->handle == -1) {
+		g_warning("rawlog open() failed: %s", strerror(errno));
+		return;
+	}
+
 	rawlog_dump(rawlog, rawlog->handle);
-	rawlog->logging = rawlog->handle != -1;
+	rawlog->logging = TRUE;
 }
 
 void rawlog_close(RAWLOG_REC *rawlog)
