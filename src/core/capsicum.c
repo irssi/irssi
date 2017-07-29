@@ -161,6 +161,14 @@ int capsicum_open(const char *path, int flags, int mode)
 	return (fd);
 }
 
+int capsicum_open_wrapper(const char *path, int flags, int mode)
+{
+	if (capsicum_enabled()) {
+		return capsicum_open(path, flags, mode);
+	}
+	return open(path, flags, mode);
+}
+
 void capsicum_mkdir_with_parents(const char *path, int mode)
 {
 	char *component, *copy, *tofree;
@@ -199,6 +207,15 @@ void capsicum_mkdir_with_parents(const char *path, int mode)
 	g_free(tofree);
 	if (fd != irclogs_fd)
 		close(fd);
+}
+
+void capsicum_mkdir_with_parents_wrapper(const char *path, int mode)
+{
+	if (capsicum_enabled()) {
+		capsicum_mkdir_with_parents(path, mode);
+		return;
+	}
+	g_mkdir_with_parents(path, mode);
 }
 
 nvlist_t *symbiont_connect(const nvlist_t *request)
