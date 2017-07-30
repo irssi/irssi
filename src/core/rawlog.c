@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "rawlog.h"
+#include "log.h"
 #include "modules.h"
 #include "signals.h"
 #include "commands.h"
@@ -31,8 +32,6 @@
 
 static int rawlog_lines;
 static int signal_rawlog;
-static int log_file_create_mode;
-static int log_dir_create_mode;
 
 RAWLOG_REC *rawlog_create(void)
 {
@@ -131,8 +130,13 @@ void rawlog_open(RAWLOG_REC *rawlog, const char *fname)
 			      log_file_create_mode);
 	g_free(path);
 
+	if (rawlog->handle == -1) {
+		g_warning("rawlog open() failed: %s", strerror(errno));
+		return;
+	}
+
 	rawlog_dump(rawlog, rawlog->handle);
-	rawlog->logging = rawlog->handle != -1;
+	rawlog->logging = TRUE;
 }
 
 void rawlog_close(RAWLOG_REC *rawlog)
@@ -140,7 +144,7 @@ void rawlog_close(RAWLOG_REC *rawlog)
 	if (rawlog->logging) {
 		write_buffer_flush();
 		close(rawlog->handle);
-		rawlog->logging = 0;
+		rawlog->logging = FALSE;
 	}
 }
 
@@ -174,12 +178,6 @@ void rawlog_set_size(int lines)
 static void read_settings(void)
 {
 	rawlog_set_size(settings_get_int("rawlog_lines"));
-	log_file_create_mode = octal2dec(settings_get_int("log_create_mode"));
-        log_dir_create_mode = log_file_create_mode;
-        if (log_file_create_mode & 0400) log_dir_create_mode |= 0100;
-        if (log_file_create_mode & 0040) log_dir_create_mode |= 0010;
-        if (log_file_create_mode & 0004) log_dir_create_mode |= 0001;
-
 }
 
 static void cmd_rawlog(const char *data, SERVER_REC *server, void *item)

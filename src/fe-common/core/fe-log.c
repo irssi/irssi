@@ -49,8 +49,6 @@ static THEME_REC *log_theme;
 static int skip_next_printtext;
 static char *log_theme_name;
 
-static int log_dir_create_mode;
-
 static char **autolog_ignore_targets;
 
 static char *log_colorizer_strip(const char *str)
@@ -676,7 +674,6 @@ static void sig_theme_destroyed(THEME_REC *theme)
 static void read_settings(void)
 {
 	int old_autolog = autolog_level;
-	int log_file_create_mode;
 
 	g_free_not_null(autolog_path);
 	autolog_path = g_strdup(settings_get_str("autolog_path"));
@@ -703,12 +700,6 @@ static void read_settings(void)
 
 	log_theme = log_theme_name == NULL ? NULL :
 		theme_load(log_theme_name);
-
-	log_file_create_mode = octal2dec(settings_get_int("log_create_mode"));
-        log_dir_create_mode = log_file_create_mode;
-        if (log_file_create_mode & 0400) log_dir_create_mode |= 0100;
-        if (log_file_create_mode & 0040) log_dir_create_mode |= 0010;
-        if (log_file_create_mode & 0004) log_dir_create_mode |= 0001;
 
 	if (autolog_ignore_targets != NULL)
 		g_strfreev(autolog_ignore_targets);
