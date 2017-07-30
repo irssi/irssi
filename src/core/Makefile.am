@@ -74,6 +74,7 @@ structure_headers = \
 pkginc_coredir=$(pkgincludedir)/src/core
 pkginc_core_HEADERS = \
 	args.h \
+	capsicum.h \
 	channels.h \
 	channels-setup.h \
 	commands.h \

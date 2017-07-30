@@ -48,6 +48,7 @@ pkginc_fe_common_core_HEADERS = \
 	command-history.h \
 	chat-completion.h \
 	completion.h \
+	fe-capsicum.h \
 	fe-channels.h \
 	fe-common-core.h \
 	fe-core-commands.h \
