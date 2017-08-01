@@ -23,6 +23,7 @@
 */
 
 #include "module.h"
+#include "capsicum.h"
 #include "commands.h"
 #include "log.h"
 #include "misc.h"

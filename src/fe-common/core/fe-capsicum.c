@@ -23,12 +23,11 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "printtext.h"
-
+#include "fe-capsicum.h"
 #include "levels.h"
-#include "servers.h"
+#include "module-formats.h"
+#include "printtext.h"
+#include "signals.h"
 
 static void capability_mode_enabled(void)
 {
