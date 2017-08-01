@@ -95,6 +95,7 @@ pkginc_core_HEADERS = \
 	net-nonblock.h \
 	net-sendbuffer.h \
 	network.h \
+	network-openssl.h \
 	nick-rec.h \
 	nicklist.h \
 	nickmatch-cache.h \
