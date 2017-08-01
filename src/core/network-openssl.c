@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "network.h"
+#include "network-openssl.h"
 #include "net-sendbuffer.h"
 #include "misc.h"
 #include "servers.h"
@@ -58,6 +59,7 @@ typedef struct
 } GIOSSLChannel;
 
 static int ssl_inited = FALSE;
+static X509_STORE *store = NULL;
 
 static void irssi_ssl_free(GIOChannel *handle)
 {
@@ -362,8 +364,10 @@ static GIOFuncs irssi_ssl_channel_funcs = {
     irssi_ssl_get_flags
 };
 
-static gboolean irssi_ssl_init(void)
+gboolean irssi_ssl_init(void)
 {
+	int success;
+
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && !defined(LIBRESSL_VERSION_NUMBER)
 	if (!OPENSSL_init_ssl(OPENSSL_INIT_SSL_DEFAULT, NULL)) {
 		g_error("Could not initialize OpenSSL");
@@ -374,6 +378,20 @@ static gboolean irssi_ssl_init(void)
 	SSL_load_error_strings();
 	OpenSSL_add_all_algorithms();
 #endif
+	store = X509_STORE_new();
+	if (store == NULL) {
+		g_error("Could not initialize OpenSSL: X509_STORE_new() failed");
+		return FALSE;
+	}
+
+	success = X509_STORE_set_default_paths(store);
+	if (success == 0) {
+		g_error("Could not load default certificates");
+		X509_STORE_free(store);
+		store = NULL;
+		return FALSE;
+	}
+
 	ssl_inited = TRUE;
 
 	return TRUE;
@@ -492,8 +510,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		g_free(scapath);
 		verify = TRUE;
 	} else {
-		if (!SSL_CTX_set_default_verify_paths(ctx))
-			g_warning("Could not load default certificates");
+		SSL_CTX_set_cert_store(ctx, store);
 	}
 
 	if(!(ssl = SSL_new(ctx)))

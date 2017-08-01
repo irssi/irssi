@@ -28,6 +28,7 @@
 #include "log.h"
 #include "misc.h"
 #include "network.h"
+#include "network-openssl.h"
 #include "settings.h"
 #include "signals.h"
 
@@ -361,11 +362,18 @@ static void cmd_capsicum(const char *data, SERVER_REC *server, void *item)
 static void cmd_capsicum_enter(void)
 {
 	u_int mode;
+	gboolean inited;
 	int error;
 
 	error = cap_getmode(&mode);
 	if (error == 0 && mode != 0) {
 		g_warning("Already in capability mode");
+		return;
+	}
+
+	inited = irssi_ssl_init();
+	if (!inited) {
+		signal_emit("capability mode failed", 1, strerror(errno));
 		return;
 	}
 
