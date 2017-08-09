@@ -26,7 +26,9 @@
 #include "servers.h"
 #include "log.h"
 #include "write-buffer.h"
+#ifdef HAVE_CAPSICUM
 #include "capsicum.h"
+#endif
 
 #include "lib-config/iconfig.h"
 #include "settings.h"
@@ -115,13 +117,23 @@ int log_start_logging(LOG_REC *log)
 		/* path may contain variables (%time, $vars),
 		   make sure the directory is created */
 		dir = g_path_get_dirname(log->real_fname);
+#ifdef HAVE_CAPSICUM
 		capsicum_mkdir_with_parents_wrapper(dir, log_dir_create_mode);
+#else
+		g_mkdir_with_parents(dir, log_dir_create_mode);
+#endif
 		g_free(dir);
 	}
 
+#ifdef HAVE_CAPSICUM
 	log->handle = log->real_fname == NULL ? -1 :
 		capsicum_open_wrapper(log->real_fname, O_WRONLY | O_APPEND | O_CREAT,
 		     log_file_create_mode);
+#else
+	log->handle = log->real_fname == NULL ? -1 :
+		open(log->real_fname, O_WRONLY | O_APPEND | O_CREAT,
+		     log_file_create_mode);
+#endif
 	if (log->handle == -1) {
 		signal_emit("log create failed", 1, log);
 		log->failed = TRUE;

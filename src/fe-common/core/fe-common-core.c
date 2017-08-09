@@ -32,7 +32,9 @@
 #include "special-vars.h"
 #include "fe-core-commands.h"
 #include "fe-queries.h"
+#ifdef HAVE_CAPSICUM
 #include "fe-capsicum.h"
+#endif
 #include "hilight-text.h"
 #include "command-history.h"
 #include "completion.h"

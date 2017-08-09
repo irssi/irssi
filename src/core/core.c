@@ -29,7 +29,9 @@
 #include "signals.h"
 #include "settings.h"
 #include "session.h"
+#ifdef HAVE_CAPSICUM
 #include "capsicum.h"
+#endif
 
 #include "chat-protocols.h"
 #include "servers.h"
