@@ -386,10 +386,10 @@ gboolean irssi_ssl_init(void)
 
 	success = X509_STORE_set_default_paths(store);
 	if (success == 0) {
-		g_error("Could not load default certificates");
+		g_warning("Could not load default certificates");
 		X509_STORE_free(store);
 		store = NULL;
-		return FALSE;
+		/* Don't return an error; the user might have their own cafile/capath. */
 	}
 
 	ssl_inited = TRUE;
@@ -509,7 +509,7 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		g_free(scafile);
 		g_free(scapath);
 		verify = TRUE;
-	} else {
+	} else if (store != NULL) {
 		SSL_CTX_set_cert_store(ctx, store);
 	}
 
