@@ -629,6 +629,13 @@ void term_stop(void)
 {
 	terminfo_stop(current_term);
 	kill(getpid(), SIGTSTP);
+	/* this call needs to stay here in case the TSTP was ignored,
+	   because then we never see a CONT to call the restoration
+	   code. On the other hand we also cannot remove the CONT
+	   handler because then nothing would restore the screen when
+	   Irssi is killed with TSTP/STOP from external. */
+	terminfo_cont(current_term);
+	irssi_redraw();
 }
 
 static int input_utf8(const unsigned char *buffer, int size, unichar *result)
