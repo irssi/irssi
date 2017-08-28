@@ -2,6 +2,7 @@ man_MANS = \
 	irssi.1
 
 doc_DATA = \
+	capsicum.txt \
 	design.txt \
 	formats.txt \
 	manual.txt \
