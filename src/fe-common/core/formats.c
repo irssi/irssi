@@ -1067,8 +1067,9 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 /* parse MIRC color string */
 static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 {
-	int fg, bg;
+	int fg, bg, hasfg;
 
+	hasfg = 0;
 	fg = fg_ret == NULL ? -1 : *fg_ret;
 	bg = bg_ret == NULL ? -1 : *bg_ret;
 
@@ -1078,6 +1079,7 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 	} else {
 		/* foreground color */
 		if (**str != ',') {
+			hasfg = 1;
 			fg = **str-'0';
 			(*str)++;
 			if (i_isdigit(**str)) {
@@ -1087,8 +1089,12 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 		}
 		if (**str == ',') {
 			/* background color */
-			if (!i_isdigit((*str)[1]))
+			if (!i_isdigit((*str)[1])) {
 				bg = -1;
+				if (!hasfg) {
+					fg = -1;
+				}
+			}
 			else {
 				(*str)++;
 				bg = **str-'0';
