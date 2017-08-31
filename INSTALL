@@ -117,9 +117,9 @@ Getting perl scripting to work needs a few things:
  OS X
 
 Build may fail with a message similar to:
-
-    "_EVP_PKEY_id", referenced from:
-          _irssi_ssl_handshake in libcore.a(network-openssl.o)
+    Undefined symbols for architecture x86_64:
+        "_EVP_PKEY_id", referenced from:
+              _irssi_ssl_handshake in libcore.a(network-openssl.o)
     ld: symbol(s) not found for architecture x86_64
 
 To resolve this run
