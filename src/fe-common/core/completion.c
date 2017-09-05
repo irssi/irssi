@@ -321,6 +321,10 @@ GList *filename_complete(const char *path, const char *default_path)
 
 	g_return_val_if_fail(path != NULL, NULL);
 
+	if (path[0] == '\0') {
+	    return NULL;
+	}
+
 	list = NULL;
 
 	/* get directory part of the path - expand ~/ */
@@ -350,7 +354,14 @@ GList *filename_complete(const char *path, const char *default_path)
 		g_free_and_null(dir);
 	}
 
-	basename = g_path_get_basename(path);
+	len = strlen(path);
+	/* g_path_get_basename() returns the component before the last slash if
+	 * the path ends with a directory separator, that's not what we want */
+	if (len > 0 && path[len - 1] == G_DIR_SEPARATOR) {
+	    basename = g_strdup("");
+	} else {
+	    basename = g_path_get_basename(path);
+	}
 	len = strlen(basename);
 
 	/* add all files in directory to completion list */
