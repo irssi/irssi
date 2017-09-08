@@ -23,6 +23,7 @@
 #include "misc.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
+#include "levels.h"
 
 #include "mainwindows.h"
 #include "gui-windows.h"
@@ -39,6 +40,12 @@ static void sig_layout_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 		active = gui->parent->active;
 		if (window != active)
 			iconfig_node_set_int(node, "parent", active->refnum);
+	}
+
+	if (gui->view->hidden_level != MSGLEVEL_HIDDEN) {
+		char *level = bits2level(gui->view->hidden_level);
+		iconfig_node_set_str(node, "hidelevel", level);
+		g_free(level);
 	}
 
 	if (gui->use_scroll)
@@ -58,6 +65,9 @@ static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
 
 	if (config_node_get_bool(node, "sticky", FALSE))
 		gui_window_set_sticky(window);
+
+	textbuffer_view_set_hidden_level(gui->view, level2bits(config_node_get_str(node, "hidelevel", "HIDDEN"), NULL));
+
 	if (config_node_get_str(node, "scroll", NULL) != NULL) {
 		gui->use_scroll = TRUE;
 		gui->scroll = config_node_get_bool(node, "scroll", TRUE);

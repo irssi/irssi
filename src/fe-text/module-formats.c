@@ -50,6 +50,7 @@ FORMAT_REC gui_text_formats[] =
 	{ "window_info_scroll", "%#Scroll  : $0", 1, { 0 } },
 	{ "window_scroll", "Window scroll mode is now $0", 1, { 0 } },
 	{ "window_scroll_unknown", "Unknown scroll mode $0, must be ON, OFF or DEFAULT", 1, { 0 } },
+	{ "window_hidelevel", "Window hidden level is now $0", 1, { 0 } },
 
 	/* ---- */
 	{ NULL, "Statusbars", 0 },

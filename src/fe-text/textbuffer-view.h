@@ -49,41 +49,51 @@ typedef struct {
 
 struct _TEXT_BUFFER_VIEW_REC {
 	TEXT_BUFFER_REC *buffer;
-	GSList *siblings; /* other views that use the same buffer */
+	/* other views that use the same buffer */
+	GSList *siblings;
 
         TERM_WINDOW *window;
 	int width, height;
 
 	int default_indent;
         INDENT_FUNC default_indent_func;
-	unsigned int longword_noindent:1;
-	unsigned int scroll:1; /* scroll down automatically when at bottom */
-	unsigned int utf8:1; /* use UTF8 in this view */
-	unsigned int break_wide:1; /* Break wide chars in this view */
 
 	TEXT_BUFFER_CACHE_REC *cache;
-	int ypos; /* cursor position - visible area is 0..height-1 */
+	/* cursor position - visible area is 0..height-1 */
+	int ypos;
 
-	LINE_REC *startline; /* line at the top of the screen */
-	int subline; /* number of "real lines" to skip from `startline' */
+	 /* line at the top of the screen */
+	LINE_REC *startline;
+	/* number of "real lines" to skip from `startline' */
+	int subline;
 
         /* marks the bottom of the text buffer */
 	LINE_REC *bottom_startline;
 	int bottom_subline;
 
+	/* Bookmarks to the lines in the buffer - removed automatically
+	   when the line gets removed from buffer */
+        GHashTable *bookmarks;
+
+	/* these levels should be hidden */
+	int hidden_level;
 	/* how many empty lines are in screen. a screenful when started
 	   or used /CLEAR */
 	int empty_linecount;
+
+	unsigned int longword_noindent:1;
+	/* scroll down automatically when at bottom */
+	unsigned int scroll:1;
+	/* use UTF8 in this view */
+	unsigned int utf8:1;
+	/* Break wide chars in this view */
+	unsigned int break_wide:1;
         /* window is at the bottom of the text buffer */
 	unsigned int bottom:1;
         /* if !bottom - new text has been printed since we were at bottom */
 	unsigned int more_text:1;
         /* Window needs a redraw */
 	unsigned int dirty:1;
-
-	/* Bookmarks to the lines in the buffer - removed automatically
-	   when the line gets removed from buffer */
-        GHashTable *bookmarks;
 };
 
 /* Create new view. */
@@ -143,6 +153,8 @@ void textbuffer_view_set_bookmark_bottom(TEXT_BUFFER_VIEW_REC *view,
 /* Return the line for bookmark */
 LINE_REC *textbuffer_view_get_bookmark(TEXT_BUFFER_VIEW_REC *view,
 				       const char *name);
+/* Set hidden level for view */
+void textbuffer_view_set_hidden_level(TEXT_BUFFER_VIEW_REC *view, int level);
 
 /* Specify window where the changes in view should be drawn,
    NULL disables it. */

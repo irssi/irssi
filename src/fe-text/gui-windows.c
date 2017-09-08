@@ -23,6 +23,7 @@
 #include "misc.h"
 #include "settings.h"
 #include "special-vars.h"
+#include "levels.h"
 
 #include "term.h"
 #include "gui-entry.h"
@@ -50,6 +51,7 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 					   !settings_get_bool("indent_always"),
 					   get_default_indent_func());
 	textbuffer_view_set_break_wide(gui->view, settings_get_bool("break_wide"));
+	textbuffer_view_set_hidden_level(gui->view, MSGLEVEL_HIDDEN);
 	if (parent->active == window)
 		textbuffer_view_set_window(gui->view, parent->screen_win);
 	return gui;
@@ -203,6 +205,8 @@ void gui_windows_reset_settings(void)
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 		GUI_WINDOW_REC *gui = WINDOW_GUI(rec);
+
+		textbuffer_view_set_hidden_level(gui->view, MSGLEVEL_HIDDEN);
 
 		textbuffer_view_set_break_wide(gui->view, settings_get_bool("break_wide"));
 
