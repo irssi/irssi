@@ -290,6 +290,9 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "completion_header", "%#Key        Value                                    Auto", 0 },
 	{ "completion_line", "%#$[10]0 $[!40]1 $2", 3, { 0, 0, 0 } },
 	{ "completion_footer", "", 0 },
+	{ "capsicum_enabled", "Capability mode enabled", 0 },
+	{ "capsicum_disabled", "Capability mode not enabled", 0 },
+	{ "capsicum_failed", "Capability mode failed: $0", 1, { 0 } },
 
 	/* ---- */
 	{ NULL, "TLS", 0 },

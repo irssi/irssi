@@ -28,6 +28,9 @@
 #include "settings.h"
 #include "irssi-version.h"
 #include "servers.h"
+#ifdef HAVE_CAPSICUM
+#include "capsicum.h"
+#endif
 
 #include "fe-windows.h"
 #include "printtext.h"
@@ -120,6 +123,9 @@ static void cmd_cat(const char *data)
 	GIOChannel *handle;
 	GString *buf;
 	gsize tpos;
+#ifdef HAVE_CAPSICUM
+	int fd;
+#endif
 
 	if (!cmd_get_params(data, &free_arg, 2, &fname, &fposstr))
 		return;
@@ -128,7 +134,15 @@ static void cmd_cat(const char *data)
 	fpos = atoi(fposstr);
         cmd_params_free(free_arg);
 
+#ifdef HAVE_CAPSICUM
+	fd = capsicum_open_wrapper(fname, O_RDONLY, 0);
+	if (fd > 0)
+		handle = g_io_channel_unix_new(fd);
+	else
+		handle = NULL;
+#else
 	handle = g_io_channel_new_file(fname, "r", NULL);
+#endif
 	g_free(fname);
 
 	if (handle == NULL) {

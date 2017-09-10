@@ -38,11 +38,17 @@ libfe_common_core_a_SOURCES = \
 	windows-layout.c \
 	fe-windows.c
 
+if HAVE_CAPSICUM
+libfe_common_core_a_SOURCES += \
+	fe-capsicum.c
+endif
+
 pkginc_fe_common_coredir=$(pkgincludedir)/src/fe-common/core
 pkginc_fe_common_core_HEADERS = \
 	command-history.h \
 	chat-completion.h \
 	completion.h \
+	fe-capsicum.h \
 	fe-channels.h \
 	fe-common-core.h \
 	fe-core-commands.h \

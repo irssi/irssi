@@ -30,6 +30,9 @@
 #include "special-vars.h"
 #include "settings.h"
 #include "lib-config/iconfig.h"
+#ifdef HAVE_CAPSICUM
+#include "capsicum.h"
+#endif
 
 #include "fe-windows.h"
 #include "window-items.h"
@@ -451,7 +454,11 @@ static void autolog_open(SERVER_REC *server, const char *server_tag,
 		log_item_add(log, LOG_ITEM_TARGET, target, server_tag);
 
 		dir = g_path_get_dirname(log->real_fname);
+#ifdef HAVE_CAPSICUM
+		capsicum_mkdir_with_parents_wrapper(dir, log_dir_create_mode);
+#else
 		g_mkdir_with_parents(dir, log_dir_create_mode);
+#endif
 		g_free(dir);
 
 		log->temp = TRUE;

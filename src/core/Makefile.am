@@ -56,6 +56,11 @@ libcore_a_SOURCES = \
 	tls.c \
 	write-buffer.c
 
+if HAVE_CAPSICUM
+libcore_a_SOURCES += \
+	capsicum.c
+endif
+
 structure_headers = \
 	channel-rec.h \
 	channel-setup-rec.h \
@@ -69,6 +74,7 @@ structure_headers = \
 pkginc_coredir=$(pkgincludedir)/src/core
 pkginc_core_HEADERS = \
 	args.h \
+	capsicum.h \
 	channels.h \
 	channels-setup.h \
 	commands.h \
@@ -89,6 +95,7 @@ pkginc_core_HEADERS = \
 	net-nonblock.h \
 	net-sendbuffer.h \
 	network.h \
+	network-openssl.h \
 	nick-rec.h \
 	nicklist.h \
 	nickmatch-cache.h \
