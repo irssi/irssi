@@ -364,9 +364,12 @@ static void cmd_save(const char *data)
 	if (*fname == '\0')
 		fname = mainconfig->fname;
 
-	if (!irssi_config_is_changed(fname))
-		settings_save_fe(fname);
-	else {
+	if (irssi_config_is_changed(fname) && backupconfig != NULL) {
+		/* config file modified outside irssi and backup config exists */
+		/* must not save and direct user to merge files outside of irssi */
+		printformat(NULL,NULL, MSGLEVEL_CLIENTNOTICE,
+			    TXT_CONFIG_CONFLICT, fname, backupconfig->fname);
+	} else if (irssi_config_is_changed(fname)) {
                 /* config file modified outside irssi */
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 			    TXT_CONFIG_MODIFIED, fname);
@@ -376,6 +379,8 @@ static void cmd_save(const char *data)
 		keyboard_entry_redirect((SIGNAL_FUNC) settings_save_confirm,
 					format, 0, g_strdup(fname));
 		g_free(format);
+	} else {
+		settings_save_fe(fname);
 	}
 
 	cmd_params_free(free_arg);

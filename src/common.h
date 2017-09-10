@@ -5,6 +5,7 @@
 
 #define IRSSI_GLOBAL_CONFIG "irssi.conf" /* config file name in /etc/ */
 #define IRSSI_HOME_CONFIG "config" /* config file name in ~/.irssi/ */
+#define IRSSI_HOME_CONFIG_BACKUP "config.clientbackup" /* config file name for upgrades */
 
 #define IRSSI_ABI_VERSION 10
 
@@ -68,6 +69,7 @@ int g_input_add_full(GIOChannel *source, int priority, int condition,
 const char *get_irssi_dir(void);
 /* return full path for ~/.irssi/config */
 const char *get_irssi_config(void);
+void set_irssi_config(char *);
 
 /* max. size for %d */
 #define MAX_INT_STRLEN ((sizeof(int) * CHAR_BIT + 2) / 3 + 1)

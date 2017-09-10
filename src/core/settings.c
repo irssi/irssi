@@ -34,6 +34,7 @@
 #define SETTINGS_AUTOSAVE_TIMEOUT (1000*60*60) /* 1 hour */
 
 CONFIG_REC *mainconfig;
+CONFIG_REC *backupconfig = NULL;
 
 static GString *last_errors;
 static GSList *last_invalid_modules;
@@ -673,7 +674,7 @@ static unsigned int file_checksum(const char *fname)
 	return checksum;
 }
 
-static void irssi_config_save_state(const char *fname)
+void irssi_config_save_state(const char *fname)
 {
 	struct stat statbuf;
 
@@ -703,7 +704,7 @@ int irssi_config_is_changed(const char *fname)
 		 config_last_checksum != file_checksum(fname));
 }
 
-static CONFIG_REC *parse_configfile(const char *fname)
+CONFIG_REC *parse_configfile(const char *fname)
 {
 	CONFIG_REC *config;
 	struct stat statbuf;
@@ -827,6 +828,9 @@ int settings_save(const char *fname, int autosave)
 		g_free(str);
 	}
 	signal_emit("setup saved", 2, fname, GINT_TO_POINTER(autosave));
+	if (backupconfig != NULL && backupconfig->fname != NULL) {
+		unlink(backupconfig->fname);
+	}
         return !error;
 }
 

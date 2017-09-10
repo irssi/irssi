@@ -76,6 +76,11 @@ const char *get_irssi_config(void)
         return irssi_config_file;
 }
 
+void set_irssi_config(char *path)
+{
+	irssi_config_file = path;
+}
+
 static void sig_reload_config(int signo)
 {
         reload_config = TRUE;

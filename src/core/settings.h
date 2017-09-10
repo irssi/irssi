@@ -51,6 +51,7 @@ typedef struct {
 #define iconfig_node_add_list(a, b) config_node_add_list(mainconfig, a, b)
 
 extern struct _CONFIG_REC *mainconfig;
+extern struct _CONFIG_REC *backupconfig;
 extern const char *default_config;
 
 /* Functions for handling the "settings" node of Irssi configuration */
@@ -123,7 +124,9 @@ void settings_clean_invalid(void);
 /* if `fname' is NULL, the default is used */
 int settings_reread(const char *fname);
 int settings_save(const char *fname, int autosave);
+void  irssi_config_save_state(const char *fname);
 int irssi_config_is_changed(const char *fname);
+struct _CONFIG_REC *parse_configfile(const char *fname);
 
 void settings_init(void);
 void settings_deinit(void);

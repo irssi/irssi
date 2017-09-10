@@ -26,6 +26,7 @@
 #include "net-sendbuffer.h"
 #include "pidwait.h"
 #include "lib-config/iconfig.h"
+#include "settings.h"
 
 #include "chat-protocols.h"
 #include "servers.h"
@@ -58,8 +59,8 @@ void session_upgrade(void)
 /* SYNTAX: UPGRADE [<irssi binary path>] */
 static void cmd_upgrade(const char *data)
 {
-	CONFIG_REC *session;
-	char *session_file, *str;
+	CONFIG_REC *session, *config;
+	char *session_file, *config_file, *str;
 	char *binary;
 
 	if (*data == '\0')
@@ -77,12 +78,19 @@ static void cmd_upgrade(const char *data)
         config_write(session, NULL, -1);
         config_close(session);
 
+	/* save the config */
+	config_file = g_strdup_printf("%s/"IRSSI_HOME_CONFIG_BACKUP, get_irssi_dir());
+	unlink(config_file);
+
+	signal_emit("command save", 1, config_file);
+
 	/* data may contain some other program as well, like
 	   /UPGRADE /usr/bin/screen irssi */
 	str = g_strdup_printf("%s --noconnect --session=%s --home=%s --config=%s",
-			      binary, session_file, get_irssi_dir(), get_irssi_config());
+			      binary, session_file, get_irssi_dir(), config_file);
 	g_free(binary);
 	g_free(session_file);
+	g_free(config_file);
         session_args = g_strsplit(str, " ", -1);
         g_free(str);
 
@@ -315,20 +323,42 @@ static void sig_session_restore(CONFIG_REC *config)
 
 static void sig_init_finished(void)
 {
-	CONFIG_REC *session;
+	CONFIG_REC *session, *config;
+	char *config_file;
+	FILE *fp;
 
-	if (session_file == NULL)
-		return;
+	if (session_file != NULL) {
+		session = config_open(session_file, -1);
+		if (session != NULL) {
+			config_parse(session);
+			signal_emit("session restore", 1, session);
+			config_close(session);
+		}
 
-	session = config_open(session_file, -1);
-	if (session == NULL)
-		return;
+		unlink(session_file);
+	}
 
-	config_parse(session);
-        signal_emit("session restore", 1, session);
-	config_close(session);
+	config_file = g_strdup_printf("%s/"IRSSI_HOME_CONFIG_BACKUP, get_irssi_dir());
 
-	unlink(session_file);
+	if ((fp = fopen(config_file, "r")) != NULL) {
+		/* load backup */
+		signal_emit("command reload", 1, config_file);
+		backupconfig = parse_configfile(config_file);
+
+		/* set irssi_config_file back to default so any future saves/reloads behave as expected */
+		set_irssi_config(g_strdup_printf("%s/"IRSSI_HOME_CONFIG, get_irssi_dir()));
+		/* load regular config into mainconfig */
+		signal_emit("command reload", 1, get_irssi_config());
+
+		/* setup mainconfig so that data from backup config is saved on next save */
+		mainconfig->mainnode = backupconfig->mainnode;
+		mainconfig->cache = backupconfig->cache;
+		mainconfig->cache_nodes = backupconfig->cache_nodes;
+
+		fclose(fp);
+	}
+
+	g_free(config_file);
 }
 
 void session_register_options(void)
