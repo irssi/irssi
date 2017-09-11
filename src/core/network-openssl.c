@@ -510,6 +510,10 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		g_free(scapath);
 		verify = TRUE;
 	} else if (store != NULL) {
+		/* Make sure to increment the refcount every time the store is
+		 * used, that's essential not to get it free'd by OpenSSL when
+		 * the SSL_CTX is destroyed. */
+		X509_STORE_up_ref(store);
 		SSL_CTX_set_cert_store(ctx, store);
 	}
 
