@@ -45,6 +45,19 @@
 #define ASN1_STRING_data(x)       ASN1_STRING_get0_data(x)
 #endif
 
+/* OpenSSL 1.1.0 also introduced some useful additions to the api */
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L) || defined (LIBRESSL_VERSION_NUMBER)
+static int X509_STORE_up_ref(X509_STORE *vfy)
+{
+    int n;
+
+    n = CRYPTO_add(&vfy->references, 1, CRYPTO_LOCK_X509_STORE);
+    g_assert(n > 1);
+
+    return (n > 1) ? 1 : 0;
+}
+#endif
+
 /* ssl i/o channel object */
 typedef struct
 {
