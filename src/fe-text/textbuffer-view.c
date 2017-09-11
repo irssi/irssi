@@ -1212,7 +1212,7 @@ static void view_remove_line_update_startline(TEXT_BUFFER_VIEW_REC *view,
 			"..         scroll: %d\n",
 			scroll);
 		if (view->empty_linecount > 0) {
-			view->empty_linecount += scroll;
+			view->empty_linecount = scroll;
 			if (view->empty_linecount < 0)
 				view->empty_linecount = 0;
 			else if (view->empty_linecount > view->height)
@@ -1241,12 +1241,14 @@ static void view_remove_line_update_startline(TEXT_BUFFER_VIEW_REC *view,
 	fprintf(stderr, "... init_ypos ...\n"
 		"..           ypos: %d\n",
 		view->ypos);
-	if (view->empty_linecount == 0 && textbuffer_line_exists_after(view->startline, line)) {
+	if (textbuffer_line_exists_after(view->startline, line)) {
 		view->ypos -= linecount;
 		fprintf(stderr, "... moving ypos by linecount ...\n"
 			"..           ypos: %d\n",
 			view->ypos);
 	}
+
+	g_string_free(line_text, TRUE);
 	fprintf(stderr, "\n");
 }
 
@@ -1526,9 +1528,47 @@ static int sig_check_linecache(void)
 	return 1;
 }
 
+#include "gui-windows.h"
+#include "commands.h"
+static void cmd_window_vi(const char *data)
+{
+	GUI_WINDOW_REC *gui;
+	TEXT_BUFFER_VIEW_REC *view;
+	GString *line_text;
+
+	gui = WINDOW_GUI(active_win);
+	view = gui->view;
+	
+	line_text = g_string_new(NULL);
+
+	if (view->startline != NULL)
+		textbuffer_line2text(view->startline, FALSE, line_text);
+
+	fprintf(stderr, "VIEW INFO\n"
+		"..         height: %d\n"
+		"..           ypos: %d\n"
+		"..        subline: %d\n"
+		"..empty_linecount: %d\n"
+		"..         bottom: %s\n"
+		"..      startline: %s\n"
+		".. bottom_subline: %d\n",
+		view->height, view->ypos, view->subline, view->empty_linecount, view->bottom ? "TRUE" : "FALSE", line_text->str,
+		view->bottom_subline);
+	g_string_truncate(line_text, 0);
+	if (view->bottom_startline != NULL)
+		textbuffer_line2text(view->bottom_startline, FALSE, line_text);
+	fprintf(stderr,		
+		"..bottom_startine: %s\n",
+		line_text->str);
+
+	g_string_free(line_text, TRUE);
+	fprintf(stderr, "\n");
+}
+
 void textbuffer_view_init(void)
 {
 	linecache_tag = g_timeout_add(LINE_CACHE_CHECK_TIME, (GSourceFunc) sig_check_linecache, NULL);
+	command_bind("window vi", NULL, (SIGNAL_FUNC) cmd_window_vi);
 }
 
 void textbuffer_view_deinit(void)
