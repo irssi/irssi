@@ -403,6 +403,13 @@ static void cmd_capsicum_enter(void)
 		return;
 	}
 
+	/*
+	 * XXX: We should use pdwait(2) to wait for children.  Unfortunately
+	 *      it's not implemented yet.  Thus the workaround, to get rid
+	 *      of the zombies at least.
+	 */
+	signal(SIGCHLD, SIG_IGN);
+
 	error = cap_enter();
 	if (error != 0) {
 		signal_emit("capability mode failed", 1, strerror(errno));
