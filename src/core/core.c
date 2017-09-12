@@ -187,9 +187,10 @@ void core_register_options(void)
 
 void core_preinit(const char *path)
 {
-	const char *home;
+	const char *home, *backup_config_file;
 	char *str;
 	int len;
+	FILE *fp;
 
 	if (irssi_dir == NULL) {
 		home = g_get_home_dir();
@@ -211,6 +212,15 @@ void core_preinit(const char *path)
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);
 		g_free(str);
+	}
+
+	backup_config_file = g_strdup_printf("%s/"IRSSI_HOME_CONFIG_BACKUP, irssi_dir);
+	/* if backup_config_file still exists, but irssi was launched with a different config, something is wrong */
+	if ((fp = fopen(backup_config_file, "r")) != NULL && g_strcmp0(backup_config_file, irssi_config_file) != 0) {
+		fclose(fp);
+		signal_emit("gui exit", 0);
+		printf("Backup config %s still exists. Please merge into %s and then remove %s before starting irssi.\n", backup_config_file, irssi_config_file, backup_config_file);
+		exit(1);
 	}
 
 	session_set_binary(path);
