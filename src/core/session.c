@@ -59,7 +59,7 @@ void session_upgrade(void)
 /* SYNTAX: UPGRADE [<irssi binary path>] */
 static void cmd_upgrade(const char *data)
 {
-	CONFIG_REC *session, *config;
+	CONFIG_REC *session;
 	char *session_file, *config_file, *str;
 	char *binary;
 
@@ -323,7 +323,7 @@ static void sig_session_restore(CONFIG_REC *config)
 
 static void sig_init_finished(void)
 {
-	CONFIG_REC *session, *config;
+	CONFIG_REC *session;
 	char *config_file;
 	FILE *fp;
 
