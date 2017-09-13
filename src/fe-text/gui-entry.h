@@ -50,6 +50,7 @@ void gui_entry_set_utf8(GUI_ENTRY_REC *entry, int utf8);
 void gui_entry_set_text(GUI_ENTRY_REC *entry, const char *str);
 char *gui_entry_get_text(GUI_ENTRY_REC *entry);
 char *gui_entry_get_text_and_pos(GUI_ENTRY_REC *entry, int *pos);
+void gui_entry_set_text_and_pos_bytes(GUI_ENTRY_REC *entry, const char *str, int pos_bytes);
 
 void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str);
 void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr);

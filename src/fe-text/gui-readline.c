@@ -878,8 +878,7 @@ static void key_completion(int erase, int backward)
 	g_free(text);
 
 	if (line != NULL) {
-		gui_entry_set_text(active_entry, line);
-		gui_entry_set_pos(active_entry, pos);
+		gui_entry_set_text_and_pos_bytes(active_entry, line, pos);
 		g_free(line);
 	}
 }
@@ -909,8 +908,7 @@ static void key_check_replaces(void)
 	g_free(text);
 
 	if (line != NULL) {
-		gui_entry_set_text(active_entry, line);
-		gui_entry_set_pos(active_entry, pos);
+		gui_entry_set_text_and_pos_bytes(active_entry, line, pos);
 		g_free(line);
 	}
 }
