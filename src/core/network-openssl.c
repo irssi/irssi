@@ -33,6 +33,8 @@
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <termios.h>
+#include <stdio.h>
 
 /* OpenSSL 1.1.0 introduced some backward-incompatible changes to the api */
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && !defined(LIBRESSL_VERSION_NUMBER)
@@ -410,16 +412,61 @@ gboolean irssi_ssl_init(void)
 	return TRUE;
 }
 
+/* Adapted from: https://stackoverflow.com/a/6869218/565224
+ * ----------------------------------vvvvvvvv
+ */
+
+ssize_t
+my_getpass (char **lineptr, size_t *n, FILE *stream, char* prompt)
+{
+    struct termios old, new;
+    int nread;
+
+    if (prompt) {
+            printf("%s", prompt);
+    }
+    /* Turn echoing off and fail if we can't. */
+    if (tcgetattr (fileno (stream), &old) != 0)
+        return -1;
+    new = old;
+    new.c_lflag &= ~ECHO;
+    /* Also make sure we can hit "ENTER" instead of Ctrl-J */
+    new.c_iflag &= ~(INLCR | IGNCR);
+    new.c_iflag |= ICRNL;
+    if (tcsetattr (fileno (stream), TCSAFLUSH, &new) != 0)
+            return -1;
+
+    /* Read the password. */
+    nread = getline (lineptr, n, stream);
+
+    /* Restore terminal. */
+    (void) tcsetattr (fileno (stream), TCSAFLUSH, &old);
+
+    return nread;
+}
+
+/*
+ * ----------------------------------^^^^^^^^
+ */
+
+
+
 static int get_pem_password_callback(char *buffer, int max_length, int rwflag, void *pass)
 {
-	char *password;
-	size_t length;
+        char *password = 0;
+        size_t length = 0;
 
-	if (pass == NULL)
-		return 0;
-
+        if (pass == NULL) {
+                my_getpass(&password, &length, stdin,
+                           "\nPLEASE ENTER PASSPHRASE for client ssl_cert "
+                           "(won't be echoed):");
+                password[strlen(password) - 1] = '\0';
+                length = strlen(password);
+        } else {
 	password = (char *)pass;
 	length = strlen(pass);
+        }
+
 
 	if (length > max_length)
 		return 0;
