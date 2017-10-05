@@ -936,6 +936,26 @@ void gui_entry_set_pos(GUI_ENTRY_REC *entry, int pos)
 	gui_entry_draw(entry);
 }
 
+void gui_entry_set_text_and_pos_bytes(GUI_ENTRY_REC *entry, const char *str, int pos_bytes)
+{
+	int pos;
+	const char *ptr;
+
+	g_return_if_fail(entry != NULL);
+
+	gui_entry_set_text(entry, str);
+
+	if (entry->utf8) {
+		g_utf8_validate(str, pos_bytes, &ptr);
+		pos = g_utf8_pointer_to_offset(str, ptr);
+	} else if (term_type == TERM_TYPE_BIG5)
+		pos = strlen_big5((const unsigned char *)str) - strlen_big5((const unsigned char *)(str + pos_bytes));
+	else
+		pos = pos_bytes;
+
+	gui_entry_set_pos(entry, pos);
+}
+
 void gui_entry_move_pos(GUI_ENTRY_REC *entry, int pos)
 {
         g_return_if_fail(entry != NULL);
