@@ -242,7 +242,6 @@ static void gui_entry_fix_cursor(GUI_ENTRY_REC *entry)
 static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 {
 	int i;
-	const int *col;
 	int xpos, end_xpos, color;
 
 	xpos = entry->xpos + entry->promptlen +
@@ -257,10 +256,9 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 	term_set_color(root_window, ATTR_RESET);
 	term_move(root_window, xpos, entry->ypos);
 
-	col = entry->scrstart + pos < entry->text_len ?
-			entry->colors + entry->scrstart + pos : 0;
-	for (i = entry->scrstart + pos; i < entry->text_len; i++, col++) {
+	for (i = entry->scrstart + pos; i < entry->text_len; i++) {
 		unichar c = entry->text[i];
+		int col = entry->colors[i];
 
 		if (entry->hidden)
 			xpos++;
@@ -274,9 +272,9 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 		if (xpos > end_xpos)
 			break;
 
-		if (*col != color) {
-			term_set_color(root_window, *col);
-			color = *col;
+		if (col != color) {
+			term_set_color(root_window, col);
+			color = col;
 		}
 
 		if (entry->hidden)
@@ -522,7 +520,7 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 		}
 	}
 
-	for(i = 0; i < len; i++) {
+	for (i = 0; i < len; i++) {
 		entry->colors[entry->pos + i] = ATTR_RESET;
 	}
 
@@ -915,7 +913,6 @@ void gui_entry_transpose_words(GUI_ENTRY_REC *entry)
 		g_free(first_color);
 		g_free(sep_color);
 		g_free(second_color);
-
 	}
 
 	gui_entry_redraw_from(entry, spos1);
@@ -1106,7 +1103,7 @@ void gui_entry_redraw(GUI_ENTRY_REC *entry)
 
 void gui_entry_set_color(GUI_ENTRY_REC *entry, int pos, int len, int color)
 {
-	int i, end, update = 0;
+	int i, end, update = FALSE;
 
 	g_return_if_fail(entry != NULL);
 
@@ -1121,7 +1118,7 @@ void gui_entry_set_color(GUI_ENTRY_REC *entry, int pos, int len, int color)
 	for (i = pos; i < end; i++) {
 		if (entry->colors[i] != color) {
 			entry->colors[i] = color;
-			update = 1;
+			update = TRUE;
 		}
 	}
 
