@@ -124,6 +124,14 @@ gui_input_set(str)
 CODE:
 	gui_entry_set_text(active_entry, str);
 
+void
+gui_input_color(pos, len, color)
+	int pos
+	int len
+	int color
+CODE:
+	gui_entry_set_color(active_entry, pos, len, color);
+
 int
 gui_input_get_pos()
 CODE:

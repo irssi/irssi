@@ -9,6 +9,7 @@ typedef struct {
 typedef struct {
 	int text_len, text_alloc; /* as shorts, not chars */
 	unichar *text;
+	int *colors;
 
 	GSList *kill_ring;
 
@@ -77,5 +78,6 @@ void gui_entry_move_words(GUI_ENTRY_REC *entry, int count, int to_space);
 
 void gui_entry_redraw(GUI_ENTRY_REC *entry);
 
+void gui_entry_set_color(GUI_ENTRY_REC *entry, int pos, int len, int color);
 
 #endif
