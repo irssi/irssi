@@ -6,15 +6,17 @@
 %9Parameters:%9
 
     ENABLE:       Adds a statusbar to the list of statusbars.
-    DISABLE:      Removes a statusbar from the list.
+    DISABLE:      Removes a statusbar from the list. Note that for
+                  built-in statusbars they can be enabled again should the
+                  user wish to add back the default statusbars.
     RESET:        Restores the default statusbar configuration.
-    TYPE:         Refers to the type of statusbar, for each split window
-                  or only for the current root screen.
-    PLACEMENT:    Refers to the placement of the statusbar, either at the
-                  top or the bottom of the screen.
-    POSITION:     Refers to the position of the statusbar. Represented as
-                  an unsigned integer, with 0 implying the first position.
-    VISIBLE:      Refers to the visibility of the statusbar or item. If set
+    TYPE:         Sets the type of statusbar, for each split window or only
+                  for the current root screen.
+    PLACEMENT:    Sets the placement of the statusbar, either at the top or
+                  the bottom of the screen.
+    POSITION:     Sets the position of the statusbar. Represented as a
+                  number, with 0 implying the first position.
+    VISIBLE:      Sets the visibility of the statusbar or item. If set to
                   to always it is visible on all screens, otherwise if set
                   to inactive or active then it is only visible on inactive
                   or active screens, respectively.
