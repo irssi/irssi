@@ -307,6 +307,23 @@ const char *command_global_history_next(WINDOW_REC *window, const char *text)
 	return command_history_next_int(window, text, TRUE);
 }
 
+const char *command_history_delete_current(WINDOW_REC *window, const char *text)
+{
+	HISTORY_REC *history;
+	GList *pos;
+
+	history = command_history_current(window);
+	pos = history->pos;
+
+	if (pos != NULL && g_strcmp0(((HISTORY_ENTRY_REC *)pos->data)->text, text) == 0) {
+		((HISTORY_ENTRY_REC *)pos->data)->history->lines--;
+		history_list_delete_link_and_destroy(pos);
+	}
+
+	history->redo = 0;
+	return history->pos == NULL ? "" : ((HISTORY_ENTRY_REC *)history->pos->data)->text;
+}
+
 void command_history_clear_pos_func(HISTORY_REC *history, gpointer user_data)
 {
 	history->pos = NULL;

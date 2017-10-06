@@ -552,6 +552,17 @@ static void key_forward_global_history(void)
 	g_free(line);
 }
 
+static void key_erase_history_entry(void)
+{
+	const char *text;
+	char *line;
+
+	line = gui_entry_get_text(active_entry);
+	text = command_history_delete_current(active_win, line);
+	gui_entry_set_text(active_entry, text);
+	g_free(line);
+}
+
 static void key_beginning_of_line(void)
 {
         gui_entry_set_pos(active_entry, 0);
@@ -1243,6 +1254,7 @@ void gui_readline_init(void)
 	key_bind("forward_history", "Go forward one line in the history", "down", NULL, (SIGNAL_FUNC) key_forward_history);
 	key_bind("backward_global_history", "Go back one line in the global history", "cup", NULL, (SIGNAL_FUNC) key_backward_global_history);
 	key_bind("forward_global_history", "Go forward one line in the global history", "cdown", NULL, (SIGNAL_FUNC) key_forward_global_history);
+	key_bind("erase_history_entry", "Erase the currently active entry from the history", NULL, NULL, (SIGNAL_FUNC) key_erase_history_entry);
 
         /* line editing */
 	key_bind("backspace", "Delete the previous character", "backspace", NULL, (SIGNAL_FUNC) key_backspace);
@@ -1338,6 +1350,7 @@ void gui_readline_deinit(void)
 	key_unbind("forward_history", (SIGNAL_FUNC) key_forward_history);
 	key_unbind("backward_global_history", (SIGNAL_FUNC) key_backward_global_history);
 	key_unbind("forward_global_history", (SIGNAL_FUNC) key_forward_global_history);
+	key_unbind("erase_history_entry", (SIGNAL_FUNC) key_erase_history_entry);
 
 	key_unbind("backspace", (SIGNAL_FUNC) key_backspace);
 	key_unbind("delete_character", (SIGNAL_FUNC) key_delete_character);

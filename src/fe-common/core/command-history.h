@@ -40,6 +40,7 @@ const char *command_history_prev(WINDOW_REC *window, const char *text);
 const char *command_history_next(WINDOW_REC *window, const char *text);
 const char *command_global_history_prev(WINDOW_REC *window, const char *text);
 const char *command_global_history_next(WINDOW_REC *window, const char *text);
+const char *command_history_delete_current(WINDOW_REC *window, const char *text);
 
 void command_history_clear_pos(WINDOW_REC *window);
 
