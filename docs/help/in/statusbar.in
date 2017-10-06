@@ -17,8 +17,8 @@
     POSITION:     Sets the position of the statusbar. Represented as a
                   number, with 0 implying the first position.
     VISIBLE:      Sets the visibility of the statusbar or item. If set to
-                  to always it is visible on all screens, otherwise if set
-                  to inactive or active then it is only visible on inactive
+                  always it is visible on all screens, otherwise if set to
+                  inactive or active then it is only visible on inactive
                   or active screens, respectively.
     ADD:          Adds an item to the specified statusbar. It can be set to
                   appear before/after another item and left/right aligned
