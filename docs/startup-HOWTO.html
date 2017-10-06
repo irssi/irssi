@@ -635,7 +635,7 @@ separated by <code>:</code> from the actual proxy password.</p>
 
 <h2 id="statusbar">12. Statusbar</h2>
 
-<p><code>/STATUSBAR</code> displays a list of the current statusbars, along with their position and visibility:</p>
+<p><code>/STATUSBAR</code> displays a list of statusbars:</p>
 
 <pre><code> Name                           Type   Placement Position Visible
  window                         window bottom    0        always
@@ -644,9 +644,9 @@ separated by <code>:</code> from the actual proxy password.</p>
  topic                          root   top       1        always
 </code></pre>
 
-<p><code>/STATUSBAR &lt;name&gt;</code> prints the statusbar settings (type, placement, position, visibility) as well as its items. <code>/STATUSBAR &lt;name&gt; ENABLE|DISABLE</code> enables/disables the statusbar. <code>/STATUSBAR &lt;name&gt; RESET</code> resets the statusbar to its default settings, or if the statusbar was created by you, it will be removed.</p>
+<p><code>/STATUSBAR &lt;name&gt;</code> prints the statusbar settings and it’s items. <code>/STATUSBAR &lt;name&gt; ENABLE|DISABLE</code> enables/disables the statusbar. <code>/STATUSBAR &lt;name&gt; RESET</code> resets the statusbar to it’s default settings, or if the statusbar was created by you, it will be removed.</p>
 
-<p>The statusbar type can be either window or root. If the type is window, then a statusbar will be created for each split window, otherwise it will be created only once. Placement can be top or bottom, which refers to the top or bottom of the screen. Position is a number, the higher the value the lower it will appear in-screen. Visible can be always, active or inactive. Active/inactive is useful only with split windows; one split window is active and the rest are inactive. To adjust these settings, the following commands are available:</p>
+<p>Type can be window or root, meaning if the statusbar should be created for each split window, or just once. Placement can be top or bottom. Position is a number, the higher the value the lower in screen it is. Visible can be always, active or inactive. Active/inactive is useful only with split windows, one split window is active and the rest are inactive. These settings can be changed with:</p>
 
 <pre><code> /STATUSBAR &lt;name&gt; TYPE window|root
  /STATUSBAR &lt;name&gt; PLACEMENT top|bottom
@@ -654,10 +654,10 @@ separated by <code>:</code> from the actual proxy password.</p>
  /STATUSBAR &lt;name&gt; VISIBLE always|active|inactive
 </code></pre>
 
-<p>Statusbar items can also be added or removed via command. Note that when loading new statusbar scripts that add items, you will need to specify where you want to show the item and how it is aligned. This can be accomplished using the below commands:</p>
+<p>When loading a new statusbar scripts, you’ll need to also specify where you want to show it. Statusbar items can be modified with:</p>
 
 <pre><code> /STATUSBAR &lt;name&gt; ADD [-before | -after &lt;item&gt;] [-priority #] [-alignment left|right] &lt;item&gt;
  /STATUSBAR &lt;name&gt; REMOVE &lt;item&gt;
 </code></pre>
 
-<p>For statusbar scripts, the item name is usually equivalent to the script name. The documentation of the script ought to tell you if this is not the case. For example, to add mail.pl before the window activity item, use: <code>/STATUSBAR window ADD -before act mail</code>.</p>
+<p>The item name with statusbar scripts is usually same as the script’s name. Script’s documentation should tell if this isn’t the case. So, to add mail.pl before the window activity item (see the list with <code>/STATUSBAR</code> window), use: <code>/STATUSBAR window ADD -before act mail</code>.</p>
