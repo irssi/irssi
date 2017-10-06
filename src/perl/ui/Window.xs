@@ -252,8 +252,9 @@ PREINIT:
 	GList *tmp;
 PPCODE:
 	rec = command_history_current(window);
-	for (tmp = rec->list; tmp != NULL; tmp = tmp->next)
-		XPUSHs(sv_2mortal(new_pv(tmp->data)));
+	for (tmp = command_history_list_first(rec); tmp != NULL; tmp = command_history_list_next(rec, tmp))
+		XPUSHs(sv_2mortal(new_pv(((HISTORY_ENTRY_REC *)tmp->data)->text)));
+
 
 #*******************************
 MODULE = Irssi::UI::Window  PACKAGE = Irssi::Windowitem  PREFIX = window_item_

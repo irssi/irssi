@@ -30,9 +30,92 @@
 #include "command-history.h"
 
 /* command history */
+static GList *history_entries;
 static HISTORY_REC *global_history;
 static int window_history;
 static GSList *histories;
+
+static HISTORY_ENTRY_REC *history_entry_new(HISTORY_REC *history, const char *text)
+{
+	HISTORY_ENTRY_REC *entry;
+
+	entry = g_new0(HISTORY_ENTRY_REC, 1);
+	entry->text = g_strdup(text);
+	entry->history = history;
+	entry->time = time(NULL);
+
+	return entry;
+}
+
+static void history_entry_destroy(HISTORY_ENTRY_REC *entry)
+{
+	g_free((char *)entry->text);
+	g_free(entry);
+}
+
+GList *command_history_list_last(HISTORY_REC *history)
+{
+	GList *link;
+
+	link = g_list_last(history_entries);
+	while (link != NULL && history != NULL && ((HISTORY_ENTRY_REC *)link->data)->history != history) {
+		link = link->prev;
+	}
+
+	return link;
+}
+
+GList *command_history_list_first(HISTORY_REC *history)
+{
+	GList *link;
+
+	link = history_entries;
+	while (link != NULL && history != NULL && ((HISTORY_ENTRY_REC *)link->data)->history != history) {
+		link = link->next;
+	}
+
+	return link;
+}
+
+GList *command_history_list_prev(HISTORY_REC *history, GList *pos)
+{
+	GList *link;
+
+	link = pos != NULL ? pos->prev : NULL;
+	while (link != NULL && history != NULL && ((HISTORY_ENTRY_REC *)link->data)->history != history) {
+		link = link->prev;
+	}
+
+	return link;
+}
+
+GList *command_history_list_next(HISTORY_REC *history, GList *pos)
+{
+	GList *link;
+
+	link = pos != NULL ? pos->next : NULL;
+	while (link != NULL && history != NULL && ((HISTORY_ENTRY_REC *)link->data)->history != history) {
+		link = link->next;
+	}
+
+	return link;
+}
+
+static void command_history_clear_pos_for_unlink_func(HISTORY_REC *history, GList* link)
+{
+	if (history->pos == link) {
+		history->pos = command_history_list_next(history, link);
+		history->redo = 1;
+	}
+}
+
+static void history_list_delete_link_and_destroy(GList *link)
+{
+	g_slist_foreach(histories,
+		       (GFunc) command_history_clear_pos_for_unlink_func, link);
+	history_entry_destroy(link->data);
+	history_entries = g_list_delete_link(history_entries, link);
+}
 
 void command_history_add(HISTORY_REC *history, const char *text)
 {
@@ -41,21 +124,19 @@ void command_history_add(HISTORY_REC *history, const char *text)
 	g_return_if_fail(history != NULL);
 	g_return_if_fail(text != NULL);
 
-	link = g_list_last(history->list);
-	if (link != NULL && g_strcmp0(link->data, text) == 0)
-	  return; /* same as previous entry */
+	link = command_history_list_last(history);
+	if (link != NULL && g_strcmp0(((HISTORY_ENTRY_REC *)link->data)->text, text) == 0)
+		return; /* same as previous entry */
 
 	if (settings_get_int("max_command_history") < 1 ||
 	    history->lines < settings_get_int("max_command_history"))
 		history->lines++;
 	else {
-		link = history->list;
-		g_free(link->data);
-		history->list = g_list_remove_link(history->list, link);
-		g_list_free_1(link);
+		link = command_history_list_first(history);
+		history_list_delete_link_and_destroy(link);
 	}
 
-	history->list = g_list_append(history->list, g_strdup(text));
+	history_entries = g_list_append(history_entries, history_entry_new(history, text));
 }
 
 HISTORY_REC *command_history_find(HISTORY_REC *history)
@@ -104,7 +185,44 @@ HISTORY_REC *command_history_current(WINDOW_REC *window)
 	return global_history;
 }
 
+static const char *command_history_prev_int(WINDOW_REC *window, const char *text, gboolean global)
+{
+	HISTORY_REC *history;
+	GList *pos;
+
+	history = command_history_current(window);
+	pos = history->pos;
+	history->redo = 0;
+
+	if (pos != NULL) {
+		/* don't go past the first entry (no wrap around) */
+		GList *prev = command_history_list_prev(global ? NULL : history, history->pos);
+		if (prev != NULL)
+			history->pos = prev;
+	} else {
+		history->pos = command_history_list_last(global ? NULL : history);
+	}
+
+	if (*text != '\0' &&
+	    (pos == NULL || g_strcmp0(((HISTORY_ENTRY_REC *)pos->data)->text, text) != 0)) {
+		/* save the old entry to history */
+		command_history_add(history, text);
+	}
+
+	return history->pos == NULL ? text : ((HISTORY_ENTRY_REC *)history->pos->data)->text;
+}
+
 const char *command_history_prev(WINDOW_REC *window, const char *text)
+{
+	return command_history_prev_int(window, text, FALSE);
+}
+
+const char *command_global_history_prev(WINDOW_REC *window, const char *text)
+{
+	return command_history_prev_int(window, text, TRUE);
+}
+
+static const char *command_history_next_int(WINDOW_REC *window, const char *text, gboolean global)
 {
 	HISTORY_REC *history;
 	GList *pos;
@@ -112,40 +230,26 @@ const char *command_history_prev(WINDOW_REC *window, const char *text)
 	history = command_history_current(window);
 	pos = history->pos;
 
-	if (pos != NULL) {
-		/* don't go past the first entry (no wrap around) */
-		if (history->pos->prev != NULL)
-			history->pos = history->pos->prev;
-	} else {
-		history->pos = g_list_last(history->list);
-	}
+	if (!(history->redo) && pos != NULL)
+		history->pos = command_history_list_next(global ? NULL : history, history->pos);
+	history->redo = 0;
 
 	if (*text != '\0' &&
-	    (pos == NULL || g_strcmp0(pos->data, text) != 0)) {
+	    (pos == NULL || g_strcmp0(((HISTORY_ENTRY_REC *)pos->data)->text, text) != 0)) {
 		/* save the old entry to history */
 		command_history_add(history, text);
 	}
-
-	return history->pos == NULL ? text : history->pos->data;
+	return history->pos == NULL ? "" : ((HISTORY_ENTRY_REC *)history->pos->data)->text;
 }
 
 const char *command_history_next(WINDOW_REC *window, const char *text)
 {
-	HISTORY_REC *history;
-	GList *pos;
+	return command_history_next_int(window, text, FALSE);
+}
 
-	history = command_history_current(window);
-	pos = history->pos;
-
-	if (pos != NULL)
-		history->pos = history->pos->next;
-
-	if (*text != '\0' &&
-	    (pos == NULL || g_strcmp0(pos->data, text) != 0)) {
-		/* save the old entry to history */
-		command_history_add(history, text);
-	}
-	return history->pos == NULL ? "" : history->pos->data;
+const char *command_global_history_next(WINDOW_REC *window, const char *text)
+{
+	return command_history_next_int(window, text, TRUE);
 }
 
 void command_history_clear_pos_func(HISTORY_REC *history, gpointer user_data)
@@ -175,12 +279,17 @@ HISTORY_REC *command_history_create(const char *name)
 
 void command_history_clear(HISTORY_REC *history)
 {
+	GList *link, *next;
+
 	g_return_if_fail(history != NULL);
 
 	command_history_clear_pos_func(history, NULL);
-	g_list_foreach(history->list, (GFunc) g_free, NULL);
-	g_list_free(history->list);
-	history->list = NULL;
+	link = command_history_list_first(history);
+	while (link != NULL) {
+		next = command_history_list_next(history, link);
+		history_list_delete_link_and_destroy(link);
+		link = next;
+	}
 	history->lines = 0;
 }
 
@@ -264,8 +373,8 @@ static char *special_history_func(const char *text, void *item, int *free_ret)
 	ret = NULL;
 
 	history = command_history_current(window);
-	for (tmp = history->list; tmp != NULL; tmp = tmp->next) {
-		const char *line = tmp->data;
+	for (tmp = command_history_list_first(history); tmp != NULL; tmp = command_history_list_next(history, tmp)) {
+		const char *line = ((HISTORY_ENTRY_REC *)tmp->data)->text;
 
 		if (match_wildcards(findtext, line)) {
 			*free_ret = TRUE;
@@ -289,6 +398,8 @@ void command_history_init(void)
 
 	special_history_func_set(special_history_func);
 
+	history_entries = NULL;
+
 	global_history = command_history_create(NULL);
 
 	read_settings();
@@ -308,4 +419,6 @@ void command_history_deinit(void)
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 
 	command_history_destroy(global_history);
+
+	g_list_free_full(history_entries, (GDestroyNotify) history_entry_destroy);
 }
