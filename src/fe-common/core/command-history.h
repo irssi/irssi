@@ -28,6 +28,8 @@ void command_history_init(void);
 void command_history_deinit(void);
 
 void command_history_add(HISTORY_REC *history, const char *text);
+void command_history_load_entry(time_t time, HISTORY_REC *history, const char *text);
+gboolean command_history_delete_entry(time_t history_time, HISTORY_REC *history, const char *text);
 
 GList *command_history_list_last(HISTORY_REC *history);
 GList *command_history_list_first(HISTORY_REC *history);

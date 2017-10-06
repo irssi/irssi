@@ -168,6 +168,61 @@ HISTORY_REC *command_history_find_name(const char *name)
 	return NULL;
 }
 
+static int history_entry_after_time_sort(const HISTORY_ENTRY_REC *a, const HISTORY_ENTRY_REC *b)
+{
+	return a->time == b->time ? 1 : a->time - b->time;
+}
+
+void command_history_load_entry(time_t history_time, HISTORY_REC *history, const char *text)
+{
+	HISTORY_ENTRY_REC *entry;
+
+	g_return_if_fail(history != NULL);
+	g_return_if_fail(text != NULL);
+
+	entry = g_new0(HISTORY_ENTRY_REC, 1);
+	entry->text = g_strdup(text);
+	entry->history = history;
+	entry->time = history_time;
+
+	history->lines++;
+
+	history_entries = g_list_insert_sorted(history_entries, entry, (GCompareFunc)history_entry_after_time_sort);
+}
+
+static int history_entry_find_func(const HISTORY_ENTRY_REC *data, const HISTORY_ENTRY_REC *user_data)
+{
+	if ((user_data->time == -1 || (data->time == user_data->time)) &&
+	    (user_data->history == NULL || (data->history == user_data->history)) &&
+	    g_strcmp0(data->text, user_data->text) == 0) {
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
+gboolean command_history_delete_entry(time_t history_time, HISTORY_REC *history, const char *text)
+{
+	GList *link;
+	HISTORY_ENTRY_REC entry;
+
+	g_return_val_if_fail(history != NULL, FALSE);
+	g_return_val_if_fail(text != NULL, FALSE);
+
+	entry.text = text;
+	entry.history = history;
+	entry.time = history_time;
+
+	link = g_list_find_custom(history_entries, &entry, (GCompareFunc)history_entry_find_func);
+	if (link != NULL) {
+		((HISTORY_ENTRY_REC *)link->data)->history->lines--;
+		history_list_delete_link_and_destroy(link);
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
 HISTORY_REC *command_history_current(WINDOW_REC *window)
 {
 	HISTORY_REC *rec;
