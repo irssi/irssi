@@ -37,6 +37,7 @@
 #include <sys/nv.h>
 #include <sys/procdesc.h>
 #include <sys/socket.h>
+#include <capsicum_helpers.h>
 #include <string.h>
 
 #define	OPCODE_CONNECT		1
@@ -409,6 +410,13 @@ static void cmd_capsicum_enter(void)
 	 *      of the zombies at least.
 	 */
 	signal(SIGCHLD, SIG_IGN);
+
+	error = caph_limit_stdio();
+	if (error != 0) {
+		g_warning("caph_limit_stdio(3) failed: %s", strerror(errno));
+		signal_emit("capability mode failed", 1, strerror(errno));
+		return;
+	}
 
 	error = cap_enter();
 	if (error != 0) {
