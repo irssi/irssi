@@ -1107,7 +1107,7 @@ void gui_entry_set_color(GUI_ENTRY_REC *entry, int pos, int len, int color)
 
 	g_return_if_fail(entry != NULL);
 
-	if (pos > entry->text_len)
+	if (pos < 0 || len < 0 || pos > entry->text_len)
 		return;
 
 	end = pos + len;
