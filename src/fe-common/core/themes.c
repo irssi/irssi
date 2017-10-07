@@ -587,7 +587,7 @@ static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
 			/* a normal character */
 			g_string_append_c(str, *format);
 			format++;
-		} else {
+		} else if (format[1] != '\0') {
 			/* %format */
 			format++;
 			if (IS_OLD_FORMAT(*format, last_fg, last_bg)) {
@@ -614,6 +614,11 @@ static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
 					last_bg = '\0';
 			}
 			format++;
+		} else {
+			/* % at end of string */
+			format++;
+			g_string_append_c(str, '%');
+			g_string_append_c(str, '%');
 		}
 	}
 
