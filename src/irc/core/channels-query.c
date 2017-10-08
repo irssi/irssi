@@ -125,15 +125,15 @@ static void query_remove_all(IRC_CHANNEL_REC *channel)
 		rec->queries[n] = g_slist_remove(rec->queries[n], channel);
 	rec->current_queries = g_slist_remove(rec->current_queries, channel);
 
-	query_check(channel->server);
+	if (!channel->server->disconnected)
+		query_check(channel->server);
 }
 
 static void sig_channel_destroyed(IRC_CHANNEL_REC *channel)
 {
 	g_return_if_fail(channel != NULL);
 
-	if (IS_IRC_CHANNEL(channel) && !channel->server->disconnected &&
-	    !channel->synced)
+	if (IS_IRC_CHANNEL(channel))
 		query_remove_all(channel);
 }
 
