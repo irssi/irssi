@@ -119,6 +119,7 @@ static void query_remove_all(IRC_CHANNEL_REC *channel)
 	int n;
 
 	rec = channel->server->chanqueries;
+	if (rec == NULL) return;
 
 	/* remove channel from query lists */
 	for (n = 0; n < CHANNEL_QUERIES; n++)
