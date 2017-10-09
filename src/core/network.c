@@ -48,9 +48,6 @@ GIOChannel *g_io_channel_new(int handle)
 	return chan;
 }
 
-/* Cygwin need this, don't know others.. */
-/*#define BLOCKING_SOCKETS 1*/
-
 IPADDR ip4_any = {
 	AF_INET,
 #if defined(IN6ADDR_ANY_INIT)
