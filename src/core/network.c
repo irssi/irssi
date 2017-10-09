@@ -98,40 +98,6 @@ static int sin_get_port(union sockaddr_union *so)
 		     so->sin.sin_port);
 }
 
-/* Connect to socket */
-GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
-{
-	IPADDR ip4, ip6, *ip;
-
-	g_return_val_if_fail(addr != NULL, NULL);
-
-	if (net_gethostbyname(addr, &ip4, &ip6) == -1)
-		return NULL;
-
-	if (my_ip == NULL) {
-                /* prefer IPv4 addresses */
-		ip = ip4.family != 0 ? &ip4 : &ip6;
-	} else if (IPADDR_IS_V6(my_ip)) {
-                /* my_ip is IPv6 address, use it if possible */
-		if (ip6.family != 0)
-			ip = &ip6;
-		else {
-			my_ip = NULL;
-                        ip = &ip4;
-		}
-	} else {
-                /* my_ip is IPv4 address, use it if possible */
-		if (ip4.family != 0)
-			ip = &ip4;
-		else {
-			my_ip = NULL;
-                        ip = &ip6;
-		}
-	}
-
-	return net_connect_ip(ip, port, my_ip);
-}
-
 int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip)
 {
 	union sockaddr_union so;

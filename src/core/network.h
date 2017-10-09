@@ -35,8 +35,6 @@ GIOChannel *g_io_channel_new(int handle);
 
 int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip);
 
-/* Connect to socket */
-GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip) G_GNUC_DEPRECATED;
 /* Connect to socket with ip address and SSL*/
 GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *server);
 /* Start TLS */
