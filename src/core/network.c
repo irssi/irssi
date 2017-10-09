@@ -60,18 +60,6 @@ IPADDR ip4_any = {
 #endif
 };
 
-int net_ip_compare(IPADDR *ip1, IPADDR *ip2)
-{
-	if (ip1->family != ip2->family)
-		return 0;
-
-	if (ip1->family == AF_INET6)
-		return memcmp(&ip1->ip, &ip2->ip, sizeof(ip1->ip)) == 0;
-
-	return memcmp(&ip1->ip, &ip2->ip, 4) == 0;
-}
-
-
 static void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
 {
 	if (ip == NULL) {

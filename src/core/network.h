@@ -33,9 +33,6 @@ extern IPADDR ip4_any;
 
 GIOChannel *g_io_channel_new(int handle);
 
-/* returns 1 if IPADDRs are the same */
-int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
-
 int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip);
 
 /* Connect to socket */
