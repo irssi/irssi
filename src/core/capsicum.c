@@ -32,13 +32,14 @@
 #include "settings.h"
 #include "signals.h"
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/capsicum.h>
+#include <sys/filio.h>
 #include <sys/nv.h>
 #include <sys/procdesc.h>
 #include <sys/socket.h>
-#include <capsicum_helpers.h>
 #include <string.h>
+#include <termios.h>
 
 #define	OPCODE_CONNECT		1
 #define	OPCODE_GETHOSTBYNAME	2
