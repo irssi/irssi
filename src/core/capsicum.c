@@ -183,6 +183,10 @@ void capsicum_mkdir_with_parents(const char *path, int mode)
 	char *component, *copy, *tofree;
 	int error, fd, newfd;
 
+	/* The directory already exists, nothing to do. */
+	if (strcmp(path, irclogs_path) == 0)
+		return;
+
 	/* +1 is for the slash separating irclogs_path and the rest. */
 	if (strlen(path) <= irclogs_path_len + 1 ||
 	    path[irclogs_path_len] != '/' ||
