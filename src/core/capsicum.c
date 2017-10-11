@@ -360,6 +360,38 @@ static void cmd_capsicum(const char *data, SERVER_REC *server, void *item)
 	command_runsub("capsicum", data, server, item);
 }
 
+/*
+ * The main difference between this and caph_limit_stdio(3) is that this
+ * one permits TIOCSETAW, which is requred for restoring the terminal state
+ * on exit.
+ */
+static int
+limit_stdio_fd(int fd)
+{
+	cap_rights_t rights;
+	unsigned long cmds[] = { TIOCGETA, TIOCGWINSZ, TIOCSETAW, FIODTYPE };
+
+	cap_rights_init(&rights, CAP_READ, CAP_WRITE, CAP_EVENT, CAP_FCNTL,
+	    CAP_FSTAT, CAP_IOCTL, CAP_SEEK);
+
+	if (cap_rights_limit(fd, &rights) < 0) {
+		g_warning("cap_rights_limit(3) failed: %s", strerror(errno));
+		return (-1);
+	}
+
+	if (cap_ioctls_limit(fd, cmds, nitems(cmds)) < 0) {
+		g_warning("cap_ioctls_limit(3) failed: %s", strerror(errno));
+		return (-1);
+	}
+
+	if (cap_fcntls_limit(fd, CAP_FCNTL_GETFL) < 0) {
+		g_warning("cap_fcntls_limit(3) failed: %s", strerror(errno));
+		return (-1);
+	}
+
+	return (0);
+}
+
 static void cmd_capsicum_enter(void)
 {
 	u_int mode;
@@ -411,9 +443,9 @@ static void cmd_capsicum_enter(void)
 	 */
 	signal(SIGCHLD, SIG_IGN);
 
-	error = caph_limit_stdio();
-	if (error != 0) {
-		g_warning("caph_limit_stdio(3) failed: %s", strerror(errno));
+	if (limit_stdio_fd(STDIN_FILENO) != 0 ||
+	    limit_stdio_fd(STDOUT_FILENO) != 0 ||
+	    limit_stdio_fd(STDERR_FILENO) != 0) {
 		signal_emit("capability mode failed", 1, strerror(errno));
 		return;
 	}
