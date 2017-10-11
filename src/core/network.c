@@ -489,16 +489,8 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 
 int net_ip2host(IPADDR *ip, char *host)
 {
-	if (inet_ntop(ip->family, &ip->ip, host, MAX_IP_LEN)) {
-		return 0;
-	}
-
-	// For callers that do not check our return value and pass in an
-	// uninitialized buffer assuming it will be set, ensure the buffer is a valid
-	// string. Ideally callers should check what we return and handle
-	// appropriately, but this at least gives us safety.
 	host[0] = '\0';
-	return -1;
+	return inet_ntop(ip->family, &ip->ip, host, MAX_IP_LEN) ? 0 : -1;
 }
 
 int net_host2ip(const char *host, IPADDR *ip)
