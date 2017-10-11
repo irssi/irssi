@@ -452,7 +452,7 @@ void capsicum_init(void)
 	settings_add_bool("misc", "capsicum", FALSE);
 	settings_add_str("misc", "capsicum_irclogs_path", "~/irclogs");
 	settings_add_int("misc", "capsicum_port_min", 6667);
-	settings_add_int("misc", "capsicum_port_max", 6697);
+	settings_add_int("misc", "capsicum_port_max", 9999);
 
 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
 
