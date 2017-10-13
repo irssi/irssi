@@ -66,6 +66,13 @@ CHAT_DCC_REC *dcc_chat_create(IRC_SERVER_REC *server,
         dcc->id = dcc_chat_get_new_id(nick);
 
 	dcc_init_rec(DCC(dcc), server, chat, nick, arg);
+	if (dcc->module_data == NULL) {
+		/* failed to successfully init; TODO: change init_rec API */
+		g_free(dcc->id);
+		g_free(dcc);
+		return NULL;
+	}
+
         return dcc;
 }
 
@@ -471,6 +478,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 			/* We are accepting a passive DCC CHAT. */
 			dcc_chat_passive(dcc);
 		}
+		cmd_params_free(free_arg);
 		return;
 	}
 
@@ -485,6 +493,11 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 
 	dcc = dcc_chat_create(server, NULL, nick, "chat");
+	if (dcc == NULL) {
+		cmd_params_free(free_arg);
+		g_warn_if_reached();
+		return;
+	}
 
 	if (g_hash_table_lookup(optlist, "passive") == NULL) {
 		/* Standard DCC CHAT... let's listen for incoming connections */
@@ -627,6 +640,9 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
 	}
 	passive = paramcount == 4 && g_strcmp0(params[2], "0") == 0;
 
+	if (nick == NULL)
+		nick = "";
+
 	dcc = DCC_CHAT(dcc_find_request(DCC_CHAT_TYPE, nick, NULL));
 	if (dcc != NULL) {
 		if (dcc_is_listening(dcc)) {
@@ -658,6 +674,11 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
 	}
 
 	dcc = dcc_chat_create(server, chat, nick, params[0]);
+	if (dcc == NULL) {
+		g_strfreev(params);
+		g_warn_if_reached();
+		return;
+	}
 	dcc->target = g_strdup(target);
 	dcc->port = atoi(params[2]);
 
