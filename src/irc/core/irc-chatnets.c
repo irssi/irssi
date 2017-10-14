@@ -43,6 +43,9 @@ static void sig_chatnet_read(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 	value = config_node_get_str(node, "usermode", NULL);
 	rec->usermode = (value != NULL && *value != '\0') ? g_strdup(value) : NULL;
 
+	value = config_node_get_str(node, "alternate_nick", NULL);
+	rec->alternate_nick = (value != NULL && *value != '\0') ? g_strdup(value) : NULL;
+
 	rec->max_cmds_at_once = config_node_get_int(node, "cmdmax", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmdspeed", 0);
 	rec->max_query_chans = config_node_get_int(node, "max_query_chans", 0);
@@ -64,6 +67,9 @@ static void sig_chatnet_saved(IRC_CHATNET_REC *rec, CONFIG_NODE *node)
 
 	if (rec->usermode != NULL)
 		iconfig_node_set_str(node, "usermode", rec->usermode);
+
+	if (rec->alternate_nick != NULL)
+		iconfig_node_set_str(node, "alternate_nick", rec->alternate_nick);
 
 	if (rec->max_cmds_at_once > 0)
 		iconfig_node_set_int(node, "cmdmax", rec->max_cmds_at_once);
@@ -93,6 +99,7 @@ static void sig_chatnet_destroyed(IRC_CHATNET_REC *rec)
 {
 	if (IS_IRC_CHATNET(rec)) {
 		g_free(rec->usermode);
+		g_free(rec->alternate_nick);
 		g_free(rec->sasl_mechanism);
 		g_free(rec->sasl_username);
 		g_free(rec->sasl_password);

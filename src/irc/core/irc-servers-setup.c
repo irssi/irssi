@@ -69,10 +69,6 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 		return;
 	g_return_if_fail(IS_IRCNET(ircnet));
 
-	if (ircnet->nick != NULL) {
-		g_free_and_null(conn->nick);
-		conn->nick = g_strdup(ircnet->nick);
-	}
 	if (ircnet->alternate_nick != NULL) {
 		g_free_and_null(conn->alternate_nick);
 		conn->alternate_nick = g_strdup(ircnet->alternate_nick);

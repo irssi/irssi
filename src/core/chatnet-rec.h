@@ -4,7 +4,6 @@ int chat_type; /* chat_protocol_lookup(xx) */
 char *name;
 
 char *nick;
-char *alternate_nick;
 char *username;
 char *realname;
 
