@@ -404,10 +404,7 @@ static void cmd_msg(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		else
 			splitmsgs = singlemsg;
 
-		/* splitmsgs may be NULL if there was an error */
-		g_warn_if_fail(splitmsgs != NULL);
-
-		while (splitmsgs && (m = splitmsgs[n++])) {
+		while ((m = splitmsgs[n++])) {
 			signal_emit("server sendmsg", 4, server, target, m,
 				    GINT_TO_POINTER(target_type));
 			signal_emit(target_type == SEND_TARGET_CHANNEL ?
