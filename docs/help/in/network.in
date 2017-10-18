@@ -11,6 +11,7 @@
     REMOVE:          Removes a network from your configuration.
 
     -nick:           Specifies the nickname to use.
+    -alternate_nick  Specifies the alternate nickname to use.
     -user:           Specifies the user identity to use.
     -realname:       Specifies the real name to use.
     -host:           Specifies the hostname to use.
