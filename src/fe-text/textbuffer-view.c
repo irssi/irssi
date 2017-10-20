@@ -21,6 +21,7 @@
 #define	G_LOG_DOMAIN "TextBufferView"
 
 #include "module.h"
+#include "levels.h"
 #include "textbuffer-view.h"
 #include "signals.h"
 #include "utf8.h"
@@ -1236,6 +1237,24 @@ void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	textbuffer_remove(view->buffer, line);
 }
 
+void textbuffer_view_remove_line_from_lastlog(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
+{
+	unsigned char update_counter;
+
+	g_return_if_fail(view != NULL);
+	g_return_if_fail(line != NULL);
+
+	signal_emit("gui lastlog textbuffer line removed", 3, view, line, line->prev);
+
+	// set the cache update counter
+	update_counter = view->cache->update_counter+1;
+	view_remove_cache(view, line, update_counter);
+
+	// remove the lines and reset the y-position
+	textbuffer_remove(view->buffer, line);
+	textbuffer_view_init_ypos(view);
+}
+
 void textbuffer_view_remove_lines_by_level(TEXT_BUFFER_VIEW_REC *view, int level)
 {
 	LINE_REC *line, *next;
@@ -1246,8 +1265,13 @@ void textbuffer_view_remove_lines_by_level(TEXT_BUFFER_VIEW_REC *view, int level
 	while (line != NULL) {
 		next = line->next;
 
-		if (line->info.level & level)
-			textbuffer_view_remove_line(view, line);
+		if (line->info.level & level) {
+			if (level == MSGLEVEL_LASTLOG) {
+			    textbuffer_view_remove_line_from_lastlog(view, line);
+			} else {
+			    textbuffer_view_remove_line(view, line);
+			}
+		}
 		line = next;
 	}
 	textbuffer_view_redraw(view);
