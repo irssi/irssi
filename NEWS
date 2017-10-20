@@ -1,3 +1,21 @@
+v1.0.5 2017-10-23  The Irssi team <staff@irssi.org>
+	- Fix missing -sasl_method '' in /NETWORK (#718, #719).
+	- Fix incorrect restoration of term state when hitting SUSP
+          inside screen (#737, #733).
+	- Fix out of bounds read when compressing colour
+          sequences. Found by Hanno Böck (GL#12, GL!18).
+	- Fix use after free condition during a race condition when
+          waiting on channel sync during a rejoin (GL#13, GL!19).
+	- Fix null pointer dereference when parsing certain malformed
+          CTCP DCC messages (GL#14, GL!20).
+	- Fix crash due to null pointer dereference when failing to
+          split messages due to overlong nick or target (GL#15, GL!21).
+	- Fix out of bounds read when trying to skip a safe channel ID
+          without verifying that the ID is long enough (GL#16, GL!22).
+	- Fix return of random memory when inet_ntop failed (#769).
+	- Minor statusbar help update. By Robert Bisewski (#758,
+          #763).
+
 v1.0.4 2017-07-07  The Irssi team <staff@irssi.org>
 	- Fix null pointer dereference when parsing invalid timestamp (GL#10,
 	  GL!15). Reported by Brian 'geeknik' Carpenter.
