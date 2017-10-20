@@ -237,6 +237,12 @@ static SEND_DCC_REC *dcc_send_create(IRC_SERVER_REC *server,
 	dcc->queue = -1;
 
 	dcc_init_rec(DCC(dcc), server, chat, nick, arg);
+	if (dcc->module_data == NULL) {
+		/* failed to successfully init; TODO: change API */
+		g_free(dcc);
+		return NULL;
+	}
+
         return dcc;
 }
 
@@ -417,6 +423,10 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 
 	dcc = dcc_send_create(server, chat, target, str);
 	g_free(str);
+	if (dcc == NULL) {
+		g_warn_if_reached();
+		return FALSE;
+	}
 
 	dcc->handle = handle;
 	dcc->port = port;
