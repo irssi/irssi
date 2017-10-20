@@ -116,11 +116,14 @@ static char **split_line(const SERVER_REC *server, const char *line,
 	 * the code much simpler.  It's worth it.
 	 */
 	len -= strlen(recoded_start) + strlen(recoded_end);
+	g_warn_if_fail(len > 0);
 	if (len <= 0) {
 		/* There is no room for anything. */
 		g_free(recoded_start);
 		g_free(recoded_end);
-		return NULL;
+		lines = g_new(char *, 1);
+		lines[0] = NULL;
+		return lines;
 	}
 
 	lines = recode_split(server, line, target, len, onspace);

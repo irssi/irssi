@@ -37,7 +37,7 @@ static void check_join_failure(IRC_SERVER_REC *server, const char *channel)
 		channel++; /* server didn't understand !channels */
 
 	chanrec = channel_find(SERVER(server), channel);
-	if (chanrec == NULL && channel[0] == '!') {
+	if (chanrec == NULL && channel[0] == '!' && strlen(channel) > 6) {
 		/* it probably replied with the full !channel name,
 		   find the channel with the short name.. */
 		chan2 = g_strdup_printf("!%s", channel+6);

@@ -43,6 +43,12 @@ GET_DCC_REC *dcc_get_create(IRC_SERVER_REC *server, CHAT_DCC_REC *chat,
 	dcc->fhandle = -1;
 
 	dcc_init_rec(DCC(dcc), server, chat, nick, arg);
+	if (dcc->module_data == NULL) {
+		/* failed to successfully init; TODO: change API */
+		g_free(dcc);
+		return NULL;
+	}
+
         return dcc;
 }
 
@@ -430,9 +436,10 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 	int p_id = -1;
 	int passive = FALSE;
 
-	if (addr == NULL) {
+	if (addr == NULL)
 		addr = "";
-	}
+	if (nick == NULL)
+		nick = "";
 
 	/* SEND <file name> <address> <port> <size> [...] */
 	/* SEND <file name> <address> 0 <size> <id> (DCC SEND passive protocol) */
@@ -512,6 +519,12 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 		dcc_destroy(DCC(dcc)); /* remove the old DCC */
 
 	dcc = dcc_get_create(server, chat, nick, fname);
+	if (dcc == NULL) {
+		g_free(address);
+		g_free(fname);
+		g_warn_if_reached();
+		return;
+	}
 	dcc->target = g_strdup(target);
 
 	if (passive && port == 0)
