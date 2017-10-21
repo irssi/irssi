@@ -135,6 +135,8 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		return;
 	}
 
+	g_warning("%s -> %s", evt, list);
+
 	/* Strip the trailing whitespaces before splitting the string, some servers send responses with
 	 * superfluous whitespaces that g_strsplit the interprets as tokens */
 	caps = g_strsplit(g_strchomp(list), " ", -1);
@@ -158,11 +160,11 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 							 key, val)) {
 					/* The specification doesn't say anything about
 					 * duplicated values, let's just warn the user */
-					g_warning("Duplicate value");
+					g_warning("Duplicate value %s", key);
 				}
 			}
 			else {
-				g_warning("Invalid CAP key/value pair");
+				g_warning("Invalid CAP %s key/value pair", evt);
 			}
 
 		}
@@ -235,6 +237,36 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		 * list of active caps and notify the listeners. */
 		for (i = 0; i < caps_length; i++)
 			cap_emit_signal(server, "nak", caps[i]);
+	}
+	else if (!strcmp(evt, "NEW")) {
+		for (i = 0; i < caps_length; i++) {
+			char *key, *val;
+
+			if (parse_cap_name(caps[i], &key, &val)) {
+				g_hash_table_insert(server->cap_supported,
+						    key, val);
+			}
+			else {
+				g_warning("Invalid CAP %s key/value pair", evt);
+			}
+			cap_emit_signal(server, "new", key);
+		}
+	}
+	else if (!strcmp(evt, "DEL")) {
+		for (i = 0; i < caps_length; i++) {
+			char *key, *val;
+
+			if (parse_cap_name(caps[i], &key, &val)) {
+				g_hash_table_remove(server->cap_supported, key);
+			}
+			else {
+				g_warning("Invalid CAP %s key/value pair", evt);
+			}
+			cap_emit_signal(server, "delete", key);
+			/* The server removed this CAP, remove it from the list
+			 * of the active ones if we had requested it */
+			server->cap_active = gslist_remove_string(server->cap_active, key);
+		}
 	}
 	else {
 		g_warning("Unhandled CAP subcommand %s", evt);
