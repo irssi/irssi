@@ -110,12 +110,30 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 {
 	GSList *tmp;
 	GString *cmd;
-	char *params, *evt, *list, **caps;
-	int i, caps_length, disable, avail_caps;
+	char *params, *evt, *list, *star, **caps;
+	int i, caps_length, disable, avail_caps, multiline;
 
-	params = event_get_params(args, 3, NULL, &evt, &list);
+	params = event_get_params(args, 4, NULL, &evt, &star, &list);
 	if (params == NULL)
 		return;
+
+	/* Multiline responses have an additional parameter and we have to do
+	 * this stupid dance to parse them */
+	if (evt[0] == 'L' && !strcmp(star, "*")) {
+		multiline = TRUE;
+	}
+	/* This branch covers the '*' parameter isn't present, adjust the
+	 * parameter pointer to compensate for this */
+	else if (list[0] == '\0') {
+		multiline = FALSE;
+		list = star;
+	}
+	/* Malformed request, terminate the negotiation */
+	else {
+		cap_finish_negotiation(server);
+		g_warn_if_reached();
+		return;
+	}
 
 	/* Strip the trailing whitespaces before splitting the string, some servers send responses with
 	 * superfluous whitespaces that g_strsplit the interprets as tokens */
@@ -149,37 +167,41 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 
 		}
 
-		/* Request the required caps, if any */
-		if (server->cap_queue == NULL) {
-			cap_finish_negotiation(server);
-		}
-		else {
-			cmd = g_string_new("CAP REQ :");
-
-			avail_caps = 0;
-
-			/* Check whether the cap is supported by the server */
-			for (tmp = server->cap_queue; tmp != NULL; tmp = tmp->next) {
-				if (g_hash_table_lookup_extended(server->cap_supported, tmp->data, NULL, NULL)) {
-					if (avail_caps > 0)
-						g_string_append_c(cmd, ' ');
-					g_string_append(cmd, tmp->data);
-
-					avail_caps++;
-				}
-			}
-
-			/* Clear the queue here */
-			gslist_free_full(server->cap_queue, (GDestroyNotify) g_free);
-			server->cap_queue = NULL;
-
-			/* If the server doesn't support any cap we requested close the negotiation here */
-			if (avail_caps > 0)
-				irc_send_cmd_now(server, cmd->str);
-			else
+		/* A multiline response is always terminated by a normal one,
+		 * wait until we receive that one to require any CAP */
+		if (multiline == FALSE) {
+			/* No CAP has been requested */
+			if (server->cap_queue == NULL) {
 				cap_finish_negotiation(server);
+			}
+			else {
+				cmd = g_string_new("CAP REQ :");
 
-			g_string_free(cmd, TRUE);
+				avail_caps = 0;
+
+				/* Check whether the cap is supported by the server */
+				for (tmp = server->cap_queue; tmp != NULL; tmp = tmp->next) {
+					if (g_hash_table_lookup_extended(server->cap_supported, tmp->data, NULL, NULL)) {
+						if (avail_caps > 0)
+							g_string_append_c(cmd, ' ');
+						g_string_append(cmd, tmp->data);
+
+						avail_caps++;
+					}
+				}
+
+				/* Clear the queue here */
+				gslist_free_full(server->cap_queue, (GDestroyNotify) g_free);
+				server->cap_queue = NULL;
+
+				/* If the server doesn't support any cap we requested close the negotiation here */
+				if (avail_caps > 0)
+					irc_send_cmd_now(server, cmd->str);
+				else
+					cap_finish_negotiation(server);
+
+				g_string_free(cmd, TRUE);
+			}
 		}
 	}
 	else if (!g_strcmp0(evt, "ACK")) {
@@ -213,6 +235,9 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		 * list of active caps and notify the listeners. */
 		for (i = 0; i < caps_length; i++)
 			cap_emit_signal(server, "nak", caps[i]);
+	}
+	else {
+		g_warning("Unhandled CAP subcommand %s", evt);
 	}
 
 	g_strfreev(caps);
