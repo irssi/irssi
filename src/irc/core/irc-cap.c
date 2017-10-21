@@ -36,7 +36,7 @@ int cap_toggle (IRC_SERVER_REC *server, char *cap, int enable)
 			return TRUE;
 		}
 		else if (!enable && gslist_find_string(server->cap_queue, cap)) {
-			server->cap_queue = gslist_remove_string(server->cap_queue, cap);
+			server->cap_queue = gslist_delete_string(server->cap_queue, cap, g_free);
 			return TRUE;
 		}
 
@@ -135,8 +135,6 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		return;
 	}
 
-	g_warning("%s -> %s", evt, list);
-
 	/* Strip the trailing whitespaces before splitting the string, some servers send responses with
 	 * superfluous whitespaces that g_strsplit the interprets as tokens */
 	caps = g_strsplit(g_strchomp(list), " ", -1);
@@ -214,7 +212,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			disable = (*caps[i] == '-');
 
 			if (disable)
-				server->cap_active = gslist_remove_string(server->cap_active, caps[i] + 1);
+				server->cap_active = gslist_delete_string(server->cap_active, caps[i] + 1, g_free);
 			else
 				server->cap_active = g_slist_prepend(server->cap_active, g_strdup(caps[i]));
 
@@ -265,7 +263,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			cap_emit_signal(server, "delete", key);
 			/* The server removed this CAP, remove it from the list
 			 * of the active ones if we had requested it */
-			server->cap_active = gslist_remove_string(server->cap_active, key);
+			server->cap_active = gslist_delete_string(server->cap_active, key, g_free);
 		}
 	}
 	else {
