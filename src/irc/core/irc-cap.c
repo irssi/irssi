@@ -45,7 +45,7 @@ int cap_toggle (IRC_SERVER_REC *server, char *cap, int enable)
 
 	if (enable && !gslist_find_string(server->cap_active, cap)) {
 		/* Make sure the required cap is supported by the server */
-		if (!gslist_find_string(server->cap_supported, cap))
+		if (!g_hash_table_lookup_extended(server->cap_supported, cap, NULL, NULL))
 			return FALSE;
 
 		irc_send_cmdv(server, "CAP REQ %s", cap);
@@ -96,9 +96,44 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 	caps_length = g_strv_length(caps);
 
 	if (!g_strcmp0(evt, "LS")) {
+		if (server->cap_supported) {
+			g_hash_table_destroy(server->cap_supported);
+		}
+		/* Start with a fresh table */
+		server->cap_supported = g_hash_table_new_full(g_str_hash,
+							      g_str_equal,
+							      g_free, g_free);
+
 		/* Create a list of the supported caps */
-		for (i = 0; i < caps_length; i++)
-			server->cap_supported = g_slist_prepend(server->cap_supported, g_strdup(caps[i]));
+		for (i = 0; i < caps_length; i++) {
+			const char *name = caps[i];
+			const char *eq = strchr(name, '=');
+			int fresh = TRUE;
+
+			if (!eq) {
+				fresh = g_hash_table_insert(server->cap_supported,
+							    g_strdup(name),
+							    NULL);
+			}
+			/* Some values are in a KEY=VALUE form, parse them */
+			else if (eq[1] != '\0') {
+				char *key = g_strndup(name, (int)(eq - name));
+				char *val = g_strdup(eq + 1);
+				fresh = g_hash_table_insert(server->cap_supported,
+							    key, val);
+			}
+			/* If the string ends after the '=' consider the value
+			 * as invalid */
+			else {
+				g_warning("Invalid CAP key/value pair");
+			}
+
+			/* The specification doesn't say anything about
+			 * duplicated values, let's just warn the user */
+			if (fresh == FALSE) {
+				g_warning("Duplicate value");
+			}
+		}
 
 		/* Request the required caps, if any */
 		if (server->cap_queue == NULL) {
@@ -111,7 +146,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 
 			/* Check whether the cap is supported by the server */
 			for (tmp = server->cap_queue; tmp != NULL; tmp = tmp->next) {
-				if (gslist_find_string(server->cap_supported, tmp->data)) {
+				if (g_hash_table_lookup_extended(server->cap_supported, tmp->data, NULL, NULL)) {
 					if (avail_caps > 0)
 						g_string_append_c(cmd, ' ');
 					g_string_append(cmd, tmp->data);
