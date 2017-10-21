@@ -140,7 +140,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 	caps = g_strsplit(g_strchomp(list), " ", -1);
 	caps_length = g_strv_length(caps);
 
-	if (!g_strcmp0(evt, "LS")) {
+	if (!strcmp(evt, "LS")) {
 		if (server->cap_supported) {
 			g_hash_table_destroy(server->cap_supported);
 		}
@@ -204,7 +204,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			}
 		}
 	}
-	else if (!g_strcmp0(evt, "ACK")) {
+	else if (!strcmp(evt, "ACK")) {
 		int got_sasl = FALSE;
 
 		/* Emit a signal for every ack'd cap */
@@ -216,7 +216,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			else
 				server->cap_active = g_slist_prepend(server->cap_active, g_strdup(caps[i]));
 
-			if (!g_strcmp0(caps[i], "sasl"))
+			if (!strcmp(caps[i], "sasl"))
 				got_sasl = TRUE;
 
 			cap_emit_signal(server, "ack", caps[i]);
@@ -228,7 +228,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		if (got_sasl == FALSE)
 			cap_finish_negotiation(server);
 	}
-	else if (!g_strcmp0(evt, "NAK")) {
+	else if (!strcmp(evt, "NAK")) {
 		g_warning("The server answered with a NAK to our CAP request, this should not happen");
 
 		/* A NAK'd request means that a required cap can't be enabled or disabled, don't update the
