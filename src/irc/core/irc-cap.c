@@ -79,6 +79,33 @@ static void cap_emit_signal (IRC_SERVER_REC *server, char *cmd, char *args)
 	g_free(signal_name);
 }
 
+static gboolean parse_cap_name(char *name, char **key, char **val)
+{
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(name[0] != '\0', FALSE);
+
+	const char *eq = strchr(name, '=');
+	/* KEY only value */
+	if (!eq) {
+		*key = g_strdup(name);
+		*val = NULL;
+		return TRUE;
+	}
+	/* Some values are in a KEY=VALUE form, parse them */
+	else if (eq[1] != '\0') {
+		*key = g_strndup(name, (int)(eq - name));
+		*val = g_strdup(eq + 1);
+		return TRUE;
+	}
+	/* If the string ends after the '=' consider the value
+	 * as invalid */
+	else {
+		*key = NULL;
+		*val = NULL;
+		return FALSE;
+	}
+}
+
 static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *address)
 {
 	GSList *tmp;
@@ -106,33 +133,20 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 
 		/* Create a list of the supported caps */
 		for (i = 0; i < caps_length; i++) {
-			const char *name = caps[i];
-			const char *eq = strchr(name, '=');
-			int fresh = TRUE;
+			char *key, *val;
 
-			if (!eq) {
-				fresh = g_hash_table_insert(server->cap_supported,
-							    g_strdup(name),
-							    NULL);
+			if (parse_cap_name(caps[i], &key, &val)) {
+				if (!g_hash_table_insert(server->cap_supported,
+							 key, val)) {
+					/* The specification doesn't say anything about
+					 * duplicated values, let's just warn the user */
+					g_warning("Duplicate value");
+				}
 			}
-			/* Some values are in a KEY=VALUE form, parse them */
-			else if (eq[1] != '\0') {
-				char *key = g_strndup(name, (int)(eq - name));
-				char *val = g_strdup(eq + 1);
-				fresh = g_hash_table_insert(server->cap_supported,
-							    key, val);
-			}
-			/* If the string ends after the '=' consider the value
-			 * as invalid */
 			else {
 				g_warning("Invalid CAP key/value pair");
 			}
 
-			/* The specification doesn't say anything about
-			 * duplicated values, let's just warn the user */
-			if (fresh == FALSE) {
-				g_warning("Duplicate value");
-			}
 		}
 
 		/* Request the required caps, if any */
