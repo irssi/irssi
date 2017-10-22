@@ -49,5 +49,7 @@ before_script:
     - echo ^quit >> irssi-test/startup
     - irssi-build/bin/irssi --home irssi-test
     - cat irc.log.*
+    - cd $TRAVIS_BUILD_DIR
 
-script: true
+script:
+    - make check

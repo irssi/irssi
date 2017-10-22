@@ -16,7 +16,7 @@ irssi-version.h:
 	VERSION="$(VERSION)" $(srcdir)/utils/irssi-version.sh $(srcdir) | \
 		cmp -s - $@ || VERSION="$(VERSION)" $(srcdir)/utils/irssi-version.sh $(srcdir) >$@
 
-SUBDIRS = src docs scripts themes utils
+SUBDIRS = src tests docs scripts themes utils
 
 confdir = $(sysconfdir)
 conf_DATA = irssi.conf
