@@ -658,6 +658,9 @@ src/perl/ui/Makefile.PL
 src/perl/textui/Makefile.PL
 scripts/Makefile
 scripts/examples/Makefile
+tests/Makefile
+tests/irc/Makefile
+tests/irc/core/Makefile
 docs/Makefile
 docs/help/Makefile
 docs/help/in/Makefile
