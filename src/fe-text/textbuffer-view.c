@@ -1237,6 +1237,10 @@ void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	textbuffer_remove(view->buffer, line);
 }
 
+// TODO: this works better than the existing /lastlog logic, however
+//       this fails when the log is *much* longer than the screen size,
+//       so additional logic will be need to handle that; specifically
+//       consider simply reusing logic from the /clear function
 void textbuffer_view_remove_line_from_lastlog(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
 	unsigned char update_counter;
