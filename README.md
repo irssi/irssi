@@ -28,7 +28,7 @@ think of currently:
    queries when msgs/notices are received or when you send a msg, closing
    queries when it's been idle for some time, etc.
 
- - **Multiserver friendy** - I think Irssi has clearly the best support
+ - **Multiserver friendly** - I think Irssi has clearly the best support
    for handling multiple server connections. You can have as many as you
    want in as many ircnets as you want. Having several connections in one
    server works too, for example when you hit the (ircnet's) 10
@@ -84,7 +84,7 @@ think of currently:
    search command that jumps around in scrollback in GUI-style is still
    missing from Irssi, but there's something that's almost as good as it.
    /LASTLOG always shows timestamps when the line was printed, even if you
-   didn't have timestamps on. Now doing /SB GOTO <timestamp> jumps
+   didn't have timestamps on. Now doing /SB GOTO \<timestamp\> jumps
    directly to the position in scrollback you wanted. Great feature when
    you want to browse a bit of the discussion what happened when someone
    said your name (as seen in awaylog) or topic was changed (/last
@@ -96,9 +96,9 @@ think of currently:
     - `startup-HOWTO.txt` - new users should read this
     - `manual.txt` - manual I started writing but didn't get it very far :)
     - `perl.txt` - Perl scripting help
-    - `formats.txt` - How to use colors, etc. with irssi
+    - `formats.txt` - How to use colors, etc. with Irssi
     - `faq.txt` - Frequently Asked Questions
-    - `special_vars.txt` - some predefined $variables you can use with irssi
+    - `special_vars.txt` - some predefined $variables you can use with Irssi
 
 ## Bugs / Suggestions
 
