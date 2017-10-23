@@ -165,8 +165,8 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			}
 			else {
 				g_warning("Invalid CAP %s key/value pair", evt);
+				continue;
 			}
-
 		}
 
 		/* A multiline response is always terminated by a normal one,
@@ -248,6 +248,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			}
 			else {
 				g_warning("Invalid CAP %s key/value pair", evt);
+				continue;
 			}
 			cap_emit_signal(server, "new", key);
 		}
@@ -261,6 +262,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			}
 			else {
 				g_warning("Invalid CAP %s key/value pair", evt);
+				continue;
 			}
 			cap_emit_signal(server, "delete", key);
 			/* The server removed this CAP, remove it from the list
