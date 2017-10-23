@@ -266,6 +266,10 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			/* The server removed this CAP, remove it from the list
 			 * of the active ones if we had requested it */
 			server->cap_active = gslist_delete_string(server->cap_active, key, g_free);
+			/* We don't transfer the ownership of those two
+			 * variables this time, just free them when we're done. */
+			g_free(key);
+			g_free(val);
 		}
 	}
 	else {
