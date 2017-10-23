@@ -33,13 +33,12 @@ extern IPADDR ip4_any;
 
 GIOChannel *g_io_channel_new(int handle);
 
-/* returns 1 if IPADDRs are the same */
-int net_ip_compare(IPADDR *ip1, IPADDR *ip2);
+/* Returns 1 if IPADDRs are the same. */
+/* Deprecated since it is unused. It will be deleted in a later release. */
+int net_ip_compare(IPADDR *ip1, IPADDR *ip2) G_GNUC_DEPRECATED;
 
 int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip);
 
-/* Connect to socket */
-GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip) G_GNUC_DEPRECATED;
 /* Connect to socket with ip address and SSL*/
 GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *server);
 /* Start TLS */
