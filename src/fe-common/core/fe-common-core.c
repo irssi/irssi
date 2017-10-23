@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include "modules.h"
 #include "module-formats.h"
 #include "args.h"
 #include "misc.h"
@@ -470,26 +471,63 @@ void fe_common_core_finish_init(void)
 
 gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 {
+	const WindowType type = dest->window->active ? window_item_get_type(dest->window->active) : WI_TYPE_OTHER;
+	GSList *targets = NULL, *iterator = NULL;
+	gboolean found = FALSE;
+
 	g_return_val_if_fail(array != NULL, FALSE);
 
+	// we ignore all targets
 	if (strarray_find(array, "*") != -1)
 		return TRUE;
-
-	if (strarray_find(array, dest->target) != -1)
+	// exit if not a channel or query
+	else if (type & WI_TYPE_OTHER)
+		return FALSE;
+	// we ignore all channels
+	else if (type & WI_TYPE_CHANNEL && strarray_find(array, "#") != -1)
+		return TRUE;
+	// Is this a dcc chat?
+	else if (type & WI_TYPE_DCCCHAT && strarray_find(array, "=") != -1)
+		return TRUE;
+	// Is this a private query window?
+	else if (type & WI_TYPE_PRIVMSG && strarray_find(array, "@") != -1)
 		return TRUE;
 
-	if (dest->server_tag != NULL) {
-		char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, "*");
+	if (dest->server_tag == NULL)
+		return FALSE;
+
+	char *prefix = g_strdup_printf("%s/", dest->server_tag);
+	if (strarray_find_prefix(array, prefix) == -1) {
+		g_free(prefix);
+		return FALSE;
+	}
+
+	g_free(prefix);
+
+	// create a list of types to look for
+	targets = g_slist_append(targets, "*");
+	if (type & WI_TYPE_CHANNEL) {
+		targets = g_slist_append(targets, "#");
+		targets = g_slist_append(targets, (gpointer) dest->target);
+	}
+	else if (type & WI_TYPE_QUERY) {
+		if (type & WI_TYPE_DCCCHAT)
+			targets = g_slist_append(targets, "=");
+		else
+			targets = g_slist_append(targets, "@");
+	}
+
+	for (iterator = targets; iterator; iterator = iterator->next) {
+		char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, (char *) iterator->data);
 		int ret = strarray_find(array, tagtarget);
 		g_free(tagtarget);
-		if (ret != -1)
-			return TRUE;
-
-		tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
-		ret = strarray_find(array, tagtarget);
-		g_free(tagtarget);
-		if (ret != -1)
-			return TRUE;
+		if (ret != -1) {
+			found = TRUE;
+			break;
+		}
 	}
-	return FALSE;
+
+	g_slist_free(targets);
+
+	return found;
 }
