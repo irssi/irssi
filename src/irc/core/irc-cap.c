@@ -86,14 +86,14 @@ static gboolean parse_cap_name(char *name, char **key, char **val)
 
 	const char *eq = strchr(name, '=');
 	/* KEY only value */
-	if (!eq) {
+	if (eq == NULL) {
 		*key = g_strdup(name);
 		*val = NULL;
 		return TRUE;
 	}
 	/* Some values are in a KEY=VALUE form, parse them */
 	else if (eq[1] != '\0') {
-		*key = g_strndup(name, (int)(eq - name));
+		*key = g_strndup(name, (gsize)(eq - name));
 		*val = g_strdup(eq + 1);
 		return TRUE;
 	}
