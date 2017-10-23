@@ -135,19 +135,21 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		return;
 	}
 
+	/* The table is created only when needed */
+	if (server->cap_supported == NULL) {
+		server->cap_supported = g_hash_table_new_full(g_str_hash,
+							      g_str_equal,
+							      g_free, g_free);
+	}
+
 	/* Strip the trailing whitespaces before splitting the string, some servers send responses with
 	 * superfluous whitespaces that g_strsplit the interprets as tokens */
 	caps = g_strsplit(g_strchomp(list), " ", -1);
 	caps_length = g_strv_length(caps);
 
 	if (!strcmp(evt, "LS")) {
-		if (server->cap_supported) {
-			g_hash_table_destroy(server->cap_supported);
-		}
-		/* Start with a fresh table */
-		server->cap_supported = g_hash_table_new_full(g_str_hash,
-							      g_str_equal,
-							      g_free, g_free);
+		/* Throw away everything and start from scratch */
+		g_hash_table_remove_all(server->cap_supported);
 
 		/* Create a list of the supported caps */
 		for (i = 0; i < caps_length; i++) {
