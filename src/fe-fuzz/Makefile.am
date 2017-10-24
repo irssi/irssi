@@ -1,3 +1,5 @@
+SUBDIRS = irc
+
 bin_PROGRAMS = irssi-fuzz
 
 # Force link with CXX for libfuzzer support

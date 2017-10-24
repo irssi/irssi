@@ -648,6 +648,8 @@ src/fe-common/irc/Makefile
 src/fe-common/irc/dcc/Makefile
 src/fe-common/irc/notifylist/Makefile
 src/fe-fuzz/Makefile
+src/fe-fuzz/irc/Makefile
+src/fe-fuzz/irc/core/Makefile
 src/fe-none/Makefile
 src/fe-text/Makefile
 src/lib-config/Makefile
