@@ -29,20 +29,6 @@ cat docs/help/in/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr
 files=`echo $files|sed 's/\.in//g'`
 cat docs/help/Makefile.am.gen|sed "s/@HELPFILES@/$files/g"|sed 's/?/\\?/g'|tr '!?' '\t\n' > docs/help/Makefile.am
 
-# .html -> .txt with lynx or elinks
-echo "Documentation: html -> txt..."
-if type lynx >/dev/null 2>&1 ; then
-  LC_ALL=en_IE.utf8 lynx -dump docs/faq.html|perl -pe 's/^ *//; if ($_ eq "\n" && $state eq "Q") { $_ = ""; } elsif (/^([QA]):/) { $state = $1 } elsif ($_ ne "\n") { $_ = "   $_"; };' > docs/faq.txt
-elif type elinks >/dev/null 2>&1 ; then
-  elinks -dump docs/faq.html|perl -pe 's/^ *//; if ($_ eq "\n" && $state eq "Q") { $_ = ""; } elsif (/^([QA]):/) { $state = $1 } elsif ($_ ne "\n") { $_ = "   $_"; };' > docs/faq.txt
-elif type links >/dev/null 2>&1 ; then
-  links -dump docs/faq.html|perl -pe 's/^ *//; if ($_ eq "\n" && $state eq "Q") { $_ = ""; } elsif (/^([QA]):/) { $state = $1 } elsif ($_ ne "\n") { $_ = "   $_"; };' > docs/faq.txt
-else
-  echo "**Error**: No lynx or elinks present"
-  echo "Install lynx or elinks, then run autogen.sh again"
-  exit 1
-fi
-
 if test x$NOCONFIGURE = x && test -z "$*"; then
   echo "**Warning**: I am going to run \`configure' with no arguments."
   echo "If you wish to pass any to it, please specify them on the"
@@ -65,4 +51,4 @@ else
 fi
 
 # make sure perl hashes have correct length
-find src/perl -name *.c -o -name *.xs | xargs grep -n hv_store | perl -ne 'if (/"(\w+)",\s*(\d+)/) { print unless $2 == length $1 }'
+find src/perl -name '*.c' -o -name '*.xs' -exec grep -n hv_store {} + | perl -l -ne 'if (/"(\w+)",\s*(\d+)/ && $2 != length $1) { $X=1; print "Incorrect key length in $_" } END { exit $X }'
