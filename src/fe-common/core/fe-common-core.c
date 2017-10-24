@@ -461,26 +461,43 @@ void fe_common_core_finish_init(void)
 
 gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 {
+	int channel_type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
+	int query_type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
+	char **tmp;
+
 	g_return_val_if_fail(array != NULL, FALSE);
+	g_return_val_if_fail(dest != NULL, FALSE);
+	g_return_val_if_fail(dest->window != NULL, FALSE);
+	g_return_val_if_fail(dest->target != NULL, FALSE);
 
-	if (strarray_find(array, "*") != -1)
-		return TRUE;
-
-	if (strarray_find(array, dest->target) != -1)
-		return TRUE;
-
-	if (dest->server_tag != NULL) {
-		char *tagtarget = g_strdup_printf("%s/%s", dest->server_tag, "*");
-		int ret = strarray_find(array, tagtarget);
-		g_free(tagtarget);
-		if (ret != -1)
-			return TRUE;
-
-		tagtarget = g_strdup_printf("%s/%s", dest->server_tag, dest->target);
-		ret = strarray_find(array, tagtarget);
-		g_free(tagtarget);
-		if (ret != -1)
-			return TRUE;
+	WI_ITEM_REC *item = window_item_find_window(dest->window, dest->server, dest->target);
+	if (item == NULL) {
+		return FALSE;
 	}
+
+	int server_tag_len = dest->server_tag ? strlen(dest->server_tag) : 0;
+	for (tmp = array; *tmp != NULL; tmp++) {
+		char *str = *tmp;
+		if (*str == '\0') {
+			continue;
+		}
+
+		if (server_tag_len && !g_ascii_strncasecmp(str, dest->server_tag, server_tag_len) && str[server_tag_len] == '/') {
+			str += server_tag_len + 1;
+		}
+
+		if (!g_strcmp0(str, "") || !g_strcmp0(str, "::all")) {
+			return TRUE;
+		} else if (!g_ascii_strcasecmp(str, dest->target)) {
+			return TRUE;
+		} else if (item->type == query_type &&
+			!g_strcmp0(str, (dest->target[0] == '=') ? "::dccqueries" : "::queries")) {
+			return TRUE;
+		} else if (item->type == channel_type &&
+			!g_strcmp0(str, "::channels")) {
+			return TRUE;
+		}
+	}
+
 	return FALSE;
 }
