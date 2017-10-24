@@ -1,0 +1,124 @@
+   Frequently Asked Questions
+
+Q: Why doesn’t irssi display colors even when ircii etc. displays them?
+A: They force ANSI colors even if terminal doesn’t support them. By default,
+   irssi uses colors only if terminfo/termcap so says. The correct way to fix this
+   would be to change your TERM environment to a value where colors work, like
+   xterm-color or color_xterm (eg. TERM=xterm-color irssi). If this doesn’t help,
+   then use the evil way of /SET term_force_colors ON.
+
+Q: How do I easily write text to channel that starts with ‘/’ character?
+A: / /text
+
+Q: Why doesn’t irssi update my realname (or whatever) after I change it with /
+   SET realname and reconnect with /RECONNECT or /SERVER?
+A: Irssi is trying to be too smart. This will be fixed in future, but for now
+   you should use /DISCONNECT and /CONNECT.
+
+Q: I connected to some server which isn’t responding but now irssi tries to
+   connect back to it all the time! How can I stop it?
+A: Two ways. The “good way” to do it is with /DISCONNECT. Check the server tags
+   first with /SERVER without giving it any parameters, reconnections are those
+   that have tag starting with “recon” text. So most probably you’re going to do /
+   DISCONNECT recon-1. The other way is to remove all the reconnections with /
+   RMRECONNS, easier but may remove some connections you actually wanted to
+   reconnect (if you used multiple servers..).
+
+Q: How do I add seconds to timestamp?
+A: /FORMAT timestamp {timestamp %%H:%%M:%%S} - and remember to add the trailing
+   space :)
+
+Q: Why does irssi say “Irssi: Channel not fully synchronized yet, try again
+   after a while” when I try to use /BAN etc?
+A: Possibly a bug in irssi, or ircd you’re using does something that irssi
+   didn’t really notice. The new code should make this happen far less often than
+   before, but one known reason for this is when irssi doesn’t notice that you
+   were unable to join some channel. Currently however I don’t know of any such
+   events irssi doesn’t know about.
+
+   Anyway, if this does happen, do /RAWLOG SAVE ~/rawlog soon after joining to
+   channel, and either try to figure out yourself why irssi didn’t get reply to
+   WHO request, or open a Github issue with the full log included. Note that the
+   rawlog is by default only 200 lines and it may not be enough to show all needed
+   information, so you might want to do /SET rawlog_lines 1000 or so.
+
+   MODE +b still works fine though.
+
+Q: Where’s the GUI version?
+A: There was one on [1]irssi-import/xirssi but it has not been maintained for a
+   long time.
+
+Q: How do I autorejoin channels after being kicked?
+A: That’s evil and you shouldn’t do it. If you get kicked, you should stay out,
+   at least until the channel forgot you existed :) Most channels I’ve joined just
+   ban you if you autorejoin after kick. If you’re joined to channels who kick
+   people for fun, try changing channels or something.
+
+   Anyway, if you REALLY want to do that, and you understand that you’re doing
+   evilness, you can use the autorejoin.pl script that comes with irssi. You’ll
+   still need to specify the channels you wish to rejoin with /SET
+   autorejoin_channels #chan1 #chan2 ...
+
+Q: How do I announce that I’m away/back in all channels I’ve joined? Or how do
+   I change my nick when setting myself away/back?
+A: That’s even worse than autorejoin. Who could possibly care every time you
+   come and go? Many channels will kick you for using this, and I for example have
+   added several ignores so I’d never need to see these messages. Learn to use /
+   AWAY command properly and tell its existence to people who don’t know about it.
+   /WII yournick shows your away reason much better for people who actually want
+   to know if you’re there or not.
+
+Q: Why does irssi autojoin on invite by default?
+A: The setting is /SET join_auto_chans_on_invite - it’s not the same as regular
+   autojoin-on-invite, which irssi doesn’t even have. The only channels that are
+   joined on invite, are the ones you’ve added to config with /CHANNEL ADD -auto.
+   This is very useful with +i channels when you need to first send an invite
+   request to bot, or if you get accidentally kicked from channel, the kicker can
+   invite you back immediately.
+
+   I don’t see any bad side effects with this feature, so it’s ON by default. I
+   guess someone could start kicking/inviting you all the time but server
+   connection shouldn’t drop because of that, and you shouldn’t join channels
+   whose operators are that evil.
+
+Q: How to make UTF-8 support work with irssi?
+A: Make sure your terminal supports UTF-8 (for example, xterm -u8). If you use
+   screen, you may have to do screen -U. And in Irssi do /SET term_charset utf-8.
+   (for 0.8.9 and older: /SET term_type utf-8)
+
+Q: Will there be /DETACH-like feature?
+A: [2]tmux, [3]screen and [4]dtach can be used to do it just fine.
+
+Q: How do I run scripts automatically at startup?
+A: Put them into ~/.irssi/scripts/autorun/ directory. Or better would be if you
+   placed them in ~/.irssi/scripts/ and created symlinks to autorun directory (eg.
+   cd ~/.irssi/scripts/autorun/ ; ln -s ../script.pl .)
+
+Q: How do I execute commands automatically at startup?
+A: Put them into ~/.irssi/startup file, each command on its own line. The
+   preceding slash (/) is not necessary.
+
+Q: How do I easily edit existing topic?
+A: /TOPIC <tab>
+
+Q: How can I have /WHOIS replies to active window?
+A: You can disable the status window, or do /WINDOW LEVEL -CRAP in it which
+   would also make several other messages show up in active window. You can also
+   use a [5]script.
+
+Q: How do I add the active network to the statusbar
+A: Modify the window-line in statusbar section in config file to window = "{sb
+   $winref:$tag/$T{sbmode $M}}";
+
+Q: How to pronounce Irssi?
+A: Check [6]here
+
+
+   References:
+
+   [1] https://github.com/irssi-import/xirssi
+   [2] http://tmux.github.io/
+   [3] http://www.gnu.org/software/screen/screen.html
+   [4] http://dtach.sf.net/
+   [5] http://dgl.cx/irssi/hack-whois-in-current-window.pl
+   [6] https://irssi.org/assets/irssi.wav
