@@ -155,17 +155,15 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		for (i = 0; i < caps_length; i++) {
 			char *key, *val;
 
-			if (parse_cap_name(caps[i], &key, &val)) {
-				if (!g_hash_table_insert(server->cap_supported,
-							 key, val)) {
-					/* The specification doesn't say anything about
-					 * duplicated values, let's just warn the user */
-					g_warning("Duplicate value %s", key);
-				}
-			}
-			else {
+			if (!parse_cap_name(caps[i], &key, &val)) {
 				g_warning("Invalid CAP %s key/value pair", evt);
 				continue;
+			}
+
+			if (!g_hash_table_insert(server->cap_supported, key, val)) {
+				/* The specification doesn't say anything about
+				 * duplicated values, let's just warn the user */
+				g_warning("Duplicate value %s", key);
 			}
 		}
 
@@ -242,14 +240,12 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		for (i = 0; i < caps_length; i++) {
 			char *key, *val;
 
-			if (parse_cap_name(caps[i], &key, &val)) {
-				g_hash_table_insert(server->cap_supported,
-						    key, val);
-			}
-			else {
+			if (!parse_cap_name(caps[i], &key, &val)) {
 				g_warning("Invalid CAP %s key/value pair", evt);
 				continue;
 			}
+
+			g_hash_table_insert(server->cap_supported, key, val);
 			cap_emit_signal(server, "new", key);
 		}
 	}
@@ -257,13 +253,12 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		for (i = 0; i < caps_length; i++) {
 			char *key, *val;
 
-			if (parse_cap_name(caps[i], &key, &val)) {
-				g_hash_table_remove(server->cap_supported, key);
-			}
-			else {
+			if (!parse_cap_name(caps[i], &key, &val)) {
 				g_warning("Invalid CAP %s key/value pair", evt);
 				continue;
 			}
+
+			g_hash_table_remove(server->cap_supported, key);
 			cap_emit_signal(server, "delete", key);
 			/* The server removed this CAP, remove it from the list
 			 * of the active ones if we had requested it */
