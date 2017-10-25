@@ -16,6 +16,7 @@ s{(<.*?)\sclass="(?:highlighter-rouge|highlight)"(.*?>)}{\1\2}g;'
 
 srcdir=`dirname "$0"`
 test -z "$srcdir" && srcdir=.
+srcdir="$srcdir"/..
 
 if test ! -f "$srcdir"/configure.ac; then
     echo -n "**Error**: Directory \`$srcdir' does not look like the"
@@ -94,7 +95,7 @@ cat "$srcdir"/docs/faq.html \
 	if ($_ eq "\n" && $state eq "Q") { $_ = ""; }
 	elsif (/^([QA]):/) { $state = $1 }
 	elsif ($_ ne "\n") { $_ = "   $_"; };
-' > docs/faq.txt
+' > "$srcdir"/docs/faq.txt
 
 cat "$srcdir"/docs/startup-HOWTO.html \
     | perl -pe "s/\\bhref=([\"\'])#.*?\\1//" \

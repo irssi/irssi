@@ -3,21 +3,24 @@
 
 PKG_NAME="Irssi"
 
-srcdir=`dirname $0`
+srcdir=`dirname "$0"`
 test -z "$srcdir" && srcdir=.
+mydir=`pwd`
 
-if test ! -f $srcdir/configure.ac; then
-    echo -n "**Error**: Directory \`$srcdir\' does not look like the"
+if test ! -f "$srcdir"/configure.ac; then
+    echo -n "**Error**: Directory \`$srcdir' does not look like the"
     echo " top-level $PKG_NAME directory"
     exit 1
 fi
 
+cd "$srcdir"
+
 # create help files
 echo "Creating help files..."
-perl syntax.pl
+perl utils/syntax.pl
 
 echo "Creating ChangeLog..."
-git log > $srcdir/ChangeLog
+git log > ChangeLog
 if test "$?" -ne 0; then
     echo "**Error**: ${PKG_NAME} Autogen must be run in a git clone, cannot proceed."
     exit 1
@@ -38,17 +41,19 @@ fi
 
 rm -f aclocal.m4
 echo "Running autoreconf ..."
-autoreconf -i || exit 1
+autoreconf -i || exit $?
+
+# make sure perl hashes have correct length
+find src/perl -name '*.c' -o -name '*.xs' -exec grep -n hv_store {} + | perl -l -ne 'if (/"(\w+)",\s*(\d+)/ && $2 != length $1) { $X=1; print "Incorrect key length in $_" } END { exit $X }'
+
+cd "$mydir"
 
 conf_flags="--enable-maintainer-mode"
 
 if test x$NOCONFIGURE = x; then
-  echo Running $srcdir/configure $conf_flags "$@" ...
-  $srcdir/configure $conf_flags "$@" \
+  echo Running "$srcdir"/configure $conf_flags "$@" ...
+  "$srcdir"/configure $conf_flags "$@" \
   && echo Now type \`make\' to compile $PKG_NAME || exit 1
 else
   echo Skipping configure process.
 fi
-
-# make sure perl hashes have correct length
-find src/perl -name '*.c' -o -name '*.xs' -exec grep -n hv_store {} + | perl -l -ne 'if (/"(\w+)",\s*(\d+)/ && $2 != length $1) { $X=1; print "Incorrect key length in $_" } END { exit $X }'

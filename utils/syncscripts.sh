@@ -7,6 +7,7 @@ scriptbase=https://scripts.irssi.org/scripts
 
 srcdir=`dirname "$0"`
 test -z "$srcdir" && srcdir=.
+srcdir="$srcdir"/..
 
 if test ! -f "$srcdir"/configure.ac; then
     echo -n "**Error**: Directory \`$srcdir' does not look like the"
