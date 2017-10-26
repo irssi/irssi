@@ -661,6 +661,8 @@ scripts/examples/Makefile
 docs/Makefile
 docs/help/Makefile
 docs/help/in/Makefile
+utils/Makefile
+themes/Makefile
 irssi-config
 ])
 

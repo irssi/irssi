@@ -7,6 +7,7 @@ $VERSION = "1.19";
     contact     => 'dgl@dgl.cx, tss@iki.fi, georg@boerde.de',
     name        => 'usercount',
     description => 'Adds a usercount for a channel as a statusbar item',
+    sbitems     => 'usercount',
     license     => 'GNU GPLv2 or later',
     url         => 'http://irssi.dgl.cx/',
     changes     => 'Only show halfops if server supports them',

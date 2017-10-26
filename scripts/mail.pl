@@ -6,6 +6,7 @@ $VERSION = "2.92";
     contact     => "tss\@iki.fi, matti\@hiljanen.com, joost\@carnique.nl, bart\@dreamflow.nl",
     name        => "mail",
     description => "Fully customizable mail counter statusbar item with multiple mailbox and multiple Maildir support",
+    sbitems     => "mail",
     license     => "Public Domain",
     url         => "http://irssi.org, http://scripts.irssi.de",
 );
