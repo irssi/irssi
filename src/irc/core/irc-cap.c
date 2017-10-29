@@ -119,7 +119,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 
 	/* Multiline responses have an additional parameter and we have to do
 	 * this stupid dance to parse them */
-	if (evt[0] == 'L' && !strcmp(star, "*")) {
+	if (!g_ascii_strcasecmp(evt, "LS") && !strcmp(star, "*")) {
 		multiline = TRUE;
 	}
 	/* This branch covers the '*' parameter isn't present, adjust the
