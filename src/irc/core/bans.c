@@ -18,7 +18,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <irssi/src/core/module.h>
+#include "module.h"
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/misc.h>
 #include <irssi/src/core/settings.h>
