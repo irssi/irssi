@@ -20,13 +20,13 @@
 
 #include "module.h"
 
-#include "net-sendbuffer.h"
-#include "signals.h"
-#include "rawlog.h"
-#include "misc.h"
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/misc.h>
 
-#include "channels.h"
-#include "queries.h"
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
 
 #include "irc-nicklist.h"
 #include "irc-queries.h"
@@ -35,15 +35,15 @@
 #include "irc-cap.h"
 #include "sasl.h"
 
-#include "channels-setup.h"
+#include <irssi/src/core/channels-setup.h>
 #include "channel-rejoin.h"
 #include "servers-idle.h"
-#include "servers-reconnect.h"
+#include <irssi/src/core/servers-reconnect.h>
 #include "servers-redirect.h"
 #include "modes.h"
 
-#include "settings.h"
-#include "recode.h"
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/recode.h>
 
 #define DEFAULT_MAX_KICKS 1
 #define DEFAULT_MAX_MODES 3

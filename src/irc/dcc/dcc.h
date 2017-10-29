@@ -1,8 +1,8 @@
 #ifndef __DCC_H
 #define __DCC_H
 
-#include "modules.h"
-#include "network.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/network.h>
 
 #define DCC(dcc) ((DCC_REC *) (dcc))
 

@@ -19,10 +19,10 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "network.h"
-#include "misc.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/misc.h>
 
 #include "dcc-file.h"
 #include "dcc-get.h"

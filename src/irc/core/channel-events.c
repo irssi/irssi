@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
-#include "channels-setup.h"
-#include "settings.h"
-#include "recode.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/channels-setup.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/recode.h>
 
 #include "irc-servers.h"
 #include "irc-channels.h"

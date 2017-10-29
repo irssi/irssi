@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "levels.h"
-#include "misc.h"
-#include "special-vars.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc-servers.h"
 #include "servers-idle.h"
-#include "ignore.h"
+#include <irssi/src/core/ignore.h>
 #include "ctcp.h"
 
 typedef struct {

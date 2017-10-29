@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc-cap.h"
 #include "irc-servers.h"

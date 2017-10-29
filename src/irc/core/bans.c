@@ -18,10 +18,10 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "module.h"
-#include "signals.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/core/module.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc-servers.h"
 #include "irc-channels.h"
@@ -29,7 +29,7 @@
 #include "irc-commands.h"
 #include "modes.h"
 #include "mode-lists.h"
-#include "nicklist.h"
+#include <irssi/src/core/nicklist.h>
 
 #define BAN_TYPE_NORMAL (IRC_MASK_USER | IRC_MASK_DOMAIN)
 #define BAN_TYPE_USER (IRC_MASK_USER)

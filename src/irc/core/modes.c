@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc-commands.h"
 #include "irc-servers.h"
@@ -28,7 +28,7 @@
 #include "servers-redirect.h"
 #include "modes.h"
 #include "mode-lists.h"
-#include "nicklist.h"
+#include <irssi/src/core/nicklist.h>
 
 /* Change nick's mode in channel */
 static void nick_mode_change(IRC_CHANNEL_REC *channel, const char *nick,

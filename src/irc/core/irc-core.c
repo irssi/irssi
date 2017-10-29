@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include "chat-protocols.h"
-#include "settings.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc-servers.h"
 #include "irc-chatnets.h"
@@ -30,7 +30,7 @@
 #include "sasl.h"
 
 #include "irc-servers-setup.h"
-#include "channels-setup.h"
+#include <irssi/src/core/channels-setup.h>
 
 #include "ctcp.h"
 #include "irc-commands.h"

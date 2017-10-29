@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "network.h"
-#include "servers-setup.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc-chatnets.h"
 #include "irc-servers-setup.h"
