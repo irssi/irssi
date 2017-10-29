@@ -163,7 +163,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			if (!g_hash_table_insert(server->cap_supported, key, val)) {
 				/* The specification doesn't say anything about
 				 * duplicated values, let's just warn the user */
-				g_warning("Duplicate value %s", key);
+				g_warning("The server sent the %s capability twice", key);
 			}
 		}
 
