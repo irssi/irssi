@@ -148,8 +148,12 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 	caps_length = g_strv_length(caps);
 
 	if (!g_ascii_strcasecmp(evt, "LS")) {
-		/* Throw away everything and start from scratch */
-		g_hash_table_remove_all(server->cap_supported);
+		if (!server->cap_in_multiline) {
+			/* Throw away everything and start from scratch */
+			g_hash_table_remove_all(server->cap_supported);
+		}
+
+		server->cap_in_multiline = multiline;
 
 		/* Create a list of the supported caps */
 		for (i = 0; i < caps_length; i++) {
