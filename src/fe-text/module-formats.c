@@ -78,5 +78,26 @@ FORMAT_REC gui_text_formats[] =
 	{ "paste_warning", "Pasting $0 lines to $1. Press Ctrl-K if you wish to do this or Ctrl-C to cancel.", 2, { 1, 0 } },
 	{ "paste_prompt", "Hit Ctrl-K to paste, Ctrl-C to abort?", 0 },
 
+	/* ---- */
+	{ NULL, "Welcome", 0 },
+
+	{ "irssi_banner",
+	  " ___           _%:"
+	  "|_ _|_ _ _____(_)%:"
+	  " | || '_(_-<_-< |%:"
+	  "|___|_| /__/__/_|%:"
+	  "Irssi v$J - http://www.irssi.org", 0 },
+	{ "welcome_firsttime",
+	  "- - - - - - - - - - - - - - - - - - - - - - - - - - - -\n"
+	  "Hi there! If this is your first time using Irssi, you%:"
+	  "might want to go to our website and read the startup%:"
+	  "documentation to get you going.%:%:"
+	  "Our community and staff are available to assist you or%:"
+	  "to answer any questions you may have.%:%:"
+	  "Use the /HELP command to get detailed information about%:"
+	  "the available commands.%:"
+	  "- - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0 },
+	{ "welcome_init_settings", "The following settings were initialized", 0 },
+
 	{ NULL, NULL, 0 }
 };

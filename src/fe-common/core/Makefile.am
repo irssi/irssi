@@ -55,6 +55,7 @@ pkginc_fe_common_core_HEADERS = \
 	fe-exec.h \
 	fe-messages.h \
 	fe-queries.h \
+	fe-settings.h \
 	fe-tls.h \
 	formats.h \
 	hilight-text.h \

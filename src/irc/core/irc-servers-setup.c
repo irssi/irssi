@@ -116,14 +116,17 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 
 static void init_userinfo(void)
 {
+	int changed;
 	const char *set, *nick, *user_name, *str;
 
+	changed = 0;
 	/* check if nick/username/realname wasn't read from setup.. */
         set = settings_get_str("real_name");
 	if (set == NULL || *set == '\0') {
 		str = g_getenv("IRCNAME");
 		settings_set_str("real_name",
 				 str != NULL ? str : g_get_real_name());
+		changed |= 1<<0;
 	}
 
 	/* username */
@@ -134,6 +137,7 @@ static void init_userinfo(void)
 				 str != NULL ? str : g_get_user_name());
 
 		user_name = settings_get_str("user_name");
+		changed |= 1<<1;
 	}
 
 	/* nick */
@@ -143,15 +147,20 @@ static void init_userinfo(void)
 		settings_set_str("nick", str != NULL ? str : user_name);
 
 		nick = settings_get_str("nick");
+		changed |= 1<<2;
 	}
 
 	/* host name */
         set = settings_get_str("hostname");
 	if (set == NULL || *set == '\0') {
 		str = g_getenv("IRCHOST");
-		if (str != NULL)
+		if (str != NULL) {
 			settings_set_str("hostname", str);
+			changed |= 1<<3;
+		}
 	}
+
+	signal_emit("irssi init userinfo changed", 1, GINT_TO_POINTER(changed));
 }
 
 static void sig_server_setup_read(IRC_SERVER_SETUP_REC *rec, CONFIG_NODE *node)
