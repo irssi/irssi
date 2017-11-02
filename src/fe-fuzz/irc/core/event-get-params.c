@@ -53,9 +53,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 	}
 	uint8_t count = *data;
 	/* malloc(size) instead of size+1, because we already used one byte of data */
-	char *copy = malloc(size);
-	memcpy(copy, data+1, size-1);
-	copy[size-1] = '\0';
+	gchar *copy = g_strndup((const gchar *)data+1, size-1);
 
 	char *output0;
 	char *output1;
@@ -82,6 +80,6 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 		params = event_get_params(copy, 4, &output0, &output1, &output2, &output3);
 	}
 	g_free(params);
-	free(copy);
+	g_free(copy);
 	return 0;
 }
