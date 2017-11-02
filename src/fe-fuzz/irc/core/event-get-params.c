@@ -52,7 +52,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 		return 0;
 	}
 	uint8_t count = *data;
-	char *copy = (char *)malloc(sizeof(char)*(size-1+1));
+	char *copy = malloc(sizeof(char)*(size-1+1));
 	memcpy(copy, data+1, size-1);
 	copy[size-1] = '\0';
 
