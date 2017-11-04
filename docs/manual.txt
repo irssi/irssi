@@ -973,7 +973,7 @@ If <color> is a
 	yourself unaway, Irssi will display all the messages in the awaylog.
 
 	/SET awaylog_level <level> - Default is MSGS HILIGHT
-	/SET awaylog_file <filename> - Default is ~/.irssi/away.log
+	/SET awaylog_file <filename> - Default is ~/irclogs/away.log
 
 	You can disable this feature by setting awaylog_level to NONE.
 
