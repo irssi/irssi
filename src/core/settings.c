@@ -39,7 +39,7 @@ static GString *last_errors;
 static GSList *last_invalid_modules;
 static int fe_initialized;
 static int config_changed; /* FIXME: remove after .98 (unless needed again) */
-static int user_settings_changed;
+static unsigned int user_settings_changed;
 
 static GHashTable *settings;
 static int timeout_tag;
@@ -467,7 +467,7 @@ SETTINGS_REC *settings_get_record(const char *key)
 
 static void sig_init_userinfo_changed(gpointer changedp)
 {
-	user_settings_changed = GPOINTER_TO_INT(changedp);
+	user_settings_changed |= GPOINTER_TO_UINT(changedp);
 }
 
 static void sig_init_finished(void)
@@ -486,7 +486,7 @@ static void sig_init_finished(void)
 		signal_emit("setup changed", 0);
 	}
 
-	signal_emit("settings userinfo changed", 1, GINT_TO_POINTER(user_settings_changed));
+	signal_emit("settings userinfo changed", 1, GUINT_TO_POINTER(user_settings_changed));
 }
 
 static void settings_clean_invalid_module(const char *module)

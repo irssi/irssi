@@ -81,7 +81,7 @@ static GMainLoop *main_loop;
 int quitting;
 
 static int display_firsttimer = FALSE;
-static int user_settings_changed = 0;
+static unsigned int user_settings_changed = 0;
 
 
 static void sig_exit(void)
@@ -91,7 +91,7 @@ static void sig_exit(void)
 
 static void sig_settings_userinfo_changed(gpointer changedp)
 {
-	user_settings_changed = GPOINTER_TO_INT(changedp);
+	user_settings_changed = GPOINTER_TO_UINT(changedp);
 }
 
 /* redraw irssi's screen.. */
@@ -199,13 +199,13 @@ static void textui_finish_init(void)
 	/* see irc-servers-setup.c:init_userinfo */
 	if (user_settings_changed)
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_WELCOME_INIT_SETTINGS);
-	if (user_settings_changed & (1<<0))
+	if (user_settings_changed & USER_SETTINGS_REAL_NAME)
 		fe_settings_set_print("real_name");
-	if (user_settings_changed & (1<<1))
+	if (user_settings_changed & USER_SETTINGS_USER_NAME)
 		fe_settings_set_print("user_name");
-	if (user_settings_changed & (1<<2))
+	if (user_settings_changed & USER_SETTINGS_NICK)
 		fe_settings_set_print("nick");
-	if (user_settings_changed & (1<<3))
+	if (user_settings_changed & USER_SETTINGS_HOSTNAME)
 		fe_settings_set_print("hostname");
 }
 
@@ -222,7 +222,7 @@ static void textui_deinit(void)
         fe_perl_deinit();
 #endif
 
-        dirty_check(); /* one last time to print any quit messages */
+	dirty_check(); /* one last time to print any quit messages */
 	signal_remove("settings userinfo changed", (SIGNAL_FUNC) sig_settings_userinfo_changed);
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 
@@ -249,7 +249,6 @@ static void textui_deinit(void)
 	irc_deinit();
 	core_deinit();
 }
-
 
 static void check_files(void)
 {
