@@ -1,4 +1,4 @@
-# IndentPPDirectives: None
+# IndentPPDirectives: AfterHash
 # SpaceInParentheses: false
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
@@ -12,22 +12,23 @@ AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
-AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakBeforeMultilineStrings: false
 BinPackArguments: true
 BinPackParameters: true
 BreakBeforeBinaryOperators: None
-BreakBeforeBraces: Attach
-BreakBeforeTernaryOperators: true
+BreakBeforeBraces: Linux
+BreakBeforeTernaryOperators: false
 ColumnLimit: 100
 IndentCaseLabels: true
 IndentWidth: 8
 IndentWrappedFunctionNames: true
 KeepEmptyLinesAtTheStartOfBlocks: false
 Language: Cpp
+Cpp11BracedListStyle: false
 MaxEmptyLinesToKeep: 1
 PointerAlignment: Right
 SortIncludes: true
-SpaceAfterCStyleCast: false
+SpaceAfterCStyleCast: true
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false
