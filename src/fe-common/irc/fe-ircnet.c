@@ -106,9 +106,9 @@ static void cmd_network_add_modify(const char *data, gboolean add)
 	rec = ircnet_find(name);
 	if (rec == NULL) {
 		if (add == FALSE) {
-			cmd_params_free(free_arg);
 			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 				IRCTXT_NETWORK_NOT_FOUND, name);
+			cmd_params_free(free_arg);
 			return;
 		}
 
