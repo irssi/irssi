@@ -109,6 +109,7 @@ static void hilight_destroy(HILIGHT_REC *rec)
 	if (rec->channels != NULL) g_strfreev(rec->channels);
 	g_free_not_null(rec->color);
 	g_free_not_null(rec->act_color);
+	g_free_not_null(rec->servertag);
 	g_free(rec->text);
 	g_free(rec);
 }
@@ -456,7 +457,7 @@ static void read_hilight_config(void)
 	CONFIG_NODE *node;
 	HILIGHT_REC *rec;
 	GSList *tmp;
-	char *text, *color;
+	char *text, *color, *servertag;
 
 	hilights_destroy_all();
 
@@ -499,7 +500,9 @@ static void read_hilight_config(void)
 		rec->nickmask = config_node_get_bool(node, "mask", FALSE);
 		rec->fullword = config_node_get_bool(node, "fullword", FALSE);
 		rec->regexp = config_node_get_bool(node, "regexp", FALSE);
-		rec->servertag = config_node_get_str(node, "servertag", NULL);
+		servertag = config_node_get_str(node, "servertag", NULL);
+		rec->servertag = servertag == NULL || *servertag == '\0' ? NULL :
+			g_strdup(servertag);
 		hilight_init_rec(rec);
 
 		node = iconfig_node_section(node, "channels", -1);
