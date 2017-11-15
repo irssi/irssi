@@ -26,7 +26,7 @@
 #include "misc.h"
 #include "lib-config/iconfig.h"
 #include "settings.h"
-
+#include "fe-settings.h"
 #include "levels.h"
 #include "printtext.h"
 #include "keyboard.h"
@@ -39,6 +39,11 @@ static void set_print(SETTINGS_REC *rec)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_SET_ITEM,
 		    rec->key, value);
 	g_free(value);
+}
+
+void fe_settings_set_print(const char *key)
+{
+	set_print(settings_get_record(key));
 }
 
 static void set_print_pattern(const char *pattern)
