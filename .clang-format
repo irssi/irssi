@@ -19,7 +19,7 @@ BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Linux
 BreakBeforeTernaryOperators: false
 ColumnLimit: 100
-IndentCaseLabels: true
+IndentCaseLabels: false
 IndentWidth: 8
 IndentWrappedFunctionNames: true
 KeepEmptyLinesAtTheStartOfBlocks: false
