@@ -1078,23 +1078,22 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 		bg = -1;
 	} else {
 		/* foreground color */
-		if (**str != ',') {
-			fg = **str-'0';
+		fg = **str-'0';
+		(*str)++;
+		if (i_isdigit(**str)) {
+			fg = fg*10 + (**str-'0');
 			(*str)++;
-			if (i_isdigit(**str)) {
-				fg = fg*10 + (**str-'0');
-				(*str)++;
-			}
 		}
+
 		if ((*str)[0] == ',' && i_isdigit((*str)[1])) {
 			/* background color */
+			(*str)++;
+			bg = **str-'0';
+			(*str)++;
+			if (i_isdigit(**str)) {
+				bg = bg*10 + (**str-'0');
 				(*str)++;
-				bg = **str-'0';
-				(*str)++;
-				if (i_isdigit(**str)) {
-					bg = bg*10 + (**str-'0');
-					(*str)++;
-				}
+			}
 		}
 	}
 
