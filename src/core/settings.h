@@ -30,6 +30,13 @@ typedef struct {
 	char **choices;
 } SETTINGS_REC;
 
+enum {
+	USER_SETTINGS_REAL_NAME = 0x1,
+	USER_SETTINGS_USER_NAME = 0x2,
+	USER_SETTINGS_NICK	= 0x4,
+	USER_SETTINGS_HOSTNAME	= 0x8,
+};
+
 /* macros for handling the default Irssi configuration */
 #define iconfig_get_str(a, b, c) config_get_str(mainconfig, a, b, c)
 #define iconfig_get_int(a, b, c) config_get_int(mainconfig, a, b, c)
