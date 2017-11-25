@@ -48,6 +48,8 @@ static void cmd_network_list(void)
 		g_string_truncate(str, 0);
 		if (rec->nick != NULL)
 			g_string_append_printf(str, "nick: %s, ", rec->nick);
+		if (rec->alternate_nick != NULL)
+			g_string_append_printf(str, "alternate_nick: %s, ", rec->alternate_nick);
 		if (rec->username != NULL)
 			g_string_append_printf(str, "username: %s, ", rec->username);
 		if (rec->realname != NULL)
@@ -114,6 +116,7 @@ static void cmd_network_add_modify(const char *data, gboolean add)
 		rec->name = g_strdup(name);
 	} else {
 		if (g_hash_table_lookup(optlist, "nick")) g_free_and_null(rec->nick);
+		if (g_hash_table_lookup(optlist, "alternate_nick")) g_free_and_null(rec->alternate_nick);
 		if (g_hash_table_lookup(optlist, "user")) g_free_and_null(rec->username);
 		if (g_hash_table_lookup(optlist, "realname")) g_free_and_null(rec->realname);
 		if (g_hash_table_lookup(optlist, "host")) {
@@ -145,6 +148,8 @@ static void cmd_network_add_modify(const char *data, gboolean add)
 
 	value = g_hash_table_lookup(optlist, "nick");
 	if (value != NULL && *value != '\0') rec->nick = g_strdup(value);
+	value = g_hash_table_lookup(optlist, "alternate_nick");
+	if (value != NULL && *value != '\0') rec->alternate_nick = g_strdup(value);
 	value = g_hash_table_lookup(optlist, "user");
 	if (value != NULL && *value != '\0') rec->username = g_strdup(value);
 	value = g_hash_table_lookup(optlist, "realname");
@@ -175,7 +180,7 @@ static void cmd_network_add_modify(const char *data, gboolean add)
 	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: NETWORK ADD|MODIFY [-nick <nick>] [-user <user>] [-realname <name>]
+/* SYNTAX: NETWORK ADD|MODIFY [-nick <nick>] [-alternate_nick <nick>] [-user <user>] [-realname <name>]
                               [-host <host>] [-usermode <mode>] [-autosendcmd <cmd>]
                               [-querychans <count>] [-whois <count>] [-msgs <count>]
                               [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
@@ -228,9 +233,9 @@ void fe_ircnet_init(void)
 	command_bind("network remove", NULL, (SIGNAL_FUNC) cmd_network_remove);
 
 	command_set_options("network add", "-kicks -msgs -modes -whois -cmdspeed "
-			    "-cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
+			    "-cmdmax -nick -alternate_nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
 	command_set_options("network modify", "-kicks -msgs -modes -whois -cmdspeed "
-			    "-cmdmax -nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
+			    "-cmdmax -nick -alternate_nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
 }
 
 void fe_ircnet_deinit(void)

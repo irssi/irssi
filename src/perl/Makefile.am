@@ -59,7 +59,7 @@ perl-signals-list.h: $(top_srcdir)/docs/signals.txt $(srcdir)/get-signals.pl
 	cat $(top_srcdir)/docs/signals.txt | $(perlpath) $(srcdir)/get-signals.pl > perl-signals-list.h
 
 irssi-core.pl.h: irssi-core.pl
-	$(top_srcdir)/file2header.sh $(srcdir)/irssi-core.pl irssi_core_code > irssi-core.pl.h
+	$(top_srcdir)/utils/file2header.sh $(srcdir)/irssi-core.pl irssi_core_code > irssi-core.pl.h
 
 common_sources = \
 	common/Irssi.xs \

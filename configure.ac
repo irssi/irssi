@@ -166,6 +166,15 @@ AC_ARG_ENABLE(gregex,
 	fi,
 	want_gregex=yes)
 
+AC_ARG_WITH(capsicum,
+[  --with-capsicum         Build with Capsicum support],
+	if test x$withval = xno; then
+		want_capsicum=no
+	else
+		want_capsicum=yes
+	fi,
+	want_capsicum=yes)
+
 dnl **
 dnl ** just some generic stuff...
 dnl **
@@ -499,12 +508,30 @@ if test "$want_perl" != "no"; then
 	fi
 fi
 
+dnl **
+dnl ** check for capsicum
+dnl **
+
+if test "x$want_capsicum" = "xyes"; then
+	AC_CHECK_LIB(c, cap_enter, [
+		AC_CHECK_LIB(nv, nvlist_create, [
+			AC_DEFINE(HAVE_CAPSICUM,, Build with Capsicum support)
+			LIBS="$LIBS -lnv"
+		], [
+			want_capsicum="no, nvlist_create not found"
+		])
+	], [
+		want_capsicum="no, cap_enter not found"
+	])
+fi
+
 dnl ** check what we want to build
 AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIFUZZER, test "$want_irssifuzzer" = "yes")
 AM_CONDITIONAL(BUILD_IRSSIPROXY, test "$want_irssiproxy" = "yes")
 AM_CONDITIONAL(HAVE_PERL, test "$want_perl" != "no")
+AM_CONDITIONAL(HAVE_CAPSICUM, test "x$want_capsicum" = "xyes")
 AM_CONDITIONAL(USE_GREGEX, test "x$want_gregex" = "xyes")
 
 # move LIBS to PROG_LIBS so they're not tried to be used when linking eg. perl libraries
@@ -634,6 +661,8 @@ scripts/examples/Makefile
 docs/Makefile
 docs/help/Makefile
 docs/help/in/Makefile
+utils/Makefile
+themes/Makefile
 irssi-config
 ])
 
@@ -713,6 +742,7 @@ echo
 echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with true color support.. : $want_truecolor"
 echo "Building with GRegex ............. : $want_gregex"
+echo "Building with Capsicum ........... : $want_capsicum"
 
 echo
 echo "If there are any problems, read the INSTALL file."

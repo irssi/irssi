@@ -1,0 +1,31 @@
+Capsicum is a lightweight OS capability and sandbox framework provided
+by FreeBSD.  When built with Capsicum support - which is the default under
+FreeBSD - Irssi can enter a Capsicum capability mode (a sandbox), greatly
+limiting possible consequences of a potential security hole in Irssi
+or the libraries it depends on.
+
+To make Irssi enter capability mode on startup, add
+
+capsicum = "yes";
+awaylog_file = "~/irclogs/away.log";
+
+to your ~/.irssi/config and restart the client.  Alternatively you can
+enter it "by hand", using the "/capsicum enter" command.  From the security
+point of view it's strongly preferable to use the former method, to avoid
+establishing connections without the sandbox protection; the "/capsicum"
+command is only intended for experimentation, and in cases where you need
+to do something that's not possible in capability mode - run scripts,
+for example - before continuing.
+
+There is no way to leave the capability mode, apart from exiting Irssi.
+When running in capability mode, there are certain restrictions - Irssi
+won't be able to access any files outside the directory pointed to by
+capsicum_irclogs_path (which defaults to ~/irclogs/).  If you change
+the path when already in capability mode it won't be effective until
+you restart Irssi.  Capability mode also makes it impossible to use
+the "/save" command.
+
+Currently there is no way to use custom SSL certificates.  As a workaround
+you can establish connections and enter the capability mode afterwards
+using the "/capsicum enter" command.
+

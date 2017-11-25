@@ -39,6 +39,7 @@ static GString *last_errors;
 static GSList *last_invalid_modules;
 static int fe_initialized;
 static int config_changed; /* FIXME: remove after .98 (unless needed again) */
+static unsigned int user_settings_changed;
 
 static GHashTable *settings;
 static int timeout_tag;
@@ -464,6 +465,11 @@ SETTINGS_REC *settings_get_record(const char *key)
 	return g_hash_table_lookup(settings, key);
 }
 
+static void sig_init_userinfo_changed(gpointer changedp)
+{
+	user_settings_changed |= GPOINTER_TO_UINT(changedp);
+}
+
 static void sig_init_finished(void)
 {
 	fe_initialized = TRUE;
@@ -479,6 +485,8 @@ static void sig_init_finished(void)
 			  "updated, please /SAVE");
 		signal_emit("setup changed", 0);
 	}
+
+	signal_emit("settings userinfo changed", 1, GUINT_TO_POINTER(user_settings_changed));
 }
 
 static void settings_clean_invalid_module(const char *module)
@@ -875,6 +883,7 @@ void settings_init(void)
 	timeout_tag = g_timeout_add(SETTINGS_AUTOSAVE_TIMEOUT,
 				    (GSourceFunc) sig_autosave, NULL);
 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
+	signal_add("irssi init userinfo changed", (SIGNAL_FUNC) sig_init_userinfo_changed);
 	signal_add("gui exit", (SIGNAL_FUNC) sig_autosave);
 }
 
@@ -887,6 +896,7 @@ void settings_deinit(void)
 {
         g_source_remove(timeout_tag);
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_init_finished);
+	signal_remove("irssi init userinfo changed", (SIGNAL_FUNC) sig_init_userinfo_changed);
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_autosave);
 
 	g_slist_foreach(last_invalid_modules, (GFunc) g_free, NULL);

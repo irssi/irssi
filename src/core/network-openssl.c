@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include "network.h"
+#include "network-openssl.h"
 #include "net-sendbuffer.h"
 #include "misc.h"
 #include "servers.h"
@@ -44,6 +45,19 @@
 #define ASN1_STRING_data(x)       ASN1_STRING_get0_data(x)
 #endif
 
+/* OpenSSL 1.1.0 also introduced some useful additions to the api */
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L) || defined (LIBRESSL_VERSION_NUMBER)
+static int X509_STORE_up_ref(X509_STORE *vfy)
+{
+    int n;
+
+    n = CRYPTO_add(&vfy->references, 1, CRYPTO_LOCK_X509_STORE);
+    g_assert(n > 1);
+
+    return (n > 1) ? 1 : 0;
+}
+#endif
+
 /* ssl i/o channel object */
 typedef struct
 {
@@ -58,6 +72,7 @@ typedef struct
 } GIOSSLChannel;
 
 static int ssl_inited = FALSE;
+static X509_STORE *store = NULL;
 
 static void irssi_ssl_free(GIOChannel *handle)
 {
@@ -362,8 +377,10 @@ static GIOFuncs irssi_ssl_channel_funcs = {
     irssi_ssl_get_flags
 };
 
-static gboolean irssi_ssl_init(void)
+gboolean irssi_ssl_init(void)
 {
+	int success;
+
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && !defined(LIBRESSL_VERSION_NUMBER)
 	if (!OPENSSL_init_ssl(OPENSSL_INIT_SSL_DEFAULT, NULL)) {
 		g_error("Could not initialize OpenSSL");
@@ -374,6 +391,20 @@ static gboolean irssi_ssl_init(void)
 	SSL_load_error_strings();
 	OpenSSL_add_all_algorithms();
 #endif
+	store = X509_STORE_new();
+	if (store == NULL) {
+		g_error("Could not initialize OpenSSL: X509_STORE_new() failed");
+		return FALSE;
+	}
+
+	success = X509_STORE_set_default_paths(store);
+	if (success == 0) {
+		g_warning("Could not load default certificates");
+		X509_STORE_free(store);
+		store = NULL;
+		/* Don't return an error; the user might have their own cafile/capath. */
+	}
+
 	ssl_inited = TRUE;
 
 	return TRUE;
@@ -491,9 +522,12 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		g_free(scafile);
 		g_free(scapath);
 		verify = TRUE;
-	} else {
-		if (!SSL_CTX_set_default_verify_paths(ctx))
-			g_warning("Could not load default certificates");
+	} else if (store != NULL) {
+		/* Make sure to increment the refcount every time the store is
+		 * used, that's essential not to get it free'd by OpenSSL when
+		 * the SSL_CTX is destroyed. */
+		X509_STORE_up_ref(store);
+		SSL_CTX_set_cert_store(ctx, store);
 	}
 
 	if(!(ssl = SSL_new(ctx)))

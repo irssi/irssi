@@ -1,109 +1,73 @@
-# Irssi
+# [Irssi](https://irssi.org/)
 
 [![Build Status](https://travis-ci.org/irssi/irssi.svg?branch=master)](https://travis-ci.org/irssi/irssi)
 
 Irssi is a modular chat client that is most commonly known for its
 text mode user interface, but 80% of the code isn't text mode
-specific. We have a working but currently unmaintained GTK2 frontend
-called xirssi. Irssi comes with IRC support built in, and there are
+specific. Irssi comes with IRC support built in, and there are
 third party [ICB](https://github.com/jperkin/irssi-icb),
 [SILC](http://www.silcnet.org/),
 [XMPP](http://cybione.org/~irssi-xmpp/) (Jabber),
-[PSYC](https://github.com/electric-blue/irssyc) and
+[PSYC](http://about.psyc.eu/Irssyc) and
 [Quassel](https://github.com/phhusson/quassel-irssi) protocol modules
 available.
 
-## Installation
+![irssi](https://user-images.githubusercontent.com/5665186/32180643-cf127f60-bd92-11e7-8aa2-882313ce1d8e.png)
 
-See the `INSTALL` file.
+## [Download information](https://irssi.org/download/)
 
-## Features
+#### Development source installation
 
-So what's so great about Irssi? Here's a list of some features I can
-think of currently:
+```
+git clone https://github.com/irssi/irssi
+cd irssi
+./autogen.sh
+make && sudo make install
+```
 
- - **Optional automation** - There's lots of things Irssi does for you
-   automatically that some people like and others just hate. Things like:
-   nick completion, creating new window for newly joined channel, creating
-   queries when msgs/notices are received or when you send a msg, closing
-   queries when it's been idle for some time, etc.
+#### Release source installation
 
- - **Multiserver friendy** - I think Irssi has clearly the best support
-   for handling multiple server connections. You can have as many as you
-   want in as many ircnets as you want. Having several connections in one
-   server works too, for example when you hit the (ircnet's) 10
-   channels/connection limit you can just create another connection and
-   you hardly notice it. If connection to server is lost, Irssi tries to
-   connect back until it's successful. Also channels you were joined
-   before disconnection are restored, even if they're "temporarily
-   unavailable" because of netsplits, Irssi keeps rejoining back to them.
-   Also worth noticing - there's not that stupid "server is bound to this
-   window, if this window gets closed the connection closes" thing that
-   ircII based clients have.
+* Download [release](https://github.com/irssi/irssi/releases)
+* [Verify](https://irssi.org/download/#release-sources) signature
+```
+tar xJf irssi-*.tar.xz
+cd irssi-*
+./configure
+make && sudo make install
+```
 
- - **Channel automation** - You can specify what channels to join to
-   immediately after connected to some server or IRC network. After joined
-   to channel, Irssi can automatically request ops for you (or do
-   anything, actually) from channel's bots.
+### Requirements
 
- - **Window content saving** - Say /LAYOUT SAVE when you've put all the
-   channels and queries to their correct place, and after restarting
-   Irssi, the channels will be joined back into windows where they were
-   saved.
+- [glib-2.28](https://wiki.gnome.org/Projects/GLib) or greater
+- [openssl](https://www.openssl.org/)
+- [perl-5.6](https://www.perl.org/) or greater (for perl support)
+- terminfo or ncurses (for text frontend)
 
- - **Tab completing anything** - You can complete lots of things with tab:
-   nicks, commands, command -options, file names, settings, text format
-   names, channels and server names. There's also an excellent /msg
-   completion that works transparently with multiple IRC networks.
-   Completing channel nicks is also pretty intelligent, it first goes
-   through the people who have talked to you recently, then the people who
-   have talked to anyone recently and only then it fallbacks to rest of
-   the nicks. You can also complete a set of words you've specified, for
-   example homepage<tab> changes it to your actual home page URL.
+#### See the [INSTALL](INSTALL) file for details
 
- - **Excellent logging** - You can log any way you want and as easily or
-   hard as you want. With autologging Irssi logs everything to specified
-   directory, one file per channel/nick. ircII style /WINDOW LOG ON is
-   also supported. There's also the "hard way" of logging - /LOG command
-   which lets you specify exactly what you wish to log and where. Log
-   rotating is supported with all the different logging methods, you can
-   specify how often you want it to rotate and what kind of time stamp to
-   use.
+## [Documentation](https://irssi.org/documentation/)
 
- - **Excellent ignoring** - You can most probably ignore anything any way
-   you want. Nick masks, words, regular expressions. You can add
-   exceptions to ignores. You can ignore other people's replies in
-   channels to nicks you have ignored. You can also specify that the
-   specific ignores work only in specific channel(s).
+* [Frequently Asked Questions](https://irssi.org/documentation/faq)
+* [Startup How-To](https://irssi.org/documentation/startup)
+* Check the built-in `/HELP`, it has all the details on command syntax
 
- - **Lastlog and scrollback handling** - /LASTLOG command has some new
-   features: -new option checks only lines that came since you last did
-   /LASTLOG command, -away option checks new lines since you last went
-   away. Regular expression matches work also, of course. Going to some
-   wanted place at scrollback has always been hard with non-GUI clients. A
-   search command that jumps around in scrollback in GUI-style is still
-   missing from Irssi, but there's something that's almost as good as it.
-   /LASTLOG always shows timestamps when the line was printed, even if you
-   didn't have timestamps on. Now doing /SB GOTO <timestamp> jumps
-   directly to the position in scrollback you wanted. Great feature when
-   you want to browse a bit of the discussion what happened when someone
-   said your name (as seen in awaylog) or topic was changed (/last
-   -topics)
+## [Themes](https://irssi-import.github.io/themes/)
 
-## Files
+## [Scripts](http://scripts.irssi.org/)
 
- - The `docs/` directory contains several documents:
-    - `startup-HOWTO.txt` - new users should read this
-    - `manual.txt` - manual I started writing but didn't get it very far :)
-    - `perl.txt` - Perl scripting help
-    - `formats.txt` - How to use colors, etc. with irssi
-    - `faq.txt` - Frequently Asked Questions
-    - `special_vars.txt` - some predefined $variables you can use with irssi
+## [Modules](https://irssi.org/modules/)
 
-## Bugs / Suggestions
+## [Security information](https://irssi.org/security/)
 
-See the `TODO` file, http://bugs.irssi.org and the GitHub issues if it is
-already listed in there; if not, open an issue on GitHub or send a mail to
-[staff@irssi.org](mailto:staff@irssi.org).
+Please report security issues to staff@irssi.org. Thanks!
 
-You can also contact the Irssi developers in #irssi on freenode.
+## [Bugs](https://github.com/irssi/irssi/issues) / Suggestions / [Contributing](https://irssi.org/development/)
+
+Check the GitHub issues if it is already listed in there; if not, open
+an issue on GitHub or send a mail to [staff@irssi.org](mailto:staff@irssi.org).
+
+Irssi is always looking for developers. Feel free to submit patches through
+GitHub pull requests.
+
+You can also contact the Irssi developers in
+[#irssi](https://irssi.org/support/irc/) on freenode.

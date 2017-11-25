@@ -5,22 +5,33 @@
 
 %9Parameters:%9
 
-    ENABLE:       Enables the statusbar.
-    DISABLE:      Disabled the statusbar.
+    ENABLE:       Adds a statusbar to the list of statusbars.
+    DISABLE:      Removes a statusbar from the list. Note that for
+                  built-in statusbars they can be enabled again should the
+                  user wish to add back the default statusbars.
     RESET:        Restores the default statusbar configuration.
-    TYPE:         Identifies the type of statusbar.
-    PLACEMENT:    Identifies the placement of the statusbar.
-    POSITION:     Identifies the position of the statusbar.
-    VISIBLE:      Identifies the visibility of the statusbar.
-    ADD:          Adds a statusbar into the configuration.
-    REMOVE:       Removes a statusbar from the configuration.
+    TYPE:         Sets the type of statusbar, for each split window or only
+                  for the current root screen.
+    PLACEMENT:    Sets the placement of the statusbar, either at the top or
+                  the bottom of the screen.
+    POSITION:     Sets the position of the statusbar. Represented as a
+                  number, with 0 implying the first position.
+    VISIBLE:      Sets the visibility of the statusbar or item. If set to
+                  always it is visible on all screens, otherwise if set to
+                  inactive or active then it is only visible on inactive
+                  or active screens, respectively.
+    ADD:          Adds an item to the specified statusbar. It can be set to
+                  appear before/after another item and left/right aligned
+                  to a specified position on the screen.
+    REMOVE:       Removes an item from the specified statusbar.
 
-    The name of the statusbar; if no argument is given, the list of statusbars
-    will be displayed.
+    Where name refers to the name of the statusbar; if no argument is
+    given, the entire list of statusbars will be displayed.
 
 %9Description:%9
 
-    Modified the attributes of the statusbar.
+    Allows adjustment of the attributes and items of a statusbar, as well
+    as where it is located and whether or not it is currently visible.
 
 %9Examples:%9
 

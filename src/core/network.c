@@ -20,6 +20,9 @@
 
 #include "module.h"
 #include "network.h"
+#ifdef HAVE_CAPSICUM
+#include "capsicum.h"
+#endif
 
 #include <sys/un.h>
 
@@ -44,9 +47,6 @@ GIOChannel *g_io_channel_new(int handle)
 	g_io_channel_set_buffered(chan, FALSE);
 	return chan;
 }
-
-/* Cygwin need this, don't know others.. */
-/*#define BLOCKING_SOCKETS 1*/
 
 IPADDR ip4_any = {
 	AF_INET,
@@ -110,42 +110,7 @@ static int sin_get_port(union sockaddr_union *so)
 		     so->sin.sin_port);
 }
 
-/* Connect to socket */
-GIOChannel *net_connect(const char *addr, int port, IPADDR *my_ip)
-{
-	IPADDR ip4, ip6, *ip;
-
-	g_return_val_if_fail(addr != NULL, NULL);
-
-	if (net_gethostbyname(addr, &ip4, &ip6) == -1)
-		return NULL;
-
-	if (my_ip == NULL) {
-                /* prefer IPv4 addresses */
-		ip = ip4.family != 0 ? &ip4 : &ip6;
-	} else if (IPADDR_IS_V6(my_ip)) {
-                /* my_ip is IPv6 address, use it if possible */
-		if (ip6.family != 0)
-			ip = &ip6;
-		else {
-			my_ip = NULL;
-                        ip = &ip4;
-		}
-	} else {
-                /* my_ip is IPv4 address, use it if possible */
-		if (ip4.family != 0)
-			ip = &ip4;
-		else {
-			my_ip = NULL;
-                        ip = &ip6;
-		}
-	}
-
-	return net_connect_ip(ip, port, my_ip);
-}
-
-/* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
+int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip)
 {
 	union sockaddr_union so;
 	int handle, ret, opt = 1;
@@ -161,7 +126,7 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	handle = socket(ip->family, SOCK_STREAM, 0);
 
 	if (handle == -1)
-		return NULL;
+		return -1;
 
 	/* set socket options */
 	fcntl(handle, F_SETFL, O_NONBLOCK);
@@ -176,7 +141,7 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 
 			close(handle);
 			errno = old_errno;
-			return NULL;
+			return -1;
 		}
 	}
 
@@ -190,8 +155,28 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 		int old_errno = errno;
 		close(handle);
 		errno = old_errno;
-		return NULL;
+		return -1;
 	}
+
+	return handle;
+}
+
+/* Connect to socket with ip address */
+GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
+{
+	int handle = -1;
+
+#ifdef HAVE_CAPSICUM
+	if (capsicum_enabled())
+		handle = capsicum_net_connect_ip(ip, port, my_ip);
+	else
+		handle = net_connect_ip_handle(ip, port, my_ip);
+#else
+	handle = net_connect_ip_handle(ip, port, my_ip);
+#endif
+
+	if (handle == -1)
+		return (NULL);
 
 	return g_io_channel_new(handle);
 }
@@ -383,6 +368,11 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	struct addrinfo hints, *ai, *ailist;
 	int ret, count_v4, count_v6, use_v4, use_v6;
 
+#ifdef HAVE_CAPSICUM
+	if (capsicum_enabled())
+		return (capsicum_net_gethostbyname(addr, ip4, ip6));
+#endif
+
 	g_return_val_if_fail(addr != NULL, -1);
 
 	memset(ip4, 0, sizeof(IPADDR));
@@ -462,6 +452,7 @@ int net_gethostbyaddr(IPADDR *ip, char **name)
 
 int net_ip2host(IPADDR *ip, char *host)
 {
+	host[0] = '\0';
 	return inet_ntop(ip->family, &ip->ip, host, MAX_IP_LEN) ? 0 : -1;
 }
 

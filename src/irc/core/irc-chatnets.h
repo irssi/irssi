@@ -18,6 +18,7 @@ struct _IRC_CHATNET_REC {
 #include "chatnet-rec.h"
 
 	char *usermode;
+	char *alternate_nick;
 
 	char *sasl_mechanism;
 	char *sasl_username;

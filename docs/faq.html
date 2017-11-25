@@ -1,4 +1,6 @@
+<base href='https://irssi.org/documentation/faq/'>
 <h1>Frequently Asked Questions</h1>
+
 <h3 id="q-why-doesnt-irssi-display-colors-even-when-ircii-etc-displays-them">Q: Why doesn’t irssi display colors even when ircii etc. displays them?</h3>
 
 <p>A: They force ANSI colors even if terminal doesn’t support them. By default, irssi uses colors only if terminfo/termcap so says. The correct way to fix this would be to change your TERM environment to a value where colors work, like xterm-color or color_xterm (eg. <code>TERM=xterm-color irssi</code>). If this doesn’t help, then use the evil way of <code>/SET term_force_colors ON</code>.</p>
@@ -77,4 +79,4 @@
 
 <h3 id="q-how-to-pronounce-irssi">Q: How to pronounce Irssi?</h3>
 
-<p>A: Check <a href="https://irssi.org/assets/irssi.wav">here</a></p>
+<p>A: Check <a href="/assets/irssi.wav">here</a></p>
