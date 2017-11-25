@@ -252,8 +252,148 @@ PREINIT:
 	GList *tmp;
 PPCODE:
 	rec = command_history_current(window);
-	for (tmp = rec->list; tmp != NULL; tmp = tmp->next)
-		XPUSHs(sv_2mortal(new_pv(tmp->data)));
+	for (tmp = command_history_list_first(rec); tmp != NULL; tmp = command_history_list_next(rec, tmp))
+		XPUSHs(sv_2mortal(new_pv(((HISTORY_ENTRY_REC *)tmp->data)->text)));
+
+void
+window_get_history_entries(window)
+	Irssi::UI::Window window
+PREINIT:
+	HISTORY_REC *rec;
+	HISTORY_ENTRY_REC *ent;
+	WINDOW_REC *win;
+	GList *tmp;
+	GSList *stmp;
+	HV *hv;
+PPCODE:
+	rec = window == NULL ? NULL : command_history_current(window);
+	for (tmp = command_history_list_first(rec); tmp != NULL; tmp = command_history_list_next(rec, tmp)) {
+		hv = (HV*)sv_2mortal((SV*)newHV());
+		ent = tmp->data;
+		hv_store(hv, "text", 4, newSVpv(ent->text, 0), 0);
+		hv_store(hv, "time", 4, newSViv(ent->time), 0);
+		if (ent->history == command_history_current(NULL)) {
+			hv_store(hv, "history", 7, newSV(0), 0);
+			hv_store(hv, "window", 6, newSV(0), 0);
+		} else {
+			if (ent->history->name == NULL) {
+				hv_store(hv, "history", 7, newSV(0), 0);
+				for (stmp = windows; stmp != NULL; stmp = stmp->next) {
+					win = stmp->data;
+					if (win->history == ent->history) {
+						hv_store(hv, "window", 6, newSViv(win->refnum), 0);
+						break;
+					}
+				}
+			} else {
+				hv_store(hv, "history", 7, new_pv(ent->history->name), 0);
+				hv_store(hv, "window", 6, newSV(0), 0);
+			}
+		}
+		XPUSHs(sv_2mortal(newRV_inc((SV*)hv)));
+	}
+
+void
+window_load_history_entries(window, ...)
+	Irssi::UI::Window window
+PREINIT:
+	HV *hv;
+	SV **sv;
+	HISTORY_REC *history;
+	WINDOW_REC *tmp;
+	const char *text;
+	long hist_time;
+	int i;
+PPCODE:
+	for (i = 1; i < items; i++) {
+		if (!is_hvref(ST(i))) {
+			croak("Usage: Irssi::UI::Window::load_history_entries(window, hash...)");
+		}
+		hv = hvref(ST(i));
+		if (hv != NULL) {
+			tmp = NULL;
+			text = NULL;
+			hist_time = time(NULL);
+			history = command_history_current(NULL);
+
+			sv = hv_fetch(hv, "text", 4, 0);
+			if (sv != NULL) text = SvPV_nolen(*sv);
+			sv = hv_fetch(hv, "time", 4, 0);
+			if (sv != NULL && SvOK(*sv)) hist_time = SvIV(*sv);
+
+			if (window != NULL) {
+				history = command_history_current(window);
+			} else {
+				sv = hv_fetch(hv, "history", 7, 0);
+				if (sv != NULL && SvOK(*sv)) {
+					history = command_history_find_name(SvPV_nolen(*sv));
+				}
+
+				sv = hv_fetch(hv, "window", 6, 0);
+				if (sv != NULL && SvOK(*sv)) {
+					tmp = window_find_refnum(SvIV(*sv));
+					if (tmp != NULL) {
+						history = tmp->history;
+					}
+				}
+			}
+
+			if (text != NULL && history != NULL) {
+				command_history_load_entry(hist_time, history, text);
+			}
+		}
+	}
+
+void
+window_delete_history_entries(window, ...)
+	Irssi::UI::Window window
+PREINIT:
+	HV *hv;
+	SV **sv;
+	HISTORY_REC *history;
+	WINDOW_REC *tmp;
+	const char *text;
+	long hist_time;
+	int i;
+PPCODE:
+	for (i = 1; i < items; i++) {
+		if (!is_hvref(ST(i))) {
+			croak("Usage: Irssi::UI::Window::delete_history_entries(window, hash...)");
+		}
+		hv = hvref(ST(i));
+		if (hv != NULL) {
+			tmp = NULL;
+			text = NULL;
+			hist_time = -1;
+			history = command_history_current(NULL);
+
+			sv = hv_fetch(hv, "text", 4, 0);
+			if (sv != NULL) text = SvPV_nolen(*sv);
+			sv = hv_fetch(hv, "time", 4, 0);
+			if (sv != NULL && SvOK(*sv)) hist_time = SvIV(*sv);
+
+			if (window != NULL) {
+				history = command_history_current(window);
+			} else {
+				sv = hv_fetch(hv, "history", 7, 0);
+				if (sv != NULL && SvOK(*sv)) {
+					history = command_history_find_name(SvPV_nolen(*sv));
+				}
+
+				sv = hv_fetch(hv, "window", 6, 0);
+				if (sv != NULL && SvOK(*sv)) {
+					tmp = window_find_refnum(SvIV(*sv));
+					if (tmp != NULL) {
+						history = tmp->history;
+					}
+				}
+			}
+
+			if (text != NULL && history != NULL) {
+				XPUSHs(boolSV(command_history_delete_entry(hist_time, history, text)));
+			}
+		}
+	}
 
 #*******************************
 MODULE = Irssi::UI::Window  PACKAGE = Irssi::Windowitem  PREFIX = window_item_
