@@ -32,6 +32,7 @@ int main(int argc, char **argv)
 	g_test_add_func("/test/event_get_param", test_event_get_param);
 	g_test_add_func("/test/event_get_params", test_event_get_params);
 
+	g_test_set_nonfatal_assertions();
 	return g_test_run();
 }
 

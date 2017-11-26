@@ -1,11 +1,12 @@
+include $(top_srcdir)/utils/glib-tap.mk
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	$(GLIB_CFLAGS)
 
-TESTS = test-irc
-check_PROGRAMS = test-irc
+test_programs = test-irc
 
 test_irc_CPPFLAGS = \
 	-I$(top_srcdir)/src/irc/core \

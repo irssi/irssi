@@ -295,6 +295,8 @@ fi
 
 LIBS="$LIBS $GLIB_LIBS"
 
+GLIB_TESTS
+
 dnl **
 dnl ** OpenSSL checks
 dnl **
