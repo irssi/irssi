@@ -1,5 +1,7 @@
 include $(top_srcdir)/utils/glib-tap.mk
 
+PACKAGE_STRING=irc/core
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core \
@@ -17,21 +19,11 @@ test_irc_DEPENDENCIES = \
 	../../../src/lib-config/libirssi_config.a
 
 test_irc_LDADD = \
+	../../../src/irc/core/libirc_core.a \
 	../../../src/core/libcore.a \
 	../../../src/lib-config/libirssi_config.a \
 	@GLIB_LIBS@ \
 	@OPENSSL_LIBS@
 
 test_irc_SOURCES = \
-	test-irc.c \
-	../../../src/irc/core/irc-cap.c \
-	../../../src/irc/core/irc-nicklist.c \
-	../../../src/irc/core/irc-queries.c \
-	../../../src/irc/core/irc-servers-reconnect.c \
-	../../../src/irc/core/irc-servers-setup.c \
-	../../../src/irc/core/irc-servers.c \
-	../../../src/irc/core/irc.c \
-	../../../src/irc/core/mode-lists.c \
-	../../../src/irc/core/modes.c \
-	../../../src/irc/core/servers-idle.c \
-	../../../src/irc/core/servers-redirect.c
+	test-irc.c
