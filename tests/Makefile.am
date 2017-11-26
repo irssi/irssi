@@ -1,1 +1,1 @@
-SUBDIRS = irc
+SUBDIRS = fe-common irc

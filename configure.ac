@@ -661,6 +661,8 @@ src/perl/textui/Makefile.PL
 scripts/Makefile
 scripts/examples/Makefile
 tests/Makefile
+tests/fe-common/Makefile
+tests/fe-common/core/Makefile
 tests/irc/Makefile
 tests/irc/core/Makefile
 docs/Makefile
