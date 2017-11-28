@@ -186,7 +186,7 @@ int main(int argc, char **argv)
 
 	g_test_init(&argc, &argv, NULL);
 
-	for (i = 0; i < G_N_ELEMENTS(event_get_param_fixtures); i++) {
+	for (i = 0; i < G_N_ELEMENTS(event_get_params_fixtures); i++) {
 		char *name = g_strdup_printf("/test/event_get_params/%d", i);
 		g_test_add_data_func(name, &event_get_params_fixtures[i], (GTestDataFunc)test_event_get_params);
 		g_free(name);
