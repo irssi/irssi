@@ -224,7 +224,7 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 static void event_mode(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
-	char *params = NULL, *channel = NULL, *mode = NULL;
+	char *params, *channel, *mode;
 
 	g_return_if_fail(data != NULL);
 

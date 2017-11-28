@@ -480,8 +480,8 @@ static void event_user_mode(IRC_SERVER_REC *server, const char *data)
 static void event_mode(IRC_SERVER_REC *server, const char *data,
 		       const char *nick)
 {
-	IRC_CHANNEL_REC *chanrec = NULL;
-	char *params = NULL, *channel = NULL, *mode = NULL;
+	IRC_CHANNEL_REC *chanrec;
+	char *params, *channel, *mode;
 
 	g_return_if_fail(data != NULL);
 
