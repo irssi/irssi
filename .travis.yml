@@ -19,6 +19,8 @@ matrix:
     exclude:
         - env: CC=clang UNITTESTS=true
           perl: "system-perl"
+    allow_failures:
+        - env: CC=clang UNITTESTS=true
 
 addons:
     apt:
