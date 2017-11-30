@@ -563,8 +563,10 @@ GSList *windows_get_sorted(void)
 	begin = windows_seq_begin();
 
 	while (iter != begin) {
+		WINDOW_REC *rec;
+
 		iter = g_sequence_iter_prev(iter);
-		WINDOW_REC *rec = g_sequence_get(iter);
+		rec = g_sequence_get(iter);
 
 		sorted = g_slist_prepend(sorted, rec);
 	}

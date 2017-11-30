@@ -583,9 +583,6 @@ static void set_cipher_info(TLS_REC *tls, SSL *ssl)
 
 static void set_pubkey_info(TLS_REC *tls, X509 *cert, unsigned char *cert_fingerprint, size_t cert_fingerprint_size, unsigned char *public_key_fingerprint, size_t public_key_fingerprint_size)
 {
-	g_return_if_fail(tls != NULL);
-	g_return_if_fail(cert != NULL);
-
 	EVP_PKEY *pubkey = NULL;
 	char *cert_fingerprint_hex = NULL;
 	char *public_key_fingerprint_hex = NULL;
@@ -593,6 +590,9 @@ static void set_pubkey_info(TLS_REC *tls, X509 *cert, unsigned char *cert_finger
 	BIO *bio = NULL;
 	char buffer[128];
 	size_t length;
+
+	g_return_if_fail(tls != NULL);
+	g_return_if_fail(cert != NULL);
 
 	pubkey = X509_get_pubkey(cert);
 
@@ -647,9 +647,6 @@ static void set_pubkey_info(TLS_REC *tls, X509 *cert, unsigned char *cert_finger
 
 static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
 {
-	g_return_if_fail(tls != NULL);
-	g_return_if_fail(ssl != NULL);
-
 	int nid;
 	char *key = NULL;
 	char *value = NULL;
@@ -661,6 +658,9 @@ static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
 	X509_NAME_ENTRY *entry = NULL;
 	TLS_CERT_ENTRY_REC *tls_cert_entry_rec = NULL;
 	ASN1_STRING *data = NULL;
+
+	g_return_if_fail(tls != NULL);
+	g_return_if_fail(ssl != NULL);
 
 	chain = SSL_get_peer_cert_chain(ssl);
 
@@ -714,9 +714,6 @@ static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
 
 static void set_server_temporary_key_info(TLS_REC *tls, SSL *ssl)
 {
-	g_return_if_fail(tls != NULL);
-	g_return_if_fail(ssl != NULL);
-
 #ifdef SSL_get_server_tmp_key
 	/* Show ephemeral key information. */
 	EVP_PKEY *ephemeral_key = NULL;
@@ -728,6 +725,9 @@ static void set_server_temporary_key_info(TLS_REC *tls, SSL *ssl)
 	char *ephemeral_key_algorithm = NULL;
 	char *cname = NULL;
 	int nid;
+
+	g_return_if_fail(tls != NULL);
+	g_return_if_fail(ssl != NULL);
 
 	if (SSL_get_server_tmp_key(ssl, &ephemeral_key)) {
 		switch (EVP_PKEY_id(ephemeral_key)) {
