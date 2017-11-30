@@ -27,14 +27,14 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level);
 
 enum {
-	IGNORE_FIND_PATTERN = 0x01, // Match the pattern
-	IGNORE_FIND_NOACT   = 0x02, // Exclude the targets with NOACT level
+	IGNORE_FIND_PATTERN = 0x01, /* Match the pattern */
+	IGNORE_FIND_NOACT   = 0x02, /* Exclude the targets with NOACT level */
 };
 
 IGNORE_REC *ignore_find_full (const char *servertag, const char *mask, const char *pattern,
                 char **channels, const int flags);
 
-// Convenience wrappers around ignore_find_full, for compatibility purpose
+/* Convenience wrappers around ignore_find_full, for compatibility purpose */
 
 IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels);
 IGNORE_REC *ignore_find_noact(const char *servertag, const char *mask, char **channels, int noact);

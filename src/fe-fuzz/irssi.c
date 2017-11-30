@@ -21,7 +21,7 @@
 #include "module.h"
 #include "modules-load.h"
 #include "levels.h"
-#include "../fe-text/module-formats.h" // need to explicitly grab from fe-text
+#include "../fe-text/module-formats.h" /* need to explicitly grab from fe-text */
 #include "themes.h"
 #include "core.h"
 #include "fe-common-core.h"
