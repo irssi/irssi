@@ -112,14 +112,15 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 		str_is_utf8 = 1;
 	autodetect = settings_get_bool("recode_autodetect_utf8");
 
-	if (autodetect && str_is_utf8)
+	if (autodetect && str_is_utf8) {
 		if (term_is_utf8)
 			return g_strdup(str);
 		else
 			from = "UTF-8";
-	else
+	} else {
 		from = find_conversion(server, target);
-
+	}
+		
 	if (from)
 		recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL, NULL);
 
