@@ -369,8 +369,8 @@ static void item_lag(SBAR_ITEM_REC *item, int get_size_only)
 	last_lag_unknown = lag_unknown;
 
 	if (lag_unknown) {
-		// "??)" in C becomes ']'
-		// See: https://en.wikipedia.org/wiki/Digraphs_and_trigraphs#C
+		/* "??)" in C becomes ']'
+		   See: https://en.wikipedia.org/wiki/Digraphs_and_trigraphs#C */
 		g_snprintf(str, sizeof(str), "%d (?""?)", lag / 100);
 	} else {
 		if (lag % 100 == 0)

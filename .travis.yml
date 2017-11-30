@@ -31,7 +31,7 @@ before_install:
 
 install:
     - ./configure --with-proxy --with-bot --with-perl=module --prefix=$HOME/irssi-build
-    - make CFLAGS="-Wall -Werror"
+    - make CFLAGS="-Wall -Werror -Werror=declaration-after-statement"
     - make install
 
 before_script:

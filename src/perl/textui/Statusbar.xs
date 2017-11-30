@@ -67,7 +67,7 @@ static void perl_statusbar_event(char *function, SBAR_ITEM_REC *item,
 
 	if (SvTRUE(ERRSV)) {
                 PERL_SCRIPT_REC *script;
-                char *package;
+                char *package, *error;
 
                 package = perl_function_get_package(function);
                 script = perl_script_find_package(package);
@@ -78,7 +78,7 @@ static void perl_statusbar_event(char *function, SBAR_ITEM_REC *item,
 			script_unregister_statusbars(script);
 		}
 
-		char *error = g_strdup(SvPV_nolen(ERRSV));
+		error = g_strdup(SvPV_nolen(ERRSV));
 		signal_emit("script error", 2, script, error);
 		g_free(error);
 	} else {

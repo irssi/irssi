@@ -30,16 +30,16 @@
  * Based on IRCv3 SASL Extension Specification:
  * http://ircv3.net/specs/extensions/sasl-3.1.html
  */
-#define AUTHENTICATE_CHUNK_SIZE 400 // bytes
+#define AUTHENTICATE_CHUNK_SIZE 400 /* bytes */
 
 /*
  * Maximum size to allow the buffer to grow to before the next fragment comes in. Note that
  * due to the way fragmentation works, the maximum message size will actually be:
  * floor(AUTHENTICATE_MAX_SIZE / AUTHENTICATE_CHUNK_SIZE) + AUTHENTICATE_CHUNK_SIZE - 1
  */
-#define AUTHENTICATE_MAX_SIZE 8192 // bytes
+#define AUTHENTICATE_MAX_SIZE 8192 /* bytes */
 
-#define SASL_TIMEOUT (20 * 1000) // ms
+#define SASL_TIMEOUT (20 * 1000) /* ms */
 
 static gboolean sasl_timeout(IRC_SERVER_REC *server)
 {
