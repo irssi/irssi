@@ -287,11 +287,13 @@ char *event_get_params(const char *data, int count, ...)
 /* Given a string containing <params>, strip any colon prefixing <trailing>. */
 static void strip_params_colon(char *const params)
 {
-	if (!params) {
+	char *s;
+
+	if (params == NULL) {
 		return;
 	}
 
-	char *s = params;
+	s = params;
 	while (*s != '\0') {
 		if (*s == ':') {
 			memmove(s, s+1, strlen(s+1)+1);
@@ -299,7 +301,7 @@ static void strip_params_colon(char *const params)
 		}
 
 		s = strchr(s, ' ');
-		if (!s) {
+		if (s == NULL) {
 			return;
 		}
 
