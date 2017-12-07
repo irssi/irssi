@@ -62,5 +62,5 @@ script:
     - if $UNITTESTS; then make -C tests -sk check; fi
 
 after_script:
-    - cat ~/irc.log.*;
-      find -name test-suite.log -exec cat {} +
+    - cat ~/irc.log.*
+    - find -name test-suite.log -exec cat {} +
