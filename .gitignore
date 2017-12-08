@@ -49,6 +49,9 @@ src/perl/*/Makefile.old
 src/fe-fuzz/crash-*
 src/fe-fuzz/oom-*
 
+tests/irc/core/test-irc
+tests/irc/core/test-irc.trs
+
 *.a
 *.bs
 *.la
