@@ -40,6 +40,8 @@ static int signal_server_incoming;
 #  define MAX_SOCKET_READS 5
 #endif
 
+static void strip_params_colon(char *const);
+
 /* The core of the irc_send_cmd* functions. If `raw' is TRUE, the `cmd'
    won't be checked at all if it's 512 bytes or not, or if it contains
    line feeds or not. Use with extreme caution! */
@@ -269,8 +271,9 @@ char *event_get_params(const char *data, int count, ...)
 	while (count-- > 0) {
 		str = (char **) va_arg(args, char **);
 		if (count == 0 && rest) {
-			/* put the rest to last parameter */
-			tmp = *datad == ':' ? datad+1 : datad;
+			/* Put the rest into the last parameter. */
+			strip_params_colon(datad);
+			tmp = datad;
 		} else {
 			tmp = event_get_param(&datad);
 		}
@@ -279,6 +282,33 @@ char *event_get_params(const char *data, int count, ...)
 	va_end(args);
 
 	return duprec;
+}
+
+/* Given a string containing <params>, strip any colon prefixing <trailing>. */
+static void strip_params_colon(char *const params)
+{
+	char *s;
+
+	if (params == NULL) {
+		return;
+	}
+
+	s = params;
+	while (*s != '\0') {
+		if (*s == ':') {
+			memmove(s, s+1, strlen(s+1)+1);
+			return;
+		}
+
+		s = strchr(s, ' ');
+		if (s == NULL) {
+			return;
+		}
+
+		while (*s == ' ') {
+			s++;
+		}
+	}
 }
 
 static void irc_server_event(IRC_SERVER_REC *server, const char *line,
