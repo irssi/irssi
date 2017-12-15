@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/irssi/irssi.svg?branch=master)](https://travis-ci.org/irssi/irssi)
 
 Irssi is a modular chat client that is most commonly known for its
-text mode user interface, but 80% of the code isn't text mode
+the text mode user interface, but 80% of the code isn't text mode
 specific. Irssi comes with IRC support built in, and there are
 third party [ICB](https://github.com/jperkin/irssi-icb),
 [SILC](http://www.silcnet.org/),
@@ -70,4 +70,4 @@ Irssi is always looking for developers. Feel free to submit patches through
 GitHub pull requests.
 
 You can also contact the Irssi developers in
-[#irssi](https://irssi.org/support/irc/) on freenode.
+[#irssi](https://irssi.org/support/irc/) on Freenode.
