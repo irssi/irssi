@@ -384,6 +384,7 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 	}
 
 	nest_free = FALSE; nest_value = NULL;
+#if 0 /* this code is disabled due to security issues until it is fixed */
 	if (**cmd == '(' && (*cmd)[1] != '\0') {
 		/* subvariable */
 		int toplevel = nested_orig_cmd == NULL;
@@ -412,6 +413,9 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 
                 if (toplevel) nested_orig_cmd = NULL;
 	}
+#else
+	if (nested_orig_cmd) nested_orig_cmd = NULL;
+#endif
 
 	if (**cmd != '{')
 		brackets = FALSE;
