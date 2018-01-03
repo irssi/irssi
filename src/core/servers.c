@@ -524,6 +524,7 @@ int server_unref(SERVER_REC *server)
 		return TRUE;
 	}
 
+	signal_emit("server destroyed", 1, server);
         MODULE_DATA_DEINIT(server);
 	server_connect_unref(server->connrec);
 	if (server->rawlog != NULL) rawlog_destroy(server->rawlog);

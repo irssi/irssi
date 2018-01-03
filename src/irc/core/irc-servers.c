@@ -425,7 +425,7 @@ static void isupport_destroy_hash(void *key, void *value)
 	g_free(value);
 }
 
-static void sig_disconnected(IRC_SERVER_REC *server)
+static void sig_destroyed(IRC_SERVER_REC *server)
 {
 	GSList *tmp;
 
@@ -1031,7 +1031,7 @@ void irc_servers_init(void)
 	cmd_tag = -1;
 
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
-	signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+	signal_add_last("server destroyed", (SIGNAL_FUNC) sig_destroyed);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
@@ -1058,7 +1058,7 @@ void irc_servers_deinit(void)
 		g_source_remove(cmd_tag);
 
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
-	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+	signal_remove("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);

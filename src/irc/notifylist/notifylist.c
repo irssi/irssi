@@ -331,7 +331,7 @@ void irc_notifylist_init(void)
 	notifylist_ison_init();
 	notifylist_whois_init();
 	signal_add("server connected", (SIGNAL_FUNC) notifylist_init_server);
-	signal_add("server disconnected", (SIGNAL_FUNC) notifylist_deinit_server);
+	signal_add("server destroyed", (SIGNAL_FUNC) notifylist_deinit_server);
 	signal_add("event quit", (SIGNAL_FUNC) event_quit);
 	signal_add("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_add("event join", (SIGNAL_FUNC) event_join);
@@ -349,7 +349,7 @@ void irc_notifylist_deinit(void)
 	notifylist_whois_deinit();
 
 	signal_remove("server connected", (SIGNAL_FUNC) notifylist_init_server);
-	signal_remove("server disconnected", (SIGNAL_FUNC) notifylist_deinit_server);
+	signal_remove("server destroyed", (SIGNAL_FUNC) notifylist_deinit_server);
 	signal_remove("event quit", (SIGNAL_FUNC) event_quit);
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 	signal_remove("event join", (SIGNAL_FUNC) event_join);

@@ -324,7 +324,7 @@ void irc_flood_init(void)
 	read_settings();
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_add_first("server connected", (SIGNAL_FUNC) flood_init_server);
-	signal_add("server disconnected", (SIGNAL_FUNC) flood_deinit_server);
+	signal_add("server destroyed", (SIGNAL_FUNC) flood_deinit_server);
 
 	autoignore_init();
 	settings_check();
@@ -344,5 +344,5 @@ void irc_flood_deinit(void)
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_remove("server connected", (SIGNAL_FUNC) flood_init_server);
-	signal_remove("server disconnected", (SIGNAL_FUNC) flood_deinit_server);
+	signal_remove("server destroyed", (SIGNAL_FUNC) flood_deinit_server);
 }

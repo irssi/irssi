@@ -104,7 +104,7 @@ static void sig_connected(SERVER_REC *server)
 	MODULE_DATA_SET(server, g_new0(MODULE_SERVER_REC, 1));
 }
 
-static void sig_disconnected(SERVER_REC *server)
+static void sig_destroyed(SERVER_REC *server)
 {
 	void *data = MODULE_DATA(server);
 	g_free(data);
@@ -203,7 +203,7 @@ void fe_common_core_init(void)
 	settings_check();
 
         signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
-        signal_add_last("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+        signal_add_last("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_add_first("channel created", (SIGNAL_FUNC) sig_channel_created);
         signal_add_last("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
@@ -249,7 +249,7 @@ void fe_common_core_deinit(void)
 
         signal_remove("setup changed", (SIGNAL_FUNC) sig_setup_changed);
         signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
-        signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
+        signal_remove("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_remove("channel created", (SIGNAL_FUNC) sig_channel_created);
         signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 }
