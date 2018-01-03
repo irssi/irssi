@@ -74,8 +74,6 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 		params = event_get_params(copy, 2, &output0, &output1);
 	} else if (count % 8 == 6) {
 		params = event_get_params(copy, 3, &output0, &output1, &output2);
-	} else if (count % 8 == 7) {
-		params = event_get_params(copy, 4, &output0, &output1, &output2, &output3);
 	} else {
 		params = event_get_params(copy, 4, &output0, &output1, &output2, &output3);
 	}
