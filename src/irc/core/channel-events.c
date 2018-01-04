@@ -138,7 +138,13 @@ static void channel_change_topic(IRC_SERVER_REC *server, const char *channel,
 	g_free_not_null(chanrec->topic_by);
 	chanrec->topic_by = g_strdup(setby);
 
-	chanrec->topic_time = settime;
+	if (chanrec->topic_by == NULL) {
+		/* ensure invariant topic_time > 0 <=> topic_by != NULL.
+		   this could be triggered by a topic command without sender */
+		chanrec->topic_time = 0;
+	} else {
+		chanrec->topic_time = settime;
+	}
 
 	signal_emit("channel topic changed", 1, chanrec);
 }
