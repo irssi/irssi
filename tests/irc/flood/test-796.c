@@ -63,6 +63,11 @@ static void print_disconnect(SERVER_REC *server)
 	g_test_message("server %p was disconnected", server);
 }
 
+static void print_destroyed(SERVER_REC *server)
+{
+	g_test_message("server %p was destroyed", server);
+}
+
 static void server_destroy_flood_set_up(ServerDestroyFloodData *fixture, const void *data)
 {
 	args_execute(0, NULL);
@@ -73,12 +78,14 @@ static void server_destroy_flood_set_up(ServerDestroyFloodData *fixture, const v
 	signal_emit("irssi init finished", 0);
 	command_bind("echo", NULL, (SIGNAL_FUNC) cmd_echo);
 	signal_add("message public", (SIGNAL_FUNC) sig_public);
+	signal_add("server destroyed", (SIGNAL_FUNC) print_destroyed);
 	signal_add_first("server disconnected", (SIGNAL_FUNC) print_disconnect);
 }
 
 static void server_destroy_flood_tear_down(ServerDestroyFloodData *fixture, const void *data)
 {
 	signal_remove("server disconnected", (SIGNAL_FUNC) print_disconnect);
+	signal_remove("server destroyed", (SIGNAL_FUNC) print_destroyed);
 	signal_remove("message public", (SIGNAL_FUNC) sig_public);
 	command_unbind("echo", (SIGNAL_FUNC) cmd_echo);
 	fe_common_irc_deinit();
@@ -90,27 +97,31 @@ static void server_destroy_flood_tear_down(ServerDestroyFloodData *fixture, cons
 static void irc_server_init_bare_minimum(IRC_SERVER_REC *server)
 {
 	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
-                                            (GCompareFunc) g_istr_equal);
+					    (GCompareFunc) g_istr_equal);
 
-        /* set the standards */
-        g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));
-        g_hash_table_insert(server->isupport, g_strdup("PREFIX"), g_strdup("(ohv)@%+"));
+	/* set the standards */
+	g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));
+	g_hash_table_insert(server->isupport, g_strdup("PREFIX"), g_strdup("(ohv)@%+"));
 }
 
 static void test_server_destroy_flood(ServerDestroyFloodData *fixture, const void *data)
 {
 	SERVER_REC *server; /* = g_new0(IRC_SERVER_REC, 1); */
-        CHAT_PROTOCOL_REC *proto;
+	CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
+	GLogLevelFlags loglev;
 
 	g_test_bug("796");
+
+	/* for the purpose of this exercise, we are ignoring the
+	   errors of g_hash_table_lookup failure */
+	loglev = g_log_set_always_fatal(G_LOG_FATAL_MASK);
 
 	proto = chat_protocol_find("IRC");
 	conn = server_create_conn(proto->id, "localhost", 0, "", "", "user");
 	server = proto->server_init_connect(conn);
 	server->session_reconnect = TRUE;
 	server->tag = g_strdup("testserver");
-	server_ref(server);
 
 	g_test_message("created server: %p", server);
 
@@ -138,11 +149,11 @@ static void test_server_destroy_flood(ServerDestroyFloodData *fixture, const voi
 	irc_notifylist_deinit();
 	*/
 
-	/* for the purpose of this exercise, we are ignoring the
-	   errors of g_hash_table_lookup failure */
-	g_log_set_always_fatal(G_LOG_FATAL_MASK);
-
+	server_ref(server);
 	signal_emit("event privmsg", 4, server, "#someroom :test message", "nick", "user@host");
+	server_unref(server);
+
+	g_log_set_always_fatal(loglev);
 }
 
 int main(int argc, char **argv)
