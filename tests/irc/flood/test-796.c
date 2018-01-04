@@ -19,11 +19,133 @@
 */
 
 #include "common.h"
+#include "args.h"
+#include "core.h"
+#include "misc.h"
+#include "servers-setup.h"
+
+#include "formats.h"
+#include "fe-common-core.h"
+
+#include "irc.h"
+#include "irc-servers.h"
+#include "irc-channels.h"
+
+/* irc.c */
+void irc_init(void);
+void irc_deinit(void) ;
+
+/* irc-session.c */
+void irc_session_init(void);
+void irc_session_deinit(void);
+
+/* fe-common-irc.c */
+void fe_common_irc_init(void);
+void fe_common_irc_deinit(void);
+
+typedef struct {
+} ServerDestroyFloodData;
+
+#define MODULE_NAME "tests"
+
+static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)
+{
+	g_test_message("echo: [server=%p,item=%p] %s", server, item, data);
+}
+
+static void sig_public(SERVER_REC *server, const char *msg, const char *nick, const char *address, const char *target)
+{
+	signal_emit("send command", 3, "/eval echo $tag", server, NULL);
+}
+
+static void print_disconnect(SERVER_REC *server)
+{
+	g_test_message("server %p was disconnected", server);
+}
+
+static void server_destroy_flood_set_up(ServerDestroyFloodData *fixture, const void *data)
+{
+	args_execute(0, NULL);
+	core_init();
+	irc_init();
+	fe_common_core_init();
+	fe_common_irc_init();
+	signal_emit("irssi init finished", 0);
+	command_bind("echo", NULL, (SIGNAL_FUNC) cmd_echo);
+	signal_add("message public", (SIGNAL_FUNC) sig_public);
+	signal_add_first("server disconnected", (SIGNAL_FUNC) print_disconnect);
+}
+
+static void server_destroy_flood_tear_down(ServerDestroyFloodData *fixture, const void *data)
+{
+	signal_remove("server disconnected", (SIGNAL_FUNC) print_disconnect);
+	signal_remove("message public", (SIGNAL_FUNC) sig_public);
+	command_unbind("echo", (SIGNAL_FUNC) cmd_echo);
+	fe_common_irc_deinit();
+	fe_common_core_deinit();
+	irc_deinit();
+	core_deinit();
+}
+
+static void irc_server_init_bare_minimum(IRC_SERVER_REC *server)
+{
+	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
+                                            (GCompareFunc) g_istr_equal);
+
+        /* set the standards */
+        g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));
+        g_hash_table_insert(server->isupport, g_strdup("PREFIX"), g_strdup("(ohv)@%+"));
+}
+
+static void test_server_destroy_flood(ServerDestroyFloodData *fixture, const void *data)
+{
+	SERVER_REC *server; /* = g_new0(IRC_SERVER_REC, 1); */
+        CHAT_PROTOCOL_REC *proto;
+	SERVER_CONNECT_REC *conn;
+
+	g_test_bug("796");
+
+	proto = chat_protocol_find("IRC");
+	conn = server_create_conn(proto->id, "localhost", 0, "", "", "user");
+	server = proto->server_init_connect(conn);
+	server->session_reconnect = TRUE;
+	server->tag = g_strdup("testserver");
+
+	g_test_message("created server: %p", server);
+
+	/* we skip some initialisations that would try to send data */
+	/* irc_servers_deinit(); */
+	irc_session_deinit();
+	irc_irc_deinit();
+
+	signal_emit("server connected", 1, server);
+
+	/* make up for the skipped session init */
+	irc_server_init_bare_minimum(IRC_SERVER(server));
+
+	irc_irc_init();
+	irc_session_init();
+	/* irc_servers_init(); */
+
+	/* simulate failing irc_server_send_data() */
+	server->connection_lost = TRUE;
+
+	signal_emit("event privmsg", 4, server, "#someroom :test message", "nick", "user@host");
+}
 
 int main(int argc, char **argv)
 {
 	g_test_init(&argc, &argv, NULL);
+	g_test_bug_base("https://github.com/irssi/irssi/issues/");
+
+	g_test_add("/test/server_destroy_flood", ServerDestroyFloodData, NULL,
+		   server_destroy_flood_set_up, test_server_destroy_flood,
+		   server_destroy_flood_tear_down);
 
 	g_test_set_nonfatal_assertions();
+
+	core_preinit(*argv);
+	irssi_gui = IRSSI_GUI_NONE;
+
 	return g_test_run();
 }
