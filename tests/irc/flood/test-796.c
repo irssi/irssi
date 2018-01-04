@@ -110,6 +110,7 @@ static void test_server_destroy_flood(ServerDestroyFloodData *fixture, const voi
 	server = proto->server_init_connect(conn);
 	server->session_reconnect = TRUE;
 	server->tag = g_strdup("testserver");
+	server_ref(server);
 
 	g_test_message("created server: %p", server);
 
@@ -118,7 +119,8 @@ static void test_server_destroy_flood(ServerDestroyFloodData *fixture, const voi
 	irc_session_deinit();
 	irc_irc_deinit();
 
-	signal_emit("server connected", 1, server);
+
+	server_connect_finished(server);
 
 	/* make up for the skipped session init */
 	irc_server_init_bare_minimum(IRC_SERVER(server));
@@ -129,6 +131,16 @@ static void test_server_destroy_flood(ServerDestroyFloodData *fixture, const voi
 
 	/* simulate failing irc_server_send_data() */
 	server->connection_lost = TRUE;
+
+	/*
+	chat_completion_deinit();
+	fe_messages_deinit();
+	irc_notifylist_deinit();
+	*/
+
+	/* for the purpose of this exercise, we are ignoring the
+	   errors of g_hash_table_lookup failure */
+	g_log_set_always_fatal(G_LOG_FATAL_MASK);
 
 	signal_emit("event privmsg", 4, server, "#someroom :test message", "nick", "user@host");
 }
