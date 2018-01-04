@@ -186,12 +186,18 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 			char *old;
 
 			old = linestart;
-			linestart = *linestart == '\0' ?
-				g_strdup(word) :
-				g_strdup_printf("%s%c%s",
-						/* do not accidentally duplicate the word separator */
-						line == wordstart - 1 ? "" : linestart,
-						old_wordstart[-1], word);
+			/* we want to move word into linestart */
+			if (*linestart == '\0') {
+				linestart = g_strdup(word);
+			} else {
+				GString *str = g_string_new(linestart);
+				if (old_wordstart[-1] != str->str[str->len - 1]) {
+					/* do not accidentally duplicate the word separator */
+					g_string_append_c(str, old_wordstart[-1]);
+				}
+				g_string_append(str, word);
+				linestart = g_string_free(str, FALSE);
+			}
 			g_free(old);
 
 			g_free(word);
