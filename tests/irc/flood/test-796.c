@@ -33,7 +33,7 @@
 
 /* irc.c */
 void irc_init(void);
-void irc_deinit(void) ;
+void irc_deinit(void);
 
 /* irc-session.c */
 void irc_session_init(void);
