@@ -1,3 +1,15 @@
+v1.0.6 2018-01-07 The Irssi team <staff@irssi.org>
+	- Fix invalid memory access when reading hilight configuration
+          (#787, #788).
+	- Fix null pointer dereference when the channel topic is set
+          without specifying a sender (GL#20, GL!25).
+	- Fix return of random memory when using incomplete escape
+          codes (GL#21, GL!26).
+	- Fix heap buffer overflow when completing certain strings
+          (GL#19, GL!27).
+	- Fix return of random memory when using an incomplete
+          variable argument (GL#18, GL!28).
+
 v1.0.5 2017-10-23  The Irssi team <staff@irssi.org>
 	- Fix missing -sasl_method '' in /NETWORK (#718, #719).
 	- Fix incorrect restoration of term state when hitting SUSP
