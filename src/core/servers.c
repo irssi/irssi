@@ -524,7 +524,12 @@ int server_unref(SERVER_REC *server)
 		return TRUE;
 	}
 
-	signal_emit("server destroyed", 1, server);
+	/* since module initialisation uses server connected, only let
+	   them know that the object got destroyed if the server was
+	   disconnected */
+	if (server->disconnected)
+		signal_emit("server destroyed", 1, server);
+
         MODULE_DATA_DEINIT(server);
 	server_connect_unref(server->connrec);
 	if (server->rawlog != NULL) rawlog_destroy(server->rawlog);
