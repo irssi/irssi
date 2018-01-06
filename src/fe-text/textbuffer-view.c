@@ -854,7 +854,8 @@ static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
 				/* do not bother with vt400 scroll
 				   rectangles for now, redraw the
 				   whole view */
-				textbuffer_view_redraw(view);
+				view->dirty = TRUE;
+				irssi_set_dirty();
 			}
 		}
 	}

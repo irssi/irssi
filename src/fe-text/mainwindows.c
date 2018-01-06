@@ -1214,6 +1214,8 @@ void mainwindows_redraw_dirty(void)
 		if (rec->dirty) {
                         rec->dirty = FALSE;
 			gui_window_redraw(rec->active);
+		} else if (WINDOW_GUI(rec->active)->view->dirty) {
+			gui_window_redraw(rec->active);
 		}
 	}
 }
