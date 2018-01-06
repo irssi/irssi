@@ -461,16 +461,19 @@ void fe_common_core_finish_init(void)
 
 gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 {
-	int channel_type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
-	int query_type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
+	WI_ITEM_REC *item;
+	int server_tag_len, channel_type, query_type;
 	char **tmp;
+
+	channel_type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
+	query_type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
 
 	g_return_val_if_fail(array != NULL, FALSE);
 	g_return_val_if_fail(dest != NULL, FALSE);
 	g_return_val_if_fail(dest->window != NULL, FALSE);
 	g_return_val_if_fail(dest->target != NULL, FALSE);
 
-	WI_ITEM_REC *item = window_item_find_window(dest->window, dest->server, dest->target);
+	item = window_item_find_window(dest->window, dest->server, dest->target);
 	if (item == NULL) {
 		return FALSE;
 	}
