@@ -475,26 +475,29 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 		return FALSE;
 	}
 
-	int server_tag_len = dest->server_tag ? strlen(dest->server_tag) : 0;
+	int server_tag_len = dest->server_tag != NULL ? strlen(dest->server_tag) : 0;
 	for (tmp = array; *tmp != NULL; tmp++) {
 		char *str = *tmp;
 		if (*str == '\0') {
 			continue;
 		}
 
-		if (server_tag_len && !g_ascii_strncasecmp(str, dest->server_tag, server_tag_len) && str[server_tag_len] == '/') {
+		if (server_tag_len &&
+		    g_ascii_strncasecmp(str, dest->server_tag, server_tag_len) == 0 &&
+		    str[server_tag_len] == '/') {
 			str += server_tag_len + 1;
 		}
 
-		if (!g_strcmp0(str, "") || !g_strcmp0(str, "::all")) {
+		if (g_strcmp0(str, "") == 0 || g_strcmp0(str, "::all") == 0) {
 			return TRUE;
-		} else if (!g_ascii_strcasecmp(str, dest->target)) {
+		} else if (g_ascii_strcasecmp(str, dest->target) == 0) {
 			return TRUE;
 		} else if (item->type == query_type &&
-			!g_strcmp0(str, (dest->target[0] == '=') ? "::dccqueries" : "::queries")) {
+		           g_strcmp0(str, dest->target[0] == '=' ? "::dccqueries" :
+			             "::queries") == 0) {
 			return TRUE;
 		} else if (item->type == channel_type &&
-			!g_strcmp0(str, "::channels")) {
+			   g_strcmp0(str, "::channels") == 0) {
 			return TRUE;
 		}
 	}
