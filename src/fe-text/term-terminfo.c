@@ -735,9 +735,9 @@ void term_gets(GArray *buffer, int *line_count)
 }
 
 static const char* term_env_warning =
-	"The TERM environment variable is set to '%s' which can cause display "
-	"glitches when running under %s.\n"
-	"Consider changing TERM to 'screen' or 'screen-256color' instead.";
+	"You seem to be running Irssi inside %2$s, but the TERM environment variable"
+	"is set to '%1$s', which can cause display glitches.\n"
+	"Consider changing TERM to '%2$s' or '%2$s-256color' instead.";
 
 void term_environment_check(void)
 {
