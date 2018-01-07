@@ -478,7 +478,7 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 		return FALSE;
 	}
 
-	int server_tag_len = dest->server_tag != NULL ? strlen(dest->server_tag) : 0;
+	server_tag_len = dest->server_tag != NULL ? strlen(dest->server_tag) : 0;
 	for (tmp = array; *tmp != NULL; tmp++) {
 		char *str = *tmp;
 		if (*str == '\0') {
