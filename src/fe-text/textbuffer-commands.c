@@ -89,6 +89,25 @@ static void cmd_window_scroll(const char *data)
 				   gui->scroll : settings_get_bool("scroll"));
 }
 
+/* SYNTAX: WINDOW HIDELEVEL [<level>] */
+static void cmd_window_hidelevel(const char *data)
+{
+	GUI_WINDOW_REC *gui;
+	char *level;
+
+	g_return_if_fail(data != NULL);
+
+	gui = WINDOW_GUI(active_win);
+	textbuffer_view_set_hidden_level(gui->view,
+					 combine_level(gui->view->hidden_level, data));
+	textbuffer_view_redraw(gui->view);
+	level = gui->view->hidden_level == 0 ? g_strdup("NONE") :
+		bits2level(gui->view->hidden_level);
+	printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
+			   TXT_WINDOW_HIDELEVEL, level);
+	g_free(level);
+}
+
 static void cmd_scrollback(const char *data, SERVER_REC *server,
 			   WI_ITEM_REC *item)
 {
@@ -358,6 +377,7 @@ void textbuffer_commands_init(void)
 {
 	command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
 	command_bind("window scroll", NULL, (SIGNAL_FUNC) cmd_window_scroll);
+	command_bind("window hidelevel", NULL, (SIGNAL_FUNC) cmd_window_hidelevel);
 	command_bind("scrollback", NULL, (SIGNAL_FUNC) cmd_scrollback);
 	command_bind("scrollback clear", NULL, (SIGNAL_FUNC) cmd_scrollback_clear);
 	command_bind("scrollback levelclear", NULL, (SIGNAL_FUNC) cmd_scrollback_levelclear);
@@ -377,6 +397,7 @@ void textbuffer_commands_deinit(void)
 {
 	command_unbind("clear", (SIGNAL_FUNC) cmd_clear);
 	command_unbind("window scroll", (SIGNAL_FUNC) cmd_window_scroll);
+	command_unbind("window hidelevel", (SIGNAL_FUNC) cmd_window_hidelevel);
 	command_unbind("scrollback", (SIGNAL_FUNC) cmd_scrollback);
 	command_unbind("scrollback clear", (SIGNAL_FUNC) cmd_scrollback_clear);
 	command_unbind("scrollback levelclear", (SIGNAL_FUNC) cmd_scrollback_levelclear);

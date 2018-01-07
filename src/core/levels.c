@@ -21,6 +21,7 @@
 #include "module.h"
 #include "levels.h"
 
+/* the order of these levels must match the bits in levels.h */
 static const char *levels[] = {
 	"CRAP",
 	"MSGS",
@@ -44,9 +45,6 @@ static const char *levels[] = {
 	"CLIENTCRAP",
 	"CLIENTERRORS",
 	"HILIGHTS",
-
-	"NOHILIGHT",
-	"NO_ACT",
 	NULL
 };
 
@@ -62,6 +60,9 @@ int level_get(const char *level)
 
 	if (g_ascii_strcasecmp(level, "NO_ACT") == 0)
 		return MSGLEVEL_NO_ACT;
+
+	if (g_ascii_strcasecmp(level, "HIDDEN") == 0)
+		return MSGLEVEL_HIDDEN;
 
 	len = strlen(level);
 	if (len == 0) return 0;
@@ -138,17 +139,13 @@ char *bits2level(int bits)
 
 
 	str = g_string_new(NULL);
-	if (bits & MSGLEVEL_NEVER) {
+	if (bits & MSGLEVEL_NEVER)
 		g_string_append(str, "NEVER ");
-		bits &= ~MSGLEVEL_NEVER;
-	}
 
-	if (bits & MSGLEVEL_NO_ACT) {
+	if (bits & MSGLEVEL_NO_ACT)
 		g_string_append(str, "NO_ACT ");
-		bits &= ~MSGLEVEL_NO_ACT;
-	}
 
-	if (bits == MSGLEVEL_ALL) {
+	if ((bits & MSGLEVEL_ALL) == MSGLEVEL_ALL) {
 		g_string_append(str, "ALL ");
 	} else {
 		for (n = 0; levels[n] != NULL; n++) {
@@ -156,6 +153,10 @@ char *bits2level(int bits)
 				g_string_append_printf(str, "%s ", levels[n]);
 		}
 	}
+
+	if (bits & MSGLEVEL_HIDDEN)
+		g_string_append(str, "HIDDEN ");
+
         if (str->len > 0)
 		g_string_truncate(str, str->len-1);
 

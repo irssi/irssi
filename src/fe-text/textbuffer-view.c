@@ -41,8 +41,14 @@ static GSList *views;
 #define view_is_bottom(view) \
         ((view)->ypos >= -1 && (view)->ypos < (view)->height)
 
-#define view_get_linecount(view, line) \
+#define view_get_linecount_hidden(view, line) \
         textbuffer_view_get_line_cache(view, line)->count
+
+#define view_line_is_hidden(view, line) \
+	(((line)->info.level & (view)->hidden_level) != 0)
+
+#define view_get_linecount(view, line) \
+	(view_line_is_hidden(view, line) ? 0 : view_get_linecount_hidden(view, line))
 
 static GSList *textbuffer_get_views(TEXT_BUFFER_REC *buffer)
 {
@@ -552,6 +558,9 @@ static void textbuffer_view_init_bottom(TEXT_BUFFER_VIEW_REC *view)
 	total = 0;
         line = textbuffer_line_last(view->buffer);
 	for (; line != NULL; line = line->prev) {
+		if (view_line_is_hidden(view, line))
+			continue;
+
 		linecount = view_get_linecount(view, line);
 		if (line == view->bottom_startline) {
 			/* keep the old one, make sure that subline is ok */
@@ -613,6 +622,8 @@ TEXT_BUFFER_VIEW_REC *textbuffer_view_create(TEXT_BUFFER_REC *buffer,
 	view->startline = view->bottom_startline;
         view->subline = view->bottom_subline;
 	view->bottom = TRUE;
+
+	view->hidden_level = 0;
 
 	textbuffer_view_init_ypos(view);
 
@@ -726,8 +737,10 @@ static void view_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
                 return;
 
 	while (line != NULL && lines > 0) {
-                linecount = view_line_draw(view, line, subline, ypos, lines);
-		ypos += linecount; lines -= linecount;
+		if (!view_line_is_hidden(view, line)) {
+			linecount = view_line_draw(view, line, subline, ypos, lines);
+			ypos += linecount; lines -= linecount;
+		}
 
 		subline = 0;
                 line = line->next;
@@ -768,7 +781,12 @@ static void view_draw_bottom(TEXT_BUFFER_VIEW_REC *view, int lines)
         view_draw(view, line, subline, maxline, lines, TRUE);
 }
 
-/* Returns number of lines actually scrolled */
+/* lines: this pointer is scrolled by scrollcount screen lines
+   subline: this pointer contains the subline position
+   scrollcount: the number of lines to scroll down (negative: up)
+   draw_nonclean: whether to redraw the screen now
+
+   Returns number of lines actually scrolled */
 static int view_scroll(TEXT_BUFFER_VIEW_REC *view, LINE_REC **lines,
 		       int *subline, int scrollcount, int draw_nonclean)
 {
@@ -1027,7 +1045,7 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 			view->bottom = view_is_bottom(view);
 		}
 
-		if (view->window != NULL) {
+		if (view->window != NULL && !view_line_is_hidden(view, line)) {
 			ypos = view->ypos+1 - view_get_linecount(view, line);
 			if (ypos >= 0)
 				subline = 0;
@@ -1042,7 +1060,7 @@ static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 		}
 	}
 
-        if (view->window != NULL)
+        if (view->window != NULL && !view_line_is_hidden(view, line))
 		term_refresh(view->window);
 }
 
@@ -1122,6 +1140,12 @@ static int view_get_lines_height(TEXT_BUFFER_VIEW_REC *view,
 	return height < view->height ? height : view->height;
 }
 
+/* line: line to remove
+   linecount: linecount of that line, to be offset when the line was in/below view
+
+   scroll the window maintaining the startline while removing line
+   if startline is removed, make the previous line the new startline
+*/
 static void view_remove_line_update_startline(TEXT_BUFFER_VIEW_REC *view,
 					      LINE_REC *line, int linecount)
 {
@@ -1316,6 +1340,37 @@ LINE_REC *textbuffer_view_get_bookmark(TEXT_BUFFER_VIEW_REC *view,
 	g_return_val_if_fail(name != NULL, NULL);
 
         return g_hash_table_lookup(view->bookmarks, name);
+}
+
+void textbuffer_view_set_hidden_level(TEXT_BUFFER_VIEW_REC *view, int level)
+{
+	g_return_if_fail(view != NULL);
+
+	if (view->hidden_level != level) {
+		if (view->empty_linecount > 0 && view->startline != NULL) {
+			int old_height, new_height;
+			LINE_REC *hidden_start;
+
+			hidden_start = view->startline;
+			while (hidden_start->prev != NULL && view_line_is_hidden(view, hidden_start->prev)) {
+				hidden_start = hidden_start->prev;
+			}
+
+			old_height = view_get_lines_height(view, hidden_start, view->subline, NULL);
+			view->hidden_level = level;
+			new_height = view_get_lines_height(view, hidden_start, view->subline, NULL);
+
+			view->empty_linecount -= new_height - old_height;
+
+			if (view->empty_linecount < 0)
+				view->empty_linecount = 0;
+			else if (view->empty_linecount > view->height)
+				view->empty_linecount = view->height;
+		} else {
+			view->hidden_level = level;
+		}
+		textbuffer_view_resize(view, view->width, view->height);
+	}
 }
 
 /* Specify window where the changes in view should be drawn,

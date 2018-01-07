@@ -230,6 +230,7 @@ LINE_REC *textbuffer_line_last(TEXT_BUFFER_REC *buffer)
 	return buffer->cur_line;
 }
 
+/* returns TRUE if `search' comes on or after `line' in the buffer */
 int textbuffer_line_exists_after(LINE_REC *line, LINE_REC *search)
 {
 	while (line != NULL) {

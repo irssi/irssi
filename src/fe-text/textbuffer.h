@@ -65,10 +65,10 @@ typedef struct {
 	LINE_REC *cur_line;
 	TEXT_CHUNK_REC *cur_text;
 
-	unsigned int last_eol:1;
 	int last_fg;
 	int last_bg;
 	int last_flags;
+	unsigned int last_eol:1;
 } TEXT_BUFFER_REC;
 
 /* Create new buffer */

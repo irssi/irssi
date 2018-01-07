@@ -36,7 +36,9 @@ enum {
 	MSGLEVEL_NOHILIGHT    = 0x1000000, /* Don't highlight this message */
 	MSGLEVEL_NO_ACT       = 0x2000000, /* Don't trigger channel activity */
 	MSGLEVEL_NEVER        = 0x4000000, /* never ignore / never log */
-	MSGLEVEL_LASTLOG      = 0x8000000 /* never ignore / never log */
+	MSGLEVEL_LASTLOG      = 0x8000000, /* used for /lastlog */
+
+	MSGLEVEL_HIDDEN       = 0x10000000 /* Hidden from view */
 };
 
 int level_get(const char *level);
