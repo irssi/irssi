@@ -197,7 +197,9 @@ int main(int argc, char **argv)
 		g_free(name);
 	}
 
+#if GLIB_CHECK_VERSION(2,38,0)
 	g_test_set_nonfatal_assertions();
+#endif
 	return g_test_run();
 }
 
