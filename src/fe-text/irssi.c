@@ -207,6 +207,8 @@ static void textui_finish_init(void)
 		fe_settings_set_print("nick");
 	if (user_settings_changed & USER_SETTINGS_HOSTNAME)
 		fe_settings_set_print("hostname");
+
+	term_environment_check();
 }
 
 static void textui_deinit(void)
