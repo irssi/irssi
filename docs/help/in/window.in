@@ -35,10 +35,19 @@
     SHRINK:       %|Decrease the size of the active split window by the specified number of lines.
     SIZE:         %|Set the current split window size to the specified numer of lines.
     BALANCE:      %|Balance the heights of all split windows.
+    RGROW:        %|Increase the width of the active split window by the specified number of columns.
+    RSHRINK:      %|Decrease the wodth of the active split window by the specified number of columns.
+    RSIZE:        %|Set the current split window width to the specified numer of columns.
+    RBALANCE:     %|Balance the widths of all split windows in this line.
     HIDE:         %|Hides the current split window, or the split window specified by number or item name.
     SHOW:         %|Show the window specified by number or item name as a new split windows. It is made sticky when autostick_split_windows is turned on.
-    UP:           %|Set the split window above the current one active. At the top, wraps to the bottom.
-    DOWN:         %|Set the split window below the current one active. At the bottom, wraps to the top.
+    RSHOW:        %|Show the window specified by number or item name as a new windows split to the right of the current window. It is made sticky when autostick_split_windows is turned on.
+    UP:           %|Set the split window left or above the current one active. At the top, wraps to the bottom.
+    DOWN:         %|Set the split window right or below the current one active. At the bottom, wraps to the top.
+    DUP:          %|Set the split window above the current one active. At the top, wraps to the bottom.
+    DDOWN:        %|Set the split window below the current one active. At the bottom, wraps to the top.
+    DLEFT:        %|Set the split window left to the current one active. At the left, wraps to the right.
+    DRIGHT:       %|Set the split window right to the current one active. At the right, wraps to the left.
     LEFT:         %|Go to the previous window numerically that is part of the current sticky group (or not part of any sticky group).
     RIGHT:        %|Go to the next window numerically that is part of the current sticky group (or not part of any sticky group).
     STICK:        %|Make the currently active window sticky, or stick the window specified by number to the currently visible split window. Or turn off stickyness of the currently active window or the window specified by number.
@@ -46,6 +55,8 @@
     MOVE RIGHT:   %|Move the window to the numerically next location inside the current sticky group.
     MOVE UP:      %|Move the current window to the sticky group of the split window above. If no sticky group remains, the split window collapses.
     MOVE DOWN:    %|Move the current window to the sticky group of the split window below. If no sticky group remains, the split window collapses.
+    MOVE DLEFT:   %|Move the current window to the sticky group of the split window to the left. If no sticky group remains, the split window collapses.
+    MOVE DRIGHT:  %|Move the current window to the sticky group of the split window to the right. If no sticky group remains, the split window collapses.
 
    %|Add the required arguments for the given command. Without arguments, the details (size, immortality, levels, server, name and sticky group) of the currently active window are displayed. If used with a number as argument, same as WINDOW REFNUM.
 

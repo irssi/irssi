@@ -242,17 +242,24 @@ static void statusbar_resize_items(STATUSBAR_REC *bar, int max_width)
 
 static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 {
-        WINDOW_REC *old_active_win;
+	WINDOW_REC *window;
+	WINDOW_REC *old_active_win;
 	GSList *tmp, *right_items;
 	int xpos, rxpos;
+	int max_width;
 
 	old_active_win = active_win;
-        if (bar->parent_window != NULL)
+	if (bar->parent_window != NULL)
 		active_win = bar->parent_window->active;
 
-	statusbar_resize_items(bar, term_width);
+	window = bar->parent_window != NULL
+		? bar->parent_window->active
+		: NULL;
 
-        /* left-aligned items */
+	max_width = window != NULL ? window->width : term_width;
+	statusbar_resize_items(bar, max_width);
+
+	/* left-aligned items */
 	xpos = 0;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
@@ -260,11 +267,11 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 		if (!rec->config->right_alignment &&
 		    (rec->size > 0 || rec->current_size > 0)) {
 			if (SBAR_ITEM_REDRAW_NEEDED(bar, rec, xpos)) {
-                                /* redraw the item */
+				/* redraw the item */
 				rec->dirty = TRUE;
 				if (bar->dirty_xpos == -1 ||
 				    xpos < bar->dirty_xpos) {
-                                        irssi_set_dirty();
+					irssi_set_dirty();
 					bar->dirty = TRUE;
 					bar->dirty_xpos = xpos;
 				}
@@ -277,12 +284,12 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 
 	/* right-aligned items - first copy them to a new list backwards,
 	   easier to draw them in right order */
-        right_items = NULL;
+	right_items = NULL;
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
 		if (rec->config->right_alignment) {
-                        if (rec->size > 0)
+			if (rec->size > 0)
 				right_items = g_slist_prepend(right_items, rec);
 			else if (rec->current_size > 0 &&
 				 (bar->dirty_xpos == -1 ||
@@ -291,12 +298,12 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 				   to begin from the item's old xpos */
 				irssi_set_dirty();
 				bar->dirty = TRUE;
-                                bar->dirty_xpos = rec->xpos;
+				bar->dirty_xpos = rec->xpos;
 			}
 		}
 	}
 
-	rxpos = term_width;
+	rxpos = max_width;
 	for (tmp = right_items; tmp != NULL; tmp = tmp->next) {
 		SBAR_ITEM_REC *rec = tmp->data;
 
@@ -312,7 +319,7 @@ static void statusbar_calc_item_positions(STATUSBAR_REC *bar)
 			rec->xpos = rxpos;
 		}
 	}
-        g_slist_free(right_items);
+	g_slist_free(right_items);
 
 	active_win = old_active_win;
 }
@@ -451,8 +458,13 @@ static void mainwindow_recalc_ypos(MAIN_WINDOW_REC *window, int placement)
 
 static void sig_mainwindow_resized(MAIN_WINDOW_REC *window)
 {
-        mainwindow_recalc_ypos(window, STATUSBAR_TOP);
-        mainwindow_recalc_ypos(window, STATUSBAR_BOTTOM);
+	GSList *tmp;
+	mainwindow_recalc_ypos(window, STATUSBAR_TOP);
+	mainwindow_recalc_ypos(window, STATUSBAR_BOTTOM);
+	for (tmp = window->statusbars; tmp != NULL; tmp = tmp->next) {
+		STATUSBAR_REC *bar = tmp->data;
+		statusbar_redraw(bar, TRUE);
+	}
 }
 
 STATUSBAR_REC *statusbar_create(STATUSBAR_GROUP_REC *group,
@@ -728,7 +740,7 @@ void statusbar_item_default_handler(SBAR_ITEM_REC *item, int get_size_only,
 				g_string_append_c(out, ' ');
 		}
 
-		gui_printtext(item->xpos, item->bar->real_ypos, out->str);
+		gui_printtext(ITEM_WINDOW_REAL_XPOS(item), item->bar->real_ypos, out->str);
 		g_string_free(out, TRUE);
 	}
 	g_free(tmpstr);
@@ -960,20 +972,42 @@ void statusbar_item_destroy(SBAR_ITEM_REC *item)
 	g_free(item);
 }
 
+static MAIN_WINDOW_BORDER_REC *set_border_info(STATUSBAR_REC *bar)
+{
+	MAIN_WINDOW_BORDER_REC *orig_border, *new_border;
+	orig_border = clrtoeol_info;
+	new_border = g_new0(MAIN_WINDOW_BORDER_REC, 1);
+	new_border->window = bar->parent_window != NULL ? bar->parent_window->screen_win : NULL;
+	new_border->color = bar->color;
+	clrtoeol_info = new_border;
+	return orig_border;
+}
+
+static void restore_border_info(MAIN_WINDOW_BORDER_REC *border_info)
+{
+	MAIN_WINDOW_BORDER_REC *old_border;
+	old_border = clrtoeol_info;
+	clrtoeol_info = border_info;
+	g_free(old_border);
+}
+
 static void statusbar_redraw_needed_items(STATUSBAR_REC *bar)
 {
-        WINDOW_REC *old_active_win;
+	WINDOW_REC *old_active_win;
 	GSList *tmp;
 	char *str;
 
 	old_active_win = active_win;
-        if (bar->parent_window != NULL)
+	if (bar->parent_window != NULL)
 		active_win = bar->parent_window->active;
 
 	if (bar->dirty_xpos >= 0) {
+		MAIN_WINDOW_BORDER_REC *orig_border;
+		orig_border = set_border_info(bar);
 		str = g_strconcat(bar->color, "%>", NULL);
-		gui_printtext(bar->dirty_xpos, bar->real_ypos, str);
+		gui_printtext(BAR_WINDOW_REAL_DIRTY_XPOS(bar), bar->real_ypos, str);
 		g_free(str);
+		restore_border_info(orig_border);
 	}
 
 	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
@@ -982,13 +1016,13 @@ static void statusbar_redraw_needed_items(STATUSBAR_REC *bar)
 		if (rec->dirty ||
 		    (bar->dirty_xpos != -1 &&
 		     rec->xpos >= bar->dirty_xpos)) {
-                        rec->current_size = rec->size;
+			rec->current_size = rec->size;
 			rec->func(rec, FALSE);
 			rec->dirty = FALSE;
 		}
 	}
 
-        active_win = old_active_win;
+	active_win = old_active_win;
 }
 
 void statusbar_redraw_dirty(void)

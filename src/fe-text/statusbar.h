@@ -23,6 +23,12 @@ typedef struct SBAR_ITEM_REC SBAR_ITEM_REC;
 #define STATUSBAR_VISIBLE_ACTIVE        2
 #define STATUSBAR_VISIBLE_INACTIVE      3
 
+#define ITEM_WINDOW_REAL_XPOS(item) ( ( (item)->bar->parent_window != NULL ? \
+					(item)->bar->parent_window->first_column + (item)->bar->parent_window->statusbar_columns_left : 0 ) + (item)->xpos )
+
+#define BAR_WINDOW_REAL_DIRTY_XPOS(bar) ( ( (bar)->parent_window != NULL ? \
+					    (bar)->parent_window->first_column + (bar)->parent_window->statusbar_columns_left : 0 ) + (bar)->dirty_xpos )
+
 typedef struct {
 	char *name;
         GSList *config_bars;

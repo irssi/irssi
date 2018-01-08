@@ -314,7 +314,7 @@ void window_item_create(WI_ITEM_REC *item, int automatic)
 		/* create new window to use */
 		if (settings_get_bool("autocreate_split_windows")) {
 			signal_emit("gui window create override", 1,
-				    GINT_TO_POINTER(0));
+				    GINT_TO_POINTER(MAIN_WINDOW_TYPE_SPLIT));
 		}
 		window = window_create(item, automatic);
 	} else {

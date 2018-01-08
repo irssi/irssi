@@ -75,17 +75,18 @@ static void gui_window_created(WINDOW_REC *window, void *automatic)
 
 	g_return_if_fail(window != NULL);
 
-	new_parent = window_create_override == 0 ||
-		window_create_override == 2 ||
+	new_parent = window_create_override == MAIN_WINDOW_TYPE_DEFAULT ||
+		window_create_override == MAIN_WINDOW_TYPE_SPLIT ||
+		window_create_override == MAIN_WINDOW_TYPE_RSPLIT ||
 		active_win == NULL || WINDOW_GUI(active_win) == NULL;
-	parent = !new_parent ? WINDOW_MAIN(active_win) : mainwindow_create();
+	parent = !new_parent ? WINDOW_MAIN(active_win) : mainwindow_create(window_create_override == MAIN_WINDOW_TYPE_RSPLIT);
 	if (parent == NULL) {
 		/* not enough space for new window, but we really can't
 		   abort creation of the window anymore, so create hidden
 		   window instead. */
 		parent = WINDOW_MAIN(active_win);
 	}
-	window_create_override = -1;
+	window_create_override = MAIN_WINDOW_TYPE_NONE;
 
 	if (parent->active == NULL) parent->active = window;
 	window->gui_data = gui_window_init(window, parent);
@@ -285,13 +286,14 @@ static void read_settings(void)
 
 void gui_windows_init(void)
 {
-        settings_add_bool("lookandfeel", "autostick_split_windows", TRUE);
+	settings_add_bool("lookandfeel", "autostick_split_windows", FALSE);
+	settings_add_bool("lookandfeel", "autounstick_windows", TRUE);
 	settings_add_int("lookandfeel", "indent", 10);
 	settings_add_bool("lookandfeel", "indent_always", FALSE);
 	settings_add_bool("lookandfeel", "break_wide", FALSE);
 	settings_add_bool("lookandfeel", "scroll", TRUE);
 
-	window_create_override = -1;
+	window_create_override = MAIN_WINDOW_TYPE_NONE;
 
 	read_settings();
 	signal_add("gui window create override", (SIGNAL_FUNC) sig_window_create_override);

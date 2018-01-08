@@ -85,6 +85,8 @@ void term_addch(TERM_WINDOW *window, char chr);
 void term_add_unichar(TERM_WINDOW *window, unichar chr);
 int  term_addstr(TERM_WINDOW *window, const char *str);
 void term_clrtoeol(TERM_WINDOW *window);
+void term_window_clrtoeol(TERM_WINDOW* window, int ypos);
+void term_window_clrtoeol_abs(TERM_WINDOW* window, int ypos_abs);
 
 void term_move_cursor(int x, int y);
 
