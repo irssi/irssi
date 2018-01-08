@@ -15,7 +15,7 @@ format_real_length_test_case const format_real_length_fixtures[] = {
 	{
 		.description = "",
 		.input = "%4%w ",
-		.result = { 0, 5, 5, -1 },
+		.result = { 4, 5, 5, -1 },
 	},
 };
 
