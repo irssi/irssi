@@ -40,6 +40,7 @@ static void perl_text_buffer_view_fill_hash(HV *hv, TEXT_BUFFER_VIEW_REC *view)
 
 	(void) hv_store(hv, "startline", 9, plain_bless(view->startline, "Irssi::TextUI::Line"), 0);
 	(void) hv_store(hv, "subline", 7, newSViv(view->subline), 0);
+        (void) hv_store(hv, "hidden_level", 12, newSViv(view->hidden_level), 0);
 
 	(void) hv_store(hv, "bottom_startline", 16, plain_bless(view->bottom_startline, "Irssi::TextUI::Line"), 0);
 	(void) hv_store(hv, "bottom_subline", 14, newSViv(view->bottom_subline), 0);
