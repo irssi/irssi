@@ -65,8 +65,10 @@ static void entry_text_grow(GUI_ENTRY_REC *entry, int grow_size)
 	entry->text_alloc = nearest_power(entry->text_alloc+grow_size);
 	entry->text = g_realloc(entry->text,
 				sizeof(unichar) * entry->text_alloc);
-	entry->colors = g_realloc(entry->colors,
-	                        sizeof(int) * entry->text_alloc);
+
+	if (entry->uses_extents)
+		entry->extents = g_realloc(entry->extents,
+				   sizeof(char *) * entry->text_alloc);
 }
 
 GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width, int utf8)
@@ -79,10 +81,25 @@ GUI_ENTRY_REC *gui_entry_create(int xpos, int ypos, int width, int utf8)
 	rec->width = width;
 	rec->text_alloc = 1024;
 	rec->text = g_new(unichar, rec->text_alloc);
-	rec->colors = g_new(int, rec->text_alloc);
+	rec->extents = NULL;
 	rec->text[0] = '\0';
 	rec->utf8 = utf8;
 	return rec;
+}
+
+static void destroy_extents(GUI_ENTRY_REC *entry)
+{
+	if (entry->uses_extents) {
+		int i;
+		for (i = 0; i < entry->text_alloc; i++) {
+			if (entry->extents[i] != NULL) {
+				g_free(entry->extents[i]);
+			}
+		}
+	}
+	g_free(entry->extents);
+	entry->extents = NULL;
+	entry->uses_extents = FALSE;
 }
 
 void gui_entry_destroy(GUI_ENTRY_REC *entry)
@@ -103,8 +120,8 @@ void gui_entry_destroy(GUI_ENTRY_REC *entry)
 	}
 	g_slist_free(entry->kill_ring);
 
+	destroy_extents(entry);
 	g_free(entry->text);
-	g_free(entry->colors);
 	g_free(entry->prompt);
 	g_free(entry);
 }
@@ -168,15 +185,36 @@ void big5_to_unichars(const char *str, unichar *out)
 	*out = '\0';
 }
 
+/* Return screen length of plain string */
+static int scrlen_str(const char *str, int utf8)
+{
+	int len = 0;
+	char *stripped;
+	g_return_val_if_fail(str != NULL, 0);
+
+	stripped = strip_codes(str);
+	len = string_width(stripped, utf8 ? TREAT_STRING_AS_UTF8 : TREAT_STRING_AS_BYTES);
+	g_free(stripped);
+	return len;
+}
+
 /* ----------------------------- */
 
-static int pos2scrpos(GUI_ENTRY_REC *entry, int pos)
+static int pos2scrpos(GUI_ENTRY_REC *entry, int pos, int cursor)
 {
 	int i;
 	int xpos = 0;
 
+	if (!cursor && pos <= 0)
+		return 0;
+
+	if (entry->uses_extents && entry->extents[0] != NULL) {
+		xpos += scrlen_str(entry->extents[0], entry->utf8);
+	}
+
 	for (i = 0; i < pos; i++) {
 		unichar c = entry->text[i];
+		const char *extent = entry->uses_extents ? entry->extents[i+1] : NULL;
 
 		if (term_type == TERM_TYPE_BIG5)
 			xpos += big5_width(c);
@@ -184,16 +222,26 @@ static int pos2scrpos(GUI_ENTRY_REC *entry, int pos)
 			xpos += unichar_isprint(c) ? mk_wcwidth(c) : 1;
 		else
 			xpos++;
+
+		if (extent != NULL) {
+			xpos += scrlen_str(extent, entry->utf8);
+		}
+
 	}
 	return xpos;
 }
 
 static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
 {
-	int i, width, xpos;
+	int i, width, xpos = 0;
 
-	for (i = 0, xpos = 0; i < entry->text_len; i++) {
+	if (entry->uses_extents && entry->extents[0] != NULL) {
+		xpos += scrlen_str(entry->extents[0], entry->utf8);
+	}
+
+	for (i = 0; i < entry->text_len && xpos < pos; i++) {
 		unichar c = entry->text[i];
+		const char *extent = entry->uses_extents ? entry->extents[i+1] : NULL;
 
 		if (term_type == TERM_TYPE_BIG5)
 			width = big5_width(c);
@@ -202,15 +250,13 @@ static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
 		else
 			width = 1;
 
-		if (xpos + width > pos)
-			break;
 		xpos += width;
-	}
 
-	if (xpos == pos)
-		return i;
-	else
-		return i-1;
+		if (extent != NULL) {
+			xpos += scrlen_str(extent, entry->utf8);
+		}
+	}
+	return i;
 }
 
 /* Fixes the cursor position in screen */
@@ -219,19 +265,19 @@ static void gui_entry_fix_cursor(GUI_ENTRY_REC *entry)
 	int old_scrstart;
 
 	/* assume prompt len == prompt scrlen */
-	int start = pos2scrpos(entry, entry->scrstart);
-	int now = pos2scrpos(entry, entry->pos);
+	int start = pos2scrpos(entry, entry->scrstart, FALSE);
+	int now = pos2scrpos(entry, entry->pos, TRUE);
 
 	old_scrstart = entry->scrstart;
-	if (now-start < entry->width - 2 - entry->promptlen && now-start > 0)
+	if (now-start < entry->width - 2 - entry->promptlen && now-start > 0) {
 		entry->scrpos = now-start;
-	else if (now < entry->width - 1 - entry->promptlen) {
+	} else if (now < entry->width - 1 - entry->promptlen) {
 		entry->scrstart = 0;
 		entry->scrpos = now;
 	} else {
 		entry->scrstart = scrpos2pos(entry, now-(entry->width -
 							 entry->promptlen)*2/3);
-		start = pos2scrpos(entry, entry->scrstart);
+		start = pos2scrpos(entry, entry->scrstart, FALSE);
 		entry->scrpos = now - start;
 	}
 
@@ -239,66 +285,140 @@ static void gui_entry_fix_cursor(GUI_ENTRY_REC *entry)
                 entry->redraw_needed_from = 0;
 }
 
+static char *text_effects_only(const char *p)
+{
+	GString *str;
+
+	str = g_string_sized_new(strlen(p));
+	for (; *p != '\0'; p++) {
+		if (*p == 4 && p[1] != '\0') {
+			if (p[1] >= FORMAT_STYLE_SPECIAL) {
+				g_string_append_len(str, p, 2);
+				p++;
+				continue;
+			}
+
+			/* irssi color */
+			if (p[2] != '\0') {
+#ifdef TERM_TRUECOLOR
+				if (p[1] == FORMAT_COLOR_24) {
+					if (p[3] == '\0') p += 2;
+					else if (p[4] == '\0') p += 3;
+					else if (p[5] == '\0') p += 4;
+					else {
+						g_string_append_len(str, p, 6);
+						p += 5;
+					}
+				} else {
+#endif /* TERM_TRUECOLOR */
+					g_string_append_len(str, p, 3);
+					p += 2;
+#ifdef TERM_TRUECOLOR
+				}
+#endif /* TERM_TRUECOLOR */
+				continue;
+			}
+		}
+	}
+
+	return g_string_free(str, FALSE);
+}
+
 static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 {
-	int i;
-	int xpos, end_xpos, color;
+	int i, start;
+	int start_xpos, xpos, new_xpos, end_xpos;
+	char *tmp;
+	GString *str;
 
-	xpos = entry->xpos + entry->promptlen +
-		pos2scrpos(entry, pos + entry->scrstart) -
-		pos2scrpos(entry, entry->scrstart);
+	start = entry->scrstart + pos;
+
+	start_xpos = xpos = entry->xpos + entry->promptlen +
+		pos2scrpos(entry, start, FALSE) -
+		pos2scrpos(entry, entry->scrstart, FALSE);
         end_xpos = entry->xpos + entry->width;
 
 	if (xpos > end_xpos)
                 return;
 
-	color = ATTR_RESET;
-	term_set_color(root_window, ATTR_RESET);
-	term_move(root_window, xpos, entry->ypos);
+	str = g_string_sized_new(entry->text_alloc);
 
-	for (i = entry->scrstart + pos; i < entry->text_len; i++) {
+	term_set_color(root_window, ATTR_RESET);
+	/* term_move(root_window, xpos, entry->ypos); */
+
+	if (entry->uses_extents && entry->extents[0] != NULL) {
+		g_string_append(str, entry->extents[0]);
+	}
+	for (i = 0; i < start && i < entry->text_len; i++) {
+		const char *extent = entry->uses_extents ? entry->extents[i+1] : NULL;
+		if (extent != NULL) {
+			g_string_append(str, extent);
+		}
+	}
+	if (i == 0) {
+		xpos += scrlen_str(str->str, entry->utf8);
+	} else {
+		tmp = text_effects_only(str->str);
+		g_string_assign(str, tmp);
+		g_free(tmp);
+	}
+
+	for (; i < entry->text_len; i++) {
 		unichar c = entry->text[i];
-		int col = entry->colors[i];
+		const char *extent = entry->uses_extents ? entry->extents[i+1] : NULL;
+		new_xpos = xpos;
 
 		if (entry->hidden)
-			xpos++;
+			new_xpos++;
 		else if (term_type == TERM_TYPE_BIG5)
-			xpos += big5_width(c);
+			new_xpos += big5_width(c);
 		else if (entry->utf8)
-			xpos += unichar_isprint(c) ? mk_wcwidth(c) : 1;
+			new_xpos += unichar_isprint(c) ? mk_wcwidth(c) : 1;
 		else
-			xpos++;
+			new_xpos++;
 
-		if (xpos > end_xpos)
+		if (new_xpos > end_xpos)
 			break;
 
-		if (col != color) {
-			term_set_color(root_window, col);
-			color = col;
-		}
-
 		if (entry->hidden)
-                        term_addch(root_window, ' ');
+                        g_string_append_c(str, ' ');
 		else if (unichar_isprint(c))
-			term_add_unichar(root_window, c);
+			g_string_append_unichar(str, c);
 		else {
-			term_set_color(root_window, ATTR_RESET|ATTR_REVERSE);
-			term_addch(root_window, (c & 127)+'A'-1);
-			term_set_color(root_window, color);
+			g_string_append_c(str, 4);
+			g_string_append_c(str, FORMAT_STYLE_REVERSE);
+			g_string_append_c(str, (c & 127)+'A'-1);
+			g_string_append_c(str, 4);
+			g_string_append_c(str, FORMAT_STYLE_REVERSE);
+		}
+		xpos = new_xpos;
+
+		if (extent != NULL) {
+			new_xpos += scrlen_str(extent, entry->utf8);
+
+			if (new_xpos > end_xpos)
+				break;
+
+			g_string_append(str, extent);
+			xpos = new_xpos;
 		}
 	}
 
         /* clear the rest of the input line */
 	if (xpos < end_xpos) {
-		if (end_xpos == term_width)
-			term_clrtoeol(root_window);
-		else {
+		if (end_xpos == term_width) {
+			g_string_append_c(str, 4);
+			g_string_append_c(str, FORMAT_STYLE_CLRTOEOL);
+		} else {
 			while (xpos < end_xpos) {
-				term_addch(root_window, ' ');
+				g_string_append_c(str, ' ');
 				xpos++;
 			}
 		}
 	}
+
+	gui_printtext_internal(start_xpos, entry->ypos, str->str);
+	g_string_free(str, TRUE);
 }
 
 static void gui_entry_draw(GUI_ENTRY_REC *entry)
@@ -370,19 +490,6 @@ void gui_entry_set_active(GUI_ENTRY_REC *entry)
 	}
 }
 
-/* Return screen length of plain string */
-static int scrlen_str(const char *str)
-{
-	int len = 0;
-	char *stripped;
-	g_return_val_if_fail(str != NULL, 0);
-
-	stripped = strip_codes(str);
-	len = string_width(stripped, -1);
-	g_free(stripped);
-	return len;
-}
-
 void gui_entry_set_prompt(GUI_ENTRY_REC *entry, const char *str)
 {
 	int oldlen;
@@ -393,7 +500,7 @@ void gui_entry_set_prompt(GUI_ENTRY_REC *entry, const char *str)
 	if (str != NULL) {
 		g_free_not_null(entry->prompt);
 		entry->prompt = g_strdup(str);
-		entry->promptlen = scrlen_str(str);
+		entry->promptlen = scrlen_str(str, entry->utf8);
 	}
 
         if (entry->prompt != NULL)
@@ -427,6 +534,7 @@ void gui_entry_set_text(GUI_ENTRY_REC *entry, const char *str)
 	entry->text_len = 0;
 	entry->pos = 0;
 	entry->text[0] = '\0';
+	destroy_extents(entry);
 
 	gui_entry_insert_text(entry, str);
 }
@@ -500,8 +608,13 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 		  (entry->text_len-entry->pos + 1) * sizeof(unichar));
 
 	/* make space for the color */
-	g_memmove(entry->colors + entry->pos + len, entry->colors + entry->pos,
-	          (entry->text_len-entry->pos) * sizeof(int));
+	if (entry->uses_extents) {
+		g_memmove(entry->extents + entry->pos + len + 1, entry->extents + entry->pos + 1,
+			  (entry->text_len-entry->pos) * sizeof(char *));
+		for (i = 0; i < len; i++) {
+			entry->extents[entry->pos + i + 1] = NULL;
+		}
+	}
 
 	if (!entry->utf8) {
 		if (term_type == TERM_TYPE_BIG5) {
@@ -518,10 +631,6 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
 			entry->text[entry->pos + i] = g_utf8_get_char(ptr);
 			ptr = g_utf8_next_char(ptr);
 		}
-	}
-
-	for (i = 0; i < len; i++) {
-		entry->colors[entry->pos + i] = ATTR_RESET;
 	}
 
 	entry->text_len += len;
@@ -549,12 +658,13 @@ void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr)
 	g_memmove(entry->text + entry->pos + 1, entry->text + entry->pos,
 		  (entry->text_len-entry->pos + 1) * sizeof(unichar));
 
-	g_memmove(entry->colors + entry->pos + 1, entry->colors + entry->pos,
-	          (entry->text_len-entry->pos) * sizeof(int));
-
+	if (entry->uses_extents) {
+		g_memmove(entry->extents + entry->pos + 1 + 1, entry->extents + entry->pos + 1,
+			  (entry->text_len-entry->pos) * sizeof(char *));
+		entry->extents[entry->pos + 1] = NULL;
+	}
 
 	entry->text[entry->pos] = chr;
-	entry->colors[entry->pos] = ATTR_RESET;
 	entry->text_len++;
 	entry->pos++;
 
@@ -655,7 +765,7 @@ static GUI_ENTRY_CUTBUFFER_REC *get_cutbuffer_rec(GUI_ENTRY_REC *entry, CUTBUFFE
 
 void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_cutbuffer)
 {
-	size_t w = 0;
+	size_t i, w = 0;
 
         g_return_if_fail(entry != NULL);
 
@@ -724,8 +834,22 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 	g_memmove(entry->text + entry->pos - size, entry->text + entry->pos,
 		  (entry->text_len-entry->pos+1) * sizeof(unichar));
 
-	g_memmove(entry->colors + entry->pos - size, entry->colors + entry->pos,
-		(entry->text_len - entry->pos) * sizeof(int));
+	if (entry->uses_extents) {
+		for (i = entry->pos - size; i < entry->pos; i++) {
+			if (entry->extents[i+1] != NULL) {
+				g_free(entry->extents[i+1]);
+			}
+		}
+		g_memmove(entry->extents + entry->pos - size + 1, entry->extents + entry->pos + 1,
+			  (entry->text_len - entry->pos) * sizeof(void *)); /* no null terminator here */
+		for (i = 0; i < size; i++) {
+			entry->extents[entry->text_len - i] = NULL;
+		}
+		if (entry->text_len == size && entry->extents[0] != NULL) {
+			g_free(entry->extents[0]);
+			entry->extents[0] = NULL;
+		}
+	}
 
 	entry->pos -= size;
         entry->text_len -= size;
@@ -748,12 +872,26 @@ void gui_entry_erase_cell(GUI_ENTRY_REC *entry)
 	g_memmove(entry->text + entry->pos, entry->text + entry->pos + size,
 	          (entry->text_len-entry->pos-size+1) * sizeof(unichar));
 
-	g_memmove(entry->colors + entry->pos, entry->colors + entry->pos + size,
-	          (entry->text_len-entry->pos-size) * sizeof(int));
+	if (entry->uses_extents) {
+		int i;
+		for (i = 0; i < size; i++) {
+			g_free(entry->extents[entry->pos + i + 1]);
+		}
+		g_memmove(entry->extents + entry->pos + 1, entry->extents + entry->pos + size + 1,
+			  (entry->text_len-entry->pos-size) * sizeof(char *));
+		for (i = 0; i < size; i++) {
+			entry->extents[entry->text_len - i] = NULL;
+		}
+		if (entry->text_len == size && entry->extents[0] != NULL) {
+			g_free(entry->extents[0]);
+			entry->extents[0] = NULL;
+		}
+	}
 
 	entry->text_len -= size;
 
 	gui_entry_redraw_from(entry, entry->pos);
+	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
 }
 
@@ -812,7 +950,7 @@ void gui_entry_erase_next_word(GUI_ENTRY_REC *entry, int to_space, CUTBUFFER_UPD
 void gui_entry_transpose_chars(GUI_ENTRY_REC *entry)
 {
         unichar chr;
-	int color;
+	char *extent;
 
 	if (entry->pos == 0 || entry->text_len < 2)
                 return;
@@ -825,9 +963,11 @@ void gui_entry_transpose_chars(GUI_ENTRY_REC *entry)
 	entry->text[entry->pos] = entry->text[entry->pos-1];
         entry->text[entry->pos-1] = chr;
 
-	color = entry->colors[entry->pos];
-	entry->colors[entry->pos] = entry->colors[entry->pos-1];
-	entry->colors[entry->pos-1] = color;
+	if (entry->uses_extents) {
+		extent = entry->extents[entry->pos+1];
+		entry->extents[entry->pos+1] = entry->extents[entry->pos];
+		entry->extents[entry->pos] = extent;
+	}
 
         entry->pos++;
 
@@ -865,44 +1005,50 @@ void gui_entry_transpose_words(GUI_ENTRY_REC *entry)
 	/* do wordswap if any found */
 	if (spos1 < epos1 && epos1 < spos2 && spos2 < epos2) {
 		unichar *first, *sep, *second;
-		int *first_color, *sep_color, *second_color;
+		char **first_extent, **sep_extent, **second_extent;
 		int i;
 
 		first  = (unichar *) g_malloc( (epos1 - spos1) * sizeof(unichar) );
 		sep    = (unichar *) g_malloc( (spos2 - epos1) * sizeof(unichar) );
 		second = (unichar *) g_malloc( (epos2 - spos2) * sizeof(unichar) );
 
-		first_color  = (int *) g_malloc( (epos1 - spos1) * sizeof(int) );
-		sep_color    = (int *) g_malloc( (spos2 - epos1) * sizeof(int) );
-		second_color = (int *) g_malloc( (epos2 - spos2) * sizeof(int) );
+		first_extent  = (char **) g_malloc( (epos1 - spos1) * sizeof(char *) );
+		sep_extent    = (char **) g_malloc( (spos2 - epos1) * sizeof(char *) );
+		second_extent = (char **) g_malloc( (epos2 - spos2) * sizeof(char *) );
 
 		for (i = spos1; i < epos1; i++) {
 			first[i-spos1] = entry->text[i];
-			first_color[i-spos1] = entry->colors[i];
+			if (entry->uses_extents)
+				first_extent[i-spos1] = entry->extents[i+1];
 		}
 		for (i = epos1; i < spos2; i++) {
 			sep[i-epos1] = entry->text[i];
-			sep_color[i-epos1] = entry->colors[i];
+			if (entry->uses_extents)
+				sep_extent[i-epos1] = entry->extents[i+1];
 		}
 		for (i = spos2; i < epos2; i++) {
 			second[i-spos2] = entry->text[i];
-			second_color[i-spos2] = entry->colors[i];
+			if (entry->uses_extents)
+				second_extent[i-spos2] = entry->extents[i+1];
 		}
 
 		entry->pos = spos1;
 		for (i = 0; i < epos2-spos2; i++) {
 			entry->text[entry->pos] = second[i];
-			entry->colors[entry->pos] = second_color[i];
+			if (entry->uses_extents)
+				entry->extents[entry->pos+1] = second_extent[i];
 			entry->pos++;
 		}
 		for (i = 0; i < spos2-epos1; i++) {
 			entry->text[entry->pos] = sep[i];
-			entry->colors[entry->pos] = sep_color[i];
+			if (entry->uses_extents)
+				entry->extents[entry->pos+1] = sep_extent[i];
 			entry->pos++;
 		}
 		for (i = 0; i < epos1-spos1; i++) {
 			entry->text[entry->pos] = first[i];
-			entry->colors[entry->pos] = first_color[i];
+			if (entry->uses_extents)
+				entry->extents[entry->pos+1] = first_extent[i];
 			entry->pos++;
 		}
 
@@ -910,9 +1056,9 @@ void gui_entry_transpose_words(GUI_ENTRY_REC *entry)
 		g_free(sep);
 		g_free(second);
 
-		g_free(first_color);
-		g_free(sep_color);
-		g_free(second_color);
+		g_free(first_extent);
+		g_free(sep_extent);
+		g_free(second_extent);
 	}
 
 	gui_entry_redraw_from(entry, spos1);
@@ -996,10 +1142,16 @@ void gui_entry_set_pos(GUI_ENTRY_REC *entry, int pos)
 
 void gui_entry_set_text_and_pos_bytes(GUI_ENTRY_REC *entry, const char *str, int pos_bytes)
 {
-	int pos;
+	int pos, extents_alloc;
+	char **extents;
 	const char *ptr;
 
 	g_return_if_fail(entry != NULL);
+
+	extents = entry->extents;
+	extents_alloc = entry->text_alloc;
+	entry->extents = NULL;
+	entry->uses_extents = FALSE;
 
 	gui_entry_set_text(entry, str);
 
@@ -1011,6 +1163,19 @@ void gui_entry_set_text_and_pos_bytes(GUI_ENTRY_REC *entry, const char *str, int
 	else
 		pos = pos_bytes;
 
+	if (extents != NULL) {
+		entry->uses_extents = TRUE;
+		entry->extents = extents;
+		if (extents_alloc < entry->text_alloc) {
+			int i;
+			entry->extents = g_realloc(entry->extents,
+				   sizeof(char *) * entry->text_alloc);
+			for (i = extents_alloc; i < entry->text_alloc; i++) {
+				entry->extents[i] = NULL;
+			}
+		}
+	}
+	gui_entry_redraw_from(entry, 0);
 	gui_entry_set_pos(entry, pos);
 }
 
@@ -1101,7 +1266,91 @@ void gui_entry_redraw(GUI_ENTRY_REC *entry)
 	gui_entry_draw(entry);
 }
 
-void gui_entry_set_color(GUI_ENTRY_REC *entry, int pos, int len, int color)
+static void gui_entry_alloc_extents(GUI_ENTRY_REC *entry)
+{
+	entry->uses_extents = TRUE;
+	entry->extents = g_new0(char *, entry->text_alloc);
+}
+
+void gui_entry_set_extent(GUI_ENTRY_REC *entry, int pos, const char *text)
+{
+	int update = FALSE;
+
+	g_return_if_fail(entry != NULL);
+
+	if (pos < 0 || pos > entry->text_len)
+		return;
+
+	if (text == NULL)
+		return;
+
+	if (!entry->uses_extents) {
+		gui_entry_alloc_extents(entry);
+	}
+
+	if (g_strcmp0(entry->extents[pos], text) != 0) {
+		g_free(entry->extents[pos]);
+		if (*text == '\0') {
+			entry->extents[pos] = NULL;
+		} else {
+			entry->extents[pos] = g_strdup(text);
+		}
+		update = TRUE;
+	}
+
+	if (update) {
+		gui_entry_redraw_from(entry, pos - 1);
+		gui_entry_fix_cursor(entry);
+		gui_entry_draw(entry);
+	}
+}
+
+void gui_entry_set_extents(GUI_ENTRY_REC *entry, int pos, int len, const char *left, const char *right)
+{
+	int end, update = FALSE;
+
+	g_return_if_fail(entry != NULL);
+
+	if (pos < 0 || len < 0 || pos > entry->text_len)
+		return;
+
+	end = pos + len;
+
+	if (end > entry->text_len)
+		end = entry->text_len;
+
+	if (!entry->uses_extents) {
+		gui_entry_alloc_extents(entry);
+	}
+
+	if (g_strcmp0(entry->extents[pos], left) != 0) {
+		g_free(entry->extents[pos]);
+		if (*left == '\0') {
+			entry->extents[pos] = NULL;
+		} else {
+			entry->extents[pos] = g_strdup(left);
+		}
+		update = TRUE;
+	}
+
+	if (pos != end && g_strcmp0(entry->extents[end], right) != 0) {
+		g_free(entry->extents[end]);
+		if (*right == '\0') {
+			entry->extents[end] = NULL;
+		} else {
+			entry->extents[end] = g_strdup(right);
+		}
+		update = TRUE;
+	}
+
+	if (update) {
+		gui_entry_redraw_from(entry, pos - 1);
+		gui_entry_fix_cursor(entry);
+		gui_entry_draw(entry);
+	}
+}
+
+void gui_entry_clear_extents(GUI_ENTRY_REC *entry, int pos, int len)
 {
 	int i, end, update = FALSE;
 
@@ -1115,9 +1364,14 @@ void gui_entry_set_color(GUI_ENTRY_REC *entry, int pos, int len, int color)
 	if (end > entry->text_len)
 		end = entry->text_len;
 
-	for (i = pos; i < end; i++) {
-		if (entry->colors[i] != color) {
-			entry->colors[i] = color;
+	if (!entry->uses_extents) {
+		return;
+	}
+
+	for (i = pos; i <= end; i++) {
+		if (entry->extents[i] != NULL) {
+			g_free(entry->extents[i]);
+			entry->extents[i] = NULL;
 			update = TRUE;
 		}
 	}
@@ -1127,4 +1381,118 @@ void gui_entry_set_color(GUI_ENTRY_REC *entry, int pos, int len, int color)
 		gui_entry_fix_cursor(entry);
 		gui_entry_draw(entry);
 	}
+}
+
+char *gui_entry_get_extent(GUI_ENTRY_REC *entry, int pos)
+{
+	g_return_val_if_fail(entry != NULL, NULL);
+
+	if (!entry->uses_extents)
+		return NULL;
+
+	if (pos < 0 || pos >= entry->text_len)
+		return NULL;
+
+	return entry->extents[pos];
+}
+
+#define POS_FLAG "%|"
+GSList *gui_entry_get_text_and_extents(GUI_ENTRY_REC *entry)
+{
+	GSList *list = NULL;
+	GString *str;
+	int i;
+
+	g_return_val_if_fail(entry != NULL, NULL);
+
+	if (entry->uses_extents && entry->extents[0] != NULL) {
+		if (entry->pos == 0) {
+			list = g_slist_prepend(list, g_strconcat(entry->extents[0], POS_FLAG, NULL));
+		} else {
+			list = g_slist_prepend(list, g_strdup(entry->extents[0]));
+		}
+	} else {
+		if (entry->pos == 0) {
+			list = g_slist_prepend(list, g_strdup(POS_FLAG));
+		} else {
+			list = g_slist_prepend(list, NULL);
+		}
+	}
+
+	str = g_string_sized_new(entry->text_alloc);
+	for (i = 0; i < entry->text_len; i++) {
+		if (entry->utf8) {
+			g_string_append_unichar(str, entry->text[i]);
+		} else if (term_type == TERM_TYPE_BIG5) {
+			if(entry->text[i] > 0xff)
+				g_string_append_c(str, (entry->text[i] >> 8) & 0xff);
+			g_string_append_c(str, entry->text[i] & 0xff);
+		} else {
+			g_string_append_c(str, entry->text[i]);
+		}
+		if (entry->pos == i+1 || (entry->uses_extents && entry->extents[i+1] != NULL)) {
+			list = g_slist_prepend(list, g_strdup(str->str));
+			g_string_truncate(str, 0);
+			if (entry->uses_extents && entry->extents[i+1] != NULL) {
+				if (entry->pos == i+1) {
+					list = g_slist_prepend(list, g_strconcat(entry->extents[i+1], POS_FLAG, NULL));
+				} else {
+					list = g_slist_prepend(list, g_strdup(entry->extents[i+1]));
+				}
+			} else if (entry->pos == i+1) {
+				list = g_slist_prepend(list, g_strdup(POS_FLAG));
+			}
+		}
+	}
+	if (str->len > 0) {
+		list = g_slist_prepend(list, g_strdup(str->str));
+	}
+	list = g_slist_reverse(list);
+	g_string_free(str, TRUE);
+
+	return list;
+}
+
+void gui_entry_set_text_and_extents(GUI_ENTRY_REC *entry, GSList *list)
+{
+	GSList *tmp;
+	int pos = -1;
+	int is_extent = 1;
+
+	gui_entry_set_text(entry, "");
+	for (tmp = list, is_extent = TRUE; tmp != NULL; tmp = tmp->next, is_extent ^= 1) {
+		if (is_extent) {
+			char *extent;
+			int len;
+
+			if (tmp->data == NULL)
+				continue;
+
+			extent = g_strdup(tmp->data);
+			len = strlen(extent);
+			if (len >= strlen(POS_FLAG) && g_strcmp0(&extent[len-strlen(POS_FLAG)], POS_FLAG) == 0) {
+				char *tmp;
+				tmp = extent;
+				extent = g_strndup(tmp, len - strlen(POS_FLAG));
+				g_free(tmp);
+				pos = entry->pos;
+			}
+
+			if (strlen(extent) > 0) {
+				gui_entry_set_extent(entry, entry->pos, extent);
+			}
+			g_free(extent);
+		} else {
+			gui_entry_insert_text(entry, tmp->data);
+		}
+	}
+	gui_entry_set_pos(entry, pos);
+}
+
+void gui_entry_init(void)
+{
+}
+
+void gui_entry_deinit(void)
+{
 }

@@ -125,12 +125,72 @@ CODE:
 	gui_entry_set_text(active_entry, str);
 
 void
-gui_input_color(pos, len, color)
+gui_input_set_extent(pos, text)
+	int pos
+	char *text
+PREINIT:
+	char *tt;
+CODE:
+	tt = text != NULL ? format_string_expand(text, NULL) : NULL;
+	gui_entry_set_extent(active_entry, pos, tt);
+	g_free(tt);
+
+void
+gui_input_set_extents(pos, len, left, right)
 	int pos
 	int len
-	int color
+	char *left
+	char *right
+PREINIT:
+	char *tl;
+	char *tr;
 CODE:
-	gui_entry_set_color(active_entry, pos, len, color);
+	tl = left != NULL ? format_string_expand(left, NULL) : NULL;
+	tr = right != NULL ? format_string_expand(right, NULL) : NULL;
+	gui_entry_set_extents(active_entry, pos, len, tl, tr);
+	g_free(tl);
+	g_free(tr);
+
+void
+gui_input_clear_extents(pos, len = 0)
+	int pos
+	int len
+CODE:
+	gui_entry_clear_extents(active_entry, pos, len);
+
+void
+gui_input_get_extent(pos)
+	int pos
+PREINIT:
+	char *ret;
+PPCODE:
+	ret = gui_entry_get_extent(active_entry, pos);
+	XPUSHs(sv_2mortal(new_pv(ret)));
+	g_free(ret);
+
+void
+gui_input_get_text_and_extents()
+PREINIT:
+	GSList *ret, *tmp;
+PPCODE:
+	ret = gui_entry_get_text_and_extents(active_entry);
+	for (tmp = ret; tmp != NULL; tmp = tmp->next) {
+		XPUSHs(sv_2mortal(new_pv(tmp->data)));
+	}
+	g_slist_free_full(ret, g_free);
+
+void
+gui_input_set_text_and_extents(...)
+PREINIT:
+	GSList *list;
+	int i;
+PPCODE:
+	list = NULL;
+	for (i = items; i > 0; i--) {
+		list = g_slist_prepend(list, SvPV_nolen(ST(i-1)));
+	}
+	gui_entry_set_text_and_extents(active_entry, list);
+	g_slist_free(list);
 
 int
 gui_input_get_pos()
