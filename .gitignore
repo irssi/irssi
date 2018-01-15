@@ -33,6 +33,7 @@ docs/help/in/Makefile.am
 src/fe-text/irssi
 src/fe-fuzz/irssi-fuzz
 src/fe-fuzz/irc/core/event-get-params-fuzz
+src/fe-fuzz/fe-common/core/theme-load-fuzz
 
 src/fe-common/irc/irc-modules.c
 src/irc/irc.c
