@@ -9,6 +9,9 @@ v1.1.0 2018-01-15 The Irssi team <staff@irssi.org>
 	  you from embarassing AMSGs (#659)
 	* /server does not connect to servers anymore, use /server
 	  connect to change servers (#559, #649).
+	* The net_ip_compare API function is now deprecated, and the
+          previously deprecated net_connect has been removed
+          (#770). By Will Storey (#770)
 	+ Add an option to ignore all channels or ignore all queries
 	  using /set activity_hide_targets. By Jari Matilainen (#612,
 	  #779)
@@ -71,7 +74,7 @@ v1.1.0 2018-01-15 The Irssi team <staff@irssi.org>
 	  By Tristan Pepin (#731).  By Paul Townsend (#684, #736).
 	  By Will Storey (#777)
 	- Minor cleanups (#590). By Edward Tomasz Napierala (#734,
-	  #738). By Will Storey (#770)
+	  #738)
 	- Fix space issue in glib-2.0.m4 (#621)
 
 v1.0.6 2018-01-07 The Irssi team <staff@irssi.org>
