@@ -1,4 +1,83 @@
-v1.1-head 2018-xx-xx  The Irssi team <staff@irssi.org>
+v1.2-head 2018-xx-xx  The Irssi team <staff@irssi.org>
+
+v1.1.0 2018-01-15 The Irssi team <staff@irssi.org>
+	* Colour is now re-set when reaching a comma, matching mIRC
+	  behaviour (#742, #740, #790)
+	* Irssi now shows the initial nick and name on first start
+	  (#785, #786)
+	* lynx is no longer required to run autogen.sh (#81, #781)
+	* The command history no longer permits wrapping around (#686)
+	* /foreach now correctly sends arguments as commands, stopping
+	  you from embarassing AMSGs (#659)
+	* /server does not connect to servers anymore, use /server
+	  connect to change servers (#559, #649).
+	* The net_ip_compare API function is now deprecated, and the
+          previously deprecated net_connect has been removed
+          (#770). By Will Storey (#770)
+	+ Add an option to ignore all channels or ignore all queries
+	  using /set activity_hide_targets. By Jari Matilainen (#612,
+	  #779)
+	+ Add a startup warning if the TERM var is wrong inside
+	  tmux/screen (#726)
+	+ Add option to hide certain levels from the textbuffer using
+	  /window hidelevel (#746, #808)
+	+ Irssi now has its first unit test (for mode parsing). By
+	  Will Storey (#793)
+	+ Added access to global command history when using window
+	  history, and a binding to erase entries from the command
+	  history (erase_history_entry) (#762)
+	+ -alternate_nick is now available as a network specific
+	  property. By Paul Townsend (#120, #771)
+	+ On FreeBSD, Irssi now supports Capsicum sandbox (/capsicum
+	  enter). By Edward Tomasz Napierala (#735, #755, #772)
+	+ Filenames (directories) ending with a / now tab-complete
+	  (#741)
+	+ UTF-8 should now work in regular expressions when using
+	  GRegex (the default) (#636, #653)
+	+ Nicks are now properly escaped on completion. By Oscar
+	  Linderholm (#693, #709)
+	+ /server add -port <num> now works. By Jari Matilainen (#703)
+	+ Add a setting key_timeout to make key sequences
+	  automatically re-set when not finished (#644, #645)
+	+ Warn users about expired client certificates, as servers may
+	  refuse them (#211, #627)
+	+ Add a new net_start_ssl function for StartTLS. This is
+	  available from ABI 8 and can be used by protocol modules
+	  (#615, #622).
+	+ The %# code is now stored in the textbuffer, so for example
+	  web scripts can make use of it (#626)
+	+ Add new setting break_wide which can be used to enable
+	  breaking of wide characters (for east-asian
+	  users). Originally from FreeBSD ports. (#625)
+	+ Add fuzzing code (#610, #620, #701, #713)
+	- Netsplits show properly again (#812)
+	- Do not error on blank lines when using /exec -o. By Fabian
+	  Kurz (FS#902, #805)
+	- Detect used nickname as reported by server. By Alexandre
+	  Morignot (#219, #804)
+	- Prevent use after free error during the execution of some
+	  commands. Found by Joseph Bisch. (GL#17, GL!24)
+	- Fix MODE parameter parsing when colon was used at a place
+	  Irssi didn't expect (#601, #766)
+	- Fixed code to compile with
+	  -Werror=declaration-after-statement (#795)
+	- Clang-format is now supported for git-clang-format (#784)
+	- Fix use after free when changing the network of
+	  hilights. Reported by Rui Mathias. (#787, #788)
+	- Fix positioning error when tab-completing non-ascii
+	  strings. (#752, #754)
+	- In-development issues (#750, #751)
+	- Clarify Alis in /help list (#699, #712)
+	- Improve /lastlog performance from O(N^2) to O(N) (#715)
+	- Fix a segfault on "script destroyed" signal. By Stephen
+	  Oberholtzer (#660, #661).
+	- Fix early ISON error (#596, #647)
+	- Documentation improvements. By Paolo Martini (#639).
+	  By Tristan Pepin (#731).  By Paul Townsend (#684, #736).
+	  By Will Storey (#777)
+	- Minor cleanups (#590). By Edward Tomasz Napierala (#734,
+	  #738)
+	- Fix space issue in glib-2.0.m4 (#621)
 
 v1.0.6 2018-01-07 The Irssi team <staff@irssi.org>
 	- Fix invalid memory access when reading hilight configuration
