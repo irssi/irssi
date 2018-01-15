@@ -1,4 +1,4 @@
-SUBDIRS = irc
+SUBDIRS = irc fe-common
 
 bin_PROGRAMS = irssi-fuzz
 
