@@ -22,8 +22,7 @@ test_irc_LDADD = \
 	../../../src/irc/core/libirc_core.a \
 	../../../src/core/libcore.a \
 	../../../src/lib-config/libirssi_config.a \
-	@GLIB_LIBS@ \
-	@OPENSSL_LIBS@
+	@PROG_LIBS@
 
 test_irc_SOURCES = \
 	test-irc.c
