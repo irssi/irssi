@@ -21,8 +21,7 @@ test_formats_LDADD = \
 	../../../src/fe-common/core/libfe_common_core.a \
 	../../../src/core/libcore.a \
 	../../../src/lib-config/libirssi_config.a \
-	@GLIB_LIBS@ \
-	@OPENSSL_LIBS@
+	@PROG_LIBS@
 
 test_formats_SOURCES = \
 	test-formats.c
