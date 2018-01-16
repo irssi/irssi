@@ -87,7 +87,7 @@ FORMAT_REC gui_text_formats[] =
 	  "|_ _|_ _ _____(_)%:"
 	  " | || '_(_-<_-< |%:"
 	  "|___|_| /__/__/_|%:"
-	  "Irssi v$J - http://www.irssi.org", 0 },
+	  "Irssi v$J - https://irssi.org", 0 },
 	{ "welcome_firsttime",
 	  "- - - - - - - - - - - - - - - - - - - - - - - - - - - -\n"
 	  "Hi there! If this is your first time using Irssi, you%:"
