@@ -53,7 +53,7 @@ make && sudo make install
 
 ## [Themes](https://irssi-import.github.io/themes/)
 
-## [Scripts](http://scripts.irssi.org/)
+## [Scripts](https://scripts.irssi.org/)
 
 ## [Modules](https://irssi.org/modules/)
 

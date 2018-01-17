@@ -1,5 +1,5 @@
 
- Irssi 0.8 documentation - http://www.irssi.org/
+ Irssi 0.8 documentation - https://irssi.org/
 
  Copyright(c) 2000 Timo Sirainen <cras@irssi.org>
 
