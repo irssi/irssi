@@ -36,6 +36,7 @@
 #include "nickmatch-cache.h"
 #include "printtext.h"
 #include "formats.h"
+#include "special-vars.h"
 
 static NICKMATCH_REC *nickmatch;
 static int never_hilight_level, default_hilight_level;
@@ -190,7 +191,7 @@ static HILIGHT_REC *hilight_find(const char *text, char **channels)
 	return NULL;
 }
 
-static gboolean hilight_match_text(HILIGHT_REC *rec, const char *text,
+static gboolean hilight_match_text(HILIGHT_REC *rec, SERVER_REC *server, const char *text,
 				  int *match_beg, int *match_end)
 {
 	gboolean ret = FALSE;
@@ -207,20 +208,23 @@ static gboolean hilight_match_text(HILIGHT_REC *rec, const char *text,
 		}
 	} else {
 		char *match;
+		char *str = parse_special_string(rec->text, server, NULL, "", NULL, 0);
+
+		if (g_strcmp0(str, "") == 0) return FALSE;
 
 		if (rec->case_sensitive) {
 			match = rec->fullword ?
-				strstr_full(text, rec->text) :
-				strstr(text, rec->text);
+				strstr_full(text, str) :
+				strstr(text, str);
 		} else {
 			match = rec->fullword ?
-				stristr_full(text, rec->text) :
-				stristr(text, rec->text);
+				stristr_full(text, str) :
+				stristr(text, str);
 		}
 		if (match != NULL) {
 			if (match_beg != NULL && match_end != NULL) {
 				*match_beg = (int) (match-text);
-				*match_end = *match_beg + strlen(rec->text);
+				*match_end = *match_beg + strlen(str);
 			}
 			ret = TRUE;
 		}
@@ -274,7 +278,7 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
 			hilight_match_channel(rec, channel) &&
 			(rec->servertag == NULL ||
 			 (server != NULL && g_ascii_strcasecmp(rec->servertag, server->tag) == 0)) &&
-			hilight_match_text(rec, str, match_beg, match_end))
+			hilight_match_text(rec, server, str, match_beg, match_end))
 			return rec;
 	}
 
