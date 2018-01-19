@@ -639,6 +639,59 @@ static void complete_window_nicks(GList **list, WINDOW_REC *window,
         }
 }
 
+/* Checks if a line is only nicks from autocompletion.
+   This lets us insert colons only at the beginning of a list
+   of nicks */
+static int only_nicks(const char *linestart)
+{
+	int i = 1;
+	char prev;
+
+	// at the beginning of the line
+	if (*linestart == '\0') {
+		return TRUE;
+	}
+
+	/* completion_char being a whole string introduces loads of edge cases
+	   and can't be handled generally. Skip this case; we handled the
+	   "beginning of line" case already */
+	if (completion_char[1] != '\0')
+		return FALSE;
+
+	/* This would make the completion char get inserted everywhere otherwise */
+	if (*completion_char == ' ')
+		return FALSE;
+
+	/* First ensure that the line is of the format "foo: bar: baz"
+	   we check this by ensuring each space is preceded by a colon or
+	   another space */
+	while (linestart[i] != '\0') {
+		if (linestart[i] == ' ') {
+			prev = linestart[i - 1];
+			if (prev != *completion_char && prev != ' ')
+				return FALSE;
+		}
+		i += 1;
+	}
+
+	/* There's an edge case here, if we're completing something
+	   like `foo: bar ba<tab>`, then the `linestart` line will end
+	   at "bar", and we'll miss the space. Ensure that the end
+	   of the line is a colon followed by an optional series of spaces */
+	i -= 1;
+	while (i >= 0) {
+		if (linestart[i] == ' ') {
+			i--;
+			continue;
+		} else if (linestart[i] == *completion_char) {
+			return TRUE;
+		} else {
+			break;
+		}
+	}
+	return FALSE;
+}
+
 static void sig_complete_word(GList **list, WINDOW_REC *window,
 			      const char *word, const char *linestart,
 			      int *want_space)
@@ -691,7 +744,7 @@ static void sig_complete_word(GList **list, WINDOW_REC *window,
 	} else if (channel != NULL) {
 		/* nick completion .. we could also be completing a nick
 		   after /MSG from nicks in channel */
-		const char *suffix = *linestart != '\0' ? NULL : completion_char;
+		const char *suffix = only_nicks(linestart) ? completion_char : NULL;
 		complete_window_nicks(list, window, word, suffix);
 	} else if (window->level & MSGLEVEL_MSGS) {
 		/* msgs window, complete /MSG nicks */
