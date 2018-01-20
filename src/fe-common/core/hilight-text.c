@@ -197,23 +197,29 @@ static gboolean hilight_match_text(HILIGHT_REC *rec, SERVER_REC *server, const c
 				  int *match_beg, int *match_end)
 {
 	gboolean ret = FALSE;
+
+	if (rec->regexp && rec->preg == NULL)
+		return ret;
+
 	WI_ITEM_REC *witem = window_item_find(server, channel);
 	char *pattern = rec->expando ? (parse_special_string(rec->regexp ? g_regex_get_pattern(rec->preg) : rec->text, server, witem, "", NULL, 0)) :
 					rec->text;
 
 	if (pattern == NULL || strlen(pattern) == 0)
-		return FALSE;
+		return ret;
 
 	if (rec->regexp) {
 		MatchInfo *match;
-		GRegex *regex = i_regex_new(pattern, G_REGEX_OPTIMIZE | (rec->case_sensitive ? 0 : G_REGEX_CASELESS), 0, NULL);
+		GRegex *regex = !rec->expando ? rec->preg :
+				i_regex_new(pattern, G_REGEX_OPTIMIZE | (rec->case_sensitive ? 0 : G_REGEX_CASELESS), 0, NULL);
 		i_regex_match(regex, text, 0, &match);
 
 		if (i_match_info_matches(match))
 			ret = i_match_info_fetch_pos(match, 0, match_beg, match_end);
 
 		i_match_info_free(match);
-		i_regex_unref(regex);
+		if(rec->expando)
+			i_regex_unref(regex);
 	} else {
 		char *match;
 
