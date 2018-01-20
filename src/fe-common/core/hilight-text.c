@@ -197,11 +197,11 @@ static gboolean hilight_match_text(HILIGHT_REC *rec, SERVER_REC *server, const c
 				  int *match_beg, int *match_end)
 {
 	gboolean ret = FALSE;
+	WI_ITEM_REC *witem = window_item_find(server, channel);
 
 	if (rec->regexp && rec->preg == NULL)
 		return ret;
 
-	WI_ITEM_REC *witem = window_item_find(server, channel);
 	char *pattern = rec->expando ? (parse_special_string(rec->regexp ? g_regex_get_pattern(rec->preg) : rec->text, server, witem, "", NULL, 0)) :
 					rec->text;
 
