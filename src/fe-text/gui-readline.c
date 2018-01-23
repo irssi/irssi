@@ -1174,6 +1174,7 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "^H", "backspace", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "^?", "backspace", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "^I", "tab", (SIGNAL_FUNC) key_combo);
+	key_bind("key", NULL, "meta2-Z", "shifttab", (SIGNAL_FUNC) key_combo);
 
         /* meta */
 	key_bind("key", NULL, "^[", "meta", (SIGNAL_FUNC) key_combo);
@@ -1280,6 +1281,7 @@ void gui_readline_init(void)
 	key_bind("send_line", "Execute the input line", "return", NULL, (SIGNAL_FUNC) key_send_line);
 	key_bind("word_completion_backward", "", NULL, NULL, (SIGNAL_FUNC) key_word_completion_backward);
 	key_bind("word_completion", "Complete the current word", "tab", NULL, (SIGNAL_FUNC) key_word_completion);
+	key_bind("word_completion_backward", "Completes the previous word", "shifttab", NULL, (SIGNAL_FUNC) key_word_completion_backward);
 	key_bind("erase_completion", "Remove the completion added by word_completion", "meta-k", NULL, (SIGNAL_FUNC) key_erase_completion);
 	key_bind("check_replaces", "Check word replaces", NULL, NULL, (SIGNAL_FUNC) key_check_replaces);
 
