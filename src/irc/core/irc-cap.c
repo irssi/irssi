@@ -91,19 +91,13 @@ static gboolean parse_cap_name(char *name, char **key, char **val)
 	if (eq == NULL) {
 		*key = g_strdup(name);
 		*val = NULL;
-		return TRUE;
 	/* Some values are in a KEY=VALUE form, parse them */
-	} else if (eq[1] != '\0') {
+	} else {
 		*key = g_strndup(name, (gsize)(eq - name));
 		*val = g_strdup(eq + 1);
-		return TRUE;
-	/* If the string ends after the '=' consider the value
-	 * as invalid */
-	} else {
-		*key = NULL;
-		*val = NULL;
-		return FALSE;
 	}
+
+	return TRUE;
 }
 
 static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *address)
