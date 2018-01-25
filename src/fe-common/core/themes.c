@@ -130,7 +130,7 @@ static char *theme_replace_expand(THEME_REC *theme, int index,
 	abstract = rec->data;
 	abstract = theme_format_expand_data(theme, (const char **) &abstract,
 					    default_fg, default_bg,
-					    last_fg, last_bg, flags);
+					    last_fg, last_bg, (flags | EXPAND_FLAG_IGNORE_REPLACES));
 	ret = parse_special_string(abstract, NULL, NULL, data, NULL,
 				   PARSE_FLAG_ONLY_ARGS);
 	g_free(abstract);
