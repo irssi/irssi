@@ -384,7 +384,9 @@ static GIOFuncs irssi_ssl_channel_funcs = {
 
 gboolean irssi_ssl_init(void)
 {
+#if (OPENSSL_VERSION_NUMBER >= 0x10002000L)
 	int success;
+#endif
 
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && !defined(LIBRESSL_VERSION_NUMBER)
 	if (!OPENSSL_init_ssl(OPENSSL_INIT_SSL_DEFAULT, NULL)) {
@@ -411,8 +413,6 @@ gboolean irssi_ssl_init(void)
 		store = NULL;
 		/* Don't return an error; the user might have their own cafile/capath. */
 	}
-#else
-	success = success = TRUE;
 #endif
 
 	ssl_inited = TRUE;
