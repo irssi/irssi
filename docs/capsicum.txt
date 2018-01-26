@@ -7,7 +7,6 @@ or the libraries it depends on.
 To make Irssi enter capability mode on startup, add
 
 capsicum = "yes";
-awaylog_file = "~/irclogs/away.log";
 
 to your ~/.irssi/config and restart the client.  Alternatively you can
 enter it "by hand", using the "/capsicum enter" command.  From the security
