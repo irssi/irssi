@@ -382,7 +382,8 @@ char *theme_format_expand_get(THEME_REC *theme, const char **format)
 		} else {
 			theme_format_append_next(theme, str, format,
 						 reset, reset,
-						 &dummy, &dummy, 0);
+						 &dummy, &dummy,
+						 EXPAND_FLAG_IGNORE_REPLACES);
 			continue;
 		}
 
