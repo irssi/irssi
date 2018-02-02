@@ -1393,6 +1393,11 @@ static void _cmd_window_show_opt(const char *data, int right)
 	}
 
 	parent = mainwindow_create(right);
+	if (parent == NULL) {
+		printformat_window(active_win, MSGLEVEL_CLIENTERROR, TXT_WINDOW_TOO_SMALL);
+		return;
+	}
+
 	parent->active = window;
 	gui_window_reparent(window, parent);
 
