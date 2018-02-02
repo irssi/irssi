@@ -665,7 +665,7 @@ void sig_term(int n)
    would be nice but would just take more space without much real benefit */
 static unsigned int file_checksum(const char *fname)
 {
-        char buf[512];
+        unsigned char buf[512];
         int f, ret, n;
 	unsigned int checksum = 0;
 
