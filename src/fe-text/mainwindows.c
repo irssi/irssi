@@ -915,6 +915,8 @@ static int try_shrink_lower(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
 
+	g_return_val_if_fail(count >= 0, FALSE);
+
 	shrink_win = mainwindows_find_lower(window);
 	if (shrink_win != NULL) {
 		int ok;
@@ -958,6 +960,8 @@ static int try_shrink_lower(MAIN_WINDOW_REC *window, int count)
 static int try_shrink_upper(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
+
+	g_return_val_if_fail(count >= 0, FALSE);
 
 	shrink_win = mainwindows_find_upper(window);
 	if (shrink_win != NULL) {
@@ -1063,6 +1067,8 @@ static int try_grow_upper(MAIN_WINDOW_REC *window, int count)
 
 static int mainwindow_shrink(MAIN_WINDOW_REC *window, int count, int resize_lower)
 {
+	g_return_val_if_fail(count >= 0, FALSE);
+
 	if (MAIN_WINDOW_TEXT_HEIGHT(window)-count < WINDOW_MIN_SIZE)
                 return FALSE;
 
@@ -1091,6 +1097,8 @@ static int try_rshrink_right(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
 
+	g_return_val_if_fail(count >= 0, FALSE);
+
 	shrink_win = mainwindows_find_right(window, FALSE);
 	if (shrink_win != NULL) {
 		if (MAIN_WINDOW_TEXT_WIDTH(shrink_win)-count < NEW_WINDOW_WIDTH) {
@@ -1110,6 +1118,8 @@ static int try_rshrink_right(MAIN_WINDOW_REC *window, int count)
 static int try_rshrink_left(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
+
+	g_return_val_if_fail(count >= 0, FALSE);
 
 	shrink_win = mainwindows_find_left(window, FALSE);
 	if (shrink_win != NULL) {
@@ -1168,6 +1178,8 @@ static int try_rgrow_left(MAIN_WINDOW_REC *window, int count)
 
 static int mainwindow_rshrink(MAIN_WINDOW_REC *window, int count)
 {
+	g_return_val_if_fail(count >= 0, FALSE);
+
 	if (MAIN_WINDOW_TEXT_WIDTH(window)-count < NEW_WINDOW_WIDTH)
 		return FALSE;
 
@@ -1220,19 +1232,29 @@ void mainwindows_redraw_dirty(void)
 	}
 }
 
+static void mainwindow_grow_int(int count)
+{
+	if (count == 0) {
+		return;
+	} else if (count < 0) {
+		if (!mainwindow_shrink(WINDOW_MAIN(active_win), -count, FALSE)) {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
+		}
+	} else {
+		if (!mainwindow_grow(WINDOW_MAIN(active_win), count, FALSE)) {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
+		}
+	}
+}
+
 /* SYNTAX: WINDOW GROW [<lines>] */
 static void cmd_window_grow(const char *data)
 {
-	MAIN_WINDOW_REC *window;
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
-	window = WINDOW_MAIN(active_win);
 
-	if (!mainwindow_grow(window, count, FALSE)) {
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_WINDOW_TOO_SMALL);
-	}
+	mainwindow_grow_int(count);
 }
 
 /* SYNTAX: WINDOW SHRINK [<lines>] */
@@ -1241,16 +1263,13 @@ static void cmd_window_shrink(const char *data)
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
-	if (!mainwindow_shrink(WINDOW_MAIN(active_win), count, FALSE)) {
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_WINDOW_TOO_SMALL);
-	}
+
+	mainwindow_grow_int(-count);
 }
 
 /* SYNTAX: WINDOW SIZE <lines> */
 static void cmd_window_size(const char *data)
 {
-        char sizestr[MAX_INT_STRLEN];
 	int size;
 
 	if (!is_numeric(data, 0)) return;
@@ -1258,13 +1277,8 @@ static void cmd_window_size(const char *data)
 
 	size -= WINDOW_MAIN(active_win)->height -
 		WINDOW_MAIN(active_win)->statusbar_lines;
-	if (size == 0) return;
 
-	ltoa(sizestr, size < 0 ? -size : size);
-	if (size < 0)
-		cmd_window_shrink(sizestr);
-	else
-		cmd_window_grow(sizestr);
+	mainwindow_grow_int(size);
 }
 
 /* SYNTAX: WINDOW BALANCE */
@@ -1415,16 +1429,29 @@ static void cmd_window_rshow(const char *data)
 	_cmd_window_show_opt(data, TRUE);
 }
 
+static void window_rgrow_int(int count)
+{
+	if (count == 0) {
+		return;
+	} else if (count < 0) {
+		if (!mainwindow_rshrink(WINDOW_MAIN(active_win), -count)) {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
+		}
+	} else {
+		if (!mainwindow_rgrow(WINDOW_MAIN(active_win), count)) {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
+		}
+	}
+}
+
 /* SYNTAX: WINDOW RGROW [<columns>] */
 static void cmd_window_rgrow(const char *data)
 {
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
-	if (!mainwindow_rgrow(WINDOW_MAIN(active_win), count)) {
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_WINDOW_TOO_SMALL);
-	}
+
+	window_rgrow_int(count);
 }
 
 /* SYNTAX: WINDOW RSHRINK [<lines>] */
@@ -1433,29 +1460,21 @@ static void cmd_window_rshrink(const char *data)
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
-	if (!mainwindow_rshrink(WINDOW_MAIN(active_win), count)) {
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_WINDOW_TOO_SMALL);
-	}
+
+	window_rgrow_int(-count);
 }
 
 /* SYNTAX: WINDOW RSIZE <columns> */
 static void cmd_window_rsize(const char *data)
 {
-	char rsizestr[MAX_INT_STRLEN];
 	int rsize;
 
 	if (!is_numeric(data, 0)) return;
 	rsize = atoi(data);
 
 	rsize -= MAIN_WINDOW_TEXT_WIDTH(WINDOW_MAIN(active_win));
-	if (rsize == 0) return;
 
-	ltoa(rsizestr, rsize < 0 ? -rsize : rsize);
-	if (rsize < 0)
-		cmd_window_rshrink(rsizestr);
-	else
-		cmd_window_rgrow(rsizestr);
+	window_rgrow_int(rsize);
 }
 
 /* SYNTAX: WINDOW RBALANCE */
