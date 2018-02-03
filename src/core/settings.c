@@ -29,6 +29,7 @@
 #include "settings.h"
 #include "default-config.h"
 
+#include <openssl/sha.h>
 #include <signal.h>
 
 #define SETTINGS_AUTOSAVE_TIMEOUT (1000*60*60) /* 1 hour */
@@ -47,7 +48,7 @@ static int timeout_tag;
 static int config_last_modifycounter;
 static time_t config_last_mtime;
 static long config_last_size;
-static unsigned int config_last_checksum;
+static unsigned char config_last_checksum[SHA_DIGEST_LENGTH];
 
 static SETTINGS_REC *settings_get(const char *key, SettingType type)
 {
@@ -661,24 +662,36 @@ void sig_term(int n)
 	raise(SIGTERM);
 }
 
-/* Yes, this is my own stupid checksum generator, some "real" algorithm
-   would be nice but would just take more space without much real benefit */
-static unsigned int file_checksum(const char *fname)
+static int file_checksum(const char *fname, const unsigned char *old_checksum,
+                         unsigned char *checksum)
 {
-        unsigned char buf[512];
-        int f, ret, n;
-	unsigned int checksum = 0;
+	SHA_CTX c;
+	unsigned char buf[512], tmp[SHA_DIGEST_LENGTH];
+	int f, ret;
+
+	if (!SHA1_Init(&c)) {
+		return FALSE;
+	}
 
 	f = open(fname, O_RDONLY);
-	if (f == -1) return 0;
+	if (f == -1)
+		return FALSE;
 
-        n = 0;
 	while ((ret = read(f, buf, sizeof(buf))) > 0) {
-		while (ret-- > 0)
-			checksum += buf[ret] << ((n++ & 3)*8);
+		SHA1_Update(&c, buf, ret);
 	}
 	close(f);
-	return checksum;
+
+	if (checksum == NULL) {
+		checksum = tmp;
+	}
+
+	SHA1_Final(checksum, &c);
+
+	if (old_checksum != NULL) {
+		return memcmp(checksum, old_checksum, SHA_DIGEST_LENGTH) == 0;
+	}
+	return TRUE;
 }
 
 static void irssi_config_save_state(const char *fname)
@@ -693,7 +706,7 @@ static void irssi_config_save_state(const char *fname)
 	/* save modify time, file size and checksum */
 	config_last_mtime = statbuf.st_mtime;
 	config_last_size = statbuf.st_size;
-	config_last_checksum = file_checksum(fname);
+	file_checksum(fname, NULL, config_last_checksum);
 }
 
 int irssi_config_is_changed(const char *fname)
@@ -707,8 +720,8 @@ int irssi_config_is_changed(const char *fname)
 		return FALSE;
 
 	return config_last_mtime != statbuf.st_mtime &&
-		(config_last_size != statbuf.st_size ||
-		 config_last_checksum != file_checksum(fname));
+	       (config_last_size != statbuf.st_size ||
+	        file_checksum(fname, config_last_checksum, NULL));
 }
 
 static CONFIG_REC *parse_configfile(const char *fname)
