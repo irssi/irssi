@@ -1263,6 +1263,7 @@ static void cmd_window_shrink(const char *data)
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
+	if (count < -INT_MAX) count = -INT_MAX;
 
 	mainwindow_grow_int(-count);
 }
@@ -1277,6 +1278,7 @@ static void cmd_window_size(const char *data)
 
 	size -= WINDOW_MAIN(active_win)->height -
 		WINDOW_MAIN(active_win)->statusbar_lines;
+	if (size < -INT_MAX) size = -INT_MAX;
 
 	mainwindow_grow_int(size);
 }
@@ -1460,6 +1462,7 @@ static void cmd_window_rshrink(const char *data)
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
+	if (count < -INT_MAX) count = -INT_MAX;
 
 	window_rgrow_int(-count);
 }
