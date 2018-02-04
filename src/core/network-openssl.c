@@ -46,6 +46,7 @@
 #endif
 
 /* OpenSSL 1.1.0 also introduced some useful additions to the api */
+#if (OPENSSL_VERSION_NUMBER >= 0x10002000L)
 #if (OPENSSL_VERSION_NUMBER < 0x10100000L) || defined (LIBRESSL_VERSION_NUMBER)
 static int X509_STORE_up_ref(X509_STORE *vfy)
 {
@@ -56,6 +57,7 @@ static int X509_STORE_up_ref(X509_STORE *vfy)
 
     return (n > 1) ? 1 : 0;
 }
+#endif
 #endif
 
 /* ssl i/o channel object */
@@ -72,7 +74,10 @@ typedef struct
 } GIOSSLChannel;
 
 static int ssl_inited = FALSE;
+/* https://github.com/irssi/irssi/issues/820 */
+#if (OPENSSL_VERSION_NUMBER >= 0x10002000L)
 static X509_STORE *store = NULL;
+#endif
 
 static void irssi_ssl_free(GIOChannel *handle)
 {
@@ -379,7 +384,9 @@ static GIOFuncs irssi_ssl_channel_funcs = {
 
 gboolean irssi_ssl_init(void)
 {
+#if (OPENSSL_VERSION_NUMBER >= 0x10002000L)
 	int success;
+#endif
 
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && !defined(LIBRESSL_VERSION_NUMBER)
 	if (!OPENSSL_init_ssl(OPENSSL_INIT_SSL_DEFAULT, NULL)) {
@@ -391,6 +398,8 @@ gboolean irssi_ssl_init(void)
 	SSL_load_error_strings();
 	OpenSSL_add_all_algorithms();
 #endif
+
+#if (OPENSSL_VERSION_NUMBER >= 0x10002000L)
 	store = X509_STORE_new();
 	if (store == NULL) {
 		g_error("Could not initialize OpenSSL: X509_STORE_new() failed");
@@ -404,6 +413,7 @@ gboolean irssi_ssl_init(void)
 		store = NULL;
 		/* Don't return an error; the user might have their own cafile/capath. */
 	}
+#endif
 
 	ssl_inited = TRUE;
 
@@ -522,13 +532,21 @@ static GIOChannel *irssi_ssl_get_iochannel(GIOChannel *handle, int port, SERVER_
 		g_free(scafile);
 		g_free(scapath);
 		verify = TRUE;
-	} else if (store != NULL) {
+	}
+#if (OPENSSL_VERSION_NUMBER >= 0x10002000L)
+	  else if (store != NULL) {
 		/* Make sure to increment the refcount every time the store is
 		 * used, that's essential not to get it free'd by OpenSSL when
 		 * the SSL_CTX is destroyed. */
 		X509_STORE_up_ref(store);
 		SSL_CTX_set_cert_store(ctx, store);
 	}
+#else
+	  else {
+		if (!SSL_CTX_set_default_verify_paths(ctx))
+			g_warning("Could not load default certificates");
+	}
+#endif
 
 	if(!(ssl = SSL_new(ctx)))
 	{
