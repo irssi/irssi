@@ -21,7 +21,8 @@ GSList *gslist_find_string(GSList *list, const char *key);
 GSList *gslist_find_icase_string(GSList *list, const char *key);
 GList *glist_find_string(GList *list, const char *key);
 GList *glist_find_icase_string(GList *list, const char *key);
-GSList *gslist_remove_string (GSList *list, const char *str);
+GSList *gslist_remove_string (GSList *list, const char *str) G_GNUC_DEPRECATED;
+GSList *gslist_delete_string (GSList *list, const char *str, GDestroyNotify free_func);
 
 void gslist_free_full (GSList *list, GDestroyNotify free_func);
 

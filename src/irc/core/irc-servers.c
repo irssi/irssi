@@ -443,8 +443,10 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	gslist_free_full(server->cap_active, (GDestroyNotify) g_free);
 	server->cap_active = NULL;
 
-	gslist_free_full(server->cap_supported, (GDestroyNotify) g_free);
-	server->cap_supported = NULL;
+	if (server->cap_supported) {
+		g_hash_table_destroy(server->cap_supported);
+		server->cap_supported = NULL;
+	}
 
 	gslist_free_full(server->cap_queue, (GDestroyNotify) g_free);
 	server->cap_queue = NULL;

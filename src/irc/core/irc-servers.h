@@ -68,6 +68,7 @@ struct _IRC_SERVER_REC {
 	unsigned int motd_got:1; /* We've received MOTD */
 	unsigned int isupport_sent:1; /* Server has sent us an isupport reply */
 	unsigned int cap_complete:1; /* We've done the initial CAP negotiation */
+	unsigned int cap_in_multiline:1; /* We're waiting for the multiline response to end */
 	unsigned int sasl_success:1; /* Did we authenticate successfully ? */
 
 	int max_kicks_in_cmd; /* max. number of people to kick with one /KICK command */
@@ -75,7 +76,7 @@ struct _IRC_SERVER_REC {
 	int max_whois_in_cmd; /* max. number of nicks in one /WHOIS command */
 	int max_msgs_in_cmd; /* max. number of targets in one /MSG */
 
-	GSList *cap_supported; /* A list of caps supported by the server */
+	GHashTable *cap_supported; /* A list of caps supported by the server */
 	GSList *cap_active;    /* A list of caps active for this session */
 	GSList *cap_queue;     /* A list of caps to request on connection */ 
 

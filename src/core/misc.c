@@ -218,6 +218,19 @@ GSList *gslist_remove_string (GSList *list, const char *str)
 	return list;
 }
 
+GSList *gslist_delete_string (GSList *list, const char *str, GDestroyNotify free_func)
+{
+	GSList *l;
+
+	l = g_slist_find_custom(list, str, (GCompareFunc) g_strcmp0);
+	if (l != NULL) {
+		free_func(l->data);
+		return g_slist_delete_link(list, l);
+	}
+
+	return list;
+}
+
 /* `list' contains pointer to structure with a char* to string. */
 char *gslistptr_to_string(GSList *list, int offset, const char *delimiter)
 {
