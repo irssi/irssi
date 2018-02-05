@@ -247,20 +247,17 @@ static int check_server_splits(IRC_SERVER_REC *server)
    message before it. */
 static void sig_print_starting(TEXT_DEST_REC *dest)
 {
-	IRC_SERVER_REC *rec;
+	GSList *tmp;
 
 	if (printing_splits)
 		return;
 
-	if (!IS_IRC_SERVER(dest->server))
-		return;
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		IRC_SERVER_REC *rec = tmp->data;
 
-	if (!server_ischannel(dest->server, dest->target))
-		return;
-
-	rec = IRC_SERVER(dest->server);
-	if (rec->split_servers != NULL)
-		print_splits(rec, NULL);
+		if (IS_IRC_SERVER(rec) && rec->split_servers != NULL)
+			print_splits(rec, NULL);
+	}
 }
 
 static int sig_check_splits(void)
