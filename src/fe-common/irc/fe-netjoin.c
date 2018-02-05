@@ -245,20 +245,18 @@ static void print_netjoins(NETJOIN_SERVER_REC *server, const char *filter_channe
    message before it. */
 static void sig_print_starting(TEXT_DEST_REC *dest)
 {
-	NETJOIN_SERVER_REC *rec;
+	GSList *tmp, *next;
 
 	if (printing_joins)
 		return;
 
-	if (!IS_IRC_SERVER(dest->server))
-		return;
+	for (tmp = joinservers; tmp != NULL; tmp = next) {
+		NETJOIN_SERVER_REC *server = tmp->data;
 
-	if (!server_ischannel(dest->server, dest->target))
-		return;
-
-	rec = netjoin_find_server(IRC_SERVER(dest->server));
-	if (rec != NULL && rec->netjoins != NULL)
-		print_netjoins(rec, NULL);
+		next = tmp->next;
+		if (server->netjoins != NULL)
+			print_netjoins(server, NULL);
+	}
 }
 
 static int sig_check_netjoins(void)
