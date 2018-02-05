@@ -9,6 +9,7 @@ typedef struct {
 typedef struct {
 	int text_len, text_alloc; /* as shorts, not chars */
 	unichar *text;
+	char **extents;
 
 	GSList *kill_ring;
 
@@ -26,6 +27,7 @@ typedef struct {
 	unsigned int previous_append_next_kill:1;
 	unsigned int append_next_kill:1;
 	unsigned int yank_preceded:1;
+	unsigned int uses_extents:1;
 } GUI_ENTRY_REC;
 
 typedef enum {
@@ -77,5 +79,14 @@ void gui_entry_move_words(GUI_ENTRY_REC *entry, int count, int to_space);
 
 void gui_entry_redraw(GUI_ENTRY_REC *entry);
 
+void gui_entry_set_extent(GUI_ENTRY_REC *entry, int pos, const char *text);
+void gui_entry_set_extents(GUI_ENTRY_REC *entry, int pos, int len, const char *left, const char *right);
+void gui_entry_clear_extents(GUI_ENTRY_REC *entry, int pos, int len);
+char *gui_entry_get_extent(GUI_ENTRY_REC *entry, int pos);
+GSList *gui_entry_get_text_and_extents(GUI_ENTRY_REC *entry);
+void gui_entry_set_text_and_extents(GUI_ENTRY_REC *entry, GSList *list);
+
+void gui_entry_init(void);
+void gui_entry_deinit(void);
 
 #endif

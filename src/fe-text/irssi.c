@@ -165,6 +165,7 @@ static void textui_finish_init(void)
 	gui_expandos_init();
 	gui_printtext_init();
 	gui_readline_init();
+	gui_entry_init();
 	lastlog_init();
 	mainwindows_init();
 	mainwindow_activity_init();
@@ -230,6 +231,7 @@ static void textui_deinit(void)
 
 	lastlog_deinit();
 	statusbar_deinit();
+	gui_entry_deinit();
 	gui_printtext_deinit();
 	gui_readline_deinit();
 	gui_windows_deinit();
