@@ -543,6 +543,8 @@ static int try_shrink_lower(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
 
+	g_return_val_if_fail(count >= 0, FALSE);
+
 	shrink_win = mainwindows_find_lower(window->last_line);
 	if (shrink_win != NULL &&
 	    MAIN_WINDOW_TEXT_HEIGHT(shrink_win)-count >= WINDOW_MIN_SIZE) {
@@ -558,6 +560,8 @@ static int try_shrink_lower(MAIN_WINDOW_REC *window, int count)
 static int try_shrink_upper(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
+
+	g_return_val_if_fail(count >= 0, FALSE);
 
 	shrink_win = mainwindows_find_upper(window->first_line);
 	if (shrink_win != NULL &&
@@ -614,6 +618,8 @@ static int try_grow_upper(MAIN_WINDOW_REC *window, int count)
 
 static int mainwindow_shrink(MAIN_WINDOW_REC *window, int count, int resize_lower)
 {
+	g_return_val_if_fail(count >= 0, FALSE);
+
 	if (MAIN_WINDOW_TEXT_HEIGHT(window)-count < WINDOW_MIN_SIZE)
                 return FALSE;
 
@@ -657,19 +663,29 @@ void mainwindows_redraw_dirty(void)
 	}
 }
 
+static void mainwindow_grow_int(int count)
+{
+	if (count == 0) {
+		return;
+	} else if (count < 0) {
+		if (!mainwindow_shrink(WINDOW_MAIN(active_win), -count, FALSE)) {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
+		}
+	} else {
+		if (!mainwindow_grow(WINDOW_MAIN(active_win), count, FALSE)) {
+			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
+		}
+	}
+}
+
 /* SYNTAX: WINDOW GROW [<lines>] */
 static void cmd_window_grow(const char *data)
 {
-	MAIN_WINDOW_REC *window;
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
-	window = WINDOW_MAIN(active_win);
 
-	if (!mainwindow_grow(window, count, FALSE)) {
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_WINDOW_TOO_SMALL);
-	}
+	mainwindow_grow_int(count);
 }
 
 /* SYNTAX: WINDOW SHRINK [<lines>] */
@@ -678,16 +694,14 @@ static void cmd_window_shrink(const char *data)
 	int count;
 
 	count = *data == '\0' ? 1 : atoi(data);
-	if (!mainwindow_shrink(WINDOW_MAIN(active_win), count, FALSE)) {
-		printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-				   TXT_WINDOW_TOO_SMALL);
-	}
+	if (count < -INT_MAX) count = -INT_MAX;
+
+	mainwindow_grow_int(-count);
 }
 
 /* SYNTAX: WINDOW SIZE <lines> */
 static void cmd_window_size(const char *data)
 {
-        char sizestr[MAX_INT_STRLEN];
 	int size;
 
 	if (!is_numeric(data, 0)) return;
@@ -695,13 +709,9 @@ static void cmd_window_size(const char *data)
 
 	size -= WINDOW_MAIN(active_win)->height -
 		WINDOW_MAIN(active_win)->statusbar_lines;
-	if (size == 0) return;
+	if (size < -INT_MAX) size = -INT_MAX;
 
-	ltoa(sizestr, size < 0 ? -size : size);
-	if (size < 0)
-		cmd_window_shrink(sizestr);
-	else
-		cmd_window_grow(sizestr);
+	mainwindow_grow_int(size);
 }
 
 /* SYNTAX: WINDOW BALANCE */
