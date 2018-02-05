@@ -810,6 +810,11 @@ static void cmd_window_show(const char *data)
 	}
 
 	parent = mainwindow_create();
+	if (parent == NULL) {
+		printformat_window(active_win, MSGLEVEL_CLIENTERROR, TXT_WINDOW_TOO_SMALL);
+		return;
+	}
+
 	parent->active = window;
         gui_window_reparent(window, parent);
 
