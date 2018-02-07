@@ -37,14 +37,16 @@ static void perl_irc_server_fill_hash(HV *hv, IRC_SERVER_REC *server)
 	(void) hv_store(hv, "cap_complete", 12, newSViv(server->cap_complete), 0);
 	(void) hv_store(hv, "sasl_success", 12, newSViv(server->sasl_success), 0);
 
-	hv_ = newHV();
-	g_hash_table_iter_init(&iter, server->cap_supported);
-	while (g_hash_table_iter_next(&iter, &key_, &val_)) {
-		char *key = (char *)key_;
-		char *val = (char *)val_;
-		hv_store(hv_, key, strlen(key), new_pv(val), 0);
+	if (server->cap_supported != NULL) {
+		hv_ = newHV();
+		g_hash_table_iter_init(&iter, server->cap_supported);
+		while (g_hash_table_iter_next(&iter, &key_, &val_)) {
+			char *key = (char *)key_;
+			char *val = (char *)val_;
+			hv_store(hv_, key, strlen(key), new_pv(val), 0);
+		}
+		(void) hv_store(hv, "cap_supported", 13, newRV_noinc((SV*)hv_), 0);
 	}
-	(void) hv_store(hv, "cap_supported", 13, newRV_noinc((SV*)hv_), 0);
 
 	av = newAV();
 	for (tmp = server->cap_active; tmp != NULL; tmp = tmp->next)
