@@ -382,7 +382,8 @@ char *theme_format_expand_get(THEME_REC *theme, const char **format)
 		} else {
 			theme_format_append_next(theme, str, format,
 						 reset, reset,
-						 &dummy, &dummy, 0);
+						 &dummy, &dummy,
+						 EXPAND_FLAG_IGNORE_REPLACES);
 			continue;
 		}
 
@@ -400,12 +401,15 @@ char *theme_format_expand_get(THEME_REC *theme, const char **format)
         return ret;
 }
 
+static char *theme_format_expand_data_rec(THEME_REC *theme, const char **format,
+                                          theme_rm_col default_fg, theme_rm_col default_bg,
+                                          theme_rm_col *save_last_fg, theme_rm_col *save_last_bg,
+                                          int flags, GTree *block_list);
+
 /* expand a single {abstract ...data... } */
-static char *theme_format_expand_abstract(THEME_REC *theme,
-					  const char **formatp,
-					  theme_rm_col *last_fg,
-					  theme_rm_col *last_bg,
-					  int flags)
+static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp,
+                                          theme_rm_col *last_fg, theme_rm_col *last_bg, int flags,
+                                          GTree *block_list)
 {
 	GString *str;
 	const char *p, *format;
@@ -439,12 +443,20 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 	}
 	*formatp = format+len;
 
+	if (block_list == NULL) {
+		block_list = g_tree_new_full((GCompareDataFunc) g_strcmp0, NULL, g_free, NULL);
+	} else {
+		g_tree_ref(block_list);
+	}
+
 	/* get the abstract data */
 	data = g_hash_table_lookup(theme->abstracts, abstract);
-	g_free(abstract);
-	if (data == NULL) {
+	if (data == NULL || g_tree_lookup(block_list, abstract) != NULL) {
 		/* unknown abstract, just display the data */
 		data = "$0-";
+		g_free(abstract);
+	} else {
+		g_tree_insert(block_list, abstract, abstract);
 	}
 	abstract = g_strdup(data);
 
@@ -488,18 +500,17 @@ static char *theme_format_expand_abstract(THEME_REC *theme,
 
 	/* abstract may itself contain abstracts or replaces */
 	p = abstract;
-	ret = theme_format_expand_data(theme, &p, default_fg, default_bg,
-				       last_fg, last_bg,
-				       flags | EXPAND_FLAG_LASTCOLOR_ARG);
+	ret = theme_format_expand_data_rec(theme, &p, default_fg, default_bg, last_fg, last_bg,
+	                                   flags | EXPAND_FLAG_LASTCOLOR_ARG, block_list);
 	g_free(abstract);
+	g_tree_unref(block_list);
 	return ret;
 }
 
-/* expand the data part in {abstract data} */
-char *theme_format_expand_data(THEME_REC *theme, const char **format,
-			       theme_rm_col default_fg, theme_rm_col default_bg,
-			       theme_rm_col *save_last_fg, theme_rm_col *save_last_bg,
-			       int flags)
+static char *theme_format_expand_data_rec(THEME_REC *theme, const char **format,
+                                          theme_rm_col default_fg, theme_rm_col default_bg,
+                                          theme_rm_col *save_last_fg, theme_rm_col *save_last_bg,
+                                          int flags, GTree *block_list)
 {
 	GString *str;
 	char *ret, *abstract;
@@ -545,9 +556,8 @@ char *theme_format_expand_data(THEME_REC *theme, const char **format,
 			break; /* error */
 
 		/* get a single {...} */
-		abstract = theme_format_expand_abstract(theme, format,
-							&last_fg, &last_bg,
-							recurse_flags);
+		abstract = theme_format_expand_abstract(theme, format, &last_fg, &last_bg,
+		                                        recurse_flags, block_list);
 		if (abstract != NULL) {
 			g_string_append(str, abstract);
 			g_free(abstract);
@@ -563,6 +573,15 @@ char *theme_format_expand_data(THEME_REC *theme, const char **format,
 	ret = str->str;
         g_string_free(str, FALSE);
         return ret;
+}
+
+/* expand the data part in {abstract data} */
+char *theme_format_expand_data(THEME_REC *theme, const char **format, theme_rm_col default_fg,
+                               theme_rm_col default_bg, theme_rm_col *save_last_fg,
+                               theme_rm_col *save_last_bg, int flags)
+{
+	return theme_format_expand_data_rec(theme, format, default_fg, default_bg, save_last_bg,
+	                                    save_last_bg, flags, NULL);
 }
 
 #define IS_OLD_FORMAT(code, last_fg, last_bg) \
