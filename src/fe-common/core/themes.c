@@ -485,7 +485,7 @@ static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp
 	str = g_string_new(NULL);
 	p = ret;
 	while (*p != '\0') {
-		if (*p == '\\') {
+		if (*p == '\\' && p[1] != '\0') {
 			int chr;
 			p++;
 			chr = expand_escape(&p);
