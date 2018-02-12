@@ -57,3 +57,11 @@ if test x$NOCONFIGURE = x; then
 else
   echo Skipping configure process.
 fi
+
+if grep -q '==\|\[\[' "$srcdir"/build-aux/test-driver; then
+    echo
+    echo "************************************************************************"
+    echo "**Warning**: your build is not portable, please do not make dist"
+    echo "             see https://bugzilla.opensuse.org/show_bug.cgi?id=1076146"
+    echo "************************************************************************"
+fi
