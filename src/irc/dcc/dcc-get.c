@@ -237,8 +237,12 @@ void sig_dccget_connected(GET_DCC_REC *dcc)
 
 		if (temphandle == -1)
 			ret = -1;
-		else
-			ret = fchmod(temphandle, dcc_file_create_mode);
+		else {
+			if (fchmod(temphandle, dcc_file_create_mode) != 0)
+				g_warning("fchmod(3) failed: %s", strerror(errno));
+			/* proceed even if chmod fails */
+			ret = 0;
+		}
 
 		close(temphandle);
 
@@ -249,7 +253,7 @@ void sig_dccget_connected(GET_DCC_REC *dcc)
 			    /* Linux */
 			    (errno == EPERM ||
 			     /* FUSE */
-			     errno == ENOSYS ||
+			     errno == ENOSYS || errno == EACCES ||
 			     /* BSD */
 			     errno == EOPNOTSUPP)) {
 				/* hard links aren't supported - some people
