@@ -247,16 +247,23 @@ static int check_server_splits(IRC_SERVER_REC *server)
    message before it. */
 static void sig_print_starting(TEXT_DEST_REC *dest)
 {
-	GSList *tmp;
+	IRC_SERVER_REC *rec;
 
 	if (printing_splits)
 		return;
 
-	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		IRC_SERVER_REC *rec = tmp->data;
+	if (!IS_IRC_SERVER(dest->server))
+		return;
 
-		if (IS_IRC_SERVER(rec) && rec->split_servers != NULL)
-			print_splits(rec, NULL);
+	rec = IRC_SERVER(dest->server);
+	if (rec->split_servers != NULL) {
+		/* if split_servers exists, the server rec should be
+		   still valid. otherwise, calling server->ischannel
+		   may not be safe. */
+		if (dest->target != NULL && !server_ischannel((SERVER_REC *) rec, dest->target))
+			return;
+
+		print_splits(rec, NULL);
 	}
 }
 
