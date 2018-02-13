@@ -337,11 +337,14 @@ char *get_alignment(const char *text, int align, int flags, char pad)
 
 	/* add pad characters */
 	if (flags & ALIGN_PAD) {
-		while (string_width(str->str, policy) < align) {
+		int pad_len = align - string_width(str->str, policy);
+		if (pad_len > 0) {
+			char *pad_full = g_strnfill(pad_len, pad);
 			if (flags & ALIGN_RIGHT)
-				g_string_prepend_c(str, pad);
+				g_string_prepend(str, pad_full);
 			else
-				g_string_append_c(str, pad);
+				g_string_append(str, pad_full);
+			g_free(pad_full);
 		}
 	}
 
