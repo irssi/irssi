@@ -173,6 +173,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 {
 	CHANNEL_REC *channel;
         int own;
+	g_return_if_fail(nick != NULL);
 
 	channel = channel_find(server, target);
 	if (channel != NULL) {
@@ -185,6 +186,7 @@ static void sig_message_join(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *address)
 {
 	CHANNEL_REC *chanrec;
+	g_return_if_fail(nick != NULL);
 
 	chanrec = channel_find(server, channel);
 	if (chanrec != NULL)
