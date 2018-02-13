@@ -1,3 +1,10 @@
+v1.1.1 2018-02-15 The Irssi team <staff@irssi.org>
+	! Contains all changes from 1.0.7
+	- Restore compatibility with OpenSSL < 1.0.2 (#820, #831)
+	- Fix test compilation on some platforms (#815, #816)
+	- Fix portability and backwards compatibility of test runner
+          (#818, #845)
+
 v1.0.7 2018-02-15 The Irssi team <staff@irssi.org>
 	- Prevent use after free error during the execution of some
 	  commands. Found by Joseph Bisch (GL#17, GL!24).
@@ -29,8 +36,8 @@ v1.1.0 2018-01-15 The Irssi team <staff@irssi.org>
 	* /server does not connect to servers anymore, use /server
 	  connect to change servers (#559, #649).
 	* The net_ip_compare API function is now deprecated, and the
-          previously deprecated net_connect has been removed
-          (#770). By Will Storey (#770)
+          previously deprecated net_connect has been removed. By Will
+          Storey (#770).
 	+ Add an option to ignore all channels or ignore all queries
 	  using /set activity_hide_targets. By Jari Matilainen (#612,
 	  #779)
