@@ -685,7 +685,8 @@ static int file_checksum(const char *fname, const guint8 *old_checksum, gsize ol
 	}
 	close(f);
 
-	checksum = g_new0(guint8, g_checksum_type_get_length(checksum_type));
+	checksum_length = g_checksum_type_get_length(checksum_type);
+	checksum = g_new0(guint8, checksum_length);
 	g_checksum_get_digest(c, checksum, &checksum_length);
 	g_checksum_free(c);
 
