@@ -345,16 +345,18 @@ static void cmd_ts(const char *data)
 }
 
 typedef struct {
-	IRC_SERVER_REC *server;
+	char *server_tag;
 	char *nick;
 } OPER_PASS_REC;
 
 static void cmd_oper_got_pass(const char *password, OPER_PASS_REC *rec)
 {
-        if (*password != '\0')
-		irc_send_cmdv(rec->server, "OPER %s %s", rec->nick, password);
+	SERVER_REC *server_rec = server_find_tag(rec->server_tag);
+	if (*password != '\0' && IS_IRC_SERVER(server_rec))
+		irc_send_cmdv((IRC_SERVER_REC *) server_rec, "OPER %s %s", rec->nick, password);
 	g_free(rec->nick);
-        g_free(rec);
+	g_free(rec->server_tag);
+	g_free(rec);
 }
 
 static void cmd_oper(const char *data, IRC_SERVER_REC *server)
@@ -374,7 +376,7 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 		OPER_PASS_REC *rec;
 
 		rec = g_new(OPER_PASS_REC, 1);
-		rec->server = server;
+		rec->server_tag = g_strdup(server->tag);
 		rec->nick = g_strdup(*nick != '\0' ? nick : server->nick);
 
 		format = format_get_text(MODULE_NAME, NULL, server, NULL,
