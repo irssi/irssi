@@ -33,6 +33,8 @@
 #define isarg(c) \
 	(i_isdigit(c) || (c) == '*' || (c) == '~' || (c) == '-')
 
+#define ALIGN_MAX 222488
+
 static SPECIAL_HISTORY_FUNC history_func = NULL;
 
 static char *get_argument(char **cmd, char **arglist)
@@ -298,6 +300,10 @@ static int get_alignment_args(char **data, int *align, int *flags, char *pad)
 
 	/* get the alignment size */
 	if (!parse_uint(str, &endptr, 10, &align_)) {
+		return FALSE;
+	}
+	/* alignment larger than supported */
+	if (align_ > ALIGN_MAX) {
 		return FALSE;
 	}
 	str = endptr;
