@@ -1,5 +1,24 @@
 v1.2-head 2018-xx-xx  The Irssi team <staff@irssi.org>
 
+v1.0.7 2018-02-15 The Irssi team <staff@irssi.org>
+	- Prevent use after free error during the execution of some
+	  commands. Found by Joseph Bisch (GL#17, GL!24).
+	- Revert netsplit print optimisation due to crashes (#465, #809,
+          #812, #819, #824).
+	- Fix use after free when SASL messages are received in
+          unexpected order (GL#26, GL!33).
+	- Fix null pointer dereference in the tab completion when an
+          empty nick is joined (GL#24, GL!31).
+	- Fix use after free when entering oper password (GL#22,
+          GL!32).
+	- Fix null pointer dereference when too many windows are
+          opened (GL#27, #837).
+	- Fix out of bounds access in theme strings when the last
+          escape is incomplete. Credit to Oss-Fuzz (#842).
+	- Fix out of bounds write when using negative counts on window
+          resize (GL#25, GL#29, #836).
+	- Minor help correction. By William Jackson (#834).
+
 v1.1.0 2018-01-15 The Irssi team <staff@irssi.org>
 	* Colour is now re-set when reaching a comma, matching mIRC
 	  behaviour (#742, #740, #790)
