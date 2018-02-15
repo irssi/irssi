@@ -1,5 +1,12 @@
 v1.2-head 2018-xx-xx  The Irssi team <staff@irssi.org>
 
+v1.1.1 2018-02-15 The Irssi team <staff@irssi.org>
+	! Contains all changes from 1.0.7
+	- Restore compatibility with OpenSSL < 1.0.2 (#820, #831)
+	- Fix test compilation on some platforms (#815, #816)
+	- Fix portability and backwards compatibility of test runner
+          (#818, #845)
+
 v1.0.7 2018-02-15 The Irssi team <staff@irssi.org>
 	- Prevent use after free error during the execution of some
 	  commands. Found by Joseph Bisch (GL#17, GL!24).
