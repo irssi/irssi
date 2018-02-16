@@ -114,7 +114,7 @@ static void cmd_version(char *data)
 	}
 }
 
-/* SYNTAX: CAT <file> */
+/* SYNTAX: CAT <file> [<seek position>] */
 static void cmd_cat(const char *data)
 {
 	char *fname, *fposstr;
