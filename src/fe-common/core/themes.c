@@ -413,7 +413,7 @@ static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp
 {
 	GString *str;
 	const char *p, *format;
-	char *abstract, *data, *ret;
+	char *abstract, *data, *ret, *blocking;
 	theme_rm_col default_fg, default_bg;
 	int len;
 
@@ -455,8 +455,10 @@ static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp
 		/* unknown abstract, just display the data */
 		data = "$0-";
 		g_free(abstract);
+		blocking = NULL;
 	} else {
-		g_tree_insert(block_list, abstract, abstract);
+		blocking = abstract;
+		g_tree_insert(block_list, blocking, blocking);
 	}
 	abstract = g_strdup(data);
 
@@ -503,6 +505,9 @@ static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp
 	ret = theme_format_expand_data_rec(theme, &p, default_fg, default_bg, last_fg, last_bg,
 	                                   flags | EXPAND_FLAG_LASTCOLOR_ARG, block_list);
 	g_free(abstract);
+	if (blocking != NULL) {
+		g_tree_remove(block_list, blocking);
+	}
 	g_tree_unref(block_list);
 	return ret;
 }
