@@ -149,9 +149,9 @@ AC_ARG_WITH(perl,
 	want_perl=static)
 
 AC_ARG_WITH(otr,
-[  --with-otr[=yes|no|module]   Build with OTR support - also specifies
+[  --with-otr[=yes|no|static]   Build with OTR support - also specifies
                                 if it should be built into the main irssi
-                                binary or as a module (default)],
+                                binary (static) or as a module (default)],
 	if test x$withval = xyes; then
 		want_otr=module
 	elif test x$withval = xstatic; then
