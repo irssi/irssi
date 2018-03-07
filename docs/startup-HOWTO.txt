@@ -460,7 +460,7 @@ need to do any /QUOTE SERVER commands manually.
 
 Here’s an example: You have your bouncer (lets say, BNC or BNC-like) listening
 in irc.bouncer.org port 5000. You want to use it to connect to servers
-irc.dalnet and irc.efnet.org. First you’d need to setup the bouncer:
+irc.dal.net and irc.efnet.org. First you’d need to setup the bouncer:
 
 /SET use_proxy ON
 /SET proxy_address irc.bouncer.org
@@ -485,7 +485,7 @@ which you can give to /SERVER and /SERVER ADD commands.
 
 Proxy specific settings:
 
-All proxies have these settings in common:
+All proxies except irssi proxy and socks proxy have these settings in common:
 
 /SET use_proxy ON
 /SET proxy_address <Proxy host address>
@@ -543,11 +543,12 @@ Irssi contains it’s own proxy which you can build giving \--with-proxy option
 to configure. You’ll still need to run irssi in a screen to use it though.
 
 Irssi proxy is a bit different than most proxies, normally proxies create a new
-connection to IRC server when you connect to it, but irssi proxy shares your
-existing IRC connection(s) to multiple clients. And even more clearly: You can
-use only one IRC server connection to IRC with as many clients as you want. Can
-anyone figure out even more easier ways to say this, so I wouldn’t need to try
-to explain this thing for minutes every time? :)
+connection to IRC server when a new client connects to it, but irssi proxy
+shares your existing IRC connection(s) to multiple clients. And even more
+clearly: You can use only one IRC server connection of the irssi proxy to IRC
+with as many clients as you want. Can anyone figure out even more easier ways
+to say this, so I wouldn’t need to try to explain this thing for minutes every
+time? :)
 
 Irssi proxy supports sharing multiple server connections in different ports,
 like you can share network in port 2777 and efnet in port 2778.

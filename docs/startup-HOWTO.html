@@ -411,7 +411,7 @@ Ctrl-X                - set the next server in list active
 
 <p>Irssi supports connecting to IRC servers via a proxy. All server connections are then made through it, and if you’ve set up everything properly, you don’t need to do any <code>/QUOTE SERVER</code> commands manually.</p>
 
-<p>Here’s an example: You have your bouncer (lets say, BNC or BNC-like) listening in irc.bouncer.org port 5000. You want to use it to connect to servers irc.dalnet and irc.efnet.org. First you’d need to setup the bouncer:</p>
+<p>Here’s an example: You have your bouncer (lets say, BNC or BNC-like) listening in irc.bouncer.org port 5000. You want to use it to connect to servers irc.dal.net and irc.efnet.org. First you’d need to setup the bouncer:</p>
 
 <div><div><pre><code>/SET use_proxy ON
 /SET proxy_address irc.bouncer.org
@@ -434,7 +434,7 @@ Ctrl-X                - set the next server in list active
 
 <p><strong>Proxy specific settings:</strong></p>
 
-<p>All proxies have these settings in common:</p>
+<p>All proxies except irssi proxy and socks proxy have these settings in common:</p>
 
 <div><div><pre><code>/SET use_proxy ON
 /SET proxy_address &lt;Proxy host address&gt;
@@ -488,7 +488,7 @@ Ctrl-X                - set the next server in list active
 
 <p>Irssi contains it’s own proxy which you can build giving <code>\--with-proxy</code> option to configure. You’ll still need to run irssi in a screen to use it though.</p>
 
-<p>Irssi proxy is a bit different than most proxies, normally proxies create a new connection to IRC server when you connect to it, but <strong>irssi proxy shares your existing IRC connection(s) to multiple clients</strong>. And even more clearly: <strong>You can use only one IRC server connection to IRC with as many clients as you want</strong>. Can anyone figure out even more easier ways to say this, so I wouldn’t need to try to explain this thing for minutes every time? :)</p>
+<p>Irssi proxy is a bit different than most proxies, normally proxies create a new connection to IRC server when a new client connects to it, but <strong>irssi proxy shares your existing IRC connection(s) to multiple clients</strong>. And even more clearly: <strong>You can use only one IRC server connection of the irssi proxy to IRC with as many clients as you want</strong>. Can anyone figure out even more easier ways to say this, so I wouldn’t need to try to explain this thing for minutes every time? :)</p>
 
 <p>Irssi proxy supports sharing multiple server connections in different ports, like you can share network in port 2777 and efnet in port 2778.</p>
 
