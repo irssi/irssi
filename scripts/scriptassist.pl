@@ -5,7 +5,7 @@
 
 use strict;
 
-our $VERSION = '2003020804';
+our $VERSION = '2003020806';
 our %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -315,6 +315,7 @@ sub get_new {
     my $xml = get_scripts();
     foreach (sort {$xml->{$b}{last_modified} cmp $xml->{$a}{last_modified}} keys %$xml) {
 	my %entry = %{ $xml->{$_} };
+	next if $entry{HIDDEN};
 	$result->{$_} = \%entry;
 	$num--;
 	last unless $num;
@@ -390,6 +391,7 @@ sub search_scripts {
     my %result;
     foreach (sort keys %{$database}) {
 	my %entry = %{$database->{$_}};
+	next if $entry{HIDDEN};
 	my $string = $_." ";
 	$string .= $entry{description} if defined $entry{description};
 	if ($string =~ /$query/i) {
@@ -1051,7 +1053,7 @@ sub toggle_autorun {
     my $dir = Irssi::get_irssi_dir()."/scripts/";
     mkdir $dir."autorun/" unless (-e $dir."autorun/");
     return unless (-e $dir.$plname);
-    if (check_autorun($sname)) {
+    if (-e $dir."/autorun/".$plname) {
 	if (readlink($dir."/autorun/".$plname) eq "../".$plname) {
 	    if (unlink($dir."/autorun/".$plname)) {
 		print CLIENTCRAP "%R>>%n Autorun of ".$sname." disabled";
@@ -1062,8 +1064,11 @@ sub toggle_autorun {
 	    print CLIENTCRAP "%R>>%n ".$dir."/autorun/".$plname." is not a correct link";
 	}
     } else {
-	symlink("../".$plname, $dir."/autorun/".$plname);
-    	print CLIENTCRAP "%R>>%n Autorun of ".$sname." enabled";
+	if (symlink("../".$plname, $dir."/autorun/".$plname)) {
+    	    print CLIENTCRAP "%R>>%n Autorun of ".$sname." enabled";
+	} else {
+	    print CLIENTCRAP "%R>>%n Unable to create autorun link";
+	}
     }
 }
 

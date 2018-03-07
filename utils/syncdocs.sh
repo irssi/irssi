@@ -11,7 +11,7 @@ howto=$site/documentation/startup/
 # remove everything until H1 and optionally 2 DIVs before the
 # FOOTER. May need to be adjusted as the source pages change
 pageclean_regex='s{.*(?=<h1)}{}s;
-s{\s*(</div>\s*)?(</div>\s*)?<footer.*}{}s;
+s{(\s*<script\s.*?</script>)?\s*(</div>\s*){0,3}<footer.*}{}s;
 s{(<.*?)\sclass="(?:highlighter-rouge|highlight)"(.*?>)}{\1\2}g;'
 
 srcdir=`dirname "$0"`
