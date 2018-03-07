@@ -47,7 +47,8 @@ static int timeout_tag;
 static int config_last_modifycounter;
 static time_t config_last_mtime;
 static long config_last_size;
-static unsigned int config_last_checksum;
+static guint8 *config_last_checksum;
+static gsize config_last_checksum_length;
 
 static SETTINGS_REC *settings_get(const char *key, SettingType type)
 {
@@ -661,24 +662,45 @@ void sig_term(int n)
 	raise(SIGTERM);
 }
 
-/* Yes, this is my own stupid checksum generator, some "real" algorithm
-   would be nice but would just take more space without much real benefit */
-static unsigned int file_checksum(const char *fname)
+static int file_checksum(const char *fname, const guint8 *old_checksum, gsize old_checksum_length,
+                         guint8 **checksum_out, gsize *checksum_length_out)
 {
-        char buf[512];
-        int f, ret, n;
-	unsigned int checksum = 0;
+	GChecksum *c;
+	unsigned char buf[512];
+	guint8 *checksum;
+	gsize checksum_length;
+	int f, ret;
+	static GChecksumType checksum_type = G_CHECKSUM_SHA1;
+
+	if ((c = g_checksum_new(checksum_type)) == NULL) {
+		return FALSE;
+	}
 
 	f = open(fname, O_RDONLY);
-	if (f == -1) return 0;
+	if (f == -1)
+		return FALSE;
 
-        n = 0;
 	while ((ret = read(f, buf, sizeof(buf))) > 0) {
-		while (ret-- > 0)
-			checksum += buf[ret] << ((n++ & 3)*8);
+		g_checksum_update(c, buf, ret);
 	}
 	close(f);
-	return checksum;
+
+	checksum_length = g_checksum_type_get_length(checksum_type);
+	checksum = g_new0(guint8, checksum_length);
+	g_checksum_get_digest(c, checksum, &checksum_length);
+	g_checksum_free(c);
+
+	if (checksum_out != NULL && checksum_length_out != NULL) {
+		g_free(*checksum_out);
+		*checksum_out = checksum;
+		*checksum_length_out = checksum_length;
+	}
+
+	if (old_checksum != NULL) {
+		return old_checksum_length == checksum_length &&
+			memcmp(checksum, old_checksum, checksum_length) == 0;
+	}
+	return TRUE;
 }
 
 static void irssi_config_save_state(const char *fname)
@@ -693,7 +715,7 @@ static void irssi_config_save_state(const char *fname)
 	/* save modify time, file size and checksum */
 	config_last_mtime = statbuf.st_mtime;
 	config_last_size = statbuf.st_size;
-	config_last_checksum = file_checksum(fname);
+	file_checksum(fname, NULL, 0, &config_last_checksum, &config_last_checksum_length);
 }
 
 int irssi_config_is_changed(const char *fname)
@@ -707,8 +729,8 @@ int irssi_config_is_changed(const char *fname)
 		return FALSE;
 
 	return config_last_mtime != statbuf.st_mtime &&
-		(config_last_size != statbuf.st_size ||
-		 config_last_checksum != file_checksum(fname));
+	       (config_last_size != statbuf.st_size ||
+	        file_checksum(fname, config_last_checksum, config_last_checksum_length, NULL, NULL));
 }
 
 static CONFIG_REC *parse_configfile(const char *fname)
@@ -906,4 +928,10 @@ void settings_deinit(void)
 	g_hash_table_destroy(settings);
 
 	if (mainconfig != NULL) config_close(mainconfig);
+
+	if (config_last_checksum != NULL) {
+		g_free(config_last_checksum);
+		config_last_checksum = NULL;
+		config_last_checksum_length = 0;
+	}
 }
