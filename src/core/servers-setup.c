@@ -478,8 +478,8 @@ static int compare_server_setup (CONFIG_NODE *node, SERVER_SETUP_REC *server)
 		return 0;
 	}
 
-	if (g_strcmp0(address, server->address) != 0 ||
-	    g_strcmp0(chatnet, server->chatnet) != 0 ||
+	if (g_ascii_strcasecmp(address, server->address) != 0 ||
+	    g_ascii_strcasecmp(chatnet, server->chatnet) != 0 ||
 	    port != server->port) {
 		return 1;
 	}
