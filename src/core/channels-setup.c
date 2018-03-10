@@ -37,9 +37,14 @@ static int compare_channel_setup (CONFIG_NODE *node, CHANNEL_SETUP_REC *channel)
 	name = config_node_get_str(node, "name", NULL);
 	chatnet = config_node_get_str(node, "chatnet", NULL);
 
-	if (g_strcmp0(name, channel->name) != 0 || 
-	    g_strcmp0(chatnet, channel->chatnet) != 0)
+	if (name == NULL || chatnet == NULL) {
+		return 0;
+	}
+
+	if (g_ascii_strcasecmp(name, channel->name) != 0 ||
+	    g_ascii_strcasecmp(chatnet, channel->chatnet) != 0) {
 		return 1;
+	}
 
 	return 0;
 }
