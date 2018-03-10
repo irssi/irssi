@@ -5,11 +5,15 @@
 
 %9Parameters:%9
 
-    The file to display.
+    The file to display and optionally a position to seek in the file,
+    in bytes.
 
 %9Description:%9
 
     Displays the contents of the specified file into the active window.
+
+    The seek position parameter is used internally to display away logs, if
+    omitted the whole file is shown.
 
 %9Examples:%9
 
