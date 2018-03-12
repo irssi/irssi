@@ -156,6 +156,7 @@ static void keyconfig_save(const char *id, const char *key, const char *data)
 static void keyconfig_clear(const char *key)
 {
 	CONFIG_NODE *node;
+	KEY_REC *rec;
 
 	g_return_if_fail(key != NULL);
 
@@ -164,6 +165,11 @@ static void keyconfig_clear(const char *key)
 	if (node != NULL) {
 		iconfig_node_remove(iconfig_node_traverse("(keyboard", FALSE),
 				    node);
+	}
+	if ((rec = g_hash_table_lookup(default_keys, key)) != NULL) {
+		node = iconfig_node_traverse("(keyboard", TRUE);
+		node = iconfig_node_section(node, NULL, NODE_TYPE_BLOCK);
+		iconfig_node_set_str(node, "key", key);
 	}
 }
 
@@ -569,11 +575,36 @@ void key_configure_remove(const char *key)
 
 	g_return_if_fail(key != NULL);
 
+	keyconfig_clear(key);
+
 	rec = g_hash_table_lookup(keys, key);
 	if (rec == NULL) return;
 
-        keyconfig_clear(key);
 	key_configure_destroy(rec);
+}
+
+/* Reset key to default */
+void key_configure_reset(const char *key)
+{
+	KEY_REC *rec;
+	CONFIG_NODE *node;
+
+	g_return_if_fail(key != NULL);
+
+	node = key_config_find(key);
+	if (node != NULL) {
+		iconfig_node_remove(iconfig_node_traverse("(keyboard", FALSE), node);
+	}
+
+	if ((rec = g_hash_table_lookup(default_keys, key)) != NULL) {
+		key_configure_create(rec->info->id, rec->key, rec->data);
+	} else {
+		rec = g_hash_table_lookup(keys, key);
+		if (rec == NULL)
+			return;
+
+		key_configure_destroy(rec);
+	}
 }
 
 static int key_emit_signal(KEYBOARD_REC *keyboard, KEY_REC *key)
@@ -739,7 +770,9 @@ static void cmd_show_keys(const char *searchkey, int full)
 		for (key = rec->keys; key != NULL; key = key->next) {
 			KEY_REC *rec = key->data;
 
-			if ((len == 0 || g_ascii_strncasecmp(rec->key, searchkey, len) == 0) &&
+			if ((len == 0 ||
+			     (full ? strncmp(rec->key, searchkey, len) == 0 :
+			             g_ascii_strncasecmp(rec->key, searchkey, len) == 0)) &&
 			    (!full || rec->key[len] == '\0')) {
 				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_LIST,
 					    rec->key, rec->info->id, rec->data == NULL ? "" : rec->data);
@@ -750,7 +783,7 @@ static void cmd_show_keys(const char *searchkey, int full)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_FOOTER);
 }
 
-/* SYNTAX: BIND [-list] [-delete] [<key> [<command> [<data>]]] */
+/* SYNTAX: BIND [-list] [-delete | -reset] [<key> [<command> [<data>]]] */
 static void cmd_bind(const char *data)
 {
 	GHashTable *optlist;
@@ -778,6 +811,12 @@ static void cmd_bind(const char *data)
 	if (*key != '\0' && g_hash_table_lookup(optlist, "delete")) {
                 /* delete key */
 		key_configure_remove(key);
+		cmd_params_free(free_arg);
+		return;
+	} else if (*key != '\0' && g_hash_table_lookup(optlist, "reset")) {
+		/* reset key */
+		key_configure_reset(key);
+		cmd_show_keys(key, TRUE);
 		cmd_params_free(free_arg);
 		return;
 	}
@@ -878,8 +917,13 @@ static void key_config_read(CONFIG_NODE *node)
 	id = config_node_get_str(node, "id", NULL);
 	data = config_node_get_str(node, "data", NULL);
 
-	if (key != NULL && id != NULL)
+	if (key != NULL && id != NULL) {
 		key_configure_create(id, key, data);
+	} else if (key != NULL && id == NULL && data == NULL) {
+		KEY_REC *rec = g_hash_table_lookup(keys, key);
+		if (rec != NULL)
+			key_configure_destroy(rec);
+	}
 }
 
 static void read_keyboard_config(void)
@@ -938,7 +982,7 @@ void keyboard_init(void)
 	signal_add("complete command bind", (SIGNAL_FUNC) sig_complete_bind);
 
 	command_bind("bind", NULL, (SIGNAL_FUNC) cmd_bind);
-	command_set_options("bind", "delete list");
+	command_set_options("bind", "delete reset list");
 }
 
 void keyboard_deinit(void)
