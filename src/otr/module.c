@@ -24,6 +24,7 @@
 
 #include "module.h"
 
+#include "common.h"
 #include "signals.h"
 #include "queries.h"
 #include "commands.h"
@@ -258,4 +259,9 @@ void otr_core_deinit(void)
 	otr_free_user_state(user_state_global);
 
 	otr_lib_uninit();
+}
+
+void otr_core_abicheck(int *version)
+{
+	*version = IRSSI_ABI_VERSION;
 }
