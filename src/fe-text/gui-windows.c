@@ -207,8 +207,6 @@ void gui_windows_reset_settings(void)
 		WINDOW_REC *rec = tmp->data;
 		GUI_WINDOW_REC *gui = WINDOW_GUI(rec);
 
-		textbuffer_view_set_hidden_level(gui->view, MSGLEVEL_HIDDEN);
-
 		textbuffer_view_set_break_wide(gui->view, settings_get_bool("break_wide"));
 
 		textbuffer_view_set_default_indent(gui->view,
