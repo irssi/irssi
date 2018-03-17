@@ -120,11 +120,18 @@ void gui_printtext_internal(int xpos, int ypos, const char *str)
 	next_xpos = next_ypos = -1;
 }
 
+static void view_add_eol(TEXT_BUFFER_VIEW_REC *view, LINE_REC **line);
+
 void gui_printtext_after_time(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str, time_t time)
 {
 	GUI_WINDOW_REC *gui;
 
 	gui = WINDOW_GUI(dest->window);
+
+	if (prev == NULL && !gui->view->buffer->last_eol) {
+		/* we have an unfinished line in the buffer still */
+		view_add_eol(gui->view, &gui->insert_after);
+	}
 
 	gui->use_insert_after = TRUE;
 	gui->insert_after = prev;
