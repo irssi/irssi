@@ -374,6 +374,7 @@ static void cmd_statusbar_add_modify(const char *data, void *server, void *witem
 	char *name, *type, *placement, *visible;
 	void *free_arg;
 	int error;
+	int add = GPOINTER_TO_INT(signal_get_user_data());
 
 	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_OPTIONS | PARAM_FLAG_STRIP_TRAILING_WS,
 	                    "statusbar add", &optlist, &name))
@@ -429,12 +430,20 @@ static void cmd_statusbar_add_modify(const char *data, void *server, void *witem
 		}
 	}
 
+	if (!error) {
+		node = sbar_node(name, add);
+
+		if (node == NULL) {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_NOT_FOUND, name);
+			error++;
+		}
+	}
+
 	if (error) {
 		cmd_params_free(free_arg);
 		return;
 	}
 
-	node = sbar_node(name, TRUE);
 	if (g_hash_table_lookup(optlist, "nodisable"))
 		iconfig_node_set_str(node, "disabled", NULL);
 	if (g_hash_table_lookup(optlist, "disable"))
@@ -527,6 +536,7 @@ static void cmd_statusbar_additem_modifyitem(const char *data, void *server, voi
 	char *item, *statusbar, *value;
 	void *free_arg;
 	int index;
+	int additem = GINT_TO_POINTER(signal_get_user_data());
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_STRIP_TRAILING_WS,
 	                    "statusbar additem", &optlist, &item, &statusbar))
@@ -555,6 +565,12 @@ static void cmd_statusbar_additem_modifyitem(const char *data, void *server, voi
 	if (value != NULL) index = config_node_index(node, value);
 	value = g_hash_table_lookup(optlist, "after");
 	if (value != NULL) index = config_node_index(node, value)+1;
+
+	if (!additem && iconfig_node_section(node, item, -1) == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_ITEM_NOT_FOUND, item);
+		cmd_params_free(free_arg);
+		return;
+	}
 
 	/* create/move item */
 	node = iconfig_node_section_index(node, item, index, NODE_TYPE_BLOCK);
@@ -689,12 +705,12 @@ void statusbar_config_init(void)
 
 	command_bind("statusbar", NULL, (SIGNAL_FUNC) cmd_statusbar);
 	command_bind("statusbar list", NULL, (SIGNAL_FUNC) cmd_statusbar_list);
-	command_bind("statusbar add", NULL, (SIGNAL_FUNC) cmd_statusbar_add_modify);
-	command_bind("statusbar modify", NULL, (SIGNAL_FUNC) cmd_statusbar_add_modify);
+	command_bind_data("statusbar add", NULL, (SIGNAL_FUNC) cmd_statusbar_add_modify, GINT_TO_POINTER(TRUE));
+	command_bind_data("statusbar modify", NULL, (SIGNAL_FUNC) cmd_statusbar_add_modify, GINT_TO_POINTER(FALSE));
 	command_bind("statusbar reset", NULL, (SIGNAL_FUNC) cmd_statusbar_reset);
 	command_bind("statusbar info", NULL, (SIGNAL_FUNC) cmd_statusbar_info);
-	command_bind("statusbar additem", NULL, (SIGNAL_FUNC) cmd_statusbar_additem_modifyitem);
-	command_bind("statusbar modifyitem", NULL, (SIGNAL_FUNC) cmd_statusbar_additem_modifyitem);
+	command_bind_data("statusbar additem", NULL, (SIGNAL_FUNC) cmd_statusbar_additem_modifyitem, GINT_TO_POINTER(TRUE));
+	command_bind_data("statusbar modifyitem", NULL, (SIGNAL_FUNC) cmd_statusbar_additem_modifyitem, GINT_TO_POINTER(FALSE));
 	command_bind("statusbar removeitem", NULL, (SIGNAL_FUNC) cmd_statusbar_removeitem);
 
 	command_set_options("statusbar additem", "+before +after +priority +alignment");
@@ -712,11 +728,11 @@ void statusbar_config_deinit(void)
 
 	command_unbind("statusbar", (SIGNAL_FUNC) cmd_statusbar);
 	command_unbind("statusbar list", (SIGNAL_FUNC) cmd_statusbar_list);
-	command_unbind("statusbar add", (SIGNAL_FUNC) cmd_statusbar_add_modify);
-	command_unbind("statusbar modify", (SIGNAL_FUNC) cmd_statusbar_add_modify);
+	command_unbind_full("statusbar add", (SIGNAL_FUNC) cmd_statusbar_add_modify, GINT_TO_POINTER(TRUE));
+	command_unbind_full("statusbar modify", (SIGNAL_FUNC) cmd_statusbar_add_modify, GINT_TO_POINTER(FALSE));
 	command_unbind("statusbar reset", (SIGNAL_FUNC) cmd_statusbar_reset);
 	command_unbind("statusbar info", (SIGNAL_FUNC) cmd_statusbar_info);
-	command_unbind("statusbar additem", (SIGNAL_FUNC) cmd_statusbar_additem_modifyitem);
-	command_unbind("statusbar modifyitem", (SIGNAL_FUNC) cmd_statusbar_additem_modifyitem);
+	command_unbind_full("statusbar additem", (SIGNAL_FUNC) cmd_statusbar_additem_modifyitem, GINT_TO_POINTER(TRUE));
+	command_unbind_full("statusbar modifyitem", (SIGNAL_FUNC) cmd_statusbar_additem_modifyitem, GINT_TO_POINTER(FALSE));
 	command_unbind("statusbar removeitem", (SIGNAL_FUNC) cmd_statusbar_removeitem);
 }
