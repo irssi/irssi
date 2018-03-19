@@ -6,7 +6,8 @@
 %9Parameters:%9
 
     -list:      Displays a list of all the bindable commands.
-    -delete:    Removes the binding,
+    -delete:    Removes the binding.
+    -reset:     Reset a key to its default binding.
 
     A name of the binding and the command to perform; if no parameter is given,
     the list of bindings will be displayed.
