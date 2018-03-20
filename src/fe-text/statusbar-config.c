@@ -275,22 +275,49 @@ static const char *sbar_get_visibility(STATUSBAR_CONFIG_REC *rec)
 		rec->visible == STATUSBAR_VISIBLE_INACTIVE ? "inactive" : "??";
 }
 
-static CONFIG_NODE *sbar_node(const char *name, gboolean create)
+#define iconfig_sbar_node(a, b) config_sbar_node(mainconfig, a, b)
+static CONFIG_NODE *config_sbar_node(CONFIG_REC *config, const char *name, gboolean create)
 {
 	CONFIG_NODE *node;
+
+	node = config_node_traverse(config, "statusbar", create);
+	if (node != NULL) {
+		node = config_node_section(config, node, active_statusbar_group->name,
+		                           create ? NODE_TYPE_BLOCK : -1);
+	}
+
+	if (node != NULL) {
+		node = config_node_section(config, node, name, create ? NODE_TYPE_BLOCK : -1);
+	}
+
+	return node;
+}
+
+static CONFIG_NODE *sbar_node(const char *name, gboolean create)
+{
 	STATUSBAR_CONFIG_REC *rec = statusbar_config_find(active_statusbar_group, name);
 	if (rec != NULL) {
 		name = rec->name;
-	} else if (!create) {
-		return NULL;
 	}
 
 	/* lookup/create the statusbar node */
-	node = iconfig_node_traverse("statusbar", TRUE);
-	node = iconfig_node_section(node, active_statusbar_group->name, NODE_TYPE_BLOCK);
-	node = iconfig_node_section(node, name, NODE_TYPE_BLOCK);
+	return iconfig_sbar_node(name, create);
+}
 
-	return node;
+static gboolean sbar_node_isdefault(const char *name)
+{
+	CONFIG_REC *config;
+	CONFIG_NODE *node;
+
+	/* read the default statusbar settings from internal config */
+	config = config_open(NULL, -1);
+	config_parse_data(config, default_config, "internal");
+
+	node = config_sbar_node(config, name, FALSE);
+
+	config_close(config);
+
+	return node != NULL ? TRUE : FALSE;
 }
 
 static void statusbar_list_items(STATUSBAR_CONFIG_REC *bar)
@@ -432,6 +459,11 @@ static void cmd_statusbar_add_modify(const char *data, void *server, void *witem
 
 	if (!error) {
 		node = sbar_node(name, add);
+		if (node == NULL && !add && sbar_node_isdefault(name)) {
+			/* If this node is a default status bar, we need to create it in the config
+			 * to configure it */
+			node = sbar_node(name, TRUE);
+		}
 
 		if (node == NULL) {
 			printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_NOT_FOUND, name);
@@ -477,50 +509,59 @@ static void cmd_statusbar_reset(const char *data, void *server, void *witem)
 	}
 
 	node = sbar_node(name, FALSE);
-	if (node == NULL) {
+	if (node == NULL && !sbar_node_isdefault(name)) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_NOT_FOUND, name);
 		cmd_params_free(free_arg);
 		return;
 	}
 
-	parent = iconfig_node_traverse("statusbar", TRUE);
-	parent = iconfig_node_section(parent, active_statusbar_group->name, NODE_TYPE_BLOCK);
+	parent = iconfig_node_traverse("statusbar", FALSE);
+	if (parent != NULL) {
+		parent = iconfig_node_section(parent, active_statusbar_group->name, -1);
+	}
 
-	iconfig_node_set_str(parent, node->key, NULL);
+	if (parent != NULL && node != NULL) {
+		iconfig_node_set_str(parent, node->key, NULL);
+	}
 
 	read_statusbar_config();
 	cmd_params_free(free_arg);
 }
 
-static CONFIG_NODE *statusbar_items_section(CONFIG_NODE *parent)
+#define iconfig_sbar_items_section(a, b) config_sbar_items_section(mainconfig, a, b)
+static CONFIG_NODE *config_sbar_items_section(CONFIG_REC *config, CONFIG_NODE *parent,
+                                              gboolean create)
 {
-	STATUSBAR_CONFIG_REC *bar;
-        CONFIG_NODE *node;
+	return config_node_section(config, parent, "items", create ? NODE_TYPE_BLOCK : -1);
+}
+
+static CONFIG_NODE *statusbar_copy_config(CONFIG_REC *config, CONFIG_NODE *source,
+                                          CONFIG_NODE *parent)
+{
         GSList *tmp;
 
-	node = iconfig_node_section(parent, "items", -1);
-	if (node != NULL)
-		return node;
+	g_return_val_if_fail(parent != NULL, NULL);
 
-        /* find the statusbar configuration from memory */
-	bar = statusbar_config_find(active_statusbar_group, parent->key);
-	if (bar == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-			    TXT_STATUSBAR_NOT_FOUND, parent->key);
-                return NULL;
-	}
+	parent = iconfig_sbar_items_section(parent, TRUE);
 
 	/* since items list in config file overrides defaults,
 	   we'll need to copy the whole list. */
-	parent = iconfig_node_section(parent, "items", NODE_TYPE_BLOCK);
-	for (tmp = bar->items; tmp != NULL; tmp = tmp->next) {
-		SBAR_ITEM_CONFIG_REC *rec = tmp->data;
+	for (tmp = config_node_first(source->value); tmp != NULL; tmp = config_node_next(tmp)) {
+		int priority, right_alignment;
+		CONFIG_NODE *node, *snode;
 
-		node = iconfig_node_section(parent, rec->name,
-					   NODE_TYPE_BLOCK);
-		if (rec->priority != 0)
-			iconfig_node_set_int(node, "priority", rec->priority);
-		if (rec->right_alignment)
+		snode = tmp->data;
+
+		priority = config_node_get_int(snode, "priority", 0);
+		right_alignment =
+		    g_strcmp0(config_node_get_str(snode, "alignment", ""), "right") == 0;
+
+		/* create new item */
+		node = iconfig_node_section(parent, snode->key, NODE_TYPE_BLOCK);
+
+		if (priority != 0)
+			iconfig_node_set_int(node, "priority", priority);
+		if (right_alignment)
 			iconfig_node_set_str(node, "alignment", "right");
 	}
 
@@ -531,12 +572,13 @@ static CONFIG_NODE *statusbar_items_section(CONFIG_NODE *parent)
            [-priority #] [-alignment left|right] <item> <statusbar> */
 static void cmd_statusbar_additem_modifyitem(const char *data, void *server, void *witem)
 {
+	CONFIG_REC *config, *close_config;
 	CONFIG_NODE *node;
 	GHashTable *optlist;
 	char *item, *statusbar, *value;
 	void *free_arg;
 	int index;
-	int additem = GINT_TO_POINTER(signal_get_user_data());
+	int additem = GPOINTER_TO_INT(signal_get_user_data());
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS | PARAM_FLAG_STRIP_TRAILING_WS,
 	                    "statusbar additem", &optlist, &item, &statusbar))
@@ -546,15 +588,33 @@ static void cmd_statusbar_additem_modifyitem(const char *data, void *server, voi
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	}
 
+	close_config = NULL;
+	config = mainconfig;
+
 	node = sbar_node(statusbar, FALSE);
 	if (node == NULL) {
+		/* we are looking up defaults from the internal config */
+		close_config = config = config_open(NULL, -1);
+		config_parse_data(config, default_config, "internal");
+		node = config_sbar_node(config, statusbar, FALSE);
+	}
+
+	if (node == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_NOT_FOUND, statusbar);
+		if (close_config != NULL) {
+			config_close(close_config);
+		}
 		cmd_params_free(free_arg);
 		return;
 	}
 
-	node = statusbar_items_section(node);
+	node = config_sbar_items_section(config, node, additem);
+
 	if (node == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_ITEM_NOT_FOUND, item);
+		if (close_config != NULL) {
+			config_close(close_config);
+		}
 		cmd_params_free(free_arg);
 		return;
 	}
@@ -566,8 +626,28 @@ static void cmd_statusbar_additem_modifyitem(const char *data, void *server, voi
 	value = g_hash_table_lookup(optlist, "after");
 	if (value != NULL) index = config_node_index(node, value)+1;
 
-	if (!additem && iconfig_node_section(node, item, -1) == NULL) {
+	if (!additem && config_node_section(config, node, item, -1) == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_ITEM_NOT_FOUND, item);
+		if (close_config != NULL) {
+			config_close(close_config);
+		}
+		cmd_params_free(free_arg);
+		return;
+	}
+
+	if (config != mainconfig) {
+		/* we need to copy default to user config */
+		node = statusbar_copy_config(config, node, sbar_node(statusbar, TRUE));
+		config = mainconfig;
+	}
+
+	if (close_config != NULL) {
+		config_close(close_config);
+		close_config = NULL;
+	}
+
+	if (node == NULL) {
+		g_warning("node not found");
 		cmd_params_free(free_arg);
 		return;
 	}
@@ -593,6 +673,7 @@ static void cmd_statusbar_additem_modifyitem(const char *data, void *server, voi
 /* SYNTAX: STATUSBAR REMOVEITEM <item> <statusbar> */
 static void cmd_statusbar_removeitem(const char *data, void *server, void *witem)
 {
+	CONFIG_REC *config, *close_config;
 	CONFIG_NODE *node;
 	char *item, *statusbar;
 	void *free_arg;
@@ -603,24 +684,55 @@ static void cmd_statusbar_removeitem(const char *data, void *server, void *witem
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	}
 
+	close_config = NULL;
+	config = mainconfig;
+
 	node = sbar_node(statusbar, FALSE);
 	if (node == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_NOT_FOUND, statusbar);
-		cmd_params_free(free_arg);
-		return;
+		/* we are looking up defaults from the internal config */
+		close_config = config = config_open(NULL, -1);
+		config_parse_data(config, default_config, "internal");
+		node = config_sbar_node(config, statusbar, FALSE);
 	}
 
-	node = statusbar_items_section(node);
 	if (node == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_NOT_FOUND, statusbar);
+		if (close_config != NULL) {
+			config_close(close_config);
+		}
 		cmd_params_free(free_arg);
 		return;
 	}
 
-	if (iconfig_node_section(node, item, -1) != NULL)
-		iconfig_node_set_str(node, item, NULL);
-	else {
+	node = config_sbar_items_section(config, node, FALSE);
+
+	if (node == NULL || config_node_section(config, node, item, -1) == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_ITEM_NOT_FOUND, item);
+		if (close_config != NULL) {
+			config_close(close_config);
+		}
+		cmd_params_free(free_arg);
+		return;
 	}
+
+	if (config != mainconfig) {
+		/* we need to copy default to user config */
+		node = statusbar_copy_config(config, node, sbar_node(statusbar, TRUE));
+		config = mainconfig;
+	}
+
+	if (close_config != NULL) {
+		config_close(close_config);
+		close_config = NULL;
+	}
+
+	if (node == NULL) {
+		g_warning("node not found");
+		cmd_params_free(free_arg);
+		return;
+	}
+
+	iconfig_node_set_str(node, item, NULL);
 
 	read_statusbar_config();
 	cmd_params_free(free_arg);
