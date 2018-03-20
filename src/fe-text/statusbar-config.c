@@ -568,11 +568,54 @@ static CONFIG_NODE *statusbar_copy_config(CONFIG_REC *config, CONFIG_NODE *sourc
 	return parent;
 }
 
+static CONFIG_NODE *sbar_find_item_with_defaults(const char *statusbar, const char *item,
+                                                 gboolean create)
+{
+	CONFIG_REC *config, *close_config;
+	CONFIG_NODE *node;
+
+	close_config = NULL;
+	config = mainconfig;
+	node = sbar_node(statusbar, FALSE);
+
+	if (node == NULL) {
+		/* we are looking up defaults from the internal config */
+		close_config = config = config_open(NULL, -1);
+		config_parse_data(config, default_config, "internal");
+		node = config_sbar_node(config, statusbar, FALSE);
+	}
+
+	if (node == NULL) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_NOT_FOUND, statusbar);
+		if (close_config != NULL)
+			config_close(close_config);
+		return NULL;
+	}
+
+	node = config_sbar_items_section(config, node, create);
+
+	if (node == NULL || (!create && config_node_section(config, node, item, -1) == NULL)) {
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_ITEM_NOT_FOUND, item);
+		if (close_config != NULL)
+			config_close(close_config);
+		return NULL;
+	}
+
+	if (config != mainconfig) {
+		/* we need to copy default to user config */
+		node = statusbar_copy_config(config, node, sbar_node(statusbar, TRUE));
+	}
+
+	if (close_config != NULL)
+		config_close(close_config);
+
+	return node;
+}
+
 /* SYNTAX: STATUSBAR ADDITEM|MODIFYITEM [-before | -after <item>]
            [-priority #] [-alignment left|right] <item> <statusbar> */
 static void cmd_statusbar_additem_modifyitem(const char *data, void *server, void *witem)
 {
-	CONFIG_REC *config, *close_config;
 	CONFIG_NODE *node;
 	GHashTable *optlist;
 	char *item, *statusbar, *value;
@@ -588,33 +631,8 @@ static void cmd_statusbar_additem_modifyitem(const char *data, void *server, voi
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	}
 
-	close_config = NULL;
-	config = mainconfig;
-
-	node = sbar_node(statusbar, FALSE);
+	node = sbar_find_item_with_defaults(statusbar, item, additem);
 	if (node == NULL) {
-		/* we are looking up defaults from the internal config */
-		close_config = config = config_open(NULL, -1);
-		config_parse_data(config, default_config, "internal");
-		node = config_sbar_node(config, statusbar, FALSE);
-	}
-
-	if (node == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_NOT_FOUND, statusbar);
-		if (close_config != NULL) {
-			config_close(close_config);
-		}
-		cmd_params_free(free_arg);
-		return;
-	}
-
-	node = config_sbar_items_section(config, node, additem);
-
-	if (node == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_ITEM_NOT_FOUND, item);
-		if (close_config != NULL) {
-			config_close(close_config);
-		}
 		cmd_params_free(free_arg);
 		return;
 	}
@@ -622,35 +640,11 @@ static void cmd_statusbar_additem_modifyitem(const char *data, void *server, voi
 	/* get the index */
 	index = -1;
 	value = g_hash_table_lookup(optlist, "before");
-	if (value != NULL) index = config_node_index(node, value);
+	if (value != NULL)
+		index = config_node_index(node, value);
 	value = g_hash_table_lookup(optlist, "after");
-	if (value != NULL) index = config_node_index(node, value)+1;
-
-	if (!additem && config_node_section(config, node, item, -1) == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_ITEM_NOT_FOUND, item);
-		if (close_config != NULL) {
-			config_close(close_config);
-		}
-		cmd_params_free(free_arg);
-		return;
-	}
-
-	if (config != mainconfig) {
-		/* we need to copy default to user config */
-		node = statusbar_copy_config(config, node, sbar_node(statusbar, TRUE));
-		config = mainconfig;
-	}
-
-	if (close_config != NULL) {
-		config_close(close_config);
-		close_config = NULL;
-	}
-
-	if (node == NULL) {
-		g_warning("node not found");
-		cmd_params_free(free_arg);
-		return;
-	}
+	if (value != NULL)
+		index = config_node_index(node, value) + 1;
 
 	/* create/move item */
 	node = iconfig_node_section_index(node, item, index, NODE_TYPE_BLOCK);
@@ -684,55 +678,10 @@ static void cmd_statusbar_removeitem(const char *data, void *server, void *witem
 		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	}
 
-	close_config = NULL;
-	config = mainconfig;
+	node = sbar_find_item_with_defaults(statusbar, item, FALSE);
 
-	node = sbar_node(statusbar, FALSE);
-	if (node == NULL) {
-		/* we are looking up defaults from the internal config */
-		close_config = config = config_open(NULL, -1);
-		config_parse_data(config, default_config, "internal");
-		node = config_sbar_node(config, statusbar, FALSE);
-	}
-
-	if (node == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_NOT_FOUND, statusbar);
-		if (close_config != NULL) {
-			config_close(close_config);
-		}
-		cmd_params_free(free_arg);
-		return;
-	}
-
-	node = config_sbar_items_section(config, node, FALSE);
-
-	if (node == NULL || config_node_section(config, node, item, -1) == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR, TXT_STATUSBAR_ITEM_NOT_FOUND, item);
-		if (close_config != NULL) {
-			config_close(close_config);
-		}
-		cmd_params_free(free_arg);
-		return;
-	}
-
-	if (config != mainconfig) {
-		/* we need to copy default to user config */
-		node = statusbar_copy_config(config, node, sbar_node(statusbar, TRUE));
-		config = mainconfig;
-	}
-
-	if (close_config != NULL) {
-		config_close(close_config);
-		close_config = NULL;
-	}
-
-	if (node == NULL) {
-		g_warning("node not found");
-		cmd_params_free(free_arg);
-		return;
-	}
-
-	iconfig_node_set_str(node, item, NULL);
+	if (node != NULL)
+		iconfig_node_set_str(node, item, NULL);
 
 	read_statusbar_config();
 	cmd_params_free(free_arg);
