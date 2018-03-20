@@ -388,8 +388,12 @@ static void cmd_statusbar_print_info(const char *name)
 		return;
 	}
 
-	printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
-		    TXT_STATUSBAR_NOT_FOUND, name);
+	if (sbar_node(name, FALSE) != NULL || sbar_node_isdefault(name))
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_STATUSBAR_NOT_ENABLED, name);
+	else
+		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
+			    TXT_STATUSBAR_NOT_FOUND, name);
 }
 
 /* SYNTAX: STATUSBAR ADD|MODIFY [-disable | -nodisable] [-type window|root]
