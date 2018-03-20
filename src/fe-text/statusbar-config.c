@@ -101,7 +101,7 @@ statusbar_config_find(STATUSBAR_GROUP_REC *group, const char *name)
 			return config;
 	}
 
-        return NULL;
+	return NULL;
 }
 
 static void statusbar_reset_defaults(void)
@@ -542,7 +542,7 @@ static CONFIG_NODE *config_sbar_items_section(CONFIG_REC *config, CONFIG_NODE *p
 static CONFIG_NODE *statusbar_copy_config(CONFIG_REC *config, CONFIG_NODE *source,
                                           CONFIG_NODE *parent)
 {
-        GSList *tmp;
+	GSList *tmp;
 
 	g_return_val_if_fail(parent != NULL, NULL);
 
@@ -671,7 +671,6 @@ static void cmd_statusbar_additem_modifyitem(const char *data, void *server, voi
 /* SYNTAX: STATUSBAR REMOVEITEM <item> <statusbar> */
 static void cmd_statusbar_removeitem(const char *data, void *server, void *witem)
 {
-	CONFIG_REC *config, *close_config;
 	CONFIG_NODE *node;
 	char *item, *statusbar;
 	void *free_arg;
