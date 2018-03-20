@@ -460,8 +460,6 @@ static int server_remove_channels(SERVER_REC *server)
 
 void server_disconnect(SERVER_REC *server)
 {
-	int chans;
-
 	g_return_if_fail(IS_SERVER(server));
 
 	if (server->disconnected)
@@ -480,21 +478,9 @@ void server_disconnect(SERVER_REC *server)
 	server->disconnected = TRUE;
 	signal_emit("server disconnected", 1, server);
 
-	/* close all channels */
-	chans = server_remove_channels(server);
-
-	if (server->handle != NULL) {
-		if (!chans || server->connection_lost)
-			net_sendbuffer_destroy(server->handle, TRUE);
-		else {
-			/* we were on some channels, try to let the server
-			   disconnect so that our quit message is guaranteed
-			   to get displayed */
-			net_disconnect_later(net_sendbuffer_handle(server->handle));
-			net_sendbuffer_destroy(server->handle, FALSE);
-		}
-		server->handle = NULL;
-	}
+	/* we used to destroy the handle here but it may be still in
+	   use during signal processing, so destroy it on unref
+	   instead */
 
 	if (server->readtag > 0) {
 		g_source_remove(server->readtag);
@@ -513,6 +499,8 @@ void server_ref(SERVER_REC *server)
 
 int server_unref(SERVER_REC *server)
 {
+	int chans;
+
 	g_return_val_if_fail(IS_SERVER(server), FALSE);
 
 	if (--server->refcount > 0)
@@ -522,6 +510,29 @@ int server_unref(SERVER_REC *server)
 		g_warning("Non-referenced server wasn't disconnected");
 		server_disconnect(server);
 		return TRUE;
+	}
+
+	/* close all channels */
+	chans = server_remove_channels(server);
+
+	/* since module initialisation uses server connected, only let
+	   them know that the object got destroyed if the server was
+	   disconnected */
+	if (server->disconnected) {
+		signal_emit("server destroyed", 1, server);
+	}
+
+	if (server->handle != NULL) {
+		if (!chans || server->connection_lost)
+			net_sendbuffer_destroy(server->handle, TRUE);
+		else {
+			/* we were on some channels, try to let the server
+			   disconnect so that our quit message is guaranteed
+			   to get displayed */
+			net_disconnect_later(net_sendbuffer_handle(server->handle));
+			net_sendbuffer_destroy(server->handle, FALSE);
+		}
+		server->handle = NULL;
 	}
 
         MODULE_DATA_DEINIT(server);
