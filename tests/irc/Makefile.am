@@ -1,1 +1,3 @@
-SUBDIRS = core
+SUBDIRS = \
+	core \
+	flood

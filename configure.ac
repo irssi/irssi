@@ -669,6 +669,7 @@ tests/fe-common/Makefile
 tests/fe-common/core/Makefile
 tests/irc/Makefile
 tests/irc/core/Makefile
+tests/irc/flood/Makefile
 docs/Makefile
 docs/help/Makefile
 docs/help/in/Makefile
