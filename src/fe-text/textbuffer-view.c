@@ -913,11 +913,14 @@ void textbuffer_view_resize(TEXT_BUFFER_VIEW_REC *view, int width, int height)
 	} else if (view->startline == view->bottom_startline &&
 		   view->subline > view->bottom_subline) {
                 view->subline = view->bottom_subline;
-	} else {
+	} else if (view->startline != NULL) {
 		/* make sure the subline is still in allowed range */
 		linecount = view_get_linecount(view, view->startline);
 		if (view->subline > linecount)
                         view->subline = linecount;
+	} else {
+		/* we don't have a startline. still under construction? */
+		view->subline = 0;
 	}
 
 	textbuffer_view_init_ypos(view);

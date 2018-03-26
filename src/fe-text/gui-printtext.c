@@ -120,11 +120,18 @@ void gui_printtext_internal(int xpos, int ypos, const char *str)
 	next_xpos = next_ypos = -1;
 }
 
+static void view_add_eol(TEXT_BUFFER_VIEW_REC *view, LINE_REC **line);
+
 void gui_printtext_after_time(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str, time_t time)
 {
 	GUI_WINDOW_REC *gui;
 
 	gui = WINDOW_GUI(dest->window);
+
+	if (prev == NULL && !gui->view->buffer->last_eol) {
+		/* we have an unfinished line in the buffer still */
+		view_add_eol(gui->view, &gui->insert_after);
+	}
 
 	gui->use_insert_after = TRUE;
 	gui->insert_after = prev;
@@ -249,9 +256,26 @@ static void view_add_eol(TEXT_BUFFER_VIEW_REC *view, LINE_REC **line)
 	textbuffer_view_insert_line(view, *line);
 }
 
+static void print_text_no_window(int flags, int fg, int bg, int attr, const char *str)
+{
+	g_return_if_fail(next_xpos != -1);
+
+	term_set_color2(root_window, attr, fg, bg);
+
+	term_move(root_window, next_xpos, next_ypos);
+	if (flags & GUI_PRINT_FLAG_CLRTOEOL) {
+		if (clrtoeol_info->window != NULL) {
+			term_window_clrtoeol_abs(clrtoeol_info->window, next_ypos);
+		} else {
+			term_clrtoeol(root_window);
+		}
+	}
+	next_xpos += term_addstr(root_window, str);
+}
+
 static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 			       void *bgcolor, void *pflags,
-			       char *str, TEXT_DEST_REC *dest)
+			       const char *str, TEXT_DEST_REC *dest)
 {
         GUI_WINDOW_REC *gui;
         TEXT_BUFFER_VIEW_REC *view;
@@ -265,19 +289,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	get_colors(flags, &fg, &bg, &attr);
 
 	if (window == NULL) {
-		g_return_if_fail(next_xpos != -1);
-
-		term_set_color2(root_window, attr, fg, bg);
-
-		term_move(root_window, next_xpos, next_ypos);
-		if (flags & GUI_PRINT_FLAG_CLRTOEOL) {
-			if (clrtoeol_info->window != NULL) {
-				term_window_clrtoeol_abs(clrtoeol_info->window, next_ypos);
-			} else {
-				term_clrtoeol(root_window);
-			}
-		}
-		next_xpos += term_addstr(root_window, str);
+		print_text_no_window(flags, fg, bg, attr, str);
 		return;
 	}
 
