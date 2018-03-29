@@ -31,19 +31,16 @@ addons:
 
 before_install:
     - perl -V
-    - wget https://otr.cypherpunks.ca/libotr-4.1.1.tar.gz
-    - tar zxf libotr-*.tar.gz
-    - cd libotr-*
-    - ./configure --prefix $HOME/otr-prefix && make && make install
-    - cd ..
-    - ./autogen.sh --with-proxy --with-bot --with-perl=module --with-otr=yes --with-libotr-prefix=$HOME/otr-prefix/lib --with-libotr-inc-prefix=$HOME/otr-prefix/include
+    - wget https://github.com/irssi-import/libotr/releases/download/4.1.1/travis-trusty-libotr-4.1.1.tar.gz
+    - tar zxf travis-trusty-libotr*.tar.gz -C $HOME
+    - ./autogen.sh --with-proxy --with-bot --with-perl=module --with-otr=yes --with-libotr-prefix=$HOME/otr-build/lib --with-libotr-inc-prefix=$HOME/otr-build/include
     - make dist
     - cd ..
     - tar xaf */irssi-*.tar.*
     - cd irssi-*
 
 install:
-    - ./configure --with-proxy --with-bot --with-perl=module --with-otr=yes --with-libotr-prefix=$HOME/otr-prefix/lib --with-libotr-inc-prefix=$HOME/otr-prefix/include --prefix=$HOME/irssi-build
+    - ./configure --with-proxy --with-bot --with-perl=module --with-otr=yes --with-libotr-prefix=$HOME/otr-build/lib --with-libotr-inc-prefix=$HOME/otr-build/include --prefix=$HOME/irssi-build
       $( $UNITTESTS && echo --enable-always-build-tests )
     - make CFLAGS="-Wall -Werror -Werror=declaration-after-statement"
     - make install
