@@ -79,7 +79,7 @@ static void sig_server_sendmsg(SERVER_REC *server, const char *target,
 /*
  * Pipes all incoming private messages through OTR
  */
-void sig_message_private(SERVER_REC *server, const char *msg, const char *nick, const char *address)
+void sig_message_private(SERVER_REC *server, const char *msg, const char *nick, const char *address, const char *target)
 {
 	char *new_msg = NULL;
 
@@ -91,7 +91,7 @@ void sig_message_private(SERVER_REC *server, const char *msg, const char *nick, 
 
 	if (new_msg == NULL) {
 		/* This message was not OTR */
-		signal_continue(4, server, msg, nick, address);
+		signal_continue(5, server, msg, nick, address, target);
 	} else {
 		/*
 		 * Check for /me IRC marker and if so, handle it so the user does not
@@ -103,7 +103,7 @@ void sig_message_private(SERVER_REC *server, const char *msg, const char *nick, 
 			signal_emit("message irc action", 5, server, new_msg + OTR_IRC_MARKER_ME_LEN, nick, address, nick);
 		} else {
 			/* OTR received message */
-			signal_continue(4, server, new_msg, nick, address);
+			signal_continue(5, server, new_msg, nick, address, target);
 		}
 	}
 

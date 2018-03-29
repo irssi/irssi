@@ -24,6 +24,6 @@
 #include "common.h"
 #include "servers.h"
 
-void sig_message_private(SERVER_REC *server, const char *msg, const char *nick, const char *address);
+void sig_message_private(SERVER_REC *server, const char *msg, const char *nick, const char *address, const char *target);
 
 #endif /* IRSSI_OTR_MODULE */
