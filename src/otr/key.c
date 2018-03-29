@@ -43,9 +43,10 @@
  */
 enum key_gen_status {
 	KEY_GEN_IDLE		= 0,
-	KEY_GEN_RUNNING		= 1,
-	KEY_GEN_FINISHED	= 2,
-	KEY_GEN_ERROR		= 3,
+	KEY_GEN_STARTED		= 1,
+	KEY_GEN_RUNNING		= 2,
+	KEY_GEN_FINISHED	= 3,
+	KEY_GEN_ERROR		= 4,
 };
 
 /*
@@ -208,6 +209,7 @@ void key_gen_run(struct otr_user_state *ustate, const char *account_name)
 	/* Make sure the pointer does not go away during the proess. */
 	key_gen_state.account_name = strdup(account_name);
 	key_gen_state.ustate = ustate;
+	key_gen_state.status = KEY_GEN_STARTED;
 
 	/* Creating key file path. */
 	key_gen_state.key_file_path = file_path_build(OTR_KEYFILE);
