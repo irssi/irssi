@@ -36,6 +36,8 @@ GIOChannel *g_io_channel_new(int handle);
 /* Returns 1 if IPADDRs are the same. */
 /* Deprecated since it is unused. It will be deleted in a later release. */
 int net_ip_compare(IPADDR *ip1, IPADDR *ip2) G_GNUC_DEPRECATED;
+int g_io_channel_write_block(GIOChannel *channel, void *data, int len);
+int g_io_channel_read_block(GIOChannel *channel, void *data, int len);
 
 int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip);
 
