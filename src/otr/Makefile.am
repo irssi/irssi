@@ -21,7 +21,7 @@ libotr_core_la_LIBADD = $(OTR_LDFLAGS)
 
 otr_sources = \
 	key.c \
-	module.c \
+	otr-module.c \
 	otr-formats.c \
 	otr-ops.c \
 	otr-fe.c \
