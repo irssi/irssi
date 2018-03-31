@@ -1,7 +1,7 @@
 
 OTR %|[OPTION]
 
-Command to control the OTR module. Without an option, this help is printed.
+Command to control the OTR module. Without an option, /OTR INFO is printed.
 
 This help contains three sections which are %9options, quickstart and files.%n
 
