@@ -67,6 +67,7 @@ FORMAT_REC gui_text_formats[] =
 	{ "statusbar_info_item_footer", "", 0 },
 	{ "statusbar_info_item_name",  "%#         : $[35]0 $[9]1 $2", 3, { 0, 1, 0 } },
 	{ "statusbar_not_found", "Statusbar doesn't exist: $0", 1, { 0 } },
+	{ "statusbar_not_found", "Statusbar is disabled: $0", 1, { 0 } },
 	{ "statusbar_item_not_found", "Statusbar item doesn't exist: $0", 1, { 0 } },
 	{ "statusbar_unknown_command", "Unknown statusbar command: $0", 1, { 0 } },
 	{ "statusbar_unknown_type", "Statusbar type must be 'window' or 'root'", 1, { 0 } },
