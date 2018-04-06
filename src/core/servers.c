@@ -426,6 +426,7 @@ int server_start_connect(SERVER_REC *server)
 				    server_connect_callback_readpipe,
 				    server);
 
+		server->connect_time = time(NULL);
 		lookup_servers = g_slist_append(lookup_servers, server);
 
 		signal_emit("server looking", 1, server);
