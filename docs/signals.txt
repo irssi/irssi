@@ -132,6 +132,8 @@ irc-servers.c:
 irc-cap.c
  "server cap ack "<cmd>, SERVER_REC
  "server cap nak "<cmd>, SERVER_REC
+ "server cap new "<cmd>, SERVER_REC
+ "server cap delete "<cmd>, SERVER_REC
  "server cap end", SERVER_REC
 
 sasl.c
