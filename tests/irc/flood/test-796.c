@@ -165,7 +165,9 @@ int main(int argc, char **argv)
 		   server_destroy_flood_set_up, test_server_destroy_flood,
 		   server_destroy_flood_tear_down);
 
+#if GLIB_CHECK_VERSION(2,38,0)
 	g_test_set_nonfatal_assertions();
+#endif
 
 	core_preinit(*argv);
 	irssi_gui = IRSSI_GUI_NONE;
