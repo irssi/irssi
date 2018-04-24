@@ -27,6 +27,7 @@ real_sources = \
 	fe-common-irc.c \
 	fe-whois.c \
 	fe-sasl.c \
+	fe-cap.c \
 	irc-completion.c \
 	module-formats.c 
 

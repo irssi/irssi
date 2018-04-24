@@ -135,6 +135,7 @@ irc-cap.c
  "server cap new "<cmd>, SERVER_REC
  "server cap delete "<cmd>, SERVER_REC
  "server cap end", SERVER_REC
+ "server cap req", SERVER_REC, char *caps
 
 sasl.c
  "server sasl failure", SERVER_REC, char *reason

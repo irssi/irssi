@@ -48,11 +48,17 @@ int cap_toggle (IRC_SERVER_REC *server, char *cap, int enable)
 		if (!g_hash_table_lookup_extended(server->cap_supported, cap, NULL, NULL))
 			return FALSE;
 
+		signal_emit("server cap req", 2, server, cap);
 		irc_send_cmdv(server, "CAP REQ %s", cap);
 		return TRUE;
 	}
 	else if (!enable && gslist_find_string(server->cap_active, cap)) {
-		irc_send_cmdv(server, "CAP REQ -%s", cap);
+		char *negcap = g_strdup_printf("-%s", cap);
+
+		signal_emit("server cap req", 2, server, negcap);
+		irc_send_cmdv(server, "CAP REQ %s", negcap);
+
+		g_free(negcap);
 		return TRUE;
 	}
 
@@ -194,10 +200,12 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 				server->cap_queue = NULL;
 
 				/* If the server doesn't support any cap we requested close the negotiation here */
-				if (avail_caps > 0)
+				if (avail_caps > 0) {
+					signal_emit("server cap req", 2, server, cmd->str + sizeof("CAP REQ :") - 1);
 					irc_send_cmd_now(server, cmd->str);
-				else
+				} else {
 					cap_finish_negotiation(server);
+				}
 
 				g_string_free(cmd, TRUE);
 			}
