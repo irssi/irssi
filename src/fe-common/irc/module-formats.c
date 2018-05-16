@@ -46,6 +46,13 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "setupserver_footer", "", 0 },
 	{ "sasl_success", "SASL authentication succeeded", 0 },
 	{ "sasl_error", "Cannot authenticate via SASL ($0)", 1, { 0 } },
+	{ "cap_req",  "Capabilities requested: $0", 1, { 0 } },
+	{ "cap_ls",   "Capabilities supported: $0", 1, { 0 } },
+	{ "cap_ack",  "Capabilities acknowledged: $0", 1, { 0 } },
+	{ "cap_nak",  "Capabilities refused: $0", 1, { 0 } },
+	{ "cap_list", "Capabilities currently enabled: $0", 1, { 0 } },
+	{ "cap_new",  "Capabilities now available: $0", 1, { 0 } },
+	{ "cap_del",  "Capabilities removed: $0", 1, { 0 } },
 
 	/* ---- */
 	{ NULL, "Channels", 0 },

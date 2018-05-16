@@ -72,6 +72,9 @@ void fe_whois_deinit(void);
 void fe_sasl_init(void);
 void fe_sasl_deinit(void);
 
+void fe_cap_init(void);
+void fe_cap_deinit(void);
+
 void irc_completion_init(void);
 void irc_completion_deinit(void);
 
@@ -95,6 +98,7 @@ void fe_common_irc_init(void)
 	fe_netjoin_init();
         fe_whois_init();
 	fe_sasl_init();
+	fe_cap_init();
         irc_completion_init();
 
 	settings_check();
@@ -121,6 +125,7 @@ void fe_common_irc_deinit(void)
 	fe_netjoin_deinit();
         fe_whois_deinit();
 	fe_sasl_deinit();
+	fe_cap_deinit();
         irc_completion_deinit();
 
 	theme_unregister();

@@ -111,6 +111,21 @@ static int server_reconnect_timeout(void)
 		}
 	}
 
+	for (tmp = lookup_servers; tmp != NULL; tmp = next) {
+		SERVER_REC *server = tmp->data;
+
+		next = tmp->next;
+		if (server->connect_time + connect_timeout < now &&
+		    connect_timeout > 0) {
+			if (server->connect_tag != -1) {
+				g_source_remove(server->connect_tag);
+				server->connect_tag = -1;
+			}
+			server->connection_lost = TRUE;
+			server_connect_failed(server, "Timeout");
+		}
+	}
+
 	/* If server_connect() removes the next reconnection in queue,
 	   we're screwed. I don't think this should happen anymore, but just
 	   to be sure we don't crash, do this safely. */
