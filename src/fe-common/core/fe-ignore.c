@@ -157,7 +157,8 @@ static void cmd_ignore(const char *data)
 		g_strsplit(chanarg, ",", -1);
 
 	rec = ignore_find_full(servertag, mask, patternarg, channels,
-			  IGNORE_FIND_PATTERN | ((level & MSGLEVEL_NO_ACT) ? IGNORE_FIND_NOACT : 0));
+			  IGNORE_FIND_PATTERN | ((level & MSGLEVEL_NO_ACT) ? IGNORE_FIND_NOACT : 0) |
+			  ((level & MSGLEVEL_HIDDEN) ? IGNORE_FIND_HIDDEN : 0));
 	new_ignore = rec == NULL;
 
 	if (rec == NULL) {
@@ -175,6 +176,12 @@ static void cmd_ignore(const char *data)
 
 	if (rec->level == MSGLEVEL_NO_ACT) {
 		/* If only NO_ACT was specified add all levels; it makes no
+		 * sense on its own. */
+		rec->level |= MSGLEVEL_ALL;
+	}
+
+	if (rec->level == MSGLEVEL_HIDDEN) {
+		/* If only HIDDEN was specified add all levels; it makes no
 		 * sense on its own. */
 		rec->level |= MSGLEVEL_ALL;
 	}
