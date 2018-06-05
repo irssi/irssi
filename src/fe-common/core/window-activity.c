@@ -125,7 +125,7 @@ static void read_settings(void)
 	hide_targets = *targets == '\0' ? NULL :
 		g_strsplit(targets, " ", -1);
 
-	hide_level = MSGLEVEL_NEVER | MSGLEVEL_NO_ACT |
+	hide_level = MSGLEVEL_NEVER | MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN |
 		settings_get_level("activity_hide_level");
 	msg_level = settings_get_level("activity_msg_level");
 	hilight_level = MSGLEVEL_HILIGHT |
