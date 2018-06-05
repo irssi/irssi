@@ -204,6 +204,9 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	if (ignore_check(server, nick, address, target, msg, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
+	if (ignore_check(server, nick, address, target, msg, level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
+
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
 
@@ -262,6 +265,9 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 
 	if (ignore_check(server, nick, address, NULL, msg, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
+
+	if (ignore_check(server, nick, address, NULL, msg, level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
 
 	if (own) {
 		printformat(server, target, level,
@@ -358,6 +364,9 @@ static void sig_message_join(SERVER_REC *server, const char *channel,
 	if (ignore_check(server, nick, address, channel, NULL, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
+	if (ignore_check(server, nick, address, channel, NULL, level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
+
 	printformat(server, channel, level,
 		    TXT_JOIN, nick, address, channel);
 }
@@ -370,6 +379,9 @@ static void sig_message_part(SERVER_REC *server, const char *channel,
 
 	if (ignore_check(server, nick, address, channel, NULL, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
+
+	if (ignore_check(server, nick, address, channel, NULL, level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
 
 	printformat(server, channel, level,
 		    TXT_PART, nick, address, channel, reason);
@@ -389,6 +401,9 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 
 	if (ignore_check(server, nick, address, NULL, reason, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
+
+	if (ignore_check(server, nick, address, NULL, reason, level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
 
 	print_channel = NULL;
 	once = settings_get_bool("show_quit_once");
@@ -411,6 +426,9 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 
 		if (ignore_check(server, nick, address, rec->visible_name, reason, MSGLEVEL_NO_ACT))
 			level |= MSGLEVEL_NO_ACT;
+
+		if (ignore_check(server, nick, address, rec->visible_name, reason, MSGLEVEL_HIDDEN))
+			level |= MSGLEVEL_HIDDEN;
 
 		if (print_channel == NULL ||
 		    active_win->active == (WI_ITEM_REC *) rec)
@@ -461,6 +479,9 @@ static void sig_message_kick(SERVER_REC *server, const char *channel,
 	if (ignore_check(server, kicker, address, channel, reason, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
+	if (ignore_check(server, kicker, address, channel, reason, level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
+
 	printformat(server, channel, level,
 		    TXT_KICK, nick, channel, kicker, reason, address);
 }
@@ -481,6 +502,9 @@ static void print_nick_change_channel(SERVER_REC *server, const char *channel,
 
 	if (!(level & MSGLEVEL_NO_ACT) && ignore_check(server, oldnick, address, channel, newnick, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
+
+	if (!(level & MSGLEVEL_HIDDEN) && ignore_check(server, oldnick, address, channel, newnick, level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
 
 	printformat(server, channel, level,
 		    ownnick ? TXT_YOUR_NICK_CHANGED : TXT_NICK_CHANGED,
@@ -560,6 +584,9 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 
 	if (ignore_check(server, nick, address, channel, topic, level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
+
+	if (ignore_check(server, nick, address, channel, topic, level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
 
 	printformat(server, channel, level,
 		    *topic != '\0' ? TXT_NEW_TOPIC : TXT_TOPIC_UNSET,
