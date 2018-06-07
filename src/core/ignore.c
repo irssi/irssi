@@ -81,10 +81,11 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
  * used as a flag to indicate it should only look at ignore items with NO_ACT.
  * However we also want to allow NO_ACT combined with levels, so mask it out and
  * match levels if set. */
+#define FLAG_MSGLEVELS ( MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN )
 #define ignore_match_level(rec, level) \
-        (((level & (MSGLEVEL_NO_ACT|MSGLEVEL_HIDDEN)) != 0) ? \
-         ((~(MSGLEVEL_NO_ACT|MSGLEVEL_HIDDEN) & level) & (rec)->level) != 0 : \
-         ((rec)->level & (MSGLEVEL_NO_ACT|MSGLEVEL_HIDDEN) ? 0 : \
+        (((level & FLAG_MSGLEVELS)!= 0) ? \
+         ((~FLAG_MSGLEVELS & level) & (rec)->level) != 0 : \
+         ((rec)->level & FLAG_MSGLEVELS ? 0 : \
          (level & (rec)->level) != 0))
 
 #define ignore_match_nickmask(rec, nick, nickmask) \
