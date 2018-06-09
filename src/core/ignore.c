@@ -83,7 +83,7 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
  * match levels if set. */
 #define FLAG_MSGLEVELS ( MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN )
 #define ignore_match_level(rec, level) \
-        (((level & FLAG_MSGLEVELS)!= 0) ? \
+        (((level & FLAG_MSGLEVELS) != 0) ? \
          ((~FLAG_MSGLEVELS & level) & (rec)->level) != 0 : \
          ((rec)->level & FLAG_MSGLEVELS ? 0 : \
          (level & (rec)->level) != 0))
