@@ -96,6 +96,10 @@ static void sig_message_dcc(CHAT_DCC_REC *dcc, const char *msg)
 				level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
+	if (ignore_check(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
+				level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
+
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
 			       level, NULL);
 
@@ -118,6 +122,10 @@ static void sig_message_dcc_action(CHAT_DCC_REC *dcc, const char *msg)
 				level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
+	if (ignore_check(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
+				level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
+
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
 			       level, NULL);
 
@@ -138,6 +146,10 @@ static void sig_message_dcc_ctcp(CHAT_DCC_REC *dcc, const char *cmd,
 	if (ignore_check(SERVER(dcc->server), tag, dcc->addrstr, NULL, cmd,
 				level | MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
+
+	if (ignore_check(SERVER(dcc->server), tag, dcc->addrstr, NULL, cmd,
+				level | MSGLEVEL_HIDDEN))
+		level |= MSGLEVEL_HIDDEN;
 
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
 			       level, NULL);
