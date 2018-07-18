@@ -842,7 +842,7 @@ int irssi_ssl_handshake(GIOChannel *handle)
 				return -1;
 			case SSL_ERROR_SYSCALL:
 				errstr = ERR_reason_error_string(ERR_get_error());
-				if (errstr == NULL && ret == -1)
+				if (errstr == NULL && ret == -1 && errno)
 					errstr = strerror(errno);
 				g_warning("SSL handshake failed: %s", errstr != NULL ? errstr : "server closed connection unexpectedly");
 				return -1;
