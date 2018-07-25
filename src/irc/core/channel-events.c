@@ -126,23 +126,25 @@ static void channel_change_topic(IRC_SERVER_REC *server, const char *channel,
 
 	chanrec = channel_find(SERVER(server), channel);
 	if (chanrec == NULL) return;
+
+	g_free_and_null(chanrec->topic);
+	g_free_and_null(chanrec->topic_by);
+	chanrec->topic_time = 0;
+
 	/* the topic may be sent out encoded, so we need to
 	   recode it back or /topic <tab> will not work properly */
 	recoded = recode_in(SERVER(server), topic, channel);
-	if (topic != NULL) {
-		g_free_not_null(chanrec->topic);
-		chanrec->topic = recoded == NULL ? NULL : g_strdup(recoded);
+	if (recoded == NULL || strlen(recoded) == 0) {
+		signal_emit("channel topic changed", 1, chanrec);
+		g_free(recoded);
+		return;
 	}
-	g_free(recoded);
 
-	g_free_not_null(chanrec->topic_by);
+	chanrec->topic = recoded;
 	chanrec->topic_by = g_strdup(setby);
-
-	if (chanrec->topic_by == NULL) {
+	if (chanrec->topic_by != NULL) {
 		/* ensure invariant topic_time > 0 <=> topic_by != NULL.
 		   this could be triggered by a topic command without sender */
-		chanrec->topic_time = 0;
-	} else {
 		chanrec->topic_time = settime;
 	}
 
