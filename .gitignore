@@ -59,6 +59,7 @@ tests/irc/core/test-irc.trs
 *.la
 *.lo
 *.o
+*.swp
 *~
 
 *.tar.bz2
