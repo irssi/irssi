@@ -126,7 +126,7 @@ static void channel_change_topic(IRC_SERVER_REC *server, const char *channel,
 
 	chanrec = channel_find(SERVER(server), channel);
 	if (chanrec == NULL) return;
-	/* the topic may be send out encoded, so we need to
+	/* the topic may be sent out encoded, so we need to
 	   recode it back or /topic <tab> will not work properly */
 	recoded = recode_in(SERVER(server), topic, channel);
 	if (topic != NULL) {
