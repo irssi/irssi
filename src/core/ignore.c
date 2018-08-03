@@ -86,7 +86,8 @@ static int ignore_match_level(IGNORE_REC *rec, int level)
 {
 	if (level & FLAG_MSGLEVELS) {
 		int flaglevel = level & FLAG_MSGLEVELS;
-		return (level & rec->level) && (flaglevel & rec->level);
+		int msglevel = level & ~FLAG_MSGLEVELS;
+		return (msglevel & rec->level) && (flaglevel & rec->level);
 	} else if (!(rec->level & FLAG_MSGLEVELS)) {
 		return (level & rec->level);
 	} else {
