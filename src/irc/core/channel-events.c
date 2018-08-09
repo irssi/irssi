@@ -28,6 +28,9 @@
 #include "irc-servers.h"
 #include "irc-channels.h"
 
+static void set_topic_info(CHANNEL_REC *const, char const *const,
+		time_t const);
+
 static void check_join_failure(IRC_SERVER_REC *server, const char *channel)
 {
 	CHANNEL_REC *chanrec;
@@ -141,14 +144,36 @@ static void channel_change_topic(IRC_SERVER_REC *server, const char *channel,
 	}
 
 	chanrec->topic = recoded;
+	set_topic_info(chanrec, setby, settime);
+
+	signal_emit("channel topic changed", 1, chanrec);
+}
+
+static void channel_change_topic_info(IRC_SERVER_REC *server,
+				 const char *channel, const char *setby, time_t settime)
+{
+	CHANNEL_REC *chanrec;
+
+	chanrec = channel_find(SERVER(server), channel);
+	if (chanrec == NULL) return;
+
+	g_free_and_null(chanrec->topic_by);
+	chanrec->topic_time = 0;
+
+	set_topic_info(chanrec, setby, settime);
+
+	signal_emit("channel topic changed", 1, chanrec);
+}
+
+static void set_topic_info(CHANNEL_REC *const chanrec, char const *const setby,
+		time_t const settime)
+{
 	chanrec->topic_by = g_strdup(setby);
 	if (chanrec->topic_by != NULL) {
 		/* ensure invariant topic_time > 0 <=> topic_by != NULL.
 		   this could be triggered by a topic command without sender */
 		chanrec->topic_time = settime;
 	}
-
-	signal_emit("channel topic changed", 1, chanrec);
 }
 
 static void event_topic_get(IRC_SERVER_REC *server, const char *data)
@@ -188,7 +213,7 @@ static void event_topic_info(IRC_SERVER_REC *server, const char *data)
 				  &topicby, &topictime);
 
 	t = (time_t) atol(topictime);
-	channel_change_topic(server, channel, NULL, topicby, t);
+	channel_change_topic_info(server, channel, topicby, t);
 	g_free(params);
 }
 
