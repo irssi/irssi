@@ -51,8 +51,23 @@ src/perl/*/Makefile.old
 src/fe-fuzz/crash-*
 src/fe-fuzz/oom-*
 
-tests/irc/core/test-irc
-tests/irc/core/test-irc.trs
+/core
+/tests/fe-common/core/test-formats
+/tests/fe-common/core/test-formats.log
+/tests/fe-common/core/test-formats.trs
+/tests/fe-common/core/test-suite.log
+/tests/irc/core/core
+/tests/irc/core/test-channel-events
+/tests/irc/core/test-channel-events.log
+/tests/irc/core/test-channel-events.trs
+/tests/irc/core/test-irc
+/tests/irc/core/test-irc.log
+/tests/irc/core/test-irc.trs
+/tests/irc/core/test-suite.log
+/tests/irc/flood/test-796
+/tests/irc/flood/test-796.log
+/tests/irc/flood/test-796.trs
+/tests/irc/flood/test-suite.log
 
 *.a
 *.bs
