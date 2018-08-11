@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "misc.h"
+#include "channel-events.h"
 #include "channels-setup.h"
 #include "settings.h"
 #include "recode.h"
@@ -176,7 +177,7 @@ static void set_topic_info(CHANNEL_REC *const chanrec, char const *const setby,
 	}
 }
 
-static void event_topic_get(IRC_SERVER_REC *server, const char *data)
+void event_topic_get(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *topic;
 
@@ -187,7 +188,7 @@ static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_topic(IRC_SERVER_REC *server, const char *data,
+void event_topic(IRC_SERVER_REC *server, const char *data,
 			const char *nick, const char *addr)
 {
 	char *params, *channel, *topic, *mask;
@@ -202,7 +203,7 @@ static void event_topic(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 }
 
-static void event_topic_info(IRC_SERVER_REC *server, const char *data)
+void event_topic_info(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *topicby, *topictime;
 	time_t t;
