@@ -73,10 +73,20 @@ const char *get_irssi_dir(void)
         return irssi_dir;
 }
 
+void set_irssi_dir(char *const s)
+{
+	irssi_dir = s;
+}
+
 /* return full path for ~/.irssi/config */
 const char *get_irssi_config(void)
 {
         return irssi_config_file;
+}
+
+void set_irssi_config(char *const s)
+{
+	irssi_config_file = s;
 }
 
 static void sig_reload_config(int signo)
