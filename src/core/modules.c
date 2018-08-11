@@ -289,8 +289,9 @@ void modules_deinit(void)
 
 	while (list != NULL) {
 		module_uniq_destroy(list->data);
-		g_free(list->data);
+		gconstpointer tmp = list->data;
 		list = g_slist_remove(list, list->data);
+		g_free(tmp);
 	}
 
 	g_hash_table_destroy(idlookup);
