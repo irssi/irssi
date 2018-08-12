@@ -304,6 +304,7 @@ int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 	int save_errno;
 	char *tmp_name;
 	const char *dest_name;
+	char *real_dest = NULL;
 
 	g_return_val_if_fail(rec != NULL, -1);
         g_return_val_if_fail(fname != NULL || rec->fname != NULL, -1);
@@ -349,7 +350,15 @@ int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 	g_io_channel_unref(rec->handle);
 	rec->handle = NULL;
 
-	if (rename(tmp_name, dest_name) == -1) {
+	/* expand all symlinks; else we may replace a symlink with a regular file */
+	real_dest = realpath(dest_name, NULL);
+	if (real_dest == NULL) {
+		unlink(tmp_name);
+		config_error(rec, g_strerror(errno));
+		goto out;
+	}
+
+	if (rename(tmp_name, real_dest) == -1) {
 		unlink(tmp_name);
 		config_error(rec, g_strerror(errno));
 		goto out;
@@ -362,6 +371,7 @@ out:
 	}
 
 	g_free(tmp_name);
+	g_free(real_dest);
 
 	return ret;
 }
