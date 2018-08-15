@@ -1,6 +1,6 @@
 SUBDIRS = irc fe-common
 
-bin_PROGRAMS = irssi-fuzz
+bin_PROGRAMS = irssi-fuzz server-fuzz
 
 # Force link with CXX for libfuzzer support
 CCLD=$(CXX) $(CXXFLAGS)
@@ -21,7 +21,18 @@ irssi_fuzz_LDADD = \
 
 irssi_fuzz_SOURCES = \
         irssi.c \
-	$(top_srcdir)/src/fe-text/module-formats.c
+	../fe-text/module-formats.c
+
+server_fuzz_DEPENDENCIES = @COMMON_LIBS@
+
+server_fuzz_LDADD = \
+	@COMMON_LIBS@ \
+	@PROG_LIBS@ \
+	$(FUZZER_LIBS)
+
+server_fuzz_SOURCES = \
+	server.c \
+	../fe-text/module-formats.c
 
 noinst_HEADERS = \
-	$(top_srcdir)/src/fe-text/module-formats.h
+	../fe-text/module-formats.h
