@@ -1233,6 +1233,13 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 	dup = str = g_strdup(text);
 
 	flags = 0; fgcolor = theme->default_color; bgcolor = -1;
+
+	if (*str == '\0') {
+		/* empty line, write line info only */
+		signal_emit_id(signal_gui_print_text, 6, dest->window, GINT_TO_POINTER(fgcolor),
+		               GINT_TO_POINTER(bgcolor), GINT_TO_POINTER(flags), str, dest);
+	}
+
 	while (*str != '\0') {
 		type = '\0';
 		for (ptr = str; *ptr != '\0'; ptr++) {
