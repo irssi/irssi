@@ -192,7 +192,7 @@ static LINE_REC *textbuffer_line_create(TEXT_BUFFER_REC *buffer)
 	if (buffer->cur_text == NULL)
                 text_chunk_create(buffer);
 
-	rec = g_slice_new(LINE_REC);
+	rec = g_slice_new0(LINE_REC);
 	rec->text = buffer->cur_text->buffer + buffer->cur_text->pos;
 
 	buffer->cur_text->refcount++;
