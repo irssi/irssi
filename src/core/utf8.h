@@ -12,7 +12,13 @@
 typedef guint32 unichar;
 
 /* Returns width for character (0-2). */
+int i_wcwidth(unichar c);
+
+/* Older variant of the above */
 int mk_wcwidth(unichar c);
+
+/* Signature for wcwidth implementations */
+typedef int (*WCWIDTH_FUNC) (unichar ucs);
 
 /* Advance the str pointer one character further; return the number of columns
  * occupied by the skipped character.

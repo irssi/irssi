@@ -53,6 +53,7 @@ libcore_a_SOURCES = \
 	utf8.c \
 	$(regex_impl) \
 	wcwidth.c \
+	wcwidth-wrapper.c \
 	tls.c \
 	write-buffer.c
 

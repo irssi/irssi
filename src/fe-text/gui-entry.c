@@ -51,7 +51,7 @@ static unichar i_tolower(unichar c)
 static int i_isalnum(unichar c)
 {
 	if (term_type == TERM_TYPE_UTF8)
-		return (g_unichar_isalnum(c) || mk_wcwidth(c) == 0);
+		return (g_unichar_isalnum(c) || i_wcwidth(c) == 0);
 	return c <= 255 ? isalnum(c) : 0;
 }
 
@@ -219,7 +219,7 @@ static int pos2scrpos(GUI_ENTRY_REC *entry, int pos, int cursor)
 		if (term_type == TERM_TYPE_BIG5)
 			xpos += big5_width(c);
 		else if (entry->utf8)
-			xpos += unichar_isprint(c) ? mk_wcwidth(c) : 1;
+			xpos += unichar_isprint(c) ? i_wcwidth(c) : 1;
 		else
 			xpos++;
 
@@ -246,7 +246,7 @@ static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
 		if (term_type == TERM_TYPE_BIG5)
 			width = big5_width(c);
 		else if (entry->utf8)
-			width = unichar_isprint(c) ? mk_wcwidth(c) : 1;
+			width = unichar_isprint(c) ? i_wcwidth(c) : 1;
 		else
 			width = 1;
 
@@ -373,7 +373,7 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 		else if (term_type == TERM_TYPE_BIG5)
 			new_xpos += big5_width(c);
 		else if (entry->utf8)
-			new_xpos += unichar_isprint(c) ? mk_wcwidth(c) : 1;
+			new_xpos += unichar_isprint(c) ? i_wcwidth(c) : 1;
 		else
 			new_xpos++;
 
@@ -647,7 +647,7 @@ void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr)
 	if (chr == 0 || chr == 13 || chr == 10)
 		return; /* never insert NUL, CR or LF characters */
 
-	if (entry->utf8 && entry->pos == 0 && mk_wcwidth(chr) == 0)
+	if (entry->utf8 && entry->pos == 0 && i_wcwidth(chr) == 0)
 		return;
 
 	gui_entry_redraw_from(entry, entry->pos);
@@ -829,7 +829,7 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 
 	if (entry->utf8)
 		while (entry->pos-size-w > 0 &&
-		       mk_wcwidth(entry->text[entry->pos-size-w]) == 0) w++;
+		       i_wcwidth(entry->text[entry->pos-size-w]) == 0) w++;
 
 	g_memmove(entry->text + entry->pos - size, entry->text + entry->pos,
 		  (entry->text_len-entry->pos+1) * sizeof(unichar));
@@ -867,7 +867,7 @@ void gui_entry_erase_cell(GUI_ENTRY_REC *entry)
 
 	if (entry->utf8)
 		while (entry->pos+size < entry->text_len &&
-		       mk_wcwidth(entry->text[entry->pos+size]) == 0) size++;
+		       i_wcwidth(entry->text[entry->pos+size]) == 0) size++;
 
 	g_memmove(entry->text + entry->pos, entry->text + entry->pos + size,
 	          (entry->text_len-entry->pos-size+1) * sizeof(unichar));
@@ -1188,7 +1188,7 @@ void gui_entry_move_pos(GUI_ENTRY_REC *entry, int pos)
 
 	if (entry->utf8) {
 		int step = pos < 0 ? -1 : 1;
-		while(mk_wcwidth(entry->text[entry->pos]) == 0 &&
+		while(i_wcwidth(entry->text[entry->pos]) == 0 &&
 		      entry->pos + step >= 0 && entry->pos + step <= entry->text_len)
 			entry->pos += step;
 	}

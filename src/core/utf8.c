@@ -36,7 +36,7 @@ int string_advance(char const **str, int policy)
 		c = g_utf8_get_char(*str);
 		*str = g_utf8_next_char(*str);
 
-		return unichar_isprint(c) ? mk_wcwidth(c) : 1;
+		return unichar_isprint(c) ? i_wcwidth(c) : 1;
 	} else {
 		/* Assume TREAT_STRING_AS_BYTES: */
 		*str += 1;

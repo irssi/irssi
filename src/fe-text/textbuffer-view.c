@@ -197,7 +197,7 @@ static inline unichar read_unichar(const unsigned char *data, const unsigned cha
 		*width = 1;
 	} else {
 		*next = (unsigned char *)g_utf8_next_char(data);
-		*width = unichar_isprint(chr) ? mk_wcwidth(chr) : 1;
+		*width = unichar_isprint(chr) ? i_wcwidth(chr) : 1;
 	}
 	return chr;
 }
