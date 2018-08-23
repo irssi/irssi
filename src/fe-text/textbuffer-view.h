@@ -129,6 +129,8 @@ void textbuffer_view_scroll_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line);
 /* Return line cache */
 LINE_CACHE_REC *textbuffer_view_get_line_cache(TEXT_BUFFER_VIEW_REC *view,
 					       LINE_REC *line);
+/* Reset the whole line cache */
+void textbuffer_view_reset_cache(TEXT_BUFFER_VIEW_REC *view);
 
 /*
    Functions for manipulating the text buffer, using these commands update
