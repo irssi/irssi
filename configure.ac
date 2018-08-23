@@ -327,6 +327,11 @@ PKG_CHECK_MODULES([OPENSSL], [openssl], [
 ])
 
 dnl **
+dnl ** utf8proc
+dnl **
+AC_CHECK_LIB([utf8proc], [utf8proc_version])
+
+dnl **
 dnl ** curses checks
 dnl **
 
@@ -815,7 +820,7 @@ echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with true color support.. : $want_truecolor"
 echo "Building with GRegex ............. : $want_gregex"
 echo "Building with Capsicum ........... : $want_capsicum"
-
+echo "Building with utf8proc ........... : $ac_cv_lib_utf8proc_utf8proc_version"
 if test "x$want_otr" = "xstatic"; then
 	echo "Building with OTR support ........ : static (in irssi binary)"
 elif test "x$want_otr" = "xmodule"; then

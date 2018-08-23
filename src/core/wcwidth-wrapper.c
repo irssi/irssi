@@ -26,6 +26,10 @@
 #include "settings.h"
 #include "utf8.h"
 
+#ifdef HAVE_LIBUTF8PROC
+#include <utf8proc.h>
+#endif
+
 /* wcwidth=2 since unicode 5.2.0 */
 #define UNICODE_SQUARE_HIRAGANA_HOKA 0x1F200
 
@@ -35,7 +39,10 @@
 enum {
 	WCWIDTH_IMPL_AUTO = 0,
 	WCWIDTH_IMPL_OLD,
-	WCWIDTH_IMPL_SYSTEM,
+	WCWIDTH_IMPL_SYSTEM
+#ifdef HAVE_LIBUTF8PROC
+	,WCWIDTH_IMPL_JULIA
+#endif
 };
 
 WCWIDTH_FUNC wcwidth_impl_func = mk_wcwidth;
@@ -99,13 +106,23 @@ static void read_settings(void)
 	case WCWIDTH_IMPL_SYSTEM:
 		wcwidth_impl_func = &system_wcwidth;
 		break;
+
+#ifdef HAVE_LIBUTF8PROC
+	case WCWIDTH_IMPL_JULIA:
+		wcwidth_impl_func = (WCWIDTH_FUNC) &utf8proc_charwidth;
+		break;
+#endif
 	}
 
 }
 
 void wcwidth_wrapper_init(void)
 {
+#ifdef HAVE_LIBUTF8PROC
+	settings_add_choice("misc", "wcwidth_implementation", WCWIDTH_IMPL_AUTO, "auto;old;system;julia");
+#else
 	settings_add_choice("misc", "wcwidth_implementation", WCWIDTH_IMPL_AUTO, "auto;old;system");
+#endif
 
 	read_settings();
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
