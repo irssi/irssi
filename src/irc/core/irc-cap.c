@@ -276,6 +276,9 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			g_free(val);
 		}
 	}
+	else if (!g_ascii_strcasecmp(evt, "LIST")) {
+		/* do nothing, fe-cap will handle it */
+	}
 	else {
 		g_warning("Unhandled CAP subcommand %s", evt);
 	}
