@@ -37,7 +37,6 @@
 #define UNICODE_IRSSI_LOGO 0x1F525
 
 enum {
-	WCWIDTH_IMPL_AUTO = 0,
 	WCWIDTH_IMPL_OLD,
 	WCWIDTH_IMPL_SYSTEM
 #ifdef HAVE_LIBUTF8PROC
@@ -86,19 +85,6 @@ static void read_settings(void)
 	choice = newchoice;
 
 	switch (choice) {
-	case WCWIDTH_IMPL_AUTO:
-		/* Test against characters that have wcwidth=2
-		 * since unicode 5.2 and 9.0 respectively */
-
-		if (system_wcwidth(UNICODE_SQUARE_HIRAGANA_HOKA) == 2 ||
-		    system_wcwidth(UNICODE_IRSSI_LOGO) == 2) {
-			wcwidth_impl_func = &system_wcwidth;
-		} else {
-			/* Fall back to our own (which implements 5.0) */
-			wcwidth_impl_func = &mk_wcwidth;
-		}
-		break;
-
 	case WCWIDTH_IMPL_OLD:
 		wcwidth_impl_func = &mk_wcwidth;
 		break;
@@ -118,10 +104,22 @@ static void read_settings(void)
 
 void wcwidth_wrapper_init(void)
 {
+	int wcwidth_impl_default = 0;
+	/* Test against characters that have wcwidth=2
+	 * since unicode 5.2 and 9.0 respectively */
+
+	if (system_wcwidth(UNICODE_SQUARE_HIRAGANA_HOKA) == 2 ||
+	    system_wcwidth(UNICODE_IRSSI_LOGO) == 2) {
+		wcwidth_impl_default = WCWIDTH_IMPL_SYSTEM;
+	} else {
+		/* Fall back to our own (which implements 5.0) */
+		wcwidth_impl_default = WCWIDTH_IMPL_OLD;
+	}
+
 #ifdef HAVE_LIBUTF8PROC
-	settings_add_choice("misc", "wcwidth_implementation", WCWIDTH_IMPL_AUTO, "auto;old;system;julia");
+	settings_add_choice("misc", "wcwidth_implementation", wcwidth_impl_default, "old;system;julia");
 #else
-	settings_add_choice("misc", "wcwidth_implementation", WCWIDTH_IMPL_AUTO, "auto;old;system");
+	settings_add_choice("misc", "wcwidth_implementation", wcwidth_impl_default, "old;system");
 #endif
 
 	read_settings();
