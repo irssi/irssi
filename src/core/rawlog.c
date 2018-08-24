@@ -64,7 +64,7 @@ static void rawlog_add(RAWLOG_REC *rawlog, char *str)
 	if (rawlog->nlines < rawlog_lines || rawlog_lines <= 2)
 		rawlog->nlines++;
 	else {
-		gconstpointer tmp = rawlog->lines->data;
+		void *tmp = rawlog->lines->data;
 		rawlog->lines = g_slist_remove(rawlog->lines,
 					       rawlog->lines->data);
 		g_free(tmp);

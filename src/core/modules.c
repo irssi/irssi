@@ -289,7 +289,7 @@ void modules_deinit(void)
 
 	while (list != NULL) {
 		module_uniq_destroy(list->data);
-		gconstpointer tmp = list->data;
+		void *tmp = list->data;
 		list = g_slist_remove(list, list->data);
 		g_free(tmp);
 	}
