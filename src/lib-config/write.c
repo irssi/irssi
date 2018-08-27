@@ -302,14 +302,21 @@ int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 	int ret;
 	int fd;
 	int save_errno;
-	char *tmp_name;
-	const char *dest_name;
+	char *tmp_name = NULL;
+	char *dest_name = NULL;
 
 	g_return_val_if_fail(rec != NULL, -1);
         g_return_val_if_fail(fname != NULL || rec->fname != NULL, -1);
         g_return_val_if_fail(create_mode != -1 || rec->create_mode != -1, -1);
 
-	dest_name = fname != NULL ? fname : rec->fname;
+	/* expand all symlinks; else we may replace a symlink with a regular file */
+	dest_name = realpath(fname != NULL ? fname : rec->fname, NULL);
+	if (dest_name == NULL) {
+		config_error(rec, g_strerror(errno));
+		ret = -1;
+		goto out;
+	}
+
 	tmp_name = g_strdup_printf("%s.XXXXXX", dest_name);
 
 	fd = g_mkstemp_full(tmp_name,
@@ -362,6 +369,7 @@ out:
 	}
 
 	g_free(tmp_name);
+	g_free(dest_name);
 
 	return ret;
 }
