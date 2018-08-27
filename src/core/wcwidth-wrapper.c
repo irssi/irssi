@@ -71,6 +71,15 @@ static int system_wcwidth(unichar ucs)
 	return retval;
 }
 
+#ifdef HAVE_LIBUTF8PROC
+/* wrapper because the function signatures are different
+ * (the parameter is unsigned for us, signed for them) */
+static int julia_wcwidth(unichar ucs)
+{
+	return utf8proc_charwidth(ucs);
+}
+#endif
+
 static void read_settings(void)
 {
 	static int choice = -1;
@@ -95,7 +104,7 @@ static void read_settings(void)
 
 #ifdef HAVE_LIBUTF8PROC
 	case WCWIDTH_IMPL_JULIA:
-		wcwidth_impl_func = (WCWIDTH_FUNC) &utf8proc_charwidth;
+		wcwidth_impl_func = &julia_wcwidth;
 		break;
 #endif
 	}
