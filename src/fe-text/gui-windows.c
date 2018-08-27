@@ -31,7 +31,7 @@
 #include "gui-printtext.h"
 
 static int window_create_override;
-int wcwidth_impl;
+static int wcwidth_impl;
 
 static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 				       MAIN_WINDOW_REC *parent)
@@ -205,7 +205,8 @@ void gui_windows_reset_settings(void)
 {
 	GSList *tmp;
 	int old_wcwidth_impl = wcwidth_impl;
-	wcwidth_impl  = settings_get_choice("wcwidth_implementation");
+
+	wcwidth_impl = settings_get_choice("wcwidth_implementation");
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
