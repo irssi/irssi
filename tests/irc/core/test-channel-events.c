@@ -93,6 +93,7 @@ int main(int argc, char **argv)
 	set_irssi_config("/tmp/irssi/config");
 	settings_init();
 	recode_init();
+	channel_events_init();
 
 	settings_add_str("lookandfeel", "term_charset", "UTF-8");
 	recode_update_charset();
@@ -123,6 +124,7 @@ int main(int argc, char **argv)
 #endif
 	res = g_test_run();
 
+	channel_events_deinit();
 	recode_deinit();
 	settings_deinit();
 	signals_deinit();
@@ -135,7 +137,7 @@ static void test_event_topic_get(topic_test_case const *const test)
 {
 	setup();
 
-	event_topic_get(server, test->input);
+	signal_emit("event 332", 2, server, test->input);
 
 	g_assert_cmpstr(channel->topic,      ==, test->topic);
 	g_assert_cmpstr(channel->topic_by,   ==, test->topic_by);
@@ -151,7 +153,8 @@ static void test_event_topic(topic_test_case const *const test)
 	setup();
 
 	now = time(NULL);
-	event_topic(server, test->input, "newnick", "user@example.com");
+	signal_emit("event topic", 4, server, test->input, "newnick",
+			"user@example.com");
 
 	g_assert_cmpstr(channel->topic,      ==, test->topic);
 	g_assert_cmpstr(channel->topic_by,   ==, test->topic_by);
@@ -164,7 +167,7 @@ static void test_event_topic_info(topic_test_case const *const test)
 {
 	setup();
 
-	event_topic_info(server, test->input);
+	signal_emit("event 333", 2, server, test->input);
 
 	g_assert_cmpstr(channel->topic,      ==, test->topic);
 	g_assert_cmpstr(channel->topic_by,   ==, test->topic_by);
