@@ -177,7 +177,7 @@ static void set_topic_info(CHANNEL_REC *const chanrec, char const *const setby,
 	}
 }
 
-void event_topic_get(IRC_SERVER_REC *server, const char *data)
+static void event_topic_get(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *topic;
 
@@ -188,7 +188,7 @@ void event_topic_get(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-void event_topic(IRC_SERVER_REC *server, const char *data,
+static void event_topic(IRC_SERVER_REC *server, const char *data,
 			const char *nick, const char *addr)
 {
 	char *params, *channel, *topic, *mask;
@@ -203,7 +203,7 @@ void event_topic(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 }
 
-void event_topic_info(IRC_SERVER_REC *server, const char *data)
+static void event_topic_info(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *channel, *topicby, *topictime;
 	time_t t;
