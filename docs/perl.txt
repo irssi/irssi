@@ -1192,6 +1192,7 @@ Client->{}
  Bugs and Limitations
  --------------------
 * Calling die in 'script error' handler causes segfault (#101)
+* Calling "script unload" from your own script causes segfault
 * Storing and later using any Irssi object may result in use-after-free related crash
   - Workaround: always acquire fresh objects
 * Calling $dcc->close from the "dcc created" signal will cause unstable behaviour and crashes (#386)
