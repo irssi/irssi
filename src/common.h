@@ -116,4 +116,9 @@ typedef struct _CHANNEL_SETUP_REC CHANNEL_SETUP_REC;
 
 typedef struct _WINDOW_REC WINDOW_REC;
 
+#ifdef SUPPRESS_PRINTF_FALLBACK
+#define printf(fmt, ...) (0)
+#define fprintf(stream, fmt, ...) (0)
+#endif
+
 #endif
