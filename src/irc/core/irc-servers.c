@@ -224,7 +224,9 @@ static void server_init(IRC_SERVER_REC *server)
 
 	if (conn->proxy != NULL && conn->proxy_password != NULL &&
 	    *conn->proxy_password != '\0') {
-		cmd = g_strdup_printf("PASS %s", conn->proxy_password);
+		cmd = g_strdup_printf("PASS %s%s",
+			(conn->proxy_password[0] == ':' || strchr(conn->proxy_password, ' ')) ? ":" : "",
+			conn->proxy_password);
 		irc_send_cmd_now(server, cmd);
 		g_free(cmd);
 	}
@@ -244,7 +246,9 @@ static void server_init(IRC_SERVER_REC *server)
 
 	if (conn->password != NULL && *conn->password != '\0') {
                 /* send password */
-		cmd = g_strdup_printf("PASS %s", conn->password);
+		cmd = g_strdup_printf("PASS %s%s",
+			(conn->password[0] == ':' || strchr(conn->password, ' ')) ? ":" : "",
+			conn->password);
 		irc_send_cmd_now(server, cmd);
 		g_free(cmd);
 	}
