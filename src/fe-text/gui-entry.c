@@ -212,7 +212,7 @@ static int pos2scrpos(GUI_ENTRY_REC *entry, int pos, int cursor)
 		xpos += scrlen_str(entry->extents[0], entry->utf8);
 	}
 
-	for (i = 0; i < pos; i++) {
+	for (i = 0; i < entry->text_len && i < pos; i++) {
 		unichar c = entry->text[i];
 		const char *extent = entry->uses_extents ? entry->extents[i+1] : NULL;
 
@@ -226,9 +226,8 @@ static int pos2scrpos(GUI_ENTRY_REC *entry, int pos, int cursor)
 		if (extent != NULL) {
 			xpos += scrlen_str(extent, entry->utf8);
 		}
-
 	}
-	return xpos;
+	return xpos + pos - i;
 }
 
 static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
