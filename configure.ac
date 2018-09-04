@@ -373,8 +373,8 @@ if test "$want_perl" != "no"; then
 		dnl * fix those command line options a bit so GCC won't
 		dnl * complain about them. Normally there's only few options
 		dnl * that we want to keep:
-		dnl * -Ddefine -Uundef -I/path -fopt -mopt
-		PERL_CFLAGS=`echo $PERL_CFLAGS | $perlpath -pe 's/^(.* )?-@<:@^DUIfm@:>@@<:@^ @:>@+/\1/g; s/^(.* )?\+@<:@^ @:>@+/\1/g'`
+		dnl * -Ddefine -Uundef -I/path -fopt -mopt -iwithsysroot
+		PERL_CFLAGS=`echo $PERL_CFLAGS | $perlpath -pe 's/^(.* )?-@<:@^DUIifm@:>@@<:@^ @:>@+/\1/g; s/^(.* )?\+@<:@^ @:>@+/\1/g'`
 
 		PERL_EXTRA_OPTS="CCCDLFLAGS=\"-fPIC\""
 		AC_SUBST(PERL_EXTRA_OPTS)
