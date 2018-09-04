@@ -192,7 +192,7 @@ static LINE_REC *textbuffer_line_create(TEXT_BUFFER_REC *buffer)
 	if (buffer->cur_text == NULL)
                 text_chunk_create(buffer);
 
-	rec = g_slice_new(LINE_REC);
+	rec = g_slice_new0(LINE_REC);
 	rec->text = buffer->cur_text->buffer + buffer->cur_text->pos;
 
 	buffer->cur_text->refcount++;
@@ -333,8 +333,9 @@ void textbuffer_line_add_colors(TEXT_BUFFER_REC *buffer, LINE_REC **line,
 		data[pos++] = LINE_CMD_INDENT;
 	}
 
-        if (pos > 0)
+	if (pos > 0) {
 		*line = textbuffer_insert(buffer, *line, data, pos, NULL);
+	}
 
 	buffer->last_flags = flags;
 }
@@ -354,9 +355,6 @@ LINE_REC *textbuffer_insert(TEXT_BUFFER_REC *buffer, LINE_REC *insert_after,
 
 	g_return_val_if_fail(buffer != NULL, NULL);
 	g_return_val_if_fail(data != NULL, NULL);
-
-	if (len == 0)
-                return insert_after;
 
 	line = !buffer->last_eol ? insert_after :
 		textbuffer_line_insert(buffer, insert_after);
