@@ -81,11 +81,9 @@ void term_resize_dirty(void)
 	if (!term_get_size(&width, &height))
 		width = height = -1;
 
-	if (height != term_height || width != term_width) {
-		term_resize(width, height);
-		mainwindows_resize(term_width, term_height);
-		term_resize_final(width, height);
-	}
+	term_resize(width, height);
+	mainwindows_resize(term_width, term_height);
+	term_resize_final(width, height);
 }
 
 #ifdef SIGWINCH
