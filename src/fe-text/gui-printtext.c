@@ -307,9 +307,15 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	}
 	textbuffer_line_add_colors(view->buffer, &insert_after, fg, bg, flags);
 
-	insert_after = textbuffer_insert(view->buffer, insert_after,
-					 (unsigned char *) str,
-					 strlen(str), &lineinfo);
+	/* for historical reasons, the \n will set
+	   GUI_PRINT_FLAG_NEWLINE and print an empty string. in this
+	   special case, ignore the empty string which would otherwise
+	   start another new line */
+	if (~flags & GUI_PRINT_FLAG_NEWLINE || *str != '\0') {
+		insert_after = textbuffer_insert(view->buffer, insert_after, (unsigned char *) str,
+		                                 strlen(str), &lineinfo);
+	}
+
 	if (gui->use_insert_after)
                 gui->insert_after = insert_after;
 }
