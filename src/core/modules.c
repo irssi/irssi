@@ -288,9 +288,10 @@ void modules_deinit(void)
 	g_hash_table_foreach(stridlookup, (GHFunc) uniq_get_modules, &list);
 
 	while (list != NULL) {
+		void *tmp = list->data;
 		module_uniq_destroy(list->data);
-		g_free(list->data);
 		list = g_slist_remove(list, list->data);
+		g_free(tmp);
 	}
 
 	g_hash_table_destroy(idlookup);
