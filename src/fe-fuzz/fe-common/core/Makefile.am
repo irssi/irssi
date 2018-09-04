@@ -10,19 +10,6 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/fe-common/core/ \
 	$(GLIB_CFLAGS)
 
-AM_DEPENDENCIES = \
-	../../../core/libcore.a \
-	../../../lib-config/libirssi_config.a \
-	../../../irc/libirc.a \
-	../../../irc/core/libirc_core.a \
-	../../../irc/dcc/libirc_dcc.a \
-	../../../irc/flood/libirc_flood.a \
-	../../../irc/notifylist/libirc_notifylist.a \
-	../../../fe-common/core/libfe_common_core.a \
-	../../../fe-common/irc/libfe_common_irc.a \
-	../../../fe-common/irc/dcc/libfe_irc_dcc.a \
-	../../../fe-common/irc/notifylist/libfe_irc_notifylist.a
-
 LDADD = \
 	../../../irc/libirc.a \
 	../../../irc/core/libirc_core.a \
