@@ -301,9 +301,42 @@ static void sasl_disconnected(IRC_SERVER_REC *server)
 	sasl_timeout_stop(server);
 }
 
+static void sig_sasl_over(IRC_SERVER_REC *server)
+{
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	/* The negotiation has now been terminated, if we didn't manage to
+	 * authenticate successfully with the server just disconnect. */
+	if (!server->sasl_success &&
+	    server->connrec->sasl_mechanism != SASL_MECHANISM_NONE) {
+		if (server->cap_supported == NULL ||
+		    !g_hash_table_lookup_extended(server->cap_supported, "sasl", NULL, NULL)) {
+			signal_emit("server sasl failure", 2, server, "The server did not offer SASL");
+		}
+
+		if (settings_get_bool("sasl_disconnect_on_failure")) {
+			/* We can't use server_disconnect() here because we'd end up
+			 * freeing the 'server' object and be guilty of a slew of UaF. */
+			server->connection_lost = TRUE;
+			/* By setting connection_lost we make sure the communication is
+			 * halted and when the control goes back to irc_parse_incoming
+			 * the server object is safely destroyed. */
+			signal_stop();
+		}
+	}
+
+}
+
 void sasl_init(void)
 {
+	settings_add_bool("server", "sasl_disconnect_on_failure", TRUE);
+
+	signal_add_first("event 001", (SIGNAL_FUNC) sig_sasl_over);
+	/* this event can get us connected on broken ircds, see irc-servers.c */
+	signal_add_first("event 375", (SIGNAL_FUNC) sig_sasl_over);
 	signal_add_first("server cap ack sasl", (SIGNAL_FUNC) sasl_start);
+	signal_add_first("server cap end", (SIGNAL_FUNC) sig_sasl_over);
 	signal_add_first("event authenticate", (SIGNAL_FUNC) sasl_step);
 	signal_add_first("event 903", (SIGNAL_FUNC) sasl_success);
 	signal_add_first("event 902", (SIGNAL_FUNC) sasl_fail);
@@ -316,7 +349,10 @@ void sasl_init(void)
 
 void sasl_deinit(void)
 {
+	signal_remove("event 001", (SIGNAL_FUNC) sig_sasl_over);
+	signal_remove("event 375", (SIGNAL_FUNC) sig_sasl_over);
 	signal_remove("server cap ack sasl", (SIGNAL_FUNC) sasl_start);
+	signal_remove("server cap end", (SIGNAL_FUNC) sig_sasl_over);
 	signal_remove("event authenticate", (SIGNAL_FUNC) sasl_step);
 	signal_remove("event 903", (SIGNAL_FUNC) sasl_success);
 	signal_remove("event 902", (SIGNAL_FUNC) sasl_fail);
