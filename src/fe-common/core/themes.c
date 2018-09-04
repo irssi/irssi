@@ -1424,8 +1424,9 @@ void themes_reload(void)
 	change_theme(settings_get_str("theme"), FALSE);
 
 	while (refs != NULL) {
-		theme_unref(refs->data);
+		void *tmp = refs->data;
 		refs = g_slist_remove(refs, refs->data);
+		theme_unref(tmp);
 	}
 }
 

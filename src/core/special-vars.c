@@ -620,8 +620,8 @@ void eval_special_string(const char *cmd, const char *data,
 		/* FIXME: window item would need reference counting as well,
 		   eg. "/EVAL win close;say hello" wouldn't work now.. */
 
-		g_free(ret);
 		commands = g_slist_remove(commands, commands->data);
+		g_free(ret);
 	}
 	g_free(orig);
 }
