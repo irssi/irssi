@@ -197,7 +197,7 @@ static inline unichar read_unichar(const unsigned char *data, const unsigned cha
 		*width = 1;
 	} else {
 		*next = (unsigned char *)g_utf8_next_char(data);
-		*width = unichar_isprint(chr) ? mk_wcwidth(chr) : 1;
+		*width = unichar_isprint(chr) ? i_wcwidth(chr) : 1;
 	}
 	return chr;
 }
@@ -374,7 +374,7 @@ static void view_update_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		view->cache->last_linecount = view_get_linecount(view, line);
 }
 
-static void view_reset_cache(TEXT_BUFFER_VIEW_REC *view)
+void textbuffer_view_reset_cache(TEXT_BUFFER_VIEW_REC *view)
 {
 	GSList *tmp;
 
@@ -691,7 +691,7 @@ void textbuffer_view_set_break_wide(TEXT_BUFFER_VIEW_REC *view,
 {
 	if (view->break_wide != break_wide) {
 		view->break_wide = break_wide;
-		view_reset_cache(view);
+		textbuffer_view_reset_cache(view);
 	}
 }
 
@@ -703,7 +703,7 @@ static void view_unregister_indent_func(TEXT_BUFFER_VIEW_REC *view,
 
 	/* recreate cache so it won't contain references
 	   to the indent function */
-	view_reset_cache(view);
+	textbuffer_view_reset_cache(view);
 	view->cache = textbuffer_cache_get(view->siblings, view->width);
 }
 
@@ -1314,7 +1314,7 @@ void textbuffer_view_remove_all_lines(TEXT_BUFFER_VIEW_REC *view)
 	g_hash_table_foreach_remove(view->bookmarks,
 				    (GHRFunc) g_free_true, NULL);
 
-	view_reset_cache(view);
+	textbuffer_view_reset_cache(view);
 	textbuffer_view_clear(view);
 	g_slist_foreach(view->siblings, (GFunc) textbuffer_view_clear, NULL);
 }

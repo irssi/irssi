@@ -31,6 +31,7 @@
 #include "gui-printtext.h"
 
 static int window_create_override;
+static int wcwidth_impl;
 
 static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 				       MAIN_WINDOW_REC *parent)
@@ -51,6 +52,7 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 					   !settings_get_bool("indent_always"),
 					   get_default_indent_func());
 	textbuffer_view_set_break_wide(gui->view, settings_get_bool("break_wide"));
+	wcwidth_impl = settings_get_choice("wcwidth_implementation");
 	textbuffer_view_set_hidden_level(gui->view, MSGLEVEL_HIDDEN);
 	if (parent->active == window)
 		textbuffer_view_set_window(gui->view, parent->screen_win);
@@ -202,10 +204,17 @@ void gui_window_reparent(WINDOW_REC *window, MAIN_WINDOW_REC *parent)
 void gui_windows_reset_settings(void)
 {
 	GSList *tmp;
+	int old_wcwidth_impl = wcwidth_impl;
+
+	wcwidth_impl = settings_get_choice("wcwidth_implementation");
 
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *rec = tmp->data;
 		GUI_WINDOW_REC *gui = WINDOW_GUI(rec);
+
+		if (old_wcwidth_impl != wcwidth_impl) {
+			textbuffer_view_reset_cache(gui->view);
+		}
 
 		textbuffer_view_set_break_wide(gui->view, settings_get_bool("break_wide"));
 
@@ -217,6 +226,10 @@ void gui_windows_reset_settings(void)
 		textbuffer_view_set_scroll(gui->view,
 					   gui->use_scroll ? gui->scroll :
 					   settings_get_bool("scroll"));
+
+		if (old_wcwidth_impl != wcwidth_impl) {
+			textbuffer_view_redraw(gui->view);
+		}
 	}
 }
 

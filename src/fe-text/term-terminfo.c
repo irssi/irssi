@@ -515,7 +515,7 @@ void term_add_unichar(TERM_WINDOW *window, unichar chr)
 
 	switch (term_type) {
 	case TERM_TYPE_UTF8:
-	  	term_printed_text(unichar_isprint(chr) ? mk_wcwidth(chr) : 1);
+		term_printed_text(unichar_isprint(chr) ? i_wcwidth(chr) : 1);
                 term_addch_utf8(window, chr);
 		break;
 	case TERM_TYPE_BIG5:
@@ -558,7 +558,7 @@ int term_addstr(TERM_WINDOW *window, const char *str)
 				len++;
 				ptr++;
 			} else {
-				len += unichar_isprint(tmp) ? mk_wcwidth(tmp) : 1;
+				len += unichar_isprint(tmp) ? i_wcwidth(tmp) : 1;
 				ptr = g_utf8_next_char(ptr);
 			}
 		}
