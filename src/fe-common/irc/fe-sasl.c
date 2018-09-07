@@ -40,36 +40,14 @@ static void sig_sasl_failure(IRC_SERVER_REC *server, const char *reason)
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_SASL_ERROR, reason);
 }
 
-static void sig_cap_end(IRC_SERVER_REC *server)
-{
-	/* The negotiation has now been terminated, if we didn't manage to
-	 * authenticate successfully with the server just disconnect. */
-	if (!server->sasl_success &&
-	    server->connrec->sasl_mechanism != SASL_MECHANISM_NONE &&
-	    settings_get_bool("sasl_disconnect_on_failure")) {
-		/* We can't use server_disconnect() here because we'd end up
-		 * freeing the 'server' object and be guilty of a slew of UaF. */
-		server->connection_lost = TRUE;
-		/* By setting connection_lost we make sure the communication is
-		 * halted and when the control goes back to irc_parse_incoming
-		 * the server object is safely destroyed. */
-		signal_stop();
-	}
-
-}
-
 void fe_sasl_init(void)
 {
-	settings_add_bool("server", "sasl_disconnect_on_failure", TRUE);
-
 	signal_add("server sasl success", (SIGNAL_FUNC) sig_sasl_success);
 	signal_add("server sasl failure", (SIGNAL_FUNC) sig_sasl_failure);
-	signal_add_first("server cap end", (SIGNAL_FUNC) sig_cap_end);
 }
 
 void fe_sasl_deinit(void)
 {
 	signal_remove("server sasl success", (SIGNAL_FUNC) sig_sasl_success);
 	signal_remove("server sasl failure", (SIGNAL_FUNC) sig_sasl_failure);
-	signal_remove("server cap end", (SIGNAL_FUNC) sig_cap_end);
 }
