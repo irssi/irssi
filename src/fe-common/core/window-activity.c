@@ -75,7 +75,8 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 	WI_ITEM_REC *item;
 	int data_level;
 
-	if (dest->window == active_win || (dest->level & hide_level))
+	if (dest->window == active_win ||
+	    (dest->level & (hide_level | WINDOW_GUI(dest->window)->view->hidden_level)))
 		return;
 
 	if (dest->level & hilight_level) {
@@ -125,7 +126,7 @@ static void read_settings(void)
 	hide_targets = *targets == '\0' ? NULL :
 		g_strsplit(targets, " ", -1);
 
-	hide_level = MSGLEVEL_NEVER | MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN |
+	hide_level = MSGLEVEL_NEVER | MSGLEVEL_NO_ACT |
 		settings_get_level("activity_hide_level");
 	msg_level = settings_get_level("activity_msg_level");
 	hilight_level = MSGLEVEL_HILIGHT |
