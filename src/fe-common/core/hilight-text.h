@@ -17,6 +17,7 @@ struct _HILIGHT_REC {
 	unsigned int nick:1; /* hilight only nick if possible */
 	unsigned int word:1; /* hilight only word, not full line */
 
+	unsigned int expando:1; /* `text' contains expandos */
 	unsigned int nickmask:1; /* `text' is a nick mask */
 	unsigned int fullword:1; /* match `text' only for full words */
 	unsigned int regexp:1; /* `text' is a regular expression */
