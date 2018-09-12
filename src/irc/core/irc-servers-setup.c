@@ -30,6 +30,31 @@
 #include "irc-servers.h"
 #include "sasl.h"
 
+#include <errno.h>
+
+static void read_password_file(char *str, char **password)
+{
+	char **values = g_strsplit(str, ":", -1);
+	char *path;
+	GError *err = NULL;
+
+	if (!g_str_has_prefix(values[1], "/"))
+		path = g_strdup_printf("%s/%s", get_irssi_dir(), values[1]);
+	else
+		path = g_strdup(values[1]);
+
+	if (!g_file_get_contents(path, password, NULL, &err)) {
+		g_warning("Could not read sasl password from file: %s", (err ? err->message : "No GError set"));
+		*password = g_strdup("");
+	}
+	else
+		*password = g_strchomp(*password);
+
+	g_free(path);
+	g_strfreev(values);
+	if (err) g_error_free(err);
+}
+
 /* Fill information to connection from server setup record */
 static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
 					 IRC_SERVER_SETUP_REC *sserver)
@@ -102,7 +127,13 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 			if (ircnet->sasl_username != NULL && *ircnet->sasl_username &&
 			    ircnet->sasl_password != NULL && *ircnet->sasl_password) {
 				conn->sasl_username = ircnet->sasl_username;
-				conn->sasl_password = ircnet->sasl_password;
+				char *password = NULL;
+				if (g_str_has_prefix(ircnet->sasl_password, "file:"))
+					read_password_file(ircnet->sasl_password, &password);
+				else
+					password = g_strdup(ircnet->sasl_password);
+				conn->sasl_password = g_strdup(password);
+				g_free(password);
 			} else
 				g_warning("The fields sasl_username and sasl_password are either missing or empty");
 		}
