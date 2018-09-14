@@ -19,10 +19,10 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
-#include "levels.h"
-#include "channels-setup.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/channels-setup.h>
 
 #include "bans.h"
 #include "modes.h"

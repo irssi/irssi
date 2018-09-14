@@ -19,10 +19,10 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
 #include "notifylist.h"
 

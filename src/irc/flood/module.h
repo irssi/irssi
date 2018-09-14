@@ -1,4 +1,4 @@
-#include "common.h"
+#include <irssi/src/common.h>
 #include "irc.h"
 
 typedef struct {

@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "expandos.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/expandos.h>
 
 #include "irc.h"
 #include "irc-servers.h"
-#include "masks.h"
+#include <irssi/src/core/masks.h>
 
 #include "notifylist.h"
 

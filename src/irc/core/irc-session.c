@@ -19,10 +19,10 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "net-sendbuffer.h"
-#include "lib-config/iconfig.h"
-#include "misc.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/misc.h>
 
 #include "irc-servers.h"
 #include "irc-channels.h"

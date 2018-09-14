@@ -745,6 +745,9 @@ irssi-config
 
 AC_OUTPUT
 
+dnl ** make the paths like include headers later
+$LN_S $srcdir irssi
+
 dnl ** for building from objdir
 old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
 if test "x$old_dir" != "x$whole_dir"; then

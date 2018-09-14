@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "signals.h"
-#include "settings.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc.h"
 #include "irc-channels.h"
 #include "servers-redirect.h"
-#include "masks.h"
-#include "nicklist.h"
+#include <irssi/src/core/masks.h>
+#include <irssi/src/core/nicklist.h>
 
 #include "notifylist.h"
 #include "notify-setup.h"

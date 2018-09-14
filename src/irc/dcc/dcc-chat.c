@@ -19,17 +19,17 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "recode.h"
-#include "network.h"
-#include "net-sendbuffer.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/recode.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc-servers.h"
 #include "irc-queries.h"
-#include "masks.h"
+#include <irssi/src/core/masks.h>
 
 #include "dcc-chat.h"
 

@@ -39,13 +39,13 @@ loop:
 */
 
 #include "module.h"
-#include "misc.h"
-#include "signals.h"
-#include "settings.h"
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
 #include "modes.h"
 #include "mode-lists.h"
-#include "nicklist.h"
+#include <irssi/src/core/nicklist.h>
 #include "irc-servers.h"
 #include "irc-channels.h"
 #include "servers-redirect.h"

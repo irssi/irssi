@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "network.h"
+#include <irssi/src/core/network.h>
 
 #include "irc-masks.h"
 

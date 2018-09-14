@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "network.h"
-#include "net-sendbuffer.h"
-#include "rawlog.h"
-#include "misc.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/misc.h>
 
 #include "irc-servers.h"
 #include "irc-channels.h"

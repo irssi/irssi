@@ -18,8 +18,8 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
 
 #include "irc-cap.h"
 #include "irc-servers.h"

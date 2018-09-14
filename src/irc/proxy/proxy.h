@@ -1,9 +1,9 @@
 #ifndef PROXY_H
 #define PROXY_H
 
-#include "common.h"
+#include <irssi/src/common.h>
 
-#include "network.h"
+#include <irssi/src/core/network.h>
 #include "irc.h"
 #include "irc-servers.h"
 

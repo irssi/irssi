@@ -2,7 +2,7 @@
 #define __MODES_H
 
 #include "irc-channels.h"
-#include "nicklist.h" /* MAX_USER_PREFIXES */
+#include <irssi/src/core/nicklist.h> /* MAX_USER_PREFIXES */
 
 typedef void mode_func_t(IRC_CHANNEL_REC *, const char *, char, char,
 			 char *, GString *);

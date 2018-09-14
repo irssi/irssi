@@ -19,9 +19,9 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc-chatnets.h"
 

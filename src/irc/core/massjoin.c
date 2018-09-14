@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
 #include "irc-servers.h"
 #include "irc-channels.h"
