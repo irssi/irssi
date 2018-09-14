@@ -56,6 +56,7 @@ pkginc_fe_text_HEADERS = \
 	gui-printtext.h \
 	gui-windows.h \
 	mainwindows.h \
+	statusbar.h \
 	statusbar-item.h \
 	term.h \
 	textbuffer.h \
@@ -64,7 +65,6 @@ pkginc_fe_text_HEADERS = \
 noinst_HEADERS = \
 	gui-entry.h \
 	gui-readline.h \
-	statusbar.h \
 	statusbar-config.h \
 	terminfo-core.h \
 	module.h \
