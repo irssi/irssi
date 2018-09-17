@@ -158,12 +158,12 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	if (ignore_check(SERVER(server), nick, address, target, msg, level))
 		return;
 
-	if (ignore_check(SERVER(server), nick, address, target, msg,
-			 level | MSGLEVEL_NO_ACT))
+	if (ignore_check_flags(SERVER(server), nick, address, target, msg,
+			       level, MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
-	if (ignore_check(SERVER(server), nick, address, target, msg,
-			 level | MSGLEVEL_HIDDEN))
+	if (ignore_check_flags(SERVER(server), nick, address, target, msg,
+			       level, MSGLEVEL_HIDDEN))
 		level |= MSGLEVEL_HIDDEN;
 
 	if (server_ischannel(SERVER(server), target)) {
@@ -240,14 +240,14 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 			 msg, level))
 		return;
 
-	if (ignore_check(server, nick, address,
+	if (ignore_check_flags(server, nick, address,
 			 server_ischannel(SERVER(server), target) ? target : NULL,
-			 msg, level | MSGLEVEL_NO_ACT))
+			       msg, level, MSGLEVEL_NO_ACT))
 		level |= MSGLEVEL_NO_ACT;
 
-	if (ignore_check(server, nick, address,
+	if (ignore_check_flags(server, nick, address,
 			 server_ischannel(SERVER(server), target) ? target : NULL,
-			 msg, level | MSGLEVEL_HIDDEN))
+			       msg, level, MSGLEVEL_HIDDEN))
 		level |= MSGLEVEL_HIDDEN;
 
         if (server_ischannel(SERVER(server), target)) {

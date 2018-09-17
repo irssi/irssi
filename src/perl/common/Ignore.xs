@@ -25,6 +25,19 @@ CODE:
 OUTPUT:
 	RETVAL
 
+int
+ignore_check_flags(nick, host, channel, text, level, flags)
+	char *nick
+	char *host
+	char *channel
+	char *text
+	int level
+	int flags
+CODE:
+	RETVAL = ignore_check_flags(NULL, nick, host, channel, text, level, flags);
+OUTPUT:
+	RETVAL
+
 #*******************************
 MODULE = Irssi::Ignore  PACKAGE = Irssi::Server
 #*******************************
@@ -37,6 +50,16 @@ ignore_check(server, nick, host, channel, text, level)
 	char *channel
 	char *text
 	int level
+
+int
+ignore_check_flags(server, nick, host, channel, text, level, flags)
+	Irssi::Server server
+	char *nick
+	char *host
+	char *channel
+	char *text
+	int level
+	int flags
 
 #*******************************
 MODULE = Irssi::Ignore  PACKAGE = Irssi::Ignore  PREFIX = ignore_
