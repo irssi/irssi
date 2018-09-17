@@ -56,7 +56,7 @@ static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	WINDOW_REC *parent;
 	GUI_WINDOW_REC *gui;
-	char *default_hidelevel = settings_get_str("window_default_hidelevel");
+	const char *default_hidelevel = settings_get_str("window_default_hidelevel");
 
 	gui = WINDOW_GUI(window);
 
