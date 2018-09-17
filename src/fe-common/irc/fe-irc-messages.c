@@ -155,16 +155,8 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	level = MSGLEVEL_ACTIONS |
 		(server_ischannel(SERVER(server), target) ? MSGLEVEL_PUBLIC : MSGLEVEL_MSGS);
 
-	if (ignore_check(SERVER(server), nick, address, target, msg, level))
+	if (ignore_check_plus(SERVER(server), nick, address, target, msg, &level, TRUE))
 		return;
-
-	if (ignore_check_flags(SERVER(server), nick, address, target, msg,
-			       level, MSGLEVEL_NO_ACT))
-		level |= MSGLEVEL_NO_ACT;
-
-	if (ignore_check_flags(SERVER(server), nick, address, target, msg,
-			       level, MSGLEVEL_HIDDEN))
-		level |= MSGLEVEL_HIDDEN;
 
 	if (server_ischannel(SERVER(server), target)) {
 		item = irc_channel_find(server, target);
@@ -226,29 +218,20 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 	target = fe_channel_skip_prefix(IRC_SERVER(server), target);
 
 	if (address == NULL || *address == '\0') {
+		level = MSGLEVEL_SNOTES;
 		/* notice from server */
-		if (!ignore_check(server, nick, "",
-				  target, msg, MSGLEVEL_SNOTES)) {
-			printformat(server, target, MSGLEVEL_SNOTES,
+		if (!ignore_check_plus(server, nick, "",
+				       target, msg, &level, TRUE)) {
+			printformat(server, target, level,
 				    IRCTXT_NOTICE_SERVER, nick, msg);
 		}
                 return;
 	}
 
-	if (ignore_check(server, nick, address,
+	if (ignore_check_plus(server, nick, address,
 			 server_ischannel(SERVER(server), target) ? target : NULL,
-			 msg, level))
+			      msg, &level, TRUE))
 		return;
-
-	if (ignore_check_flags(server, nick, address,
-			 server_ischannel(SERVER(server), target) ? target : NULL,
-			       msg, level, MSGLEVEL_NO_ACT))
-		level |= MSGLEVEL_NO_ACT;
-
-	if (ignore_check_flags(server, nick, address,
-			 server_ischannel(SERVER(server), target) ? target : NULL,
-			       msg, level, MSGLEVEL_HIDDEN))
-		level |= MSGLEVEL_HIDDEN;
 
         if (server_ischannel(SERVER(server), target)) {
 		/* notice in some channel */

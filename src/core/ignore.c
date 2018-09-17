@@ -191,6 +191,22 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 	return ignore_check_flags(server, nick, host, channel, text, level, 0);
 }
 
+int ignore_check_plus(SERVER_REC *server, const char *nick, const char *address,
+		      const char *target, const char *msg, int *level, int test_ignore) {
+	int olevel = *level;
+
+	if (test_ignore && ignore_check(server, nick, address, target, msg, olevel))
+		return TRUE;
+
+	if (ignore_check_flags(server, nick, address, target, msg, olevel, MSGLEVEL_NO_ACT))
+		*level |= MSGLEVEL_NO_ACT;
+
+	if (ignore_check_flags(server, nick, address, target, msg, olevel, MSGLEVEL_HIDDEN))
+		*level |= MSGLEVEL_HIDDEN;
+
+	return FALSE;
+}
+
 IGNORE_REC *ignore_find_full(const char *servertag, const char *mask, const char *pattern,
 		char **channels, const int flags)
 {

@@ -27,6 +27,8 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 		 const char *channel, const char *text, int level);
 int ignore_check_flags(SERVER_REC *server, const char *nick, const char *host,
 		       const char *channel, const char *text, int level, int flags);
+int ignore_check_plus(SERVER_REC *server, const char *nick, const char *host,
+		      const char *channel, const char *text, int *level, int test_ignore);
 
 enum {
 	IGNORE_FIND_PATTERN = 0x01, /* Match the pattern */

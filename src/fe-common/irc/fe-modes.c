@@ -166,17 +166,9 @@ static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
 
 	if (nick == NULL) nick = server->real_address;
 
-	if (ignore_check(SERVER(server), nick, addr, channel,
-			 mode, MSGLEVEL_MODES))
+	if (ignore_check_plus(SERVER(server), nick, addr, channel,
+			      mode, &level, TRUE))
 		return;
-
-	if (ignore_check_flags(SERVER(server), nick, addr, channel,
-			       mode, MSGLEVEL_MODES, MSGLEVEL_NO_ACT))
-		level |= MSGLEVEL_NO_ACT;
-
-	if (ignore_check_flags(SERVER(server), nick, addr, channel,
-			       mode, MSGLEVEL_MODES, MSGLEVEL_HIDDEN))
-		level |= MSGLEVEL_HIDDEN;
 
 	if (!server_ischannel(SERVER(server), channel)) {
 		/* user mode change */

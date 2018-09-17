@@ -92,13 +92,8 @@ static void sig_message_dcc(CHAT_DCC_REC *dcc, const char *msg)
 	tag = g_strconcat("=", dcc->id, NULL);
 	query = query_find(NULL, tag);
 
-	if (ignore_check_flags(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
-			       level, MSGLEVEL_NO_ACT))
-		level |= MSGLEVEL_NO_ACT;
-
-	if (ignore_check_flags(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
-			       level, MSGLEVEL_HIDDEN))
-		level |= MSGLEVEL_HIDDEN;
+	ignore_check_plus(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
+			  &level, FALSE);
 
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
 			       level, NULL);
@@ -118,13 +113,8 @@ static void sig_message_dcc_action(CHAT_DCC_REC *dcc, const char *msg)
 	tag = g_strconcat("=", dcc->id, NULL);
 	query = query_find(NULL, tag);
 
-	if (ignore_check_flags(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
-			       level, MSGLEVEL_NO_ACT))
-		level |= MSGLEVEL_NO_ACT;
-
-	if (ignore_check_flags(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
-			       level, MSGLEVEL_HIDDEN))
-		level |= MSGLEVEL_HIDDEN;
+	ignore_check_plus(SERVER(dcc->server), tag, dcc->addrstr, NULL, msg,
+			  &level, FALSE);
 
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
 			       level, NULL);
@@ -143,13 +133,8 @@ static void sig_message_dcc_ctcp(CHAT_DCC_REC *dcc, const char *cmd,
 
 	tag = g_strconcat("=", dcc->id, NULL);
 
-	if (ignore_check_flags(SERVER(dcc->server), tag, dcc->addrstr, NULL, cmd,
-			       level, MSGLEVEL_NO_ACT))
-		level |= MSGLEVEL_NO_ACT;
-
-	if (ignore_check_flags(SERVER(dcc->server), tag, dcc->addrstr, NULL, cmd,
-			       level, MSGLEVEL_HIDDEN))
-		level |= MSGLEVEL_HIDDEN;
+	ignore_check_plus(SERVER(dcc->server), tag, dcc->addrstr, NULL, cmd,
+			  &level, FALSE);
 
 	format_create_dest_tag(&dest, dcc->server, dcc->servertag, tag,
 			       level, NULL);
