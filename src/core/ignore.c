@@ -87,7 +87,7 @@ static int ignore_match_level(IGNORE_REC *rec, int level, int flags)
 	level &= ~FLAG_MSGLEVELS;
 	flags &= FLAG_MSGLEVELS;
 
-	return ((flags & rec->level) == flags) && ((level & rec->level) != 0);
+	return ((FLAG_MSGLEVELS & rec->level) == flags) && ((level & rec->level) != 0);
 }
 
 #define ignore_match_nickmask(rec, nick, nickmask) \
