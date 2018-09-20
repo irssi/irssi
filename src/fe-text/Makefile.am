@@ -53,20 +53,20 @@ irssi_SOURCES = \
 
 pkginc_fe_textdir=$(pkgincludedir)/src/fe-text
 pkginc_fe_text_HEADERS = \
-	statusbar-item.h
+	gui-printtext.h \
+	gui-windows.h \
+	mainwindows.h \
+	statusbar.h \
+	statusbar-item.h \
+	term.h \
+	textbuffer.h \
+	textbuffer-view.h
 
 noinst_HEADERS = \
-        gui-entry.h \
-        gui-printtext.h \
-        gui-readline.h \
-        gui-windows.h \
-        mainwindows.h \
-        statusbar.h \
-        statusbar-config.h \
-	term.h \
+	gui-entry.h \
+	gui-readline.h \
+	statusbar-config.h \
 	terminfo-core.h \
-        textbuffer.h \
-        textbuffer-view.h \
 	module.h \
 	module-formats.h
 
