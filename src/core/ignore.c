@@ -87,7 +87,17 @@ static int ignore_match_level(IGNORE_REC *rec, int level, int flags)
 	level &= ~FLAG_MSGLEVELS;
 	flags &= FLAG_MSGLEVELS;
 
-	return ((FLAG_MSGLEVELS & rec->level) == flags) && ((level & rec->level) != 0);
+	if (!flags) {
+		/* case: we are not checking special flags. then, the
+		   record must not have any flags either, but it must
+		   have some of the levels */
+		return !(FLAG_MSGLEVELS & rec->level) && (level & rec->level);
+	} else {
+		 /* case: we want to test if some special flags
+		    apply. then, the record must have some of the
+		    flags and some of the levels */
+		return (flags & rec->level) && (level & rec->level);
+	}
 }
 
 #define ignore_match_nickmask(rec, nick, nickmask) \
