@@ -171,7 +171,7 @@ static int pos2scrpos(GUI_ENTRY_REC *entry, int pos)
 	int i;
 	int xpos = 0;
 
-	for (i = 0; i < pos; i++) {
+	for (i = 0; i < entry->text_len && i < pos; i++) {
 		unichar c = entry->text[i];
 
 		if (term_type == TERM_TYPE_BIG5)
@@ -181,7 +181,7 @@ static int pos2scrpos(GUI_ENTRY_REC *entry, int pos)
 		else
 			xpos++;
 	}
-	return xpos;
+	return xpos + pos - i;
 }
 
 static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
