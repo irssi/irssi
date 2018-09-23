@@ -42,7 +42,7 @@ static void sig_layout_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 			iconfig_node_set_int(node, "parent", active->refnum);
 	}
 
-	if (gui->view->hidden_level != MSGLEVEL_HIDDEN) {
+	if (gui->view->hidden_level != settings_get_level("window_default_hidelevel")) {
 		char *level = bits2level(gui->view->hidden_level);
 		iconfig_node_set_str(node, "hidelevel", level);
 		g_free(level);
@@ -56,6 +56,7 @@ static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	WINDOW_REC *parent;
 	GUI_WINDOW_REC *gui;
+	const char *default_hidelevel = settings_get_str("window_default_hidelevel");
 
 	gui = WINDOW_GUI(window);
 
@@ -66,7 +67,7 @@ static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
 	if (config_node_get_bool(node, "sticky", FALSE))
 		gui_window_set_sticky(window);
 
-	textbuffer_view_set_hidden_level(gui->view, level2bits(config_node_get_str(node, "hidelevel", "HIDDEN"), NULL));
+	textbuffer_view_set_hidden_level(gui->view, level2bits(config_node_get_str(node, "hidelevel", default_hidelevel), NULL));
 
 	if (config_node_get_str(node, "scroll", NULL) != NULL) {
 		gui->use_scroll = TRUE;

@@ -53,7 +53,7 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 					   get_default_indent_func());
 	textbuffer_view_set_break_wide(gui->view, settings_get_bool("break_wide"));
 	wcwidth_impl = settings_get_choice("wcwidth_implementation");
-	textbuffer_view_set_hidden_level(gui->view, MSGLEVEL_HIDDEN);
+	textbuffer_view_set_hidden_level(gui->view, settings_get_level("window_default_hidelevel"));
 	if (parent->active == window)
 		textbuffer_view_set_window(gui->view, parent->screen_win);
 	return gui;
@@ -303,6 +303,7 @@ void gui_windows_init(void)
 	settings_add_bool("lookandfeel", "indent_always", FALSE);
 	settings_add_bool("lookandfeel", "break_wide", FALSE);
 	settings_add_bool("lookandfeel", "scroll", TRUE);
+	settings_add_level("lookandfeel", "window_default_hidelevel", "HIDDEN");
 
 	window_create_override = MAIN_WINDOW_TYPE_NONE;
 
