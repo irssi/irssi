@@ -541,6 +541,8 @@ static void cmd_window_item_goto(const char *data, SERVER_REC *server)
 		item = tmp == NULL ? NULL : tmp->data;
 	} else {
 		item = window_item_find_window(active_win, server, target);
+		if (item == NULL)
+			item = window_item_find_window(active_win, NULL, target);
 	}
 
         if (item != NULL)
