@@ -82,16 +82,21 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
  * However we also want to allow NO_ACT combined with levels, so mask it out and
  * match levels if set. */
 #define FLAG_MSGLEVELS ( MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN )
-static int ignore_match_level(IGNORE_REC *rec, int level)
+static int ignore_match_level(IGNORE_REC *rec, int level, int flags)
 {
-	if (level & FLAG_MSGLEVELS) {
-		int flaglevel = level & FLAG_MSGLEVELS;
-		int msglevel = level & ~FLAG_MSGLEVELS;
-		return (msglevel & rec->level) && (flaglevel & rec->level);
-	} else if (!(rec->level & FLAG_MSGLEVELS)) {
-		return (level & rec->level);
+	level &= ~FLAG_MSGLEVELS;
+	flags &= FLAG_MSGLEVELS;
+
+	if (!flags) {
+		/* case: we are not checking special flags. then, the
+		   record must not have any flags either, but it must
+		   have some of the levels */
+		return !(FLAG_MSGLEVELS & rec->level) && (level & rec->level);
 	} else {
-		return FALSE;
+		 /* case: we want to test if some special flags
+		    apply. then, the record must have some of the
+		    flags and some of the levels */
+		return (flags & rec->level) && (level & rec->level);
 	}
 }
 
@@ -109,7 +114,7 @@ static int ignore_match_level(IGNORE_REC *rec, int level)
 	((rec)->channels == NULL || ((channel) != NULL && \
 		strarray_find((rec)->channels, (channel)) != -1))
 
-static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text, int level)
+static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text, int level, int flags)
 {
 	GSList *tmp;
 
@@ -121,7 +126,7 @@ static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text, int leve
 		IGNORE_REC *rec = tmp->data;
 
 		if (rec->mask != NULL && rec->replies &&
-		    ignore_match_level(rec, level) &&
+		    ignore_match_level(rec, level, flags) &&
 		    ignore_match_channel(rec, chanrec->name) &&
 		    ignore_check_replies_rec(rec, chanrec, text))
 			return TRUE;
@@ -130,8 +135,8 @@ static int ignore_check_replies(CHANNEL_REC *chanrec, const char *text, int leve
 	return FALSE;
 }
 
-int ignore_check(SERVER_REC *server, const char *nick, const char *host,
-		 const char *channel, const char *text, int level)
+int ignore_check_flags(SERVER_REC *server, const char *nick, const char *host,
+		       const char *channel, const char *text, int level, int flags)
 {
 	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
@@ -167,7 +172,7 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 				ignore_match_channel(rec, channel) &&
 				ignore_match_nickmask(rec, nick, nickmask);
 		if (match &&
-		    ignore_match_level(rec, level) &&
+		    ignore_match_level(rec, level, flags) &&
 		    ignore_match_pattern(rec, text)) {
 			len = rec->mask == NULL ? 0 : strlen(rec->mask);
 			if (len > best_mask) {
@@ -188,7 +193,28 @@ int ignore_check(SERVER_REC *server, const char *nick, const char *host,
 	if (best_match || (level & MSGLEVEL_PUBLIC) == 0)
 		return best_match;
 
-        return ignore_check_replies(chanrec, text, level);
+        return ignore_check_replies(chanrec, text, level, flags);
+}
+
+int ignore_check(SERVER_REC *server, const char *nick, const char *host,
+		 const char *channel, const char *text, int level) {
+	return ignore_check_flags(server, nick, host, channel, text, level, 0);
+}
+
+int ignore_check_plus(SERVER_REC *server, const char *nick, const char *address,
+		      const char *target, const char *msg, int *level, int test_ignore) {
+	int olevel = *level;
+
+	if (test_ignore && ignore_check(server, nick, address, target, msg, olevel))
+		return TRUE;
+
+	if (ignore_check_flags(server, nick, address, target, msg, olevel, MSGLEVEL_NO_ACT))
+		*level |= MSGLEVEL_NO_ACT;
+
+	if (ignore_check_flags(server, nick, address, target, msg, olevel, MSGLEVEL_HIDDEN))
+		*level |= MSGLEVEL_HIDDEN;
+
+	return FALSE;
 }
 
 IGNORE_REC *ignore_find_full(const char *servertag, const char *mask, const char *pattern,

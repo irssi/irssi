@@ -162,19 +162,21 @@ static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
 			     const char *nick, const char *addr,
 			     const char *mode)
 {
+	int level = MSGLEVEL_MODES;
+
 	if (nick == NULL) nick = server->real_address;
 
-	if (ignore_check(SERVER(server), nick, addr, channel,
-			 mode, MSGLEVEL_MODES))
+	if (ignore_check_plus(SERVER(server), nick, addr, channel,
+			      mode, &level, TRUE))
 		return;
 
 	if (!server_ischannel(SERVER(server), channel)) {
 		/* user mode change */
-		printformat(server, NULL, MSGLEVEL_MODES,
+		printformat(server, NULL, level,
 			    IRCTXT_USERMODE_CHANGE, mode, channel);
 	} else if (addr == NULL) {
 		/* channel mode changed by server */
-		printformat(server, channel, MSGLEVEL_MODES,
+		printformat(server, channel, level,
 			    IRCTXT_SERVER_CHANMODE_CHANGE,
 			    channel, mode, nick);
 	} else {
@@ -187,7 +189,7 @@ static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
 		if (chanrec != NULL && g_ascii_strcasecmp(nick, server->nick) != 0)
 			msg_multi_mode(chanrec, nick, addr, mode);
 		else {
-			printformat(server, channel, MSGLEVEL_MODES,
+			printformat(server, channel, level,
 				    IRCTXT_CHANMODE_CHANGE,
 				    channel, mode, nick, addr);
 		}
