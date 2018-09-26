@@ -285,8 +285,13 @@ static MAIN_WINDOW_REC *mainwindows_find_lower(MAIN_WINDOW_REC *window)
 	MAIN_WINDOW_REC *best;
 	GSList *tmp;
 
+	/* unfortunate special case: if the window has been resized
+	   and there is not enough room, the last_line could become
+	   smaller than the first_line, sending us in an infinite
+	   loop */
 	if (window != NULL)
-		last_line = window->last_line;
+		last_line =
+		    window->last_line > window->first_line ? window->last_line : window->first_line;
 	else
 		last_line = -1;
 
