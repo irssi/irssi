@@ -93,7 +93,7 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 	}
 
 	/* we should ask the text view if this line is hidden */
-	signal_emit_id(signal_window_hilight_check, 5, dest, msg, &data_level, &cb_ignore);
+	signal_emit_id(signal_window_hilight_check, 4, dest, msg, &data_level, &cb_ignore);
 	if (cb_ignore) {
 		return;
 	}
