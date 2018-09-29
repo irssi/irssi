@@ -525,7 +525,7 @@ static void gui_windows_remove_parent(MAIN_WINDOW_REC *window)
 	}
 }
 
-void mainwindow_destroy(MAIN_WINDOW_REC *window)
+static void mainwindow_destroy_full(MAIN_WINDOW_REC *window, int respace)
 {
 	g_return_if_fail(window != NULL);
 
@@ -536,7 +536,7 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 
 	if (mainwindows != NULL) {
 		gui_windows_remove_parent(window);
-		if (!quitting) {
+		if (respace) {
 			mainwindows_add_space(window);
 			mainwindows_redraw();
 		}
@@ -547,12 +547,14 @@ void mainwindow_destroy(MAIN_WINDOW_REC *window)
 	if (active_mainwin == window) active_mainwin = NULL;
 }
 
+void mainwindow_destroy(MAIN_WINDOW_REC *window)
+{
+	mainwindow_destroy_full(window, !quitting);
+}
+
 void mainwindow_destroy_half(MAIN_WINDOW_REC *window)
 {
-	int really_quitting = quitting;
-	quitting = TRUE;
-	mainwindow_destroy(window);
-	quitting = really_quitting;
+	mainwindow_destroy_full(window, FALSE);
 }
 
 void mainwindows_redraw(void)
@@ -824,6 +826,12 @@ void mainwindows_resize(int width, int height)
 		/* algorithm: shrink windows starting from bottom,
 		   destroy windows starting from top if no room */
 		mainwindows_resize_smaller(ydiff);
+	}
+
+	/* if we lost our active mainwin, get a new one */
+	if (active_mainwin == NULL && !quitting) {
+		active_mainwin = WINDOW_MAIN(active_win);
+		window_set_active(active_mainwin->active);
 	}
 
 	signal_emit("terminal resized", 0);
