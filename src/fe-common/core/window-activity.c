@@ -34,7 +34,7 @@
 #include "fe-common-core.h"
 
 static char **hide_targets;
-static int hide_level, msg_level, hilight_level;
+static int hide_level, msg_level, hilight_level, signal_window_hilight_check;
 
 void window_activity(WINDOW_REC *window, int data_level,
 		     const char *hilight_color)
@@ -74,6 +74,7 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 {
 	WI_ITEM_REC *item;
 	int data_level;
+	int cb_ignore = 0;
 
 	if (dest->window == active_win || (dest->level & hide_level))
 		return;
@@ -89,6 +90,12 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 		/* check for both target and tag/target */
 		if (strarray_find_dest(hide_targets, dest))
 			return;
+	}
+
+	/* we should ask the text view if this line is hidden */
+	signal_emit_id(signal_window_hilight_check, 5, dest, msg, &data_level, &cb_ignore);
+	if (cb_ignore) {
+		return;
 	}
 
 	if (dest->target != NULL) {
@@ -125,7 +132,7 @@ static void read_settings(void)
 	hide_targets = *targets == '\0' ? NULL :
 		g_strsplit(targets, " ", -1);
 
-	hide_level = MSGLEVEL_NEVER | MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN |
+	hide_level = MSGLEVEL_NEVER | MSGLEVEL_NO_ACT |
 		settings_get_level("activity_hide_level");
 	msg_level = settings_get_level("activity_msg_level");
 	hilight_level = MSGLEVEL_HILIGHT |
@@ -138,6 +145,7 @@ void window_activity_init(void)
 	settings_add_level("lookandfeel", "activity_hide_level", "");
 	settings_add_level("lookandfeel", "activity_msg_level", "PUBLIC");
 	settings_add_level("lookandfeel", "activity_hilight_level", "MSGS DCCMSGS");
+	signal_window_hilight_check = signal_get_uniq_id("window hilight check");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_hilight_text);

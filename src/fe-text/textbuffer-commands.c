@@ -30,6 +30,8 @@
 #include "printtext.h"
 #include "gui-windows.h"
 
+static int activity_hide_window_hidelevel;
+
 /* SYNTAX: CLEAR [-all] [<refnum>] */
 static void cmd_clear(const char *data)
 {
@@ -373,8 +375,32 @@ static void sig_away_changed(SERVER_REC *server)
 	}
 }
 
+static void sig_window_hilight_check(TEXT_DEST_REC *dest, char *msg, int *data_level, int *ignore)
+{
+	GUI_WINDOW_REC *gui;
+
+	g_return_if_fail(dest != NULL);
+	g_return_if_fail(ignore != NULL);
+
+	if (*ignore != 0 || !activity_hide_window_hidelevel || dest->window == NULL)
+		return;
+
+	gui = WINDOW_GUI(dest->window);
+
+	if (dest->level & gui->view->hidden_level) {
+		*ignore = TRUE;
+	}
+}
+
+static void read_settings(void)
+{
+	activity_hide_window_hidelevel = settings_get_bool("activity_hide_window_hidelevel");
+}
+
 void textbuffer_commands_init(void)
 {
+	settings_add_bool("lookandfeel", "activity_hide_window_hidelevel", TRUE);
+
 	command_bind("clear", NULL, (SIGNAL_FUNC) cmd_clear);
 	command_bind("window scroll", NULL, (SIGNAL_FUNC) cmd_window_scroll);
 	command_bind("window hidelevel", NULL, (SIGNAL_FUNC) cmd_window_hidelevel);
@@ -390,7 +416,10 @@ void textbuffer_commands_init(void)
 	command_set_options("scrollback clear", "all");
 	command_set_options("scrollback levelclear", "all -level");
 
+	read_settings();
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_add("away mode changed", (SIGNAL_FUNC) sig_away_changed);
+	signal_add("window hilight check", (SIGNAL_FUNC) sig_window_hilight_check);
 }
 
 void textbuffer_commands_deinit(void)
@@ -406,5 +435,7 @@ void textbuffer_commands_deinit(void)
 	command_unbind("scrollback end", (SIGNAL_FUNC) cmd_scrollback_end);
 	command_unbind("scrollback status", (SIGNAL_FUNC) cmd_scrollback_status);
 
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_remove("away mode changed", (SIGNAL_FUNC) sig_away_changed);
+	signal_remove("window hilight check", (SIGNAL_FUNC) sig_window_hilight_check);
 }

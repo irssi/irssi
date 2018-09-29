@@ -286,6 +286,7 @@ themes.c:
 
 window-activity.c:
  "window hilight", WINDOW_REC
+ "window hilight check", TEXT_DEST_REC, char *msg, int *data_level, int *should_ignore
  "window dehilight", WINDOW_REC
  "window activity", WINDOW_REC, int old_level
  "window item hilight", WI_ITEM_REC
