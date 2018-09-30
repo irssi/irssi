@@ -46,16 +46,16 @@ void printtext_deinit(void);
 	printformat_module_dest(MODULE_NAME, dest, ##formatnum)
 #  define printformat_gui(formatnum...) \
 	printformat_module_gui(MODULE_NAME, ##formatnum)
-#elif defined (_ISOC99_SOURCE)
+#elif __STDC_VERSION__ >= 199901L
 /* C99 */
 #  define printformat(server, target, level, formatnum, ...) \
-	printformat_module(MODULE_NAME, server, target, level, formatnum, __VA_ARGS__)
+	printformat_module(MODULE_NAME, server, target, level, formatnum, ##__VA_ARGS__)
 #  define printformat_window(window, level, formatnum, ...) \
-	printformat_module_window(MODULE_NAME, window, level, formatnum, __VA_ARGS__)
+	printformat_module_window(MODULE_NAME, window, level, formatnum, ##__VA_ARGS__)
 #  define printformat_dest(dest, formatnum, ...) \
-	printformat_module_dest(MODULE_NAME, dest, formatnum, __VA_ARGS__)
+	printformat_module_dest(MODULE_NAME, dest, formatnum, ##__VA_ARGS__)
 #  define printformat_gui(formatnum, ...) \
-	printformat_module_gui(MODULE_NAME, formatnum, __VA_ARGS__)
+	printformat_module_gui(MODULE_NAME, formatnum, ##__VA_ARGS__)
 #else
 /* inline/static */
 #ifdef G_CAN_INLINE
