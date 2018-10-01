@@ -1230,6 +1230,11 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			if (is_last == 1)
 				view->startline = NULL;
 		}
+
+		if (view->startline == line) {
+			view->startline = line->next;
+			view->subline = 0;
+		}
 	} else {
 		if (textbuffer_line_exists_after(view->bottom_startline,
 						 line)) {
@@ -1237,6 +1242,11 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 						&view->bottom_subline,
 						-linecount, FALSE);
 			view->empty_linecount += linecount-realcount;
+		}
+
+		if (view->bottom_startline == line) {
+			view->bottom_startline = view->bottom_startline->next;
+			view->bottom_subline = 0;
 		}
 
 		if (textbuffer_line_exists_after(view->startline,
