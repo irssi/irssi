@@ -77,7 +77,12 @@ static void help_category(GSList *cmdlist, int items)
 				    max_width, 6, 1, 3, &columns, &rows);
 	cmdlist = columns_sort_list(cmdlist, rows);
 
-        /* rows in last column */
+	/* if the screen is too narrow the window width may be not
+	   enough for even 1 column */
+	if (cols == 1 && columns[0] > max_width)
+		max_width = columns[0];
+
+	/* rows in last column */
 	last_col_rows = rows-(cols*rows-g_slist_length(cmdlist));
 	if (last_col_rows == 0)
                 last_col_rows = rows;
