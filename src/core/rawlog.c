@@ -41,7 +41,8 @@ RAWLOG_REC *rawlog_create(void)
 	RAWLOG_REC *rec;
 
 	rec = g_new0(RAWLOG_REC, 1);
-        return rec;
+	rec->lines = g_queue_new();
+	return rec;
 }
 
 void rawlog_destroy(RAWLOG_REC *rawlog)
