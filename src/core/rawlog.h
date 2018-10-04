@@ -5,8 +5,7 @@ struct _RAWLOG_REC {
 	int logging;
 	int handle;
 
-        int nlines;
-	GSList *lines;
+	GQueue *lines;
 };
 
 RAWLOG_REC *rawlog_create(void);

@@ -48,8 +48,8 @@ void rawlog_destroy(RAWLOG_REC *rawlog)
 {
 	g_return_if_fail(rawlog != NULL);
 
-	g_slist_foreach(rawlog->lines, (GFunc) g_free, NULL);
-	g_slist_free(rawlog->lines);
+	g_queue_foreach(rawlog->lines, (GFunc) g_free, NULL);
+	g_queue_free(rawlog->lines);
 
 	if (rawlog->logging) {
 		write_buffer_flush();
@@ -61,12 +61,8 @@ void rawlog_destroy(RAWLOG_REC *rawlog)
 /* NOTE! str must be dynamically allocated and must not be freed after! */
 static void rawlog_add(RAWLOG_REC *rawlog, char *str)
 {
-	if (rawlog->nlines < rawlog_lines || rawlog_lines <= 2)
-		rawlog->nlines++;
-	else {
-		void *tmp = rawlog->lines->data;
-		rawlog->lines = g_slist_remove(rawlog->lines,
-					       rawlog->lines->data);
+	if (rawlog->lines->length >= rawlog_lines && rawlog_lines > 0) {
+		void *tmp = g_queue_pop_tail(rawlog->lines);
 		g_free(tmp);
 	}
 
@@ -75,7 +71,7 @@ static void rawlog_add(RAWLOG_REC *rawlog, char *str)
 		write_buffer(rawlog->handle, "\n", 1);
 	}
 
-	rawlog->lines = g_slist_append(rawlog->lines, str);
+	g_queue_push_head(rawlog->lines, str);
 	signal_emit_id(signal_rawlog, 2, rawlog, str);
 }
 
@@ -105,10 +101,10 @@ void rawlog_redirect(RAWLOG_REC *rawlog, const char *str)
 
 static void rawlog_dump(RAWLOG_REC *rawlog, int f)
 {
-	GSList *tmp;
+	GList *tmp;
 	ssize_t ret = 0;
 
-	for (tmp = rawlog->lines; ret != -1 && tmp != NULL; tmp = tmp->next) {
+	for (tmp = rawlog->lines->tail; ret != -1 && tmp != NULL; tmp = tmp->prev) {
 		ret = write(f, tmp->data, strlen((char *) tmp->data));
                 if (ret != -1)
                         ret = write(f, "\n", 1);
