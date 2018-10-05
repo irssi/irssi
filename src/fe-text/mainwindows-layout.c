@@ -46,6 +46,8 @@ static void sig_layout_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 		char *level = bits2level(gui->view->hidden_level);
 		iconfig_node_set_str(node, "hidelevel", level);
 		g_free(level);
+	} else {
+		iconfig_node_set_str(node, "hidelevel", NULL);
 	}
 
 	if (gui->use_scroll)
