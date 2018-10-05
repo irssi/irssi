@@ -249,6 +249,7 @@ static void event_default_command(const char *data, void *server,
 	long diff;
 
 	cmdchars = settings_get_str("cmdchars");
+	signal_stop();
 
 	ptr = data;
 	while (*ptr != '\0' && *ptr != ' ') {
@@ -338,7 +339,7 @@ void fe_core_commands_init(void)
 
 	signal_add("send command", (SIGNAL_FUNC) event_command);
 	signal_add_last("send command", (SIGNAL_FUNC) event_command_last);
-	signal_add("default command", (SIGNAL_FUNC) event_default_command);
+	signal_add_last("default command", (SIGNAL_FUNC) event_default_command);
 	signal_add("error command", (SIGNAL_FUNC) event_cmderror);
 	signal_add("list subcommands", (SIGNAL_FUNC) event_list_subcommands);
 
