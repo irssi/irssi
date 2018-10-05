@@ -202,6 +202,23 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg,
 				   const char *target)
 {
+	if (*msg == '[') {
+		/* check if this is a cnotice */
+		char *end, *channel;
+		end = strpbrk(msg, " ,]");
+		if (end != NULL && *end == ']') {
+			channel = g_strndup(msg + 1, end - msg - 1);
+			if (server_ischannel(SERVER(server), channel)) {
+				printformat(server, channel,
+				            MSGLEVEL_NOTICES | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
+				            IRCTXT_OWN_NOTICE, target, msg);
+				g_free(channel);
+				return;
+			}
+			g_free(channel);
+			/* fall through. */
+		}
+	}
 	printformat(server, fe_channel_skip_prefix(server, target), MSGLEVEL_NOTICES |
 		    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
 		    IRCTXT_OWN_NOTICE, target, msg);
@@ -233,11 +250,28 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 			      msg, &level, TRUE))
 		return;
 
-        if (server_ischannel(SERVER(server), target)) {
+	if (server_ischannel(SERVER(server), target)) {
 		/* notice in some channel */
 		printformat(server, target, level,
 			    IRCTXT_NOTICE_PUBLIC, nick, oldtarget, msg);
 	} else {
+		if (*msg == '[') {
+			/* check if this is a cnotice */
+			char *end, *channel;
+			end = strpbrk(msg, " ,]");
+			if (end != NULL && *end == ']') {
+				channel = g_strndup(msg + 1, end - msg - 1);
+				if (server_ischannel(SERVER(server), channel)) {
+					printformat(server, channel, level, IRCTXT_NOTICE_PRIVATE,
+					            nick, address, msg);
+					g_free(channel);
+					return;
+				}
+				g_free(channel);
+				/* fall through. */
+			}
+		}
+
 		/* private notice */
 		privmsg_get_query(SERVER(server), nick, FALSE,
 				  MSGLEVEL_NOTICES);
