@@ -5,7 +5,7 @@
 #include "term.h"
 
 #define WINDOW_MIN_SIZE 2
-#define NEW_WINDOW_WIDTH 10
+#define NEW_WINDOW_WIDTH 20 /* must be >= MIN_SCREEN_WIDTH defined in term.c */
 
 #define MAIN_WINDOW_TEXT_HEIGHT(window) \
         ((window)->height-(window)->statusbar_lines)

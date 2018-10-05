@@ -252,9 +252,9 @@ MAIN_WINDOW_REC *mainwindow_create(int right)
 			}
 			g_slist_free(line);
 		} else {
-			if (MAIN_WINDOW_TEXT_WIDTH(parent) <
-			    2* NEW_WINDOW_WIDTH)
+			if (MAIN_WINDOW_TEXT_WIDTH(parent) < 2 * NEW_WINDOW_WIDTH) {
 				parent = find_window_with_room_right();
+			}
 			if (parent == NULL)
 				return NULL; /* not enough space */
 
