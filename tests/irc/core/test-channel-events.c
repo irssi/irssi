@@ -31,6 +31,7 @@
 #include <settings.h>
 #include <signals.h>
 #include <time.h>
+#include <args.h>
 
 #define MODULE_NAME "test-channel-events"
 
@@ -87,10 +88,11 @@ int main(int argc, char **argv)
 
 	g_test_init(&argc, &argv, NULL);
 
+	core_preinit(*argv);
+	irssi_gui = IRSSI_GUI_NONE;
+
 	modules_init();
 	signals_init();
-	set_irssi_dir("/tmp/irssi");
-	set_irssi_config("/tmp/irssi/config");
 	settings_init();
 	recode_init();
 	channel_events_init();
