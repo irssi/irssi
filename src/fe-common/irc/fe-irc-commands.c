@@ -305,7 +305,7 @@ static void cmd_topic(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	if (channel == NULL) return;
 
 	printformat(server, channel->visible_name, MSGLEVEL_CRAP,
-		    channel->topic == NULL ? IRCTXT_NO_TOPIC : IRCTXT_TOPIC,
+		    (channel->topic == NULL || *channel->topic == '\0') ? IRCTXT_NO_TOPIC : IRCTXT_TOPIC,
 		    channel->visible_name, channel->topic);
 
 	if (channel->topic_time > 0) {
