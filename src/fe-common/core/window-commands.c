@@ -867,9 +867,22 @@ static void cmd_foreach_window(const char *data)
 	g_free(str);
 }
 
+static void cmd_window_default_command(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
+{
+	if (!is_numeric(data, 0) ||
+	    !settings_get_bool("window_number_commands")) {
+		return;
+	}
+	signal_emit("command window refnum", 3, data, server, item);
+	signal_stop();
+}
+
 void window_commands_init(void)
 {
 	settings_add_bool("lookandfeel", "active_window_ignore_refnum", TRUE);
+	settings_add_bool("misc", "window_number_commands", TRUE);
+
+	signal_add("default command", (SIGNAL_FUNC) cmd_window_default_command);
 
 	command_bind("window", NULL, (SIGNAL_FUNC) cmd_window);
 	command_bind("window new", NULL, (SIGNAL_FUNC) cmd_window_new);
@@ -944,4 +957,6 @@ void window_commands_deinit(void)
 	command_unbind("layout save", (SIGNAL_FUNC) windows_layout_save);
 	command_unbind("layout reset", (SIGNAL_FUNC) windows_layout_reset);
 	command_unbind("foreach window", (SIGNAL_FUNC) cmd_foreach_window);
+
+	signal_remove("default command", (SIGNAL_FUNC) cmd_window_default_command);
 }
