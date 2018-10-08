@@ -199,12 +199,34 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 	g_free_not_null(freemsg);
 }
 
-static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg,
-				   const char *target)
+static char *notice_channel_context(SERVER_REC *server, const char *msg)
 {
-	printformat(server, fe_channel_skip_prefix(server, target), MSGLEVEL_NOTICES |
-		    MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-		    IRCTXT_OWN_NOTICE, target, msg);
+	if (!settings_get_bool("notice_channel_context"))
+		return NULL;
+
+	if (*msg == '[') {
+		char *end, *channel;
+		end = strpbrk(msg, " ,]");
+		if (end != NULL && *end == ']') {
+			channel = g_strndup(msg + 1, end - msg - 1);
+			if (server_ischannel(server, channel)) {
+				return channel;
+			}
+			g_free(channel);
+		}
+	}
+	return NULL;
+}
+
+static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg, const char *target)
+{
+	char *channel;
+	/* check if this is a cnotice */
+	channel = notice_channel_context((SERVER_REC *) server, msg);
+	printformat(server, channel != NULL ? channel : fe_channel_skip_prefix(server, target),
+	            MSGLEVEL_NOTICES | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT, IRCTXT_OWN_NOTICE,
+	            target, msg);
+	g_free(channel);
 }
 
 static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
@@ -233,16 +255,23 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 			      msg, &level, TRUE))
 		return;
 
-        if (server_ischannel(SERVER(server), target)) {
+	if (server_ischannel(SERVER(server), target)) {
 		/* notice in some channel */
 		printformat(server, target, level,
 			    IRCTXT_NOTICE_PUBLIC, nick, oldtarget, msg);
 	} else {
-		/* private notice */
-		privmsg_get_query(SERVER(server), nick, FALSE,
-				  MSGLEVEL_NOTICES);
-		printformat(server, nick, level,
-			    IRCTXT_NOTICE_PRIVATE, nick, address, msg);
+		char *channel;
+		/* check if this is a cnotice */
+		channel = notice_channel_context(server, msg);
+
+		if (channel == NULL) {
+			/* private notice */
+			privmsg_get_query(SERVER(server), nick, FALSE, MSGLEVEL_NOTICES);
+		}
+		printformat(server, channel == NULL ? nick : channel, level, IRCTXT_NOTICE_PRIVATE,
+		            nick, address, msg);
+
+		g_free(channel);
 	}
 }
 
@@ -268,6 +297,8 @@ static void sig_message_irc_ctcp(IRC_SERVER_REC *server, const char *cmd,
 
 void fe_irc_messages_init(void)
 {
+	settings_add_bool("misc", "notice_channel_context", TRUE);
+
         signal_add_last("message own_public", (SIGNAL_FUNC) sig_message_own_public);
         signal_add_last("message irc op_public", (SIGNAL_FUNC) sig_message_irc_op_public);
         signal_add_last("message irc own_wall", (SIGNAL_FUNC) sig_message_own_wall);
