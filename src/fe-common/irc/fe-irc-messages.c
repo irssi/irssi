@@ -201,12 +201,15 @@ static void sig_message_irc_action(IRC_SERVER_REC *server, const char *msg,
 
 static char *notice_channel_context(SERVER_REC *server, const char *msg)
 {
+	if (!settings_get_bool("notice_channel_context"))
+		return NULL;
+
 	if (*msg == '[') {
 		char *end, *channel;
 		end = strpbrk(msg, " ,]");
 		if (end != NULL && *end == ']') {
 			channel = g_strndup(msg + 1, end - msg - 1);
-			if (server_ischannel(SERVER(server), channel)) {
+			if (server_ischannel(server, channel)) {
 				return channel;
 			}
 			g_free(channel);
@@ -294,6 +297,8 @@ static void sig_message_irc_ctcp(IRC_SERVER_REC *server, const char *cmd,
 
 void fe_irc_messages_init(void)
 {
+	settings_add_bool("misc", "notice_channel_context", TRUE);
+
         signal_add_last("message own_public", (SIGNAL_FUNC) sig_message_own_public);
         signal_add_last("message irc op_public", (SIGNAL_FUNC) sig_message_irc_op_public);
         signal_add_last("message irc own_wall", (SIGNAL_FUNC) sig_message_own_wall);
