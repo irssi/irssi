@@ -1121,7 +1121,7 @@ int strip_real_length(const char *str, int len,
 		*last_color_len = -1;
 
 	while (*str != '\0') {
-		if (*str == 3) {
+		if (*str == 3) { /* mIRC color */
 			const char *mircstart = str;
 
 			if (last_color_pos != NULL)
@@ -1132,6 +1132,9 @@ int strip_real_length(const char *str, int len,
 				*last_color_len = (int) (str-mircstart);
 
 		} else if (*str == 4 && str[1] != '\0') {
+			/* We expect 4 to indicate an internal Irssi color code. However 4
+			 * also means hex color, an alternative to mIRC color codes. We
+			 * don't support those. */
 #ifdef TERM_TRUECOLOR
 			if (str[1] == FORMAT_COLOR_24 && str[2] != '\0') {
 				if (str[3] == '\0') str++;
