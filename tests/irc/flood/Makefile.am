@@ -33,8 +33,7 @@ test_796_LDADD = \
 	../../../src/fe-common/core/libfe_common_core.a \
 	../../../src/core/libcore.a \
 	../../../src/lib-config/libirssi_config.a \
-	@GLIB_LIBS@ \
-	@OPENSSL_LIBS@
+	@PROG_LIBS@
 
 test_796_SOURCES = \
 	test-796.c
