@@ -21,6 +21,7 @@
 #include "module.h"
 #include "signals.h"
 #include "misc.h"
+#include "channel-events.h"
 #include "channels-setup.h"
 #include "settings.h"
 #include "recode.h"

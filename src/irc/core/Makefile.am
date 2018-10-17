@@ -40,6 +40,7 @@ pkginc_irc_coredir=$(pkgincludedir)/src/irc/core
 pkginc_irc_core_HEADERS = \
 	bans.h \
         ctcp.h \
+	channel-events.h \
         channel-rejoin.h \
         irc.h \
         irc-channels.h \
