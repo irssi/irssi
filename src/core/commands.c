@@ -305,7 +305,7 @@ void command_runsub(const char *cmd, const char *data,
 
 	if (*data == '\0') {
                 /* no subcommand given - list the subcommands */
-		signal_emit("list subcommands", 2, cmd);
+		signal_emit("list subcommands", 1, cmd);
 		return;
 	}
 
@@ -891,7 +891,7 @@ static void parse_command(const char *command, int expand_aliases,
 	if (rec != NULL && !cmd_protocol_match(rec, server)) {
 		g_free(orig);
 
-		signal_emit("error command", 2,
+		signal_emit("error command", 1,
 			    GINT_TO_POINTER(server == NULL ?
 					    CMDERR_NOT_CONNECTED :
 					    CMDERR_ILLEGAL_PROTO));
