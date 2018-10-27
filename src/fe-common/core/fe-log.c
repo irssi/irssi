@@ -24,6 +24,7 @@
 #include "commands.h"
 #include "chat-protocols.h"
 #include "servers.h"
+#include "channels.h"
 #include "levels.h"
 #include "misc.h"
 #include "log.h"
@@ -489,7 +490,8 @@ static void autolog_open_check(TEXT_DEST_REC *dest)
 	deftarget = server ? server->nick : "unknown";
 
 	/* log only channels that have been saved to the config */
-	if (settings_get_bool("autolog_only_saved_channels") && channel_setup_find(target, server_tag) == NULL)
+	if (settings_get_bool("autolog_only_saved_channels") && IS_CHANNEL(window_item_find(server, target))
+		&& channel_setup_find(target, server_tag) == NULL)
 		return;
 
 	if (autolog_ignore_targets != NULL &&
