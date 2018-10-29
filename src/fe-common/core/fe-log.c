@@ -24,6 +24,7 @@
 #include "commands.h"
 #include "chat-protocols.h"
 #include "servers.h"
+#include "channels.h"
 #include "levels.h"
 #include "misc.h"
 #include "log.h"
@@ -40,6 +41,8 @@
 #include "themes.h"
 #include "printtext.h"
 #include "fe-common-core.h"
+
+#include "channels-setup.h"
 
 /* close autologs after 5 minutes of inactivity */
 #define AUTOLOG_INACTIVITY_CLOSE (60*5)
@@ -486,6 +489,11 @@ static void autolog_open_check(TEXT_DEST_REC *dest)
 
 	deftarget = server ? server->nick : "unknown";
 
+	/* log only channels that have been saved to the config */
+	if (settings_get_bool("autolog_only_saved_channels") && IS_CHANNEL(window_item_find(server, target))
+		&& channel_setup_find(target, server_tag) == NULL)
+		return;
+
 	if (autolog_ignore_targets != NULL &&
 	    strarray_find_dest(autolog_ignore_targets, dest))
 		return;
@@ -722,6 +730,7 @@ void fe_log_init(void)
 	settings_add_bool("log", "awaylog_colors", TRUE);
         settings_add_bool("log", "autolog", FALSE);
 	settings_add_bool("log", "autolog_colors", FALSE);
+	settings_add_bool("log", "autolog_only_saved_channels", FALSE);
         settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
 	settings_add_level("log", "autolog_level", "all -crap -clientcrap -ctcps");
         settings_add_str("log", "log_theme", "");
