@@ -3,6 +3,7 @@ man_MANS = \
 
 doc_DATA = \
 	capsicum.txt \
+	design.html \
 	design.txt \
 	formats.txt \
 	manual.txt \

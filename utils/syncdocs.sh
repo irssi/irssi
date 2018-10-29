@@ -7,6 +7,7 @@ site=https://irssi.org
 
 faq=$site/documentation/faq/
 howto=$site/documentation/startup/
+design=$site/documentation/design/
 
 # remove everything until H1 and optionally 2 DIVs before the
 # FOOTER. May need to be adjusted as the source pages change
@@ -84,6 +85,7 @@ download_it() {
 
 download_it "FAQ" "$faq" "$srcdir"/docs/faq.html
 download_it "Startup How-To" "$howto" "$srcdir"/docs/startup-HOWTO.html
+download_it "Design" "$design" "$srcdir"/docs/design.html
 
 # .html -> .txt with lynx or elinks
 echo "Documentation: html -> txt..."
@@ -100,3 +102,6 @@ cat "$srcdir"/docs/faq.html \
 cat "$srcdir"/docs/startup-HOWTO.html \
     | perl -pe "s/\\bhref=([\"\'])#.*?\\1//" \
     | LC_ALL=en_IE.utf8 $converter > "$srcdir"/docs/startup-HOWTO.txt
+
+cat "$srcdir"/docs/design.html \
+    | LC_ALL=en_IE.utf8 $converter > "$srcdir"/docs/design.txt

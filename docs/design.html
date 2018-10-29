@@ -1,0 +1,166 @@
+<base href='https://irssi.org/documentation/design/'>
+<h1>Design</h1>
+
+<p>Irssi’s hierarchy is something like this:</p>
+
+<pre class="repl" id="fig1"><code class="language-ascidia">
+        sub1 sub2
+           \ /
+      xxx  IRC       COMMON ICQ  yyy
+       |    |           |    |    |
+       '----+-----:-----+----+----'
+                  |
+                 GUI (gtk/gnome, qt/kde, text, none)
+                  |
+        sub1 sub2 |
+           \ /    |
+      xxx  IRC    |  COMMON ICQ  yyy
+       '----+-----+-----+----+----'
+                  |
+              COMMON UI
+                  |
+        sub1 sub2 |
+           \ /    |
+      xxx  IRC    |    ICQ  yyy
+       |    |     |     |    |
+       '----+-----+-----+----'
+                  |
+                CORE
+                /
+       lib-config
+
+</code></pre>
+
+<p>(IRC, ICQ, xxx and yyy are chat protocols ..)</p>
+
+<p>(sub1 and sub2 are submodules of IRC module, like DCC and flood protect)</p>
+
+<p>Chat protocols and frontends are kept in separate modules. Common UI
+and GUI modules also have the common parts which don’t know anything
+about the chat protocols. This should allow implementing modules to
+whatever chat protocols and with whatever frontends easily.</p>
+
+<h2 id="signals">Signals</h2>
+
+<p>Communication between different modules are done with “signals”. They are
+not related to UNIX signals in any way, you could more like think of them
+as “events” - which might be a better name for them, but I don’t really
+want to change it anymore :)</p>
+
+<p>So, you send signal with <code>signal_emit()</code> and it’s sent to all modules that
+have grabbed it by calling <code>signal_add()</code> in their init function. For
+example:</p>
+
+<div><div><pre><code>signal_emit("mysignal", 1, "hello");
+</code></pre></div></div>
+
+<p>Sends a “mysignal” function with one argument “hello” - before that, you
+should have grabbed the signal somewhere else with:</p>
+
+<div><div><pre><code>static void sig_mysignal(const char *arg1)
+{
+  /* arg1 contains "hello" */
+}
+
+signal_add("mysignal", (SIGNAL_FUNC) sig_mysignal);
+</code></pre></div></div>
+
+<p>There are three different <code>signal_add()</code> functions which you can use to
+specify if you want to grab the signal first, “normally” or last. You can
+also stop the signal from going any further.</p>
+
+<p>Emitting signal with it’s name creates a small overhead since it has to
+look up the signal’s numeric ID first, after which it looks up the signal
+structure. This is done because if you call a signal <em>really</em> often,
+it’s faster to find it with it’s numeric ID instead of the string. You
+can use <code>signal_get_uniq_id()</code> macro to convert the signal name into ID -
+you’ll have to do this only once! - and use <code>signal_emit_id()</code> to emit the
+signal. Don’t bother to do this unless your signal is sent (or could be
+sent) several times in a second.</p>
+
+<p>See <code>src/core/signals.h</code> for definition of the signal function, and
+signals.txt for a list of signals.</p>
+
+<h2 id="lib-config">lib-config</h2>
+
+<p>Irssi depends on this for reading and saving configuration.
+(created by me for irssi)</p>
+
+<h2 id="core-module">CORE module</h2>
+
+<p>Provides some functionality that all other modules can use:</p>
+<ul>
+  <li>signal handling</li>
+  <li>keeping list of settings</li>
+  <li>keeping list of /commands</li>
+  <li>keeping track of loaded modules</li>
+  <li>networking functions (with nonblocking connects, IPv6 support)</li>
+  <li>handles connecting to servers</li>
+  <li>raw logging of server’s input/output data</li>
+  <li>/EVAL support</li>
+  <li>fgets() like function line_split() without any maximum line limits</li>
+  <li>command line parameter handling</li>
+  <li>miscellaneous useful little functions</li>
+  <li>handles logging</li>
+</ul>
+
+<h2 id="common-ui-module">COMMON UI module</h2>
+
+<ul>
+  <li>knows basics about windows and window items (=channels, queries, ..)</li>
+  <li>printtext() - parsing texts and feeding it for GUI to print.</li>
+  <li>themes</li>
+  <li>translation tables</li>
+  <li>text hilighting</li>
+  <li>command history</li>
+  <li>user interface (/commands) for CORE’s functionality</li>
+</ul>
+
+<h2 id="gui-modules">GUI modules</h2>
+
+<ul>
+  <li>all the rest of the functionality needed for a working client.</li>
+</ul>
+
+<h2 id="irc-module">IRC module</h2>
+
+<ul>
+  <li>CORE
+    <ul>
+      <li>IRC specific /commands</li>
+      <li>flood protecting commands sent to server</li>
+      <li>creating IRC masks based on nick/address for bans, ignores, etc.</li>
+      <li>keeps list of channels, nicks, channel modes, bans, etc.</li>
+      <li>keeps list of servers, server settings, irc networks,
+server reconnections and irc network splits</li>
+      <li>redirection of commands’ replies</li>
+      <li>lag detection</li>
+      <li>ctcp support and flood protection</li>
+      <li>Handles ignoring people</li>
+    </ul>
+  </li>
+  <li>DCC
+    <ul>
+      <li>DCC chat, send and get</li>
+    </ul>
+  </li>
+  <li>FLOOD
+    <ul>
+      <li>detects private or channel flooding and sends “flood” signal</li>
+      <li>automatic ignoring when flooding</li>
+    </ul>
+  </li>
+  <li>NOTIFYLIST
+    <ul>
+      <li>handles notifylist</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="irc-ui-module">IRC UI module</h2>
+
+<ul>
+  <li>placing channels and queries in windows</li>
+  <li>nick completion</li>
+  <li>printing infomation of some events</li>
+</ul>
