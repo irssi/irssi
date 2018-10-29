@@ -86,7 +86,7 @@ static void sig_hilight_text(TEXT_DEST_REC *dest, const char *msg)
 			DATA_LEVEL_MSG : DATA_LEVEL_TEXT;
 	}
 
-	if (hide_targets != NULL && (dest->level & MSGLEVEL_HILIGHT) == 0 && dest->target != NULL) {
+	if (hide_targets != NULL && (dest->level & MSGLEVEL_HILIGHT) == 0) {
 		/* check for both target and tag/target */
 		if (strarray_find_dest(hide_targets, dest))
 			return;

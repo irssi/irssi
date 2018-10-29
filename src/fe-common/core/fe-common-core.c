@@ -480,7 +480,9 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 	g_return_val_if_fail(array != NULL, FALSE);
 	g_return_val_if_fail(dest != NULL, FALSE);
 	g_return_val_if_fail(dest->window != NULL, FALSE);
-	g_return_val_if_fail(dest->target != NULL, FALSE);
+
+	if (dest->target == NULL)
+		return strarray_find(array, dest->window->name) != -1 ? TRUE : FALSE;
 
 	item = window_item_find_window(dest->window, dest->server, dest->target);
 	if (item == NULL) {
