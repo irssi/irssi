@@ -1,22 +1,24 @@
 use strict;
 use vars qw($VERSION %IRSSI);
+use Storable;
+use 5.014000;
 
 use Irssi qw(command signal_add signal_add_first active_win
              settings_get_str settings_get_bool channels windows
-	     settings_add_str settings_add_bool get_irssi_dir
-	     window_find_refnum signal_stop);
-$VERSION = '2.20';
+             settings_add_str settings_add_bool get_irssi_dir
+             window_find_refnum signal_stop);
+$VERSION = '3.00';
 %IRSSI = (
-    authors	=> 'Juerd',
-    contact	=> 'juerd@juerd.nl',
-    name	=> 'Scroll buffer restorer',
-    description	=> 'Saves the buffer for /upgrade, so that no information is lost',
-    license	=> 'Public Domain',
-    url		=> 'http://juerd.nl/irssi/',
-    changed	=> 'Thu Sep 22 01:37 CEST 2016',
-    changes	=> 'Fixed file permissions (leaked everything via filesystem)',
-    note1	=> 'This script HAS TO BE in your scripts/autorun!',
-    note2	=> 'Perl support must be static or in startup',
+    authors     => 'Juerd',
+    contact     => 'juerd@juerd.nl',
+    name        => 'Scroll buffer restorer',
+    description => 'Saves the buffer for /upgrade, so that no information is lost',
+    license     => 'Public Domain',
+    url         => 'http://juerd.nl/irssi/',
+    changed     => 'Thu Mar 29 10:00 CEST 2018',
+    changes     => 'Fixed file permissions (leaked everything via filesystem), rewritten to use Storable and print to correct levels',
+    note1       => 'This script HAS TO BE in your scripts/autorun!',
+    note2       => 'Perl support must be static or in startup',
 );
 
 # Q: How can I get a very smooth and clean upgrade?
@@ -40,30 +42,28 @@ my %suppress;
 sub _filename { sprintf '%s/scrollbuffer', get_irssi_dir }
 
 sub upgrade {
-    my $fn = _filename;
-    my $old_umask = umask 0077;
-    open my $fh, q{>}, $fn or die "open $fn: $!";
-    umask $old_umask;
-
-    print $fh join("\0", map $_->{server}->{address} . $_->{name}, channels), "\n";
+    my $out = { suppress => [ map $_->{server}->{address} . $_->{name}, channels ] };
     for my $window (windows) {
-	next unless defined $window;
-	next if $window->{name} eq 'status';
-	my $view = $window->view;
-	my $line = $view->get_lines;
-	my $lines  = 0;
-	my $buf = '';
-	if (defined $line){
-	    {
-		$buf .= $line->get_text(1) . "\n";
-		$line = $line->next;
-		$lines++;
-		redo if defined $line;
-	    }
-	}
-	printf $fh "%s:%s\n%s", $window->{refnum}, $lines, $buf;
+        next unless defined $window;
+        next if $window->{name} eq 'status';
+        my $view = $window->view;
+        my $line = $view->get_lines;
+        my $lines  = 0;
+        my $buf = '';
+        my $output;
+        if (defined $line) {
+            {
+              push @$output, { level => $line->{info}{level}, data => $line->get_text(1) };
+              $line = $line->next;
+              redo if defined $line;
+            }
+        }
+        push @{$out->{windows}}, { refnum => $window->{refnum}, lines => $output };
     }
-    close $fh;
+    my $old_umask = umask 0077;
+    my $fn = _filename;
+    store($out, $fn) or die "Could not store data to $fn";
+    umask $old_umask;
     unlink sprintf("%s/sessionconfig", get_irssi_dir);
     command 'layout save';
     command 'save';
@@ -71,33 +71,30 @@ sub upgrade {
 
 sub restore {
     my $fn = _filename;
-    open my $fh, q{<}, $fn or die "open $fn: $!";
+    my $in = retrieve($fn) or die "Could not retrieve data from $fn";
     unlink $fn or warn "unlink $fn: $!";
-
-    my @suppress = split /\0/, readline $fh;
-    if (settings_get_bool 'upgrade_suppress_join') {
-	chomp $suppress[-1];
-	@suppress{@suppress} = (2) x @suppress;
-    }
+  
+    my @suppress = @{$in->{suppress}};
+    @suppress{@suppress} = (2) x @suppress if (settings_get_bool 'upgrade_suppress_join');
+  
     active_win->command('^window scroll off');
-    while (my $bla = readline $fh){
-	chomp $bla;
-	my ($refnum, $lines) = split /:/, $bla;
-	next unless $lines;
-	my $window = window_find_refnum $refnum;
-	unless (defined $window){
-	    readline $fh for 1..$lines;
-	    next;
-	}
-	my $view = $window->view;
-	$view->remove_all_lines();
-	$view->redraw();
-	my $buf = '';
-	$buf .= readline $fh for 1..$lines;
-	my $sep = settings_get_str 'upgrade_separator';
-	$sep .= "\n" if $sep ne '';
-	$window->gui_printtext_after(undef, MSGLEVEL_CLIENTNOTICE, "$buf\cO$sep");
-	$view->redraw();
+    for my $win (@{$in->{windows}}) {
+        my $window = window_find_refnum $win->{refnum};
+        next unless $window;
+        my @lines  = @{ $win->{lines} || [] };
+        next unless @lines;
+    
+        my $view = $window->view;
+        $view->remove_all_lines();
+        $view->redraw();
+        for my $line (@lines) {
+            my $level = $line->{level};
+            my $data  = $line->{data};
+            $window->gui_printtext_after($window->last_line_insert, $level, "$data\n");
+        }
+        my $sep = settings_get_str 'upgrade_separator';
+        $window->gui_printtext_after($window->last_line_insert, MSGLEVEL_CLIENTNOTICE, "\cO$sep\n") if $sep ne '';
+        $view->redraw();
     }
     active_win->command('^window scroll on');
     active_win->command('^scrollback end');
@@ -110,7 +107,7 @@ sub suppress {
     $key_part =~ s/^://;
     my $key = $first->{address} . $key_part;
     if (exists $suppress{$key} and $suppress{$key}--) {
-    	signal_stop();
+        signal_stop();
         delete $suppress{$key} unless $suppress{$key};
     }
 }
