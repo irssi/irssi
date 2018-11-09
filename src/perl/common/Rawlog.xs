@@ -21,7 +21,7 @@ rawlog_get_lines(rawlog)
 PREINIT:
 	GList *tmp;
 PPCODE:
-	for (tmp = rawlog->lines->tail; tmp != NULL; tmp = tmp->prev) {
+	for (tmp = rawlog->lines->head; tmp != NULL; tmp = tmp->next) {
 		XPUSHs(sv_2mortal(new_pv(tmp->data)));
 	}
 

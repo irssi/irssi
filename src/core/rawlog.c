@@ -63,7 +63,7 @@ void rawlog_destroy(RAWLOG_REC *rawlog)
 static void rawlog_add(RAWLOG_REC *rawlog, char *str)
 {
 	if (rawlog->lines->length >= rawlog_lines && rawlog_lines > 0) {
-		void *tmp = g_queue_pop_tail(rawlog->lines);
+		void *tmp = g_queue_pop_head(rawlog->lines);
 		g_free(tmp);
 	}
 
@@ -72,7 +72,7 @@ static void rawlog_add(RAWLOG_REC *rawlog, char *str)
 		write_buffer(rawlog->handle, "\n", 1);
 	}
 
-	g_queue_push_head(rawlog->lines, str);
+	g_queue_push_tail(rawlog->lines, str);
 	signal_emit_id(signal_rawlog, 2, rawlog, str);
 }
 
@@ -105,7 +105,7 @@ static void rawlog_dump(RAWLOG_REC *rawlog, int f)
 	GList *tmp;
 	ssize_t ret = 0;
 
-	for (tmp = rawlog->lines->tail; ret != -1 && tmp != NULL; tmp = tmp->prev) {
+	for (tmp = rawlog->lines->head; ret != -1 && tmp != NULL; tmp = tmp->next) {
 		ret = write(f, tmp->data, strlen((char *) tmp->data));
                 if (ret != -1)
                         ret = write(f, "\n", 1);
