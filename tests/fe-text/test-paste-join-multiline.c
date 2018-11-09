@@ -12,8 +12,18 @@ static void test_paste_join_multiline(const paste_join_multiline_test_case *test
 paste_join_multiline_test_case const paste_join_multiline_fixture[] = {
 	{
 		.description = "Lines should be joined, separator NL",
-		.input = "<User> hello world\n       how are you\n       screen is narrow",
-		.result = "<User> hello world how are you screen is narrow",
+		.input = "<User> A1\n       B22\n       C33",
+		.result = "<User> A1 B22 C33",
+	},
+	{
+		.description = "Lines should be joined, separator LF",
+		.input = "<User> A1\r       B22\r       C33",
+		.result = "<User> A1 B22 C33",
+	},
+	{
+		.description = "Lines should be joined, white space should be skipped",
+		.input = "<User> A1 \n       B22 \n       C33 ",
+		.result = "<User> A1 B22 C33 ",
 	},
 };
 
@@ -37,10 +47,12 @@ int main(int argc, char **argv)
 
 static void test_paste_join_multiline(const paste_join_multiline_test_case *test)
 {
-	char *resultstr;
+	char *resultstr, *t1;
 	GArray *buffer = g_array_new(FALSE, FALSE, sizeof(unichar));
 
 	g_test_message("Testing: %s", test->description);
+	g_test_message("INPUT: \"%s\"", (t1 = g_strescape(test->input, NULL)));
+	g_free(t1);
 
 	buffer->data = (char *) g_utf8_to_ucs4_fast(test->input, -1, (glong *) &buffer->len);
 	paste_buffer_join_lines(buffer);
