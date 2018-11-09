@@ -732,6 +732,7 @@ scripts/examples/Makefile
 tests/Makefile
 tests/fe-common/Makefile
 tests/fe-common/core/Makefile
+tests/fe-text/Makefile
 tests/irc/Makefile
 tests/irc/core/Makefile
 tests/irc/flood/Makefile
