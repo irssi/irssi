@@ -220,7 +220,7 @@ CODE:
 	} else if (term_type != TERM_TYPE_BIG5 ||
 		   c[1] == '\0' ||
 		   !is_big5((unsigned char) c[0], (unsigned char) c[1])) {
-		RETVAL = 1;
+		RETVAL = i_wcwidth((unsigned char) *c);
 	} else {
 		RETVAL = 2;
 	}
