@@ -2,6 +2,8 @@
 #include "module.h"
 #include "irssi-version.h"
 #include "core.h"
+#include "utf8.h"
+#include "recode.h"
 
 #include "pidwait.h"
 #include "session.h"
@@ -686,6 +688,25 @@ CODE:
 	RETVAL = IRSSI_GUI_KDE;
 OUTPUT:
 	RETVAL
+
+int
+string_width(str)
+	char *str
+C_ARGS:
+	str, is_utf8() ? TREAT_STRING_AS_UTF8 : TREAT_STRING_AS_BYTES
+
+void
+string_chars_for_width(str, width)
+	char *str
+	unsigned int width
+PREINIT:
+	int retval;
+	unsigned int bytes;
+PPCODE:
+	retval = string_chars_for_width(str, is_utf8() ? TREAT_STRING_AS_UTF8 : TREAT_STRING_AS_BYTES, width, &bytes);
+	mXPUSHi(retval);
+	mXPUSHu(bytes);
+
 
 #*******************************
 MODULE = Irssi::Core	PACKAGE = Irssi::Server
