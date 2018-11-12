@@ -501,7 +501,7 @@ static void perl_log_item_fill_hash(HV *hv, LOG_ITEM_REC *item)
 static void perl_rawlog_fill_hash(HV *hv, RAWLOG_REC *rawlog)
 {
 	(void) hv_store(hv, "logging", 7, newSViv(rawlog->logging), 0);
-	(void) hv_store(hv, "nlines", 6, newSViv(rawlog->nlines), 0);
+	(void) hv_store(hv, "nlines", 6, newSViv(rawlog->lines->length), 0);
 }
 
 static void perl_reconnect_fill_hash(HV *hv, RECONNECT_REC *reconnect)
