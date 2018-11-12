@@ -218,7 +218,8 @@ CODE:
 			RETVAL = i_wcwidth(chr);
 		}
 	} else if (term_type != TERM_TYPE_BIG5 ||
-	    c[1] == '\0' || !is_big5(c[0], c[1])) {
+		   c[1] == '\0' ||
+		   !is_big5((unsigned char) c[0], (unsigned char) c[1])) {
 		RETVAL = 1;
 	} else {
 		RETVAL = 2;
