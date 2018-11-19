@@ -296,7 +296,7 @@ static void event_invalid_cap (IRC_SERVER_REC *server, const char *data, const c
 	irc_send_cmd_now(server, "CAP END");
 }
 
-void cap_init (void)
+void irc_cap_init (void)
 {
 	signal_add_first("event cap", (SIGNAL_FUNC) event_cap);
 	signal_add_first("event 410", (SIGNAL_FUNC) event_invalid_cap);

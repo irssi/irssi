@@ -119,7 +119,7 @@ void irc_core_init(void)
 	lag_init();
 	netsplit_init();
 	irc_expandos_init();
-	cap_init();
+	irc_cap_init();
 	sasl_init();
 
 	settings_check();
