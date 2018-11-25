@@ -5,7 +5,7 @@ AC_PREREQ(2.50)
 
 AC_CONFIG_HEADERS([irssi-config.h])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([1.9 no-define foreign subdir-objects])
+AM_INIT_AUTOMAKE([1.9 no-define foreign])
 
 AM_SILENT_RULES([yes])
 
@@ -198,12 +198,6 @@ dnl * OS specific options
 case "$host_os" in
   hpux*)
     CFLAGS="$CFLAGS -D_XOPEN_SOURCE_EXTENDED"
-    ;;
-  os400*)
-    dnl IBM i uses ppc64 gcc by default, but binutils defaults to 32-bit. Force
-    dnl IBM binutils, and force it into ppc64 mode. This isn't set for AIX
-    dnl because gcc there defaults to ppc32.
-    AR="/usr/bin/ar -X64"
     ;;
   *)
     ;;
