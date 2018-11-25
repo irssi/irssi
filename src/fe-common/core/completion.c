@@ -240,6 +240,10 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 			/* Remove all nulls (from the signal) before doing further processing */
 			complist = g_list_remove_all(g_list_first(complist), NULL);
 		}
+
+		if (settings_get_bool("completion_keep_word") && complist != NULL) {
+			complist = g_list_append(complist, g_strdup(word));
+		}
 	}
 
 	g_free(linestart);
@@ -897,6 +901,7 @@ void completion_init(void)
 
 	chat_completion_init();
 
+	settings_add_bool("completion", "completion_keep_word", TRUE);
 	command_bind("completion", NULL, (SIGNAL_FUNC) cmd_completion);
 
 	signal_add_first("complete word", (SIGNAL_FUNC) sig_complete_word);
