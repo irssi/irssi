@@ -45,7 +45,7 @@ static gboolean sasl_timeout(IRC_SERVER_REC *server)
 {
 	/* The authentication timed out, we can't do much beside terminating it */
 	irc_send_cmd_now(server, "AUTHENTICATE *");
-	cap_finish_negotiation(server);
+	irc_cap_finish_negotiation(server);
 
 	server->sasl_timeout = 0;
 	server->sasl_success = FALSE;
@@ -96,7 +96,7 @@ static void sasl_fail(IRC_SERVER_REC *server, const char *data, const char *from
 	signal_emit("server sasl failure", 2, server, error);
 
 	/* Terminate the negotiation */
-	cap_finish_negotiation(server);
+	irc_cap_finish_negotiation(server);
 
 	g_free(params);
 }
@@ -110,7 +110,7 @@ static void sasl_already(IRC_SERVER_REC *server, const char *data, const char *f
 	signal_emit("server sasl success", 1, server);
 
 	/* We're already authenticated, do nothing */
-	cap_finish_negotiation(server);
+	irc_cap_finish_negotiation(server);
 }
 
 static void sasl_success(IRC_SERVER_REC *server, const char *data, const char *from)
@@ -122,7 +122,7 @@ static void sasl_success(IRC_SERVER_REC *server, const char *data, const char *f
 	signal_emit("server sasl success", 1, server);
 
 	/* The authentication succeeded, time to finish the CAP negotiation */
-	cap_finish_negotiation(server);
+	irc_cap_finish_negotiation(server);
 }
 
 /*
@@ -263,7 +263,7 @@ static void sasl_step_complete(IRC_SERVER_REC *server, GString *data)
 static void sasl_step_fail(IRC_SERVER_REC *server)
 {
 	irc_send_cmd_now(server, "AUTHENTICATE *");
-	cap_finish_negotiation(server);
+	irc_cap_finish_negotiation(server);
 
 	sasl_timeout_stop(server);
 

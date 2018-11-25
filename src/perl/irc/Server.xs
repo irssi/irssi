@@ -155,6 +155,6 @@ irc_server_cap_toggle(server, cap, enable)
 	char *cap
 	int enable
 CODE:
-	RETVAL = cap_toggle(server, cap, enable);
+	RETVAL = irc_cap_toggle(server, cap, enable);
 OUTPUT:
 	RETVAL

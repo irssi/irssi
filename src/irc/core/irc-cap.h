@@ -3,8 +3,8 @@
 
 /* this is prefixed as to not conflict with an AIX/i function in their stdlib */
 void irc_cap_init(void);
-void cap_deinit(void);
-int cap_toggle (IRC_SERVER_REC *server, char *cap, int enable);
-void cap_finish_negotiation (IRC_SERVER_REC *server);
+void irc_cap_deinit(void);
+int irc_cap_toggle (IRC_SERVER_REC *server, char *cap, int enable);
+void irc_cap_finish_negotiation (IRC_SERVER_REC *server);
 
 #endif
