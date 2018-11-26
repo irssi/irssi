@@ -119,7 +119,7 @@ void irc_core_init(void)
 	lag_init();
 	netsplit_init();
 	irc_expandos_init();
-	cap_init();
+	irc_cap_init();
 	sasl_init();
 
 	settings_check();
@@ -131,7 +131,7 @@ void irc_core_deinit(void)
 	signal_emit("chat protocol deinit", 1, chat_protocol_find("IRC"));
 
 	sasl_deinit();
-	cap_deinit();
+	irc_cap_deinit();
 	irc_expandos_deinit();
 	netsplit_deinit();
 	lag_deinit();

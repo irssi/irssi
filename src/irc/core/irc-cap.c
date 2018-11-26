@@ -24,7 +24,7 @@
 #include "irc-cap.h"
 #include "irc-servers.h"
 
-int cap_toggle (IRC_SERVER_REC *server, char *cap, int enable)
+int irc_cap_toggle (IRC_SERVER_REC *server, char *cap, int enable)
 {
 	if (cap == NULL || *cap == '\0')
 		return FALSE;
@@ -65,7 +65,7 @@ int cap_toggle (IRC_SERVER_REC *server, char *cap, int enable)
 	return FALSE;
 }
 
-void cap_finish_negotiation (IRC_SERVER_REC *server)
+void irc_cap_finish_negotiation (IRC_SERVER_REC *server)
 {
 	if (server->cap_complete)
 		return;
@@ -130,7 +130,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 	}
 	/* Malformed request, terminate the negotiation */
 	else {
-		cap_finish_negotiation(server);
+		irc_cap_finish_negotiation(server);
 		g_warn_if_reached();
 		return;
 	}
@@ -177,7 +177,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		if (multiline == FALSE) {
 			/* No CAP has been requested */
 			if (server->cap_queue == NULL) {
-				cap_finish_negotiation(server);
+				irc_cap_finish_negotiation(server);
 			}
 			else {
 				cmd = g_string_new("CAP REQ :");
@@ -204,7 +204,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 					signal_emit("server cap req", 2, server, cmd->str + sizeof("CAP REQ :") - 1);
 					irc_send_cmd_now(server, cmd->str);
 				} else {
-					cap_finish_negotiation(server);
+					irc_cap_finish_negotiation(server);
 				}
 
 				g_string_free(cmd, TRUE);
@@ -233,7 +233,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		 * negotiation, unless sasl was requested. In this case we must not terminate the negotiation
 		 * until the sasl handshake is over. */
 		if (got_sasl == FALSE)
-			cap_finish_negotiation(server);
+			irc_cap_finish_negotiation(server);
 	}
 	else if (!g_ascii_strcasecmp(evt, "NAK")) {
 		g_warning("The server answered with a NAK to our CAP request, this should not happen");
@@ -296,13 +296,13 @@ static void event_invalid_cap (IRC_SERVER_REC *server, const char *data, const c
 	irc_send_cmd_now(server, "CAP END");
 }
 
-void cap_init (void)
+void irc_cap_init (void)
 {
 	signal_add_first("event cap", (SIGNAL_FUNC) event_cap);
 	signal_add_first("event 410", (SIGNAL_FUNC) event_invalid_cap);
 }
 
-void cap_deinit (void)
+void irc_cap_deinit (void)
 {
 	signal_remove("event cap", (SIGNAL_FUNC) event_cap);
 	signal_remove("event 410", (SIGNAL_FUNC) event_invalid_cap);
