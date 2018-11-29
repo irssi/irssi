@@ -205,6 +205,28 @@ gui_input_set_pos(pos)
 CODE:
 	gui_entry_set_pos(active_entry, pos);
 
+int
+wcwidth(c)
+	char *c
+CODE:
+	if (term_type == TERM_TYPE_UTF8) {
+		unichar chr = g_utf8_get_char_validated((const char *) c, -1);
+
+		if (chr & 0x80000000) {
+			RETVAL = 1;
+		} else {
+			RETVAL = i_wcwidth(chr);
+		}
+	} else if (term_type != TERM_TYPE_BIG5 ||
+		   c[1] == '\0' ||
+		   !is_big5((unsigned char) c[0], (unsigned char) c[1])) {
+		RETVAL = i_wcwidth((unsigned char) *c);
+	} else {
+		RETVAL = 2;
+	}
+OUTPUT:
+	RETVAL
+
 MODULE = Irssi::TextUI PACKAGE = Irssi::UI::Window
 
 void
