@@ -425,6 +425,7 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 	g_free(str);
 	if (dcc == NULL) {
 		g_warn_if_reached();
+		close(hfile);
 		return FALSE;
 	}
 
