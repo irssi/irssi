@@ -758,7 +758,7 @@ char *escape_string(const char *str)
 }
 
 /* Escape all '\' chars with '\' */
-char *escape_string_escape(const char *str)
+char *escape_string_backslashes(const char *str)
 {
 	char *ret, *p;
 

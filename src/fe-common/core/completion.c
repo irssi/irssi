@@ -256,7 +256,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 
 	/* escape if the word doesn't begin with '/' and expand_escapes are turned on */
 	data = strchr(cmdchars, *line) == NULL && expand_escapes ?
-		escape_string_escape(complist->data) : g_strdup(complist->data);
+		escape_string_backslashes(complist->data) : g_strdup(complist->data);
 
 	/* word completed */
 	*pos = startpos + strlen(data);
