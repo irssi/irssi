@@ -160,6 +160,7 @@ static void window_next_page(void)
 	gui_window_scroll(active_win, get_scroll_count());
 }
 
+#define isnewline(x) ((x) == '\n' || (x) == '\r')
 static void paste_buffer_join_lines(GArray *buf)
 {
 	unsigned int i, count, indent, line_len;
@@ -199,7 +200,7 @@ static void paste_buffer_join_lines(GArray *buf)
 
 	/* find the first beginning of indented line */
 	for (i = 1; i < buf->len; i++) {
-		if (arr[i-1] == '\n' && isblank(arr[i]))
+		if (isnewline(arr[i-1]) && isblank(arr[i]))
 			break;
 	}
 	if (i == buf->len)
@@ -226,7 +227,7 @@ static void paste_buffer_join_lines(GArray *buf)
 				count = 0;
 			}
 		}
-		if (arr[i] == '\n')
+		if (isnewline(arr[i]))
 			last_lf = TRUE;
 	}
 
@@ -236,11 +237,12 @@ static void paste_buffer_join_lines(GArray *buf)
 	for (i = 0; i < buf->len; i++) {
 		if (last_lf && isblank(arr[i])) {
 			/* whitespace, ignore */
-		} else if (arr[i] == '\n') {
+		} else if (isnewline(arr[i])) {
 			if (!last_lf && i+1 != buf->len &&
 			    isblank(arr[i+1])) {
 				last_lf_pos = dest;
-				*dest++ = ' ';
+				if (i != 0 && !isblank(arr[i-1]))
+					*dest++ = ' ';
 			} else {
 				*dest++ = '\n'; /* double-LF */
 				line_len = 0;
@@ -287,7 +289,7 @@ static void paste_send(void)
 		/* first line has to be kludged kind of to get pasting in the
 		   middle of line right.. */
 		for (i = 0; i < paste_buffer->len; i++) {
-			if (arr[i] == '\r' || arr[i] == '\n') {
+			if (isnewline(arr[i])) {
 				i++;
 				break;
 			}
@@ -303,7 +305,7 @@ static void paste_send(void)
 	/* rest of the lines */
 	str = g_string_new(NULL);
 	for (; i < paste_buffer->len; i++) {
-		if (arr[i] == '\r' || arr[i] == '\n') {
+		if (isnewline(arr[i])) {
 			paste_send_line(str->str);
 			g_string_truncate(str, 0);
 		} else if (active_entry->utf8) {
@@ -769,7 +771,7 @@ static void paste_bracketed_end(int i, gboolean rest)
 
 	last_char = g_array_index(paste_buffer, unichar, i - 1);
 
-	if (paste_line_count > 0 && last_char != '\n' && last_char != '\r') {
+	if (paste_line_count > 0 && !isnewline(last_char)) {
 		/* there are newlines, but there's also stuff after the newline
 		 * adjust line count to reflect this */
 		paste_line_count++;
