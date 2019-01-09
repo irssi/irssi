@@ -757,6 +757,22 @@ char *escape_string(const char *str)
 	return ret;
 }
 
+/* Escape all '\' chars with '\' */
+char *escape_string_backslashes(const char *str)
+{
+	char *ret, *p;
+
+	p = ret = g_malloc(strlen(str)*2+1);
+	while (*str != '\0') {
+		if (*str == '\\')
+			*p++ = '\\';
+		*p++ = *str++;
+	}
+	*p = '\0';
+
+	return ret;
+}
+
 int nearest_power(int num)
 {
 	int n = 1;

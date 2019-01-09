@@ -93,6 +93,9 @@ char *ascii_strdown(char *str);
 /* Escape all '"', "'" and '\' chars with '\' */
 char *escape_string(const char *str);
 
+/* Escape all '\' chars with '\' */
+char *escape_string_backslashes(const char *str);
+
 /* convert all low-ascii (<32) to ^<A..> combinations */
 char *show_lowascii(const char *str);
 
