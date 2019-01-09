@@ -4,20 +4,20 @@ v1.1.2 2019-01-09 The Irssi team <staff@irssi.org>
 	- Fix the resetting of window hiddenlevel (#861)
 	- Fix clearing of hidelevel in layout (#951)
 	- Fix accessing unallocated text when checking entry position
-          (#930)
+          (#928, #930)
 	- Fix uninitialised memory on empty lines (#873, GL#31, #878,
           #877, #907, #914)
 	- Fix use-after-free on expiration of hidden lines (#948)
 	- Fix use-after-frees. By Maya Rashish (#919)
 	- Fix out of bounds access in help display when window width
           is small (#949)
-	- Fix paste_join_multiline (#971)
+	- Fix paste_join_multiline (#970, #971)
 	- Correctly check for errno when displaying SSL errors. By
           Janik Rabe (#895)
 	- Fix wrong signal emission argument count (#965)
 	- Documentation (#920). Sync NEWS, scripts (#849)
 	- Fix Perl detection on MacOS. By Dominyk Tiller (#927)
-	- Misc fixes. By Jaroslav Škarvada (#982)
+	- Misc fixes. By Jaroslav Škarvada (#981, #982)
 
 v1.1.1 2018-02-15 The Irssi team <staff@irssi.org>
 	! Contains all changes from 1.0.7
