@@ -1106,7 +1106,7 @@ static void mainwindows_rresize_two(MAIN_WINDOW_REC *grow_win,
 	shrink_win->dirty = TRUE;
 }
 
-static int try_rshrink_right(MAIN_WINDOW_REC *window, int count)
+static int try_shrink_right(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
 
@@ -1128,7 +1128,7 @@ static int try_rshrink_right(MAIN_WINDOW_REC *window, int count)
 	return FALSE;
 }
 
-static int try_rshrink_left(MAIN_WINDOW_REC *window, int count)
+static int try_shrink_left(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *shrink_win;
 
@@ -1149,17 +1149,17 @@ static int try_rshrink_left(MAIN_WINDOW_REC *window, int count)
 	return FALSE;
 }
 
-static int mainwindow_rgrow(MAIN_WINDOW_REC *window, int count)
+static int mainwindow_grow_right(MAIN_WINDOW_REC *window, int count)
 {
-	if (!try_rshrink_right(window, count)) {
-		if (!try_rshrink_left(window, count))
+	if (!try_shrink_right(window, count)) {
+		if (!try_shrink_left(window, count))
 			return FALSE;
 	}
 
 	return TRUE;
 }
 
-static int try_rgrow_right(MAIN_WINDOW_REC *window, int count)
+static int try_grow_right(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *grow_win;
 
@@ -1174,7 +1174,7 @@ static int try_rgrow_right(MAIN_WINDOW_REC *window, int count)
 	return FALSE;
 }
 
-static int try_rgrow_left(MAIN_WINDOW_REC *window, int count)
+static int try_grow_left(MAIN_WINDOW_REC *window, int count)
 {
 	MAIN_WINDOW_REC *grow_win;
 
@@ -1189,15 +1189,15 @@ static int try_rgrow_left(MAIN_WINDOW_REC *window, int count)
 	return FALSE;
 }
 
-static int mainwindow_rshrink(MAIN_WINDOW_REC *window, int count)
+static int mainwindow_shrink_right(MAIN_WINDOW_REC *window, int count)
 {
 	g_return_val_if_fail(count >= 0, FALSE);
 
 	if (MAIN_WINDOW_TEXT_WIDTH(window)-count < NEW_WINDOW_WIDTH)
 		return FALSE;
 
-	if (!try_rgrow_right(window, count)) {
-		if (!try_rgrow_left(window, count))
+	if (!try_grow_right(window, count)) {
+		if (!try_grow_left(window, count))
 			return FALSE;
 	}
 
@@ -1220,9 +1220,9 @@ void mainwindow_set_rsize(MAIN_WINDOW_REC *window, int width)
 {
 	width -= window->width;
 	if (width < 0)
-		mainwindow_rshrink(window, -width);
+		mainwindow_shrink_right(window, -width);
 	else
-		mainwindow_rgrow(window, width);
+		mainwindow_grow_right(window, width);
 }
 
 void mainwindows_redraw_dirty(void)
@@ -1260,44 +1260,7 @@ static void mainwindow_grow_int(int count)
 	}
 }
 
-/* SYNTAX: WINDOW GROW [<lines>] */
-static void cmd_window_grow(const char *data)
-{
-	int count;
-
-	count = *data == '\0' ? 1 : atoi(data);
-
-	mainwindow_grow_int(count);
-}
-
-/* SYNTAX: WINDOW SHRINK [<lines>] */
-static void cmd_window_shrink(const char *data)
-{
-	int count;
-
-	count = *data == '\0' ? 1 : atoi(data);
-	if (count < -INT_MAX) count = -INT_MAX;
-
-	mainwindow_grow_int(-count);
-}
-
-/* SYNTAX: WINDOW SIZE <lines> */
-static void cmd_window_size(const char *data)
-{
-	int size;
-
-	if (!is_numeric(data, 0)) return;
-	size = atoi(data);
-
-	size -= WINDOW_MAIN(active_win)->height -
-		WINDOW_MAIN(active_win)->statusbar_lines;
-	if (size < -INT_MAX) size = -INT_MAX;
-
-	mainwindow_grow_int(size);
-}
-
-/* SYNTAX: WINDOW BALANCE */
-static void cmd_window_balance(void)
+static void window_balance_vertical(void)
 {
 	GSList *sorted, *stmp, *line, *ltmp;
 	int avail_size, unit_size, bigger_units;
@@ -1393,22 +1356,38 @@ static void cmd_window_hide(const char *data)
 	}
 }
 
-static void _cmd_window_show_opt(const char *data, int right)
+/* SYNTAX: WINDOW SHOW [-right] <number>|<name> */
+static void cmd_window_show(const char *data)
 {
+	GHashTable *optlist;
 	MAIN_WINDOW_REC *parent;
 	WINDOW_REC *window;
+	char *args;
+	void *free_arg;
+	int right;
 
-	if (*data == '\0') cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window show", &optlist, &args))
+		return;
 
-	if (is_numeric(data, '\0')) {
-		window = window_find_refnum(atoi(data));
+	right = g_hash_table_lookup(optlist, "right") != NULL;
+
+	if (*args == '\0') {
+		cmd_params_free(free_arg);
+		cmd_return_error(CMDERR_NOT_ENOUGH_PARAMS);
+	}
+
+	if (is_numeric(args, '\0')) {
+		window = window_find_refnum(atoi(args));
 		if (window == NULL) {
 			printformat_window(active_win, MSGLEVEL_CLIENTERROR,
-					   TXT_REFNUM_NOT_FOUND, data);
+					   TXT_REFNUM_NOT_FOUND, args);
 		}
 	} else {
-		window = window_find_item(active_win->active_server, data);
+		window = window_find_item(active_win->active_server, args);
 	}
+
+	cmd_params_free(free_arg);
 
 	if (window == NULL || is_window_visible(window))
 		return;
@@ -1437,69 +1416,103 @@ static void _cmd_window_show_opt(const char *data, int right)
 	window_set_active(window);
 }
 
-/* SYNTAX: WINDOW SHOW <number>|<name> */
-static void cmd_window_show(const char *data)
-{
-	_cmd_window_show_opt(data, FALSE);
-}
-
-/* SYNTAX: WINDOW RSHOW <number>|<name> */
-static void cmd_window_rshow(const char *data)
-{
-	_cmd_window_show_opt(data, TRUE);
-}
-
-static void window_rgrow_int(int count)
+static void mainwindow_grow_right_int(int count)
 {
 	if (count == 0) {
 		return;
 	} else if (count < 0) {
-		if (!mainwindow_rshrink(WINDOW_MAIN(active_win), -count)) {
+		if (!mainwindow_shrink_right(WINDOW_MAIN(active_win), -count)) {
 			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
 		}
 	} else {
-		if (!mainwindow_rgrow(WINDOW_MAIN(active_win), count)) {
+		if (!mainwindow_grow_right(WINDOW_MAIN(active_win), count)) {
 			printformat_window(active_win, MSGLEVEL_CLIENTNOTICE, TXT_WINDOW_TOO_SMALL);
 		}
 	}
 }
 
-/* SYNTAX: WINDOW RGROW [<columns>] */
-static void cmd_window_rgrow(const char *data)
+
+/* SYNTAX: WINDOW GROW [-right] [<lines>|<columns>] */
+static void cmd_window_grow(const char *data)
 {
+	GHashTable *optlist;
+	char *args;
+	void *free_arg;
 	int count;
 
-	count = *data == '\0' ? 1 : atoi(data);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window grow", &optlist, &args))
+		return;
 
-	window_rgrow_int(count);
+	count = *data == '\0' ? 1 : atoi(args);
+
+	if (g_hash_table_lookup(optlist, "right") != NULL) {
+		mainwindow_grow_right_int(count);
+	} else {
+		mainwindow_grow_int(count);
+	}
+
+	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WINDOW RSHRINK [<lines>] */
-static void cmd_window_rshrink(const char *data)
+/* SYNTAX: WINDOW SHRINK [-right] [<lines>|<columns>] */
+static void cmd_window_shrink(const char *data)
 {
+	GHashTable *optlist;
+	char *args;
+	void *free_arg;
 	int count;
 
-	count = *data == '\0' ? 1 : atoi(data);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window shrink", &optlist, &args))
+		return;
+
+	count = *data == '\0' ? 1 : atoi(args);
 	if (count < -INT_MAX) count = -INT_MAX;
 
-	window_rgrow_int(-count);
+	if (g_hash_table_lookup(optlist, "right") != NULL) {
+		mainwindow_grow_right_int(-count);
+	} else {
+		mainwindow_grow_int(-count);
+	}
+
+	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WINDOW RSIZE <columns> */
-static void cmd_window_rsize(const char *data)
+/* SYNTAX: WINDOW SIZE [-right] <lines>|<columns> */
+static void cmd_window_size(const char *data)
 {
-	int rsize;
+	GHashTable *optlist;
+	char *args;
+	void *free_arg;
+	int size;
 
-	if (!is_numeric(data, 0)) return;
-	rsize = atoi(data);
+	if (!cmd_get_params(data, &free_arg, 1 | PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window size", &optlist, &args))
+		return;
 
-	rsize -= MAIN_WINDOW_TEXT_WIDTH(WINDOW_MAIN(active_win));
+	if (!is_numeric(args, 0)) {
+		cmd_params_free(free_arg);
+		return;
+	}
+	size = atoi(data);
 
-	window_rgrow_int(rsize);
+	if (g_hash_table_lookup(optlist, "right") != NULL) {
+		size -= MAIN_WINDOW_TEXT_WIDTH(WINDOW_MAIN(active_win));
+
+		mainwindow_grow_right_int(size);
+	} else {
+		size -= WINDOW_MAIN(active_win)->height -
+			WINDOW_MAIN(active_win)->statusbar_lines;
+		if (size < -INT_MAX) size = -INT_MAX;
+
+		mainwindow_grow_int(size);
+	}
+
+	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WINDOW RBALANCE */
-static void cmd_window_rbalance(void)
+static void window_balance_horizontal(void)
 {
 	GSList *line, *ltmp;
 	int avail_width, unit_width, bigger_units;
@@ -1537,76 +1550,76 @@ static void cmd_window_rbalance(void)
 	mainwindows_redraw();
 }
 
-/* SYNTAX: WINDOW UP */
-static void cmd_window_up(void)
+/* SYNTAX: WINDOW BALANCE [-right] */
+static void cmd_window_balance(const char *data)
 {
-	MAIN_WINDOW_REC *rec;
+	GHashTable *optlist;
+	void *free_arg;
 
-	rec = mainwindows_find_left_upper(active_mainwin);
-	if (rec == NULL)
-		rec = mainwindows_find_left_upper(NULL);
-	if (rec != NULL)
-		window_set_active(rec->active);
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window balance", &optlist))
+		return;
+
+	if (g_hash_table_lookup(optlist, "right") != NULL) {
+		window_balance_horizontal();
+	} else {
+		window_balance_vertical();
+	}
+
+	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WINDOW DUP */
-static void cmd_window_dup(void)
+/* SYNTAX: WINDOW UP [-directional] */
+static void cmd_window_up(const char *data)
 {
 	MAIN_WINDOW_REC *rec;
+	GHashTable *optlist;
+	void *free_arg;
 
-	rec = mainwindows_find_upper(active_mainwin);
-	if (rec == NULL)
-		rec = mainwindows_find_upper(NULL);
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window up", &optlist))
+		return;
+
+	if (g_hash_table_lookup(optlist, "directional") != NULL) {
+		rec = mainwindows_find_upper(active_mainwin);
+		if (rec == NULL)
+			rec = mainwindows_find_upper(NULL);
+	} else {
+		rec = mainwindows_find_left_upper(active_mainwin);
+		if (rec == NULL)
+			rec = mainwindows_find_left_upper(NULL);
+	}
 	if (rec != NULL)
 		window_set_active(rec->active);
+
+	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WINDOW DLEFT */
-static void cmd_window_dleft(void)
+/* SYNTAX: WINDOW DOWN [-directional] */
+static void cmd_window_down(const char *data)
 {
 	MAIN_WINDOW_REC *rec;
+	GHashTable *optlist;
+	void *free_arg;
 
-	rec = mainwindows_find_left(active_mainwin, FALSE);
-	if (rec == NULL)
-		rec = mainwindows_find_left(active_mainwin, TRUE);
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window down", &optlist))
+		return;
+
+	if (g_hash_table_lookup(optlist, "directional") != NULL) {
+		rec = mainwindows_find_lower(active_mainwin);
+		if (rec == NULL)
+			rec = mainwindows_find_lower(NULL);
+	} else {
+		rec = mainwindows_find_lower_right(active_mainwin);
+		if (rec == NULL)
+			rec = mainwindows_find_lower_right(NULL);
+	}
+
 	if (rec != NULL)
 		window_set_active(rec->active);
-}
 
-/* SYNTAX: WINDOW DOWN */
-static void cmd_window_down(void)
-{
-	MAIN_WINDOW_REC *rec;
-
-	rec = mainwindows_find_lower_right(active_mainwin);
-	if (rec == NULL)
-		rec = mainwindows_find_lower_right(NULL);
-	if (rec != NULL)
-		window_set_active(rec->active);
-}
-
-/* SYNTAX: WINDOW DDOWN */
-static void cmd_window_ddown(void)
-{
-	MAIN_WINDOW_REC *rec;
-
-	rec = mainwindows_find_lower(active_mainwin);
-	if (rec == NULL)
-		rec = mainwindows_find_lower(NULL);
-	if (rec != NULL)
-		window_set_active(rec->active);
-}
-
-/* SYNTAX: WINDOW DRIGHT */
-static void cmd_window_dright(void)
-{
-	MAIN_WINDOW_REC *rec;
-
-	rec = mainwindows_find_right(active_mainwin, FALSE);
-	if (rec == NULL)
-		rec = mainwindows_find_right(active_mainwin, TRUE);
-	if (rec != NULL)
-		window_set_active(rec->active);
+	cmd_params_free(free_arg);
 }
 
 #define WINDOW_STICKY_MATCH(window, sticky_parent) \
@@ -1658,24 +1671,62 @@ static int window_refnum_right(int refnum, int wrap)
         return refnum;
 }
 
-/* SYNTAX: WINDOW LEFT */
+/* SYNTAX: WINDOW LEFT [-directional] */
 static void cmd_window_left(const char *data, SERVER_REC *server, void *item)
 {
-	int refnum;
+	GHashTable *optlist;
+	void *free_arg;
 
-	refnum = window_refnum_left(active_win->refnum, TRUE);
-	if (refnum != -1)
-		window_set_active(window_find_refnum(refnum));
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window left", &optlist))
+		return;
+
+	if (g_hash_table_lookup(optlist, "directional") != NULL) {
+		MAIN_WINDOW_REC *rec;
+
+		rec = mainwindows_find_left(active_mainwin, FALSE);
+		if (rec == NULL)
+			rec = mainwindows_find_left(active_mainwin, TRUE);
+		if (rec != NULL)
+			window_set_active(rec->active);
+	} else {
+		int refnum;
+
+		refnum = window_refnum_left(active_win->refnum, TRUE);
+		if (refnum != -1)
+			window_set_active(window_find_refnum(refnum));
+	}
+
+	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WINDOW RIGHT */
-static void cmd_window_right(void)
+/* SYNTAX: WINDOW RIGHT [-directional] */
+static void cmd_window_right(const char *data)
 {
-	int refnum;
+	GHashTable *optlist;
+	void *free_arg;
 
-	refnum = window_refnum_right(active_win->refnum, TRUE);
-	if (refnum != -1)
-		window_set_active(window_find_refnum(refnum));
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window right", &optlist))
+		return;
+
+	if (g_hash_table_lookup(optlist, "directional") != NULL) {
+		MAIN_WINDOW_REC *rec;
+
+		rec = mainwindows_find_right(active_mainwin, FALSE);
+		if (rec == NULL)
+			rec = mainwindows_find_right(active_mainwin, TRUE);
+		if (rec != NULL)
+			window_set_active(rec->active);
+	} else {
+		int refnum;
+
+		refnum = window_refnum_right(active_win->refnum, TRUE);
+		if (refnum != -1)
+			window_set_active(window_find_refnum(refnum));
+	}
+
+	cmd_params_free(free_arg);
 }
 
 static void window_reparent(WINDOW_REC *win, MAIN_WINDOW_REC *mainwin)
@@ -1742,68 +1793,108 @@ static void cmd_window_stick(const char *data)
 	}
 }
 
-/* SYNTAX: WINDOW MOVE LEFT */
-static void cmd_window_move_left(void)
+/* SYNTAX: WINDOW MOVE LEFT [-directional] */
+static void cmd_window_move_left(const char *data)
 {
-	int refnum;
+	GHashTable *optlist;
+	void *free_arg;
 
-	refnum = window_refnum_left(active_win->refnum, TRUE);
-	if (refnum != -1)
-		window_set_refnum(active_win, refnum);
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window move left", &optlist))
+		return;
+
+	if (g_hash_table_lookup(optlist, "directional") != NULL) {
+		MAIN_WINDOW_REC *rec;
+
+		rec = mainwindows_find_left(active_mainwin, FALSE);
+		if (rec == NULL)
+			rec = mainwindows_find_left(active_mainwin, TRUE);
+		if (rec != NULL)
+			window_reparent(active_win, rec);
+	} else {
+		int refnum;
+
+		refnum = window_refnum_left(active_win->refnum, TRUE);
+		if (refnum != -1)
+			window_set_refnum(active_win, refnum);
+	}
+
+	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WINDOW MOVE RIGHT */
-static void cmd_window_move_right(void)
+/* SYNTAX: WINDOW MOVE RIGHT [-directional] */
+static void cmd_window_move_right(const char *data)
 {
-	int refnum;
+	GHashTable *optlist;
+	void *free_arg;
 
-	refnum = window_refnum_right(active_win->refnum, TRUE);
-	if (refnum != -1)
-		window_set_refnum(active_win, refnum);
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window move right", &optlist))
+		return;
+
+	if (g_hash_table_lookup(optlist, "directional") != NULL) {
+		MAIN_WINDOW_REC *rec;
+
+		rec = mainwindows_find_right(active_mainwin, FALSE);
+		if (rec == NULL)
+			rec = mainwindows_find_right(active_mainwin, TRUE);
+		if (rec != NULL)
+			window_reparent(active_win, rec);
+	} else {
+		int refnum;
+
+		refnum = window_refnum_right(active_win->refnum, TRUE);
+		if (refnum != -1)
+			window_set_refnum(active_win, refnum);
+	}
+
+	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WINDOW MOVE DLEFT */
-static void cmd_window_move_dleft(void)
+/* SYNTAX: WINDOW MOVE UP [-directional] */
+static void cmd_window_move_up(const char *data)
 {
 	MAIN_WINDOW_REC *rec;
+	GHashTable *optlist;
+	void *free_arg;
 
-	rec = mainwindows_find_left(active_mainwin, FALSE);
-	if (rec == NULL)
-		rec = mainwindows_find_left(active_mainwin, TRUE);
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window move up", &optlist))
+		return;
+
+	if (g_hash_table_lookup(optlist, "directional") != NULL) {
+		rec = mainwindows_find_upper(active_mainwin);
+	} else {
+		rec = mainwindows_find_upper_left(active_mainwin);
+	}
+
 	if (rec != NULL)
 		window_reparent(active_win, rec);
+
+	cmd_params_free(free_arg);
 }
 
-/* SYNTAX: WINDOW MOVE DRIGHT */
-static void cmd_window_move_dright(void)
+/* SYNTAX: WINDOW MOVE DOWN [-directional] */
+static void cmd_window_move_down(const char *data)
 {
 	MAIN_WINDOW_REC *rec;
+	GHashTable *optlist;
+	void *free_arg;
 
-	rec = mainwindows_find_right(active_mainwin, FALSE);
-	if (rec == NULL)
-		rec = mainwindows_find_right(active_mainwin, TRUE);
+	if (!cmd_get_params(data, &free_arg, PARAM_FLAG_GETREST | PARAM_FLAG_OPTIONS,
+			    "window move down", &optlist))
+		return;
+
+	if (g_hash_table_lookup(optlist, "directional") != NULL) {
+		rec = mainwindows_find_lower(active_mainwin);
+	} else {
+		rec = mainwindows_find_lower_right(active_mainwin);
+	}
+
 	if (rec != NULL)
 		window_reparent(active_win, rec);
-}
 
-/* SYNTAX: WINDOW MOVE UP */
-static void cmd_window_move_up(void)
-{
-	MAIN_WINDOW_REC *rec;
-
-	rec = mainwindows_find_upper_left(active_mainwin);
-	if (rec != NULL)
-		window_reparent(active_win, rec);
-}
-
-/* SYNTAX: WINDOW MOVE DOWN */
-static void cmd_window_move_down(void)
-{
-	MAIN_WINDOW_REC *rec;
-
-	rec = mainwindows_find_lower_right(active_mainwin);
-	if (rec != NULL)
-		window_reparent(active_win, rec);
+	cmd_params_free(free_arg);
 }
 
 static void windows_print_sticky(WINDOW_REC *win)
@@ -1866,23 +1957,26 @@ void mainwindows_init(void)
 	command_bind("window down", NULL, (SIGNAL_FUNC) cmd_window_down);
 	command_bind("window left", NULL, (SIGNAL_FUNC) cmd_window_left);
 	command_bind("window right", NULL, (SIGNAL_FUNC) cmd_window_right);
-	command_bind("window dup", NULL, (SIGNAL_FUNC) cmd_window_dup);
-	command_bind("window ddown", NULL, (SIGNAL_FUNC) cmd_window_ddown);
-	command_bind("window dleft", NULL, (SIGNAL_FUNC) cmd_window_dleft);
-	command_bind("window dright", NULL, (SIGNAL_FUNC) cmd_window_dright);
 	command_bind("window stick", NULL, (SIGNAL_FUNC) cmd_window_stick);
 	command_bind("window move left", NULL, (SIGNAL_FUNC) cmd_window_move_left);
 	command_bind("window move right", NULL, (SIGNAL_FUNC) cmd_window_move_right);
 	command_bind("window move up", NULL, (SIGNAL_FUNC) cmd_window_move_up);
 	command_bind("window move down", NULL, (SIGNAL_FUNC) cmd_window_move_down);
-	command_bind("window move dleft", NULL, (SIGNAL_FUNC) cmd_window_move_dleft);
-	command_bind("window move dright", NULL, (SIGNAL_FUNC) cmd_window_move_dright);
-	command_bind("window rgrow", NULL, (SIGNAL_FUNC) cmd_window_rgrow);
-	command_bind("window rshrink", NULL, (SIGNAL_FUNC) cmd_window_rshrink);
-	command_bind("window rsize", NULL, (SIGNAL_FUNC) cmd_window_rsize);
-	command_bind("window rbalance", NULL, (SIGNAL_FUNC) cmd_window_rbalance);
-	command_bind("window rshow", NULL, (SIGNAL_FUNC) cmd_window_rshow);
 	signal_add("window print info", (SIGNAL_FUNC) sig_window_print_info);
+
+	command_set_options("window show", "right");
+	command_set_options("window grow", "right");
+	command_set_options("window shrink", "right");
+	command_set_options("window size", "right");
+	command_set_options("window balance", "right");
+	command_set_options("window up", "directional");
+	command_set_options("window down", "directional");
+	command_set_options("window left", "directional");
+	command_set_options("window right", "directional");
+	command_set_options("window move left", "directional");
+	command_set_options("window move right", "directional");
+	command_set_options("window move up", "directional");
+	command_set_options("window move down", "directional");
 }
 
 void mainwindows_deinit(void)
@@ -1901,21 +1995,10 @@ void mainwindows_deinit(void)
 	command_unbind("window down", (SIGNAL_FUNC) cmd_window_down);
 	command_unbind("window left", (SIGNAL_FUNC) cmd_window_left);
 	command_unbind("window right", (SIGNAL_FUNC) cmd_window_right);
-	command_unbind("window dup", (SIGNAL_FUNC) cmd_window_dup);
-	command_unbind("window ddown", (SIGNAL_FUNC) cmd_window_ddown);
-	command_unbind("window dleft", (SIGNAL_FUNC) cmd_window_dleft);
-	command_unbind("window dright", (SIGNAL_FUNC) cmd_window_dright);
 	command_unbind("window stick", (SIGNAL_FUNC) cmd_window_stick);
 	command_unbind("window move left", (SIGNAL_FUNC) cmd_window_move_left);
 	command_unbind("window move right", (SIGNAL_FUNC) cmd_window_move_right);
 	command_unbind("window move up", (SIGNAL_FUNC) cmd_window_move_up);
 	command_unbind("window move down", (SIGNAL_FUNC) cmd_window_move_down);
-	command_unbind("window move dleft", (SIGNAL_FUNC) cmd_window_move_dleft);
-	command_unbind("window move dright", (SIGNAL_FUNC) cmd_window_move_dright);
-	command_unbind("window rgrow", (SIGNAL_FUNC) cmd_window_rgrow);
-	command_unbind("window rshrink", (SIGNAL_FUNC) cmd_window_rshrink);
-	command_unbind("window rsize", (SIGNAL_FUNC) cmd_window_rsize);
-	command_unbind("window rbalance", (SIGNAL_FUNC) cmd_window_rbalance);
-	command_unbind("window rshow", (SIGNAL_FUNC) cmd_window_rshow);
 	signal_remove("window print info", (SIGNAL_FUNC) sig_window_print_info);
 }
