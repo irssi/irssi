@@ -18,11 +18,7 @@ if echo "${VERSION}" | grep -q -- -head; then
   # -head version, get extra details from git if we can
   git_version=$(GIT_DIR=$1/.git git describe --dirty --long --always --tags)
   if [ $? = 0 ]; then
-    new_version="$(echo "${VERSION}" | sed 's/-head//')"
-    # Because the git tag won't yet include the next release we modify the git
-    # describe output using the version defined from configure.ac.
-    version="${new_version}-$(echo "${git_version}" | sed 's/^.*-[0-9]\+-//')"
     echo "#undef PACKAGE_VERSION"
-    echo "#define PACKAGE_VERSION \"${version}\""
+    echo "#define PACKAGE_VERSION \"${git_version}\""
   fi
 fi
