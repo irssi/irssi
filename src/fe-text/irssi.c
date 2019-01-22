@@ -161,6 +161,7 @@ static void textui_init(void)
 
 static void textui_finish_init(void)
 {
+	int loglev;
 	quitting = FALSE;
 
 	term_refresh_freeze();
@@ -176,7 +177,10 @@ static void textui_finish_init(void)
 	mainwindow_activity_init();
 	mainwindows_layout_init();
 	gui_windows_init();
+	/* Temporarily raise the fatal level to abort on config errors. */
+	loglev = g_log_set_always_fatal(G_LOG_FATAL_MASK | G_LOG_LEVEL_CRITICAL);
 	statusbar_init();
+	g_log_set_always_fatal(loglev);
 	term_refresh_thaw();
 
 	settings_check();
@@ -319,6 +323,7 @@ int main(int argc, char **argv)
 	   you have to call setlocale(LC_ALL, "") */
 	setlocale(LC_ALL, "");
 
+	/* Temporarily raise the fatal level to abort on config errors. */
 	loglev = g_log_set_always_fatal(G_LOG_FATAL_MASK | G_LOG_LEVEL_CRITICAL);
 	textui_init();
 

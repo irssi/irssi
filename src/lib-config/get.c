@@ -62,20 +62,21 @@ CONFIG_NODE *config_node_section_index(CONFIG_REC *rec, CONFIG_NODE *parent, con
 			parent->value = g_slist_insert(parent->value, node, index);
 		}
 		if (!is_node_list(node)) {
-			int show_error = 0;
+			int error = 0;
 
 			if (new_type != -1) {
 				config_node_remove(rec, parent, node);
 				node = NULL;
-				show_error = 1;
+				error = 1;
 			} else if (!g_hash_table_lookup_extended(rec->cache_nodes, node, NULL, NULL)) {
 				g_hash_table_insert(rec->cache_nodes, node, NULL);
-				show_error = 1;
+				error = 1;
 			}
-			if (show_error)
-				g_critical("Expected %s node at `..%s/%s' was of scalar type. Corrupt config?",
-						   new_type == NODE_TYPE_LIST ? "list" : new_type == NODE_TYPE_BLOCK ? "block" : "section",
-						   parent->key, key);
+			if (error)
+				g_critical("Expected %s node at `%s%s/%s' was of scalar type. Corrupt config?",
+					   new_type == NODE_TYPE_LIST ? "list" : new_type == NODE_TYPE_BLOCK ? "block" : "section",
+					   parent == rec->mainnode ? "" : "..",
+					   parent->key == NULL ? "" : parent->key, key);
 		} else {
 			g_return_val_if_fail(new_type == -1 || new_type == node->type, NULL);
 			return node;
