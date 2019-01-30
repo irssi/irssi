@@ -70,11 +70,12 @@ static void sig_layout_restore_item(WINDOW_REC *window, const char *type,
                 restore_win = window;
 
 		protocol = chat_protocol_find(chat_type);
-		if (protocol == NULL || protocol->not_initialized)
-			window_bind_add(window, tag, name);
-		else if (protocol->query_create != NULL)
+		if (protocol == NULL || protocol->not_initialized) {
+			WINDOW_BIND_REC *rec = window_bind_add(window, tag, name);
+			rec->type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
+		} else if (protocol->query_create != NULL) {
 			protocol->query_create(tag, name, TRUE);
-		else {
+		} else {
 			QUERY_REC *query;
 
 			query = g_new0(QUERY_REC, 1);
