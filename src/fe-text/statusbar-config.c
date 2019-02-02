@@ -150,6 +150,9 @@ static void statusbar_read(STATUSBAR_GROUP_REC *group, CONFIG_NODE *node)
         GSList *tmp;
         const char *visible_str;
 
+	g_return_if_fail(is_node_list(node));
+	g_return_if_fail(node->key != NULL);
+
 	bar = statusbar_config_find(group, node->key);
 	if (config_node_get_bool(node, "disabled", FALSE)) {
 		/* disabled, destroy it if it already exists */
@@ -191,10 +194,26 @@ static void statusbar_read(STATUSBAR_GROUP_REC *group, CONFIG_NODE *node)
 	}
 }
 
+#define skip_corrupt_config(parent, node, index, format, ...)	\
+	if ((node)->type != NODE_TYPE_BLOCK) {			\
+		if ((node)->key == NULL) {				\
+			g_critical("Expected %s node at `.." format "/%s[%d]' was of %s type. Corrupt config?", \
+				   "block", ##__VA_ARGS__, (parent)->key, (index), \
+				   (node)->type == NODE_TYPE_LIST ? "list" : "scalar"); \
+		} else {						\
+			g_critical("Expected %s node at `.." format "/%s/%s' was of %s type. Corrupt config?", \
+				   "block", ##__VA_ARGS__, (parent)->key, (node)->key, \
+				   (node)->type == NODE_TYPE_LIST ? "list" : "scalar"); \
+		}							\
+		continue;						\
+	}								\
+
+
 static void statusbar_read_group(CONFIG_NODE *node)
 {
 	STATUSBAR_GROUP_REC *group;
 	GSList *tmp;
+	int i;
 
 	g_return_if_fail(is_node_list(node));
 
@@ -205,9 +224,11 @@ static void statusbar_read_group(CONFIG_NODE *node)
 			active_statusbar_group = group;
 	}
 
-        tmp = config_node_first(node->value);
-	for (; tmp != NULL; tmp = config_node_next(tmp))
-		statusbar_read(group, tmp->data);
+	for (tmp = config_node_first(node->value), i = 0; tmp != NULL; tmp = config_node_next(tmp), i++) {
+		CONFIG_NODE *value = tmp->data;
+		skip_corrupt_config(node, value, i, "statusbar");
+		statusbar_read(group, value);
+	}
 }
 
 static void create_root_statusbars(void)
@@ -228,17 +249,20 @@ static void create_root_statusbars(void)
 
 static void read_statusbar_config_from_node(CONFIG_NODE *node)
 {
-	CONFIG_NODE *items;
+	CONFIG_NODE *items, *group;
 	GSList *tmp;
+	int i;
 
 	items = iconfig_node_section(node, "items", -1);
 	if (items != NULL)
 		statusbar_read_items(items);
 
-        tmp = config_node_first(node->value);
-	for (; tmp != NULL; tmp = config_node_next(tmp)) {
-		if (tmp->data != items)
-			statusbar_read_group(tmp->data);
+	for (tmp = config_node_first(node->value), i = 0; tmp != NULL; tmp = config_node_next(tmp), i++) {
+		group = tmp->data;
+		if (group != items) {
+			skip_corrupt_config(node, group, i, "");
+			statusbar_read_group(group);
+		}
 	}
 }
 
