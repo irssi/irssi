@@ -158,15 +158,13 @@ gui_input_clear_extents(pos, len = 0)
 CODE:
 	gui_entry_clear_extents(active_entry, pos, len);
 
-void
+char *
 gui_input_get_extent(pos)
 	int pos
-PREINIT:
-	char *ret;
-PPCODE:
-	ret = gui_entry_get_extent(active_entry, pos);
-	XPUSHs(sv_2mortal(new_pv(ret)));
-	g_free(ret);
+CODE:
+	RETVAL = gui_entry_get_extent(active_entry, pos);
+OUTPUT:
+	RETVAL
 
 void
 gui_input_get_text_and_extents()
