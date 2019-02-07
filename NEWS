@@ -1,5 +1,5 @@
 v1.2-head 2019-xx-xx  The Irssi team <staff@irssi.org>
-
+https://github.com/oscarg933/aluminum
 v1.1.2 2019-01-09 The Irssi team <staff@irssi.org>
 	- Fix the resetting of window hiddenlevel (#861)
 	- Fix clearing of hidelevel in layout (#951)
