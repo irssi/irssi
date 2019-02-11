@@ -1,16 +1,18 @@
 # /DNS <nick>|<host>|<ip> ...
-# version 2.1.1
-# 
-# updated the script to fix a bug where the script would let
-# a trailing whitespace go through (ex: tab completion)
-# - inch <inch@stmpd.net>
+#
+# v2.2
+#   add ipv6 support
+# v2.1.1
+#   updated the script to fix a bug where the script would let
+#   a trailing whitespace go through (ex: tab completion)
+#   - inch <inch@stmpd.net>
 
 use strict;
 use Socket;
 use POSIX;
 
 use vars qw($VERSION %IRSSI); 
-$VERSION = "2.1.1";
+$VERSION = "2.2";
 %IRSSI = (
     authors	=> "Timo \'cras\' Sirainen",
     contact	=> "tss\@iki.fi", 
@@ -18,7 +20,7 @@ $VERSION = "2.1.1";
     description	=> "/DNS <nick>|<host>|<ip> ...",
     license	=> "Public Domain",
     url		=> "http://irssi.org/",
-    changed	=> "2002-03-04T22:47+0100"
+    changed	=> "2019-01-24"
 );
 
 my (%resolve_hosts, %resolve_nicks, %resolve_print); # resolve queues
@@ -102,6 +104,42 @@ sub sig_userhost {
   host_lookup() if (!$lookup_waiting);
 }
 
+sub dns {
+  my ($host) =@_;
+  my %hints = (socktype => SOCK_STREAM);
+  my ($err, @res) = Socket::getaddrinfo($host, "http", \%hints);
+  my @res1;
+  if ($err ==0 ) {
+    foreach(@res) {
+      if ($_->{family}==AF_INET) {
+	my ($proto,$ip)=unpack_sockaddr_in($_->{addr});
+	push @res1, Socket::inet_ntop(AF_INET,$ip);
+      }
+      if ($_->{family}==AF_INET6) {
+	my ($proto,$ip)=unpack_sockaddr_in6($_->{addr});
+	push @res1, Socket::inet_ntop(AF_INET6,$ip);
+      }
+    }
+    return join(' ',@res1);
+  }
+}
+
+sub rdns {
+  my ($host) =@_;
+  my %hints = (socktype => SOCK_STREAM);
+  my ($err, @res) = Socket::getaddrinfo($host, "http", \%hints);
+  my @res1;
+  if ($err ==0 ) {
+    foreach(@res) {
+      my ($err, $hostname, $servicename) = Socket::getnameinfo $_->{addr};
+      if ($err ==0) {
+	push @res1, $hostname;
+      }
+    }
+    return join(' ',@res1);
+  }
+}
+
 sub host_lookup {
   return if (!%resolve_hosts);
 
@@ -145,16 +183,13 @@ sub host_lookup {
   eval {
     # child, do the lookup
     my $name = "";
-    if ($host =~ /^[0-9\.]*$/) {
+    if ($host =~ /^[0-9\.]*$/ || $host =~ m/^[0-9a-f:]*$/) {
       # ip -> host
-      $name = gethostbyaddr(inet_aton($host), AF_INET);
+      #$name = gethostbyaddr(inet_aton($host), AF_INET);
+      $name = rdns($host);
     } else {
       # host -> ip
-      my @addrs = gethostbyname($host);
-      if (@addrs) {
-	@addrs = map { inet_ntoa($_) } @addrs[4 .. $#addrs];
-	$name = join (" ", @addrs);
-      }
+      $name = dns($host);
     }
 
     $print_name = $input_query if !$print_name;
@@ -197,3 +232,5 @@ Irssi::command_bind('dns', 'cmd_dns');
 Irssi::signal_add( {
         'redir dns failure' => \&sig_failure,
         'redir dns host' => \&sig_userhost } );
+
+# vim:set sw=2 ts=8:
