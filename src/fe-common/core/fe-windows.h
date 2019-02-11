@@ -22,6 +22,7 @@ enum {
 typedef struct {
 	char *servertag;
         char *name;
+	int type;
 	unsigned int sticky:1;
 } WINDOW_BIND_REC;
 
