@@ -1,4 +1,86 @@
-v1.2-head 2019-xx-xx  The Irssi team <staff@irssi.org>
+v1.2.0 2019-02-11 The Irssi team <staff@irssi.org>
+	! Contains all changes from 1.1.2
+	* Improved the /STATUSBAR commands (#858)
+	* /SET no longer shows `=' between setting and value (#886)
+	* /CUBES removed from default config (available as script)
+          (#956)
+	* /1 /2 /3 ... removed from default config (available as new
+          setting window_number_commands) (#958)
+	* Always redraw the screen on resize. By David Phillips (#896)
+	* Private notices intended for channels are now displayed on
+	  the channel (new setting notice_channel_context) (#959)
+	+ Imported the "Off-the-record" module into Irssi tree (#854,
+	  #589, #196)
+	+ Initial support for sideways split windows (#697, #431,
+	  #224, #807, FS#310, #947, #955, #989)
+	+ Change the implementation of `wcwidth'. This is used to
+	  calculate the width of emojis on your terminal screen (#917,
+	  #720)
+	+ Make the wcwidth functions available from Perl (#973):
+	      string_width(str)
+	      string_chars_for_width(str, width)
+	      wcwidth(char)
+	+ Added completion_keep_word setting (#979)
+	+ Allow activity_hide_targets to hide activity in itemless
+	  windows (#967, #997, #1001, #1003)
+	+ Added activity_hide_visible setting (#990)
+	+ Allow hiding of lines through the /IGNORE system (#901,
+	  #900, #892, #890, #884, #937)
+	+ Add window_default_hidelevel setting. By Doug Freed (#941)
+	+ Add activity_hide_window_hidelevel setting, defaulting to ON
+	  (#938)
+	+ Add autolog_only_saved_channels setting, to autolog only
+	  channels that are in the config (#968)
+	+ Add format support for the input line. By Ben Paxton,
+	  originally by Jonas Hurrelmann (#764, FS#621, #1004)
+	      use Irssi::TextUI;
+	      gui_input_set_extent(pos, text)
+	      gui_input_set_extents(pos, len, left, right)
+	      gui_input_clear_extents(pos, len)
+	      gui_input_get_extent(pos)
+	      gui_input_get_text_and_extents()
+	      gui_input_set_text_and_extents(...)
+	+ Parsing of IRCv3 CAP 3.2 (#775, #869)
+	+ Show CAP-related events in the user interface (#918, #916,
+	  #870, #704)
+	+ Continue using separators when addressing multiple nicks
+	  with tab completion. By Manish Goregaokar (#822)
+	+ Bind Shift-tab by default. By Niklas Luokkala (#830, #829)
+	+ Fuzzing more things (#913, #780, #813)
+	- Disconnect SASL properly in case the SASL module got
+          unloaded from server (#931, #629, #618, #616)
+	- Fix backward completion jumping to the first instead of last
+          word (#979)
+	- Improve empty topic handling (#961, #905, #911, #897, #888)
+	- Prevent config truncation when no space left. By dequis and
+          Lukas Waymann (#922, #925, #910, #909, #906, #871, #817)
+	- Also time-out servers in lookup phase (#866, #130)
+	- Fix build with LibreSSL 2.7. By Dorian Harmans (#865)
+	- Fix a crash when appending to a textbuffer without
+          line. Reported by Jari Matilainen (#862)
+	- Fix segfault on sending large messages (#803, #796, #802)
+	- Fix segfault on invalid statusbar config (#993, #994)
+	- Fix random memory writes on restoring queries of foreign
+          protocols (#999, #1000)
+	- Make default keybinds deletable (#859, #507)
+	- Fix freeze when resizing Irssi very small (#946)
+	- Compare channels case-insensitively, avoiding confusions
+          with the config file (#857, #856)
+	- Fix DCC GET on Android. By Martin Staron (#844)
+	- Improve rawlog performance (#957)
+	- Fix nick escaping erroneously escaping quotes (#978, #974,
+          #709)
+	- Protect against theme recursion, improve padding
+          performance, limit alignment padding. Credit to Oss-Fuzz
+          (#835, #851, #850, #846, #848)
+	- Fix recursive loop in replaces (#833, GL#23)
+	- Fix headers for compilation of C modules (#939)
+	- Documentation. By Zero King (#814). (#852)
+	- Sync NEWS, docs, scripts (#849, #855)
+	- Build system (#868, #867, #985, #988)
+	- Fix build on IBM i and AIX. By Calvin Buckley (#975)
+	- Misc fixes (#840, #839, #843, #953, #962). Tests (#806,
+          #875, #905, #964, #1011). Fuzzing (#929).
 
 v1.1.2 2019-01-09 The Irssi team <staff@irssi.org>
 	- Fix the resetting of window hiddenlevel (#861)
@@ -30,7 +112,7 @@ v1.0.7 2018-02-15 The Irssi team <staff@irssi.org>
 	- Prevent use after free error during the execution of some
 	  commands. Found by Joseph Bisch (GL#17, GL!24).
 	- Revert netsplit print optimisation due to crashes (#465, #809,
-          #812, #819, #824).
+          #812, #819, #824, #832).
 	- Fix use after free when SASL messages are received in
           unexpected order (GL#26, GL!33).
 	- Fix null pointer dereference in the tab completion when an
