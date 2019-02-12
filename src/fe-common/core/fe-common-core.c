@@ -486,9 +486,6 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 			strarray_find(array, dest->window->name) != -1 ? TRUE : FALSE;
 
 	item = window_item_find_window(dest->window, dest->server, dest->target);
-	if (item == NULL) {
-		return FALSE;
-	}
 
 	server_tag_len = dest->server_tag != NULL ? strlen(dest->server_tag) : 0;
 	for (tmp = array; *tmp != NULL; tmp++) {
@@ -507,11 +504,11 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 			return TRUE;
 		} else if (g_ascii_strcasecmp(str, dest->target) == 0) {
 			return TRUE;
-		} else if (item->type == query_type &&
+		} else if (item != NULL && item->type == query_type &&
 		           g_strcmp0(str, dest->target[0] == '=' ? "::dccqueries" :
 			             "::queries") == 0) {
 			return TRUE;
-		} else if (item->type == channel_type &&
+		} else if (item != NULL && item->type == channel_type &&
 			   g_strcmp0(str, "::channels") == 0) {
 			return TRUE;
 		}
