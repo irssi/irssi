@@ -12,7 +12,7 @@ v1.2.0 2019-02-11 The Irssi team <staff@irssi.org>
 	* Private notices intended for channels are now displayed on
 	  the channel (new setting notice_channel_context) (#959)
 	+ Imported the "Off-the-record" module into Irssi tree (#854,
-	  #589, #196)
+	  #589, #196, #881)
 	+ Initial support for sideways split windows (#697, #431,
 	  #224, #807, FS#310, #947, #955, #989)
 	+ Change the implementation of `wcwidth'. This is used to
