@@ -54,7 +54,12 @@ static void test_paste_join_multiline(const paste_join_multiline_test_case *test
 	g_test_message("INPUT: \"%s\"", (t1 = g_strescape(test->input, NULL)));
 	g_free(t1);
 
-	buffer->data = (char *) g_utf8_to_ucs4_fast(test->input, -1, (glong *) &buffer->len);
+	{
+		glong buf_len;
+		buffer->data = (char *) g_utf8_to_ucs4_fast(test->input, -1, &buf_len);
+		buffer->len = buf_len;
+	}
+
 	paste_buffer_join_lines(buffer);
 	resultstr = g_ucs4_to_utf8((unichar *) buffer->data, buffer->len, NULL, NULL, NULL);
 
