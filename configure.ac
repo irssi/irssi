@@ -319,7 +319,7 @@ PKG_CHECK_MODULES([OPENSSL], [openssl], [
 	CFLAGS="$CFLAGS $OPENSSL_CFLAGS"
 	LIBS="$LIBS $OPENSSL_LIBS"
 ], [
-	AC_CHECK_LIB([ssl], [SSL_library_init], [
+	AC_CHECK_LIB([ssl], [SSL_CTX_new], [
 		LIBS="$LIBS -lssl -lcrypto"
 	], [
 		AC_MSG_ERROR([The OpenSSL library was not found])
