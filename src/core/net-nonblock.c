@@ -197,8 +197,7 @@ static void simple_readpipe(SIMPLE_THREAD_REC *rec, GIOChannel *pipe)
 	g_io_channel_unref(rec->pipes[1]);
 
 	ip = iprec.ip4.family != 0 ? &iprec.ip4 : &iprec.ip6;
-	handle = iprec.error == -1 ? NULL :
-		net_connect_ip(ip, rec->port, rec->my_ip);
+	handle = iprec.error ? NULL : net_connect_ip(ip, rec->port, rec->my_ip);
 
 	g_free_not_null(rec->my_ip);
 
