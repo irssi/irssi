@@ -13,7 +13,7 @@ typedef struct {
 } RESOLVED_IP_REC;
 
 typedef struct {
-        int namelen;
+	int namelen;
 	char *name;
 
 	int error;
