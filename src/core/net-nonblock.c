@@ -25,16 +25,6 @@
 #include "pidwait.h"
 #include "net-nonblock.h"
 
-typedef struct {
-	NET_CALLBACK func;
-	void *data;
-
-	GIOChannel *pipes[2];
-	int port;
-	IPADDR *my_ip;
-	int tag;
-} SIMPLE_THREAD_REC;
-
 /* nonblocking gethostbyname(), ip (IPADDR) + error (int, 0 = not error) is
    written to pipe when found PID of the resolver child is returned */
 int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe,
@@ -146,102 +136,10 @@ int net_gethostbyname_return(GIOChannel *pipe, RESOLVED_IP_REC *rec)
 	return 0;
 }
 
-/* Get host name, call func when finished */
-int net_gethostbyaddr_nonblock(IPADDR *ip, NET_HOST_CALLBACK func, void *data)
-{
-	/* FIXME: not implemented */
-	return FALSE;
-}
-
 /* Kill the resolver child */
 void net_disconnect_nonblock(int pid)
 {
 	g_return_if_fail(pid > 0);
 
 	kill(pid, SIGKILL);
-}
-
-static void simple_init(SIMPLE_THREAD_REC *rec, GIOChannel *handle)
-{
-	g_return_if_fail(rec != NULL);
-
-	g_source_remove(rec->tag);
-
-	if (net_geterror(handle) != 0) {
-		/* failed */
-		g_io_channel_shutdown(handle, TRUE, NULL);
-		g_io_channel_unref(handle);
-		handle = NULL;
-	}
-
-	rec->func(handle, rec->data);
-	g_free(rec);
-}
-
-static void simple_readpipe(SIMPLE_THREAD_REC *rec, GIOChannel *pipe)
-{
-	RESOLVED_IP_REC iprec;
-	GIOChannel *handle;
-	IPADDR *ip;
-
-	g_return_if_fail(rec != NULL);
-
-	g_source_remove(rec->tag);
-
-	net_gethostbyname_return(pipe, &iprec);
-	g_free_not_null(iprec.errorstr);
-
-	g_io_channel_shutdown(rec->pipes[0], TRUE, NULL);
-	g_io_channel_unref(rec->pipes[0]);
-	g_io_channel_shutdown(rec->pipes[1], TRUE, NULL);
-	g_io_channel_unref(rec->pipes[1]);
-
-	ip = iprec.ip4.family != 0 ? &iprec.ip4 : &iprec.ip6;
-	handle = iprec.error ? NULL : net_connect_ip(ip, rec->port, rec->my_ip);
-
-	g_free_not_null(rec->my_ip);
-
-	if (handle == NULL) {
-		/* failed */
-		rec->func(NULL, rec->data);
-		g_free(rec);
-		return;
-	}
-
-	rec->tag = g_input_add(handle, G_INPUT_READ | G_INPUT_WRITE,
-			       (GInputFunction) simple_init, rec);
-}
-
-/* Connect to server, call func when finished */
-int net_connect_nonblock(const char *server, int port, const IPADDR *my_ip,
-			 NET_CALLBACK func, void *data)
-{
-	SIMPLE_THREAD_REC *rec;
-	int fd[2];
-
-	g_return_val_if_fail(server != NULL, FALSE);
-	g_return_val_if_fail(func != NULL, FALSE);
-
-	if (pipe(fd) != 0) {
-		g_warning("net_connect_nonblock(): pipe() failed.");
-		return FALSE;
-	}
-
-	rec = g_new0(SIMPLE_THREAD_REC, 1);
-	rec->port = port;
-	if (my_ip != NULL) {
-		rec->my_ip = g_malloc(sizeof(IPADDR));
-		memcpy(rec->my_ip, my_ip, sizeof(IPADDR));
-	}
-	rec->func = func;
-	rec->data = data;
-	rec->pipes[0] = g_io_channel_new(fd[0]);
-	rec->pipes[1] = g_io_channel_new(fd[1]);
-
-	/* start nonblocking host name lookup */
-	net_gethostbyname_nonblock(server, rec->pipes[1], 0);
-	rec->tag = g_input_add(rec->pipes[0], G_INPUT_READ,
-			       (GInputFunction) simple_readpipe, rec);
-
-	return TRUE;
 }
