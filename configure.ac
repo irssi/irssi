@@ -181,6 +181,15 @@ AC_ARG_ENABLE(gregex,
 	fi,
 	want_gregex=yes)
 
+AC_ARG_ENABLE(utf8proc,
+[  --disable-utf8proc        Build without Julia's utf8proc],
+	if test x$enableval = xno ; then
+		want_utf8proc=no
+	else
+		want_utf8proc=yes
+	fi,
+	want_utf8proc=yes)
+
 AC_ARG_WITH(capsicum,
 [  --with-capsicum         Build with Capsicum support],
 	if test x$withval = xno; then
@@ -329,7 +338,18 @@ PKG_CHECK_MODULES([OPENSSL], [openssl], [
 dnl **
 dnl ** utf8proc
 dnl **
-AC_CHECK_LIB([utf8proc], [utf8proc_version])
+if test "x$want_utf8proc" != "xno"; then
+	AC_CHECK_HEADER([utf8proc.h], [
+		AC_CHECK_LIB([utf8proc], [utf8proc_version], [
+			want_utf8proc=yes
+			LIBS="$LIBS -lutf8proc"
+		], [
+			want_utf8proc="no, library not found"
+		])
+	], [
+		want_utf8proc="no, library header not found"
+	])
+fi
 
 dnl **
 dnl ** curses checks
@@ -821,7 +841,7 @@ echo "Building with 64bit DCC support .. : $offt_64bit"
 echo "Building with true color support.. : $want_truecolor"
 echo "Building with GRegex ............. : $want_gregex"
 echo "Building with Capsicum ........... : $want_capsicum"
-echo "Building with utf8proc ........... : $ac_cv_lib_utf8proc_utf8proc_version"
+echo "Building with utf8proc ........... : $want_utf8proc"
 if test "x$want_otr" = "xstatic"; then
 	echo "Building with OTR support ........ : static (in irssi binary)"
 elif test "x$want_otr" = "xmodule"; then
