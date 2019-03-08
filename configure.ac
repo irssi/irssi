@@ -342,6 +342,7 @@ if test "x$want_utf8proc" != "xno"; then
 	AC_CHECK_HEADER([utf8proc.h], [
 		AC_CHECK_LIB([utf8proc], [utf8proc_version], [
 			want_utf8proc=yes
+			AC_DEFINE(HAVE_LIBUTF8PROC,, [Define to 1 if you have the `utf8proc' library (-lutf8proc).])
 			LIBS="$LIBS -lutf8proc"
 		], [
 			want_utf8proc="no, library not found"
