@@ -5,19 +5,22 @@
 
 %9Parameters:%9
 
+    -window:            Displays the output in the active window.
+
     The file to display and optionally a position to seek in the file,
     in bytes.
 
 %9Description:%9
 
-    Displays the contents of the specified file into the active window.
+    Displays the contents of the specified file in the active window if -window
+    is specified, otherwise to the closest matching window depending on levels.
 
     The seek position parameter is used internally to display away logs, if
     omitted the whole file is shown.
 
 %9Examples:%9
 
-    /CAT /etc/network/interfaces
+    /CAT -window /etc/network/interfaces
     /CAT /home/mike/resume.txt
     /CAT contact_details.txt
 
