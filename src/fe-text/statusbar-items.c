@@ -123,7 +123,9 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 						 window->hilight_color,
 						 window->refnum);
 		if (add_name && window->active != NULL)
-			g_string_append_printf(format, ":%s", window->active->visible_name);
+			g_string_append_printf(format, ":%s",
+				settings_get_bool("actlist_prefer_window_name") &&
+				window->name != NULL ? window->name : window->active->visible_name);
 		g_string_append_c(format, '}');
 
 		value = theme_format_expand(theme, format->str);
@@ -470,6 +472,7 @@ void statusbar_items_init(void)
 	settings_add_time("misc", "lag_min_show", "1sec");
 	settings_add_str("lookandfeel", "actlist_sort", "refnum");
 	settings_add_bool("lookandfeel", "actlist_names", FALSE);
+	settings_add_bool("lookandfeel", "actlist_prefer_window_name", FALSE);
 
 	statusbar_item_register("window", NULL, item_window_active);
 	statusbar_item_register("window_empty", NULL, item_window_empty);
