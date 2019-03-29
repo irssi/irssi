@@ -21,7 +21,7 @@ unsigned int no_reconnect:1; /* Don't reconnect to server */
 NET_SENDBUF_REC *handle;
 int readtag; /* input tag */
 
-/* for net_connect_nonblock() */
+/* for net_gethostbyname_return() */
 GIOChannel *connect_pipe[2];
 int connect_tag;
 int connect_pid;

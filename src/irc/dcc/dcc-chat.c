@@ -361,7 +361,7 @@ static void dcc_chat_listen(CHAT_DCC_REC *dcc)
 	signal_emit("dcc connected", 1, dcc);
 }
 
-/* callback: DCC CHAT - net_connect_nonblock() finished */
+/* callback: DCC CHAT - connect finished */
 static void sig_chat_connected(CHAT_DCC_REC *dcc)
 {
 	g_return_if_fail(IS_DCC_CHAT(dcc));
