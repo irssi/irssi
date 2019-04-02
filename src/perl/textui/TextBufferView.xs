@@ -59,6 +59,11 @@ textbuffer_view_remove_all_lines(view)
 	Irssi::TextUI::TextBufferView view
 
 void
+textbuffer_view_remove_lines_by_level(view, level)
+        Irssi::TextUI::TextBufferView view
+        int level
+
+void
 textbuffer_view_set_bookmark(view, name, line)
 	Irssi::TextUI::TextBufferView view
 	char *name
