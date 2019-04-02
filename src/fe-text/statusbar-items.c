@@ -76,7 +76,7 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 	GString *format;
 	GList *tmp;
         char *ret, *name, *value;
-        int is_det;
+        int is_det, pref_name;
 	int add_name = settings_get_bool("actlist_names");
 
 	str = g_string_new(NULL);
@@ -122,10 +122,12 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 			g_string_printf(format, "{sb_act_hilight_color %s %d",
 						 window->hilight_color,
 						 window->refnum);
+
+		pref_name = settings_get_bool("actlist_prefer_window_name");
 		if (add_name && window->active != NULL)
 			g_string_append_printf(format, ":%s",
-				settings_get_bool("actlist_prefer_window_name") &&
-				window->name != NULL ? window->name : window->active->visible_name);
+				pref_name == 1 && window->name != NULL ?
+				window->name : window->active->visible_name);
 		g_string_append_c(format, '}');
 
 		value = theme_format_expand(theme, format->str);
