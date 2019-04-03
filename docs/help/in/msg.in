@@ -11,8 +11,13 @@
 
     The target nickname or channel and the message to send.
 
-    Use the wildcard character '*' if you want to use the active nickname or
-    channel.
+    The target can be a comma delimited list of targets, ie
+    nick1,nick2 or #chan1,#chan2
+
+    Or one of the following special targets:
+      * : Use the active nickname or channel
+      , : Last person who sent you a /msg
+      . : Last person you sent a /msg to
 
 %9Description:%9
 
