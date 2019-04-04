@@ -394,10 +394,26 @@
 
  5.4 Server settings
 
-	/SERVER ADD [-auto | -noauto] [-network <network>] [-host <hostname>]
+	/SERVER ADD [-tls] [-tls_cert <cert>] [-tls_pkey <pkey>]
+		    [-tls_pass <password>] [-tls_verify] [-tls_cafile <cafile>]
+		    [-tls_capath <capath>] [-tls_ciphers <list>] 
+		    [-tls_pinned_cert <fingerprint>] [-tls_pinned_pubkey <fingerprint>] 
+		    [-auto | -noauto] [-network <network>] [-host <hostname>]
 	            [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
 	            <address> [<port> [<password>]]
 
+	    -tls: Connects using TLS encryption.
+	    -tls_cert: The TLS client certificate file.
+	    -tls_pkey: The TLS client private key, if not included in the 
+	               certificate file.
+	    -tls_pass: The password for the TLS client private key or 
+	    	       certificate.
+	    -tls_verify: Verifies the TLS certificate of the server.
+	    -tls_cafile: The file with the list of CA certificates.
+	    -tls_capath: The directory which contains the CA certificates.
+	    -tls_ciphers: TLS cipher suite preference lists.
+	    -tls_pinned_cert: Pinned x509 certificate fingerprint.
+	    -tls_pinned_pubkey: Pinned public key fingerprint.
 	    -auto: Automatically connect to server at startup
 	    -noauto: Don't connect to server at startup (default)
 	    -network: Specify what IRC network this server belongs to
