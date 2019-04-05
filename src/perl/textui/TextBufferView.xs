@@ -17,6 +17,11 @@ CODE:
 	textbuffer_view_set_default_indent(view, default_indent, longword_noindent, NULL);
 
 void
+textbuffer_view_set_hidden_level(view, level)
+        Irssi::TextUI::TextBufferView view
+        int level
+
+void
 textbuffer_view_set_scroll(view, scroll)
 	Irssi::TextUI::TextBufferView view
 	int scroll
@@ -52,6 +57,11 @@ textbuffer_view_remove_line(view, line)
 void
 textbuffer_view_remove_all_lines(view)
 	Irssi::TextUI::TextBufferView view
+
+void
+textbuffer_view_remove_lines_by_level(view, level)
+        Irssi::TextUI::TextBufferView view
+        int level
 
 void
 textbuffer_view_set_bookmark(view, name, line)
