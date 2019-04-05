@@ -68,7 +68,7 @@ static const char *current_cmdline;
 static GTimeVal time_command_last, time_command_now;
 static int last_command_cmd, command_cmd;
 
-/* SYNTAX: ECHO [-current] [-window <name>] [-level <level>] <text> */
+/* SYNTAX: ECHO [-window <name>] [-level <level>] <text> */
 static void cmd_echo(const char *data, void *server, WI_ITEM_REC *item)
 {
         WINDOW_REC *window;
@@ -343,7 +343,7 @@ void fe_core_commands_init(void)
 	signal_add("error command", (SIGNAL_FUNC) event_cmderror);
 	signal_add("list subcommands", (SIGNAL_FUNC) event_list_subcommands);
 
-	command_set_options("echo", "current +level +window");
+	command_set_options("echo", "+level +window");
 }
 
 void fe_core_commands_deinit(void)

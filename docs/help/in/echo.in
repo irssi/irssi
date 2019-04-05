@@ -5,7 +5,6 @@
 
 %9Parameters:%9
 
-    -current:    Displays the output in the active window.
     -window:     Displays the output in the target window.
     -level:      Displays the output with a given message level.
 
@@ -18,7 +17,7 @@
 %9Examples:%9
 
     /ECHO 1 + 1 = 2 :D
-    /ECHO -current Testing the ECHO command
+    /ECHO Testing the ECHO command
     /ECHO -window #irssi Special variables such as ${N} will not be expanded.
 
 %9See also:%9 CAT, EVAL, EXEC, LEVELS
