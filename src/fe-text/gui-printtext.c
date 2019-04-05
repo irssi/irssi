@@ -39,6 +39,13 @@ int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7,
 	 /* 76-87 */ 217, 223, 229, 193, 157, 158, 159, 153, 147, 183, 219, 212,
 	 /* 88-98 */  16, 233, 235, 237, 239, 241, 244, 247, 250, 254, 231, -1 };
 static int scrollback_lines, scrollback_time, scrollback_burst_remove;
+/*
+ * If positive, remove lines older than scrollback_max_age seconds.
+ * Deletion is triggered by the "gui print text finished" signal (i.e. a message
+ * for the window). Note: "Day changed to" message also cause messages to be
+ * deleted within 1 day latency.
+ */
+static int scrollback_max_age;
 
 static int next_xpos, next_ypos;
 
@@ -182,9 +189,10 @@ void gui_printtext_window_border(int x, int y)
 static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 {
 	LINE_REC *line;
+	time_t cur_time = time(NULL);
 	time_t old_time;
 
-	old_time = time(NULL)-scrollback_time+1;
+	old_time = cur_time - scrollback_time + 1;
 	if (view->buffer->lines_count >=
 	    scrollback_lines+scrollback_burst_remove) {
                 /* remove lines by line count */
@@ -195,6 +203,21 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 				/* too new line, don't remove yet - also
 				   if scrollback_lines is 0, we want to check
 				   only scrollback_time setting. */
+				break;
+			}
+			textbuffer_view_remove_line(view, line);
+		}
+	}
+
+	if (scrollback_max_age > 0) {
+		old_time = cur_time - scrollback_max_age;
+		while (view->buffer->lines_count > 0) {
+			line = view->buffer->first_line;
+			if (line->info.time >= old_time) {
+				/*
+				 * The first line is newer than the threshold
+				 * time -> no need to remove more lines.
+				 */
 				break;
 			}
 			textbuffer_view_remove_line(view, line);
@@ -337,6 +360,7 @@ static void read_settings(void)
 {
 	scrollback_lines = settings_get_int("scrollback_lines");
 	scrollback_time = settings_get_time("scrollback_time")/1000;
+	scrollback_max_age = settings_get_time("scrollback_max_age")/1000;
         scrollback_burst_remove = settings_get_int("scrollback_burst_remove");
 }
 
@@ -349,6 +373,7 @@ void gui_printtext_init(void)
 
 	settings_add_int("history", "scrollback_lines", 500);
 	settings_add_time("history", "scrollback_time", "1day");
+	settings_add_time("history", "scrollback_max_age", "0");
 	settings_add_int("history", "scrollback_burst_remove", 10);
 
 	signal_add("gui print text", (SIGNAL_FUNC) sig_gui_print_text);
