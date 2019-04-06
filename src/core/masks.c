@@ -68,7 +68,7 @@ int mask_match(SERVER_REC *server, const char *mask,
 
 	g_return_val_if_fail(server == NULL || IS_SERVER(server), FALSE);
 	g_return_val_if_fail(mask != NULL && nick != NULL &&
-			     nick != NULL && host != NULL, FALSE);
+			     user != NULL && host != NULL, FALSE);
 
 	str = !check_address(mask, &wildcards) ? (char *) nick :
 		g_strdup_printf("%s!%s@%s", nick, user, host);
