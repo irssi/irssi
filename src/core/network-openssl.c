@@ -854,14 +854,13 @@ int irssi_ssl_handshake(GIOChannel *handle)
 	}
 
 	cert = SSL_get_peer_certificate(chan->ssl);
-	pubkey = X509_get_X509_PUBKEY(cert);
-
 	if (cert == NULL) {
 		g_warning("TLS server supplied no certificate");
 		ret = 0;
 		goto done;
 	}
 
+	pubkey = X509_get_X509_PUBKEY(cert);
 	if (pubkey == NULL) {
 		g_warning("TLS server supplied no certificate public key");
 		ret = 0;
