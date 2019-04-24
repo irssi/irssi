@@ -601,18 +601,19 @@ static void set_cipher_info(TLS_REC *tls, SSL *ssl)
 	tls_rec_set_cipher_size(tls, SSL_get_cipher_bits(ssl, NULL));
 }
 
-static void set_pubkey_info(TLS_REC *tls, X509 *cert, unsigned char *cert_fingerprint, size_t cert_fingerprint_size, unsigned char *public_key_fingerprint, size_t public_key_fingerprint_size)
+static gboolean set_pubkey_info(TLS_REC *tls, X509 *cert, unsigned char *cert_fingerprint, size_t cert_fingerprint_size, unsigned char *public_key_fingerprint, size_t public_key_fingerprint_size)
 {
+	gboolean ret = TRUE;
 	EVP_PKEY *pubkey = NULL;
 	char *cert_fingerprint_hex = NULL;
 	char *public_key_fingerprint_hex = NULL;
 
 	BIO *bio = NULL;
 	char buffer[128];
-	size_t length;
+	ssize_t length;
 
-	g_return_if_fail(tls != NULL);
-	g_return_if_fail(cert != NULL);
+	g_return_val_if_fail(tls != NULL, FALSE);
+	g_return_val_if_fail(cert != NULL, FALSE);
 
 	pubkey = X509_get_pubkey(cert);
 
@@ -648,6 +649,11 @@ static void set_pubkey_info(TLS_REC *tls, X509 *cert, unsigned char *cert_finger
 	bio = BIO_new(BIO_s_mem());
 	ASN1_TIME_print(bio, X509_get_notBefore(cert));
 	length = BIO_read(bio, buffer, sizeof(buffer));
+	if (length < 0) {
+		ret = FALSE;
+		BIO_free(bio);
+		goto done;
+	}
 	buffer[length] = '\0';
 	BIO_free(bio);
 	tls_rec_set_not_before(tls, buffer);
@@ -656,13 +662,21 @@ static void set_pubkey_info(TLS_REC *tls, X509 *cert, unsigned char *cert_finger
 	bio = BIO_new(BIO_s_mem());
 	ASN1_TIME_print(bio, X509_get_notAfter(cert));
 	length = BIO_read(bio, buffer, sizeof(buffer));
+	if (length < 0) {
+		ret = FALSE;
+		BIO_free(bio);
+		goto done;
+	}
 	buffer[length] = '\0';
 	BIO_free(bio);
 	tls_rec_set_not_after(tls, buffer);
 
+done:
 	g_free(cert_fingerprint_hex);
 	g_free(public_key_fingerprint_hex);
 	EVP_PKEY_free(pubkey);
+
+	return ret;
 }
 
 static void set_peer_cert_chain_info(TLS_REC *tls, SSL *ssl)
@@ -881,7 +895,11 @@ int irssi_ssl_handshake(GIOChannel *handle)
 
 	tls = tls_create_rec();
 	set_cipher_info(tls, chan->ssl);
-	set_pubkey_info(tls, cert, cert_fingerprint, cert_fingerprint_size, pubkey_fingerprint, pubkey_fingerprint_size);
+	if (! set_pubkey_info(tls, cert, cert_fingerprint, cert_fingerprint_size, pubkey_fingerprint, pubkey_fingerprint_size)) {
+		g_warning("Couldn't set pubkey information");
+		ret = 0;
+		goto done;
+	}
 	set_peer_cert_chain_info(tls, chan->ssl);
 	set_server_temporary_key_info(tls, chan->ssl);
 
