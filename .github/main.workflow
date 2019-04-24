@@ -1,10 +1,10 @@
-workflow "Check Irssi" {
-  on = "push"
-  resolves = [
-    "script",
-    "unit_tests",
-  ]
-}
+# workflow "Check Irssi" {
+#   on = "push"
+#   resolves = [
+#     "script",
+#     "unit_tests",
+#   ]
+# }
 
 action "install" {
   uses = "irssi-import/actions-irssi/check-irssi@master"
