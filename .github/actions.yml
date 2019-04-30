@@ -1,0 +1,43 @@
+before_install:
+    - ./autogen.sh --with-proxy=module --with-bot --with-perl=module --with-otr=module
+    - make dist
+    - CO_DIR=$(pwd)
+    - mkdir -p $HOME/src
+    - cd $HOME/src
+    - tar xaf $CO_DIR/irssi-*.tar.*
+
+install:
+    - cd $HOME/src/irssi-*
+    - ./configure --with-proxy=module --with-bot --with-perl=module --with-otr=module --prefix=$HOME/irssi-build --enable-always-build-tests
+    - make CFLAGS="-Wall -Werror -Werror=declaration-after-statement"
+    - make install
+
+unit_tests:
+    - cd $HOME/src/irssi-*
+    - make -C tests -sk check
+
+after_unit_tests:
+    - cd $HOME/src/irssi-*
+    - find -name test-suite.log -exec cat {} +
+
+before_script:
+    - cd $HOME
+    - mkdir irssi-test
+    - |
+      echo 'echo automated irssi launch test
+      ^set settings_autosave off
+      ^set -clear log_close_string
+      ^set -clear log_day_changed
+      ^set -clear log_open_string
+      ^set log_timestamp * 
+      ^window log on' > irssi-test/startup
+    - echo load perl >> irssi-test/startup
+    - echo load proxy >> irssi-test/startup
+    - echo ^quit >> irssi-test/startup
+
+script:
+    - cd $HOME
+    - irssi-build/bin/irssi --home irssi-test | /tools/render.pl
+
+after_script:
+    - cat $HOME/irc.log.*
