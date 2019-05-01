@@ -18,17 +18,17 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "module.h"
-#include "modules-load.h"
-#include "module-formats.h"
-#include "levels.h"
-#include "themes.h"
-#include "core.h"
-#include "fe-common-core.h"
-#include "args.h"
-#include "printtext.h"
-#include "misc.h"
-#include "servers-setup.h"
+#include <irssi/src/irc/core/module.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/fe-common/core/fe-common-core.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/servers-setup.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -36,9 +36,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "irc.h"
-#include "irc-servers.h"
-#include "irc-channels.h"
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
 
 /* irc.c */
 void irc_init(void);
