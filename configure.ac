@@ -766,13 +766,11 @@ irssi-config
 ])
 
 dnl ** make the paths like include headers later
-AC_CONFIG_LINKS([
-irssi/irssi-config.h:irssi-config.h
-irssi/irssi-version.h:irssi-version.h
-])
+AC_CONFIG_LINKS([irssi/irssi-config.h:irssi-config.h])
 AC_LINK_FILES([$srcdir/src],[irssi/src])
 
 AC_OUTPUT
+$LN_S ../irssi-version.h irssi/irssi-version.h
 
 dnl ** for building from objdir
 old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
