@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "module-formats.h"
-#include "commands.h"
-#include "levels.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
-#include "printtext.h"
-#include "formats.h"
-#include "recode.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/core/recode.h>
 
 static char *recode_fallback = NULL;
 static char *recode_out_default = NULL;

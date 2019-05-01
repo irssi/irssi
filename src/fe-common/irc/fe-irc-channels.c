@@ -19,17 +19,17 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "levels.h"
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
 
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "channel-rejoin.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/channel-rejoin.h>
 
-#include "printtext.h"
-#include "fe-windows.h"
-#include "window-items.h"
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
 
 int fe_channel_is_opchannel(IRC_SERVER_REC *server, const char *target)
 {

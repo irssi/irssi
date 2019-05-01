@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include "signals.h"
+#include <irssi/src/core/signals.h>
 
-#include "channels.h"
-#include "nicklist.h"
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/nicklist.h>
 
-#include "nickmatch-cache.h"
+#include <irssi/src/core/nickmatch-cache.h>
 
 static GSList *lists;
 

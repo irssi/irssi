@@ -1,16 +1,16 @@
 /* Copyright (C) 1999-2004 Timo Sirainen */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "levels.h"
-#include "misc.h"
-#include "settings.h"
-#include "recode.h"
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/recode.h>
 
-#include "irc-servers.h"
+#include <irssi/src/irc/core/irc-servers.h>
 
-#include "printtext.h"
+#include <irssi/src/fe-common/core/printtext.h>
 
 static void event_whois(IRC_SERVER_REC *server, const char *data)
 {

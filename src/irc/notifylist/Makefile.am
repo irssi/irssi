@@ -1,9 +1,6 @@
 noinst_LIBRARIES = libirc_notifylist.a
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/core/ \
-	-I$(top_srcdir)/src/irc/core/ \
 	$(GLIB_CFLAGS)
 
 libirc_notifylist_a_SOURCES = \

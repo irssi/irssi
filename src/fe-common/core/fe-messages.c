@@ -19,23 +19,23 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "misc.h"
-#include "special-vars.h"
-#include "settings.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
-#include "servers.h"
-#include "channels.h"
-#include "nicklist.h"
-#include "ignore.h"
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/core/ignore.h>
 
-#include "window-items.h"
-#include "fe-queries.h"
-#include "hilight-text.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/fe-queries.h>
+#include <irssi/src/fe-common/core/hilight-text.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 #define ishighalnum(c) ((unsigned char) (c) >= 128 || i_isalnum(c))
 #define isnickchar(a) \

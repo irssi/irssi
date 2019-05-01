@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "modules-load.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "chat-protocols.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/chat-protocols.h>
 
-#include "printtext.h"
+#include <irssi/src/fe-common/core/printtext.h>
 
 #ifdef HAVE_GMODULE
 

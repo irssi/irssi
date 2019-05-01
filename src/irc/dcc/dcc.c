@@ -19,21 +19,21 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "network.h"
-#include "misc.h"
-#include "settings.h"
-#include "ignore.h"
-#include "levels.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/core/levels.h>
 
-#include "irc-servers.h"
-#include "servers-setup.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/core/servers-setup.h>
 
-#include "dcc-chat.h"
-#include "dcc-get.h"
-#include "dcc-send.h"
-#include "dcc-server.h"
+#include <irssi/src/irc/dcc/dcc-chat.h>
+#include <irssi/src/irc/dcc/dcc-get.h>
+#include <irssi/src/irc/dcc/dcc-send.h>
+#include <irssi/src/irc/dcc/dcc-server.h>
 
 void dcc_resume_init(void);
 void dcc_resume_deinit(void);

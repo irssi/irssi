@@ -19,21 +19,21 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "special-vars.h"
-#include "settings.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
-#include "levels.h"
-#include "servers.h"
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/servers.h>
 
-#include "fe-windows.h"
-#include "window-items.h"
-#include "formats.h"
-#include "themes.h"
-#include "recode.h"
-#include "utf8.h"
-#include "misc.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/core/recode.h>
+#include <irssi/src/core/utf8.h>
+#include <irssi/src/core/misc.h>
 
 static const char *format_backs = "04261537";
 static const char *format_fores = "kbgcrmyw";

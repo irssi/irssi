@@ -19,8 +19,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301,USA
  */
 
-#include "otr.h"
-#include "otr-formats.h"
+#include <irssi/src/otr/otr.h>
+#include <irssi/src/otr/otr-formats.h>
 
 FORMAT_REC fe_otr_formats[] = {
 	{ MODULE_NAME, "Core", 0 },

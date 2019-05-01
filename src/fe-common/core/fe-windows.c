@@ -19,19 +19,19 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "modules.h"
-#include "signals.h"
-#include "commands.h"
-#include "servers.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include "levels.h"
+#include <irssi/src/core/levels.h>
 
-#include "printtext.h"
-#include "fe-windows.h"
-#include "window-items.h"
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
 
 GSList *windows; /* first in the list is the active window,
                     next is the last active, etc. */

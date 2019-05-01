@@ -1,4 +1,4 @@
-#include "iregex.h"
+#include <irssi/src/core/iregex.h>
 
 Regex *
 i_regex_new (const gchar *pattern,

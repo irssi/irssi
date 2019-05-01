@@ -1,7 +1,7 @@
 #ifndef __COMMAND_HISTORY_H
 #define __COMMAND_HISTORY_H
 
-#include "common.h"
+#include <irssi/src/common.h>
 
 typedef struct {
 	char *name;

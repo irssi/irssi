@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "network.h"
-#include "levels.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/levels.h>
 
-#include "dcc-server.h"
+#include <irssi/src/irc/dcc/dcc-server.h>
 
-#include "module-formats.h"
-#include "printtext.h"
-#include "themes.h"
+#include <irssi/src/fe-common/irc/dcc/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/themes.h>
 
 static void dcc_server_started(SERVER_DCC_REC *dcc)
 {

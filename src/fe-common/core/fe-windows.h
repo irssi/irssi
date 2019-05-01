@@ -1,8 +1,8 @@
 #ifndef __WINDOWS_H
 #define __WINDOWS_H
 
-#include "window-item-def.h"
-#include "command-history.h"
+#include <irssi/src/core/window-item-def.h>
+#include <irssi/src/fe-common/core/command-history.h>
 
 enum {
         DATA_LEVEL_NONE = 0,

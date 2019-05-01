@@ -19,13 +19,13 @@
 */
 
 #include "module.h"
-#include "network.h"
-#include "network-openssl.h"
-#include "net-sendbuffer.h"
-#include "misc.h"
-#include "servers.h"
-#include "signals.h"
-#include "tls.h"
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/network-openssl.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/tls.h>
 
 #include <openssl/crypto.h>
 #include <openssl/x509.h>

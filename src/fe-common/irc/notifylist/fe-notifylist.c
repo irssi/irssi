@@ -19,21 +19,21 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "misc.h"
-#include "chatnets.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/fe-common/irc/notifylist/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include "levels.h"
-#include "irc-servers.h"
-#include "irc-chatnets.h"
-#include "irc/notifylist/notifylist.h"
+#include <irssi/src/core/levels.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
+#include <irssi/src/irc/notifylist/notifylist.h>
 
-#include "themes.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 /* add the nick of a hostmask to list if it isn't there already */
 static GSList *mask_add_once(GSList *list, const char *mask)

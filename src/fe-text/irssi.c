@@ -19,29 +19,29 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "modules-load.h"
-#include "args.h"
-#include "signals.h"
-#include "levels.h"
-#include "core.h"
-#include "settings.h"
-#include "session.h"
-#include "servers.h"
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/session.h>
+#include <irssi/src/core/servers.h>
 
-#include "printtext.h"
-#include "fe-common-core.h"
-#include "fe-settings.h"
-#include "themes.h"
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-common-core.h>
+#include <irssi/src/fe-common/core/fe-settings.h>
+#include <irssi/src/fe-common/core/themes.h>
 
-#include "term.h"
-#include "gui-entry.h"
-#include "mainwindows.h"
-#include "gui-printtext.h"
-#include "gui-readline.h"
-#include "statusbar.h"
-#include "gui-windows.h"
-#include "irssi-version.h"
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/fe-text/gui-entry.h>
+#include <irssi/src/fe-text/mainwindows.h>
+#include <irssi/src/fe-text/gui-printtext.h>
+#include <irssi/src/fe-text/gui-readline.h>
+#include <irssi/src/fe-text/statusbar.h>
+#include <irssi/src/fe-text/gui-windows.h>
+#include <irssi/irssi-version.h>
 
 #include <signal.h>
 #include <locale.h>

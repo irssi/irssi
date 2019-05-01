@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
-#include "levels.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/levels.h>
 
-#include "fe-common/core/printtext.h"
+#include <irssi/src/fe-common/core/printtext.h>
 
 /* SYNTAX: IRSSIPROXY STATUS */
 static void cmd_irssiproxy_status(const char *data, IRC_SERVER_REC *server)

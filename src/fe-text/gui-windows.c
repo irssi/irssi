@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
-#include "settings.h"
-#include "special-vars.h"
-#include "levels.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/levels.h>
 
-#include "term.h"
-#include "gui-entry.h"
-#include "gui-windows.h"
-#include "gui-printtext.h"
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/fe-text/gui-entry.h>
+#include <irssi/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-text/gui-printtext.h>
 
 static int window_create_override;
 static int wcwidth_impl;

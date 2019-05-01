@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "levels.h"
-#include "misc.h"
-#include "sasl.h"
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/irc/core/sasl.h>
 
-#include "irc-servers.h"
-#include "settings.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/core/settings.h>
 
-#include "printtext.h"
+#include <irssi/src/fe-common/core/printtext.h>
 
 static void sig_sasl_success(IRC_SERVER_REC *server)
 {

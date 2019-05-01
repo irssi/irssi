@@ -19,26 +19,26 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "misc.h"
-#include "special-vars.h"
-#include "settings.h"
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
-#include "levels.h"
-#include "servers.h"
-#include "mode-lists.h"
-#include "nicklist.h"
-#include "irc-commands.h"
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "irc-queries.h"
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/irc/core/mode-lists.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/irc/core/irc-commands.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-queries.h>
 
-#include "fe-queries.h"
-#include "fe-windows.h"
-#include "window-items.h"
-#include "printtext.h"
-#include "keyboard.h"
+#include <irssi/src/fe-common/core/fe-queries.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/keyboard.h>
 
 /* SYNTAX: ME <message> */
 static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)

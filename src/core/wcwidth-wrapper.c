@@ -22,9 +22,9 @@
 #include <wchar.h>
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
-#include "utf8.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/utf8.h>
 
 #ifdef HAVE_LIBUTF8PROC
 #include <utf8proc.h>

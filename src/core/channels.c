@@ -19,14 +19,14 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
-#include "special-vars.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/special-vars.h>
 
-#include "servers.h"
-#include "channels.h"
-#include "channels-setup.h"
-#include "nicklist.h"
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/channels-setup.h>
+#include <irssi/src/core/nicklist.h>
 
 GSList *channels; /* List of all channels */
 

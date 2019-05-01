@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "commands.h"
-#include "network.h"
-#include "signals.h"
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/signals.h>
 
-#include "chat-protocols.h"
-#include "servers.h"
-#include "servers-setup.h"
-#include "servers-reconnect.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/servers-reconnect.h>
 
-#include "settings.h"
+#include <irssi/src/core/settings.h>
 
 GSList *reconnects;
 static int last_reconnect_tag;

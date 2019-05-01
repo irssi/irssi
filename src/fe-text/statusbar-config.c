@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "settings.h"
-#include "levels.h"
-#include "lib-config/iconfig.h"
-#include "misc.h"
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/misc.h>
 
-#include "statusbar.h"
-#include "printtext.h"
+#include <irssi/src/fe-text/statusbar.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 static void read_statusbar_config_from_node(CONFIG_NODE *node);
 

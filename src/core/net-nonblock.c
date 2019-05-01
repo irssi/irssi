@@ -22,8 +22,8 @@
 
 #include <signal.h>
 
-#include "pidwait.h"
-#include "net-nonblock.h"
+#include <irssi/src/core/pidwait.h>
+#include <irssi/src/core/net-nonblock.h>
 
 /* nonblocking gethostbyname(), ip (IPADDR) + error (int, 0 = not error) is
    written to pipe when found PID of the resolver child is returned */

@@ -1,6 +1,6 @@
 #include "module.h"
-#include "signals.h"
-#include "terminfo-core.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/fe-text/terminfo-core.h>
 
 #ifndef _POSIX_VDISABLE
 #  define _POSIX_VDISABLE 0

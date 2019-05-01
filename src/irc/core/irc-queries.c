@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
 
-#include "irc-nicklist.h"
-#include "irc-servers.h"
-#include "irc-queries.h"
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
 
 QUERY_REC *irc_query_create(const char *server_tag,
 			    const char *nick, int automatic)

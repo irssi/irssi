@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include "settings.h"
-#include "servers.h"
-#include "signals.h"
-#include "lib-config/iconfig.h"
-#include "misc.h"
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/misc.h>
 
 static char *translit_charset;
 static gboolean term_is_utf8;

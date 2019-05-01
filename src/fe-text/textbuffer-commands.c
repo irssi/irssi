@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "misc.h"
-#include "levels.h"
-#include "settings.h"
-#include "servers.h"
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/servers.h>
 
-#include "printtext.h"
-#include "gui-windows.h"
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-text/gui-windows.h>
 
 static int activity_hide_window_hidelevel;
 

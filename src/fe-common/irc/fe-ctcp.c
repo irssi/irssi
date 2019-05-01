@@ -19,19 +19,19 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include "levels.h"
-#include "servers.h"
-#include "channels.h"
-#include "queries.h"
-#include "ignore.h"
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/ignore.h>
 
-#include "fe-windows.h"
-#include "window-items.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 static void ctcp_default_msg(IRC_SERVER_REC *server, const char *data,
 			     const char *nick, const char *addr,

@@ -19,17 +19,17 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "misc.h"
-#include "special-vars.h"
-#include "window-item-def.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/window-item-def.h>
 
-#include "servers.h"
-#include "channels.h"
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
 
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
 GSList *commands;
 char *current_command;

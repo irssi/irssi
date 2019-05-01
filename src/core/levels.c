@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "levels.h"
+#include <irssi/src/core/levels.h>
 
 /* the order of these levels must match the bits in levels.h */
 static const char *levels[] = {

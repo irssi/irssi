@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include "irc-servers.h"
-#include "notifylist.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/notifylist/notifylist.h>
 
 void notifylist_add_config(NOTIFYLIST_REC *rec)
 {

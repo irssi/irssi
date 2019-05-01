@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "modules-load.h"
-#include "args.h"
-#include "signals.h"
-#include "core.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/core.h>
 
 #ifdef HAVE_STATIC_PERL
 void perl_core_init(void);

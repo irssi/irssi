@@ -21,9 +21,9 @@
 #define	G_LOG_DOMAIN "TextBufferView"
 
 #include "module.h"
-#include "textbuffer-view.h"
-#include "signals.h"
-#include "utf8.h"
+#include <irssi/src/fe-text/textbuffer-view.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/utf8.h>
 
 typedef struct {
 	char *name;

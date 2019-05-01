@@ -19,13 +19,13 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "special-vars.h"
-#include "expandos.h"
-#include "settings.h"
-#include "servers.h"
-#include "misc.h"
-#include "utf8.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/expandos.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/utf8.h>
 
 #define isvarchar(c) \
         (i_isalnum(c) || (c) == '_')

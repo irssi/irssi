@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "levels.h"
-#include "log.h"
-#include "servers.h"
-#include "settings.h"
-#include "write-buffer.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/write-buffer.h>
 
 static LOG_REC *awaylog;
 static int away_filepos;

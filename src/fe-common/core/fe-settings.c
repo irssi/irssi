@@ -19,17 +19,17 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "servers.h"
-#include "misc.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
-#include "fe-settings.h"
-#include "levels.h"
-#include "printtext.h"
-#include "keyboard.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/fe-common/core/fe-settings.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/keyboard.h>
 
 static void set_print(SETTINGS_REC *rec)
 {

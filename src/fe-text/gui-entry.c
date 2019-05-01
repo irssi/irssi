@@ -19,14 +19,14 @@
 */
 
 #include "module.h"
-#include "misc.h"
-#include "utf8.h"
-#include "formats.h"
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/utf8.h>
+#include <irssi/src/fe-common/core/formats.h>
 
-#include "gui-entry.h"
-#include "gui-printtext.h"
-#include "term.h"
-#include "recode.h"
+#include <irssi/src/fe-text/gui-entry.h>
+#include <irssi/src/fe-text/gui-printtext.h>
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/core/recode.h>
 
 #undef i_toupper
 #undef i_tolower

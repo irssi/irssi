@@ -19,30 +19,30 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "chat-protocols.h"
-#include "servers.h"
-#include "channels.h"
-#include "levels.h"
-#include "misc.h"
-#include "log.h"
-#include "special-vars.h"
-#include "settings.h"
-#include "lib-config/iconfig.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/lib-config/iconfig.h>
 #ifdef HAVE_CAPSICUM
-#include "capsicum.h"
+#include <irssi/src/core/capsicum.h>
 #endif
 
-#include "fe-windows.h"
-#include "window-items.h"
-#include "formats.h"
-#include "themes.h"
-#include "printtext.h"
-#include "fe-common-core.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-common-core.h>
 
-#include "channels-setup.h"
+#include <irssi/src/core/channels-setup.h>
 
 /* close autologs after 5 minutes of inactivity */
 #define AUTOLOG_INACTIVITY_CLOSE (60*5)

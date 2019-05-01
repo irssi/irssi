@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include "irc-servers.h"
-#include "ignore.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/core/ignore.h>
 
 void autoignore_update(IGNORE_REC *rec, int level)
 {

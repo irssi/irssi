@@ -19,22 +19,22 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "settings.h"
-#include "misc.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/misc.h>
 
-#include "irc.h"
-#include "irc-servers.h"
-#include "irc-queries.h"
-#include "dcc-chat.h"
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/dcc/dcc-chat.h>
 
-#include "module-formats.h"
-#include "printtext.h"
-#include "fe-messages.h"
+#include <irssi/src/fe-common/irc/dcc/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-messages.h>
 
-#include "chat-completion.h"
+#include <irssi/src/fe-common/core/chat-completion.h>
 
 void fe_dcc_chat_messages_init(void);
 void fe_dcc_chat_messages_deinit(void);

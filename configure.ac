@@ -765,6 +765,13 @@ themes/Makefile
 irssi-config
 ])
 
+dnl ** make the paths like include headers later
+AC_CONFIG_LINKS([
+irssi/irssi-config.h:irssi-config.h
+irssi/irssi-version.h:irssi-version.h
+])
+AC_LINK_FILES([$srcdir/src],[irssi/src])
+
 AC_OUTPUT
 
 dnl ** for building from objdir

@@ -18,17 +18,17 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "module-fe.h"
-#include "modules.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
+#include <irssi/src/perl/module-fe.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/perl/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
 
-#include "printtext.h"
-#include "completion.h"
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/completion.h>
 
-#include "perl-core.h"
+#include <irssi/src/perl/perl-core.h>
 
 static void cmd_script(const char *data, SERVER_REC *server, void *item)
 {

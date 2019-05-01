@@ -19,27 +19,27 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "modules.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "misc.h"
-#include "settings.h"
-#include "special-vars.h"
-#include "utf8.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/utf8.h>
 
-#include "chat-protocols.h"
-#include "chatnets.h"
-#include "servers.h"
-#include "channels.h"
-#include "channels-setup.h"
-#include "nicklist.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/channels-setup.h>
+#include <irssi/src/core/nicklist.h>
 
-#include "fe-windows.h"
-#include "fe-channels.h"
-#include "window-items.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/fe-channels.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 static void signal_channel_created(CHANNEL_REC *channel, void *automatic)
 {

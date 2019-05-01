@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
-#include "formats.h"
-#include "printtext.h"
-#include "themes.h"
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/themes.h>
 
-#include "term.h"
-#include "gui-printtext.h"
-#include "gui-windows.h"
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/fe-text/gui-printtext.h>
+#include <irssi/src/fe-text/gui-windows.h>
 
 int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7,
 	 /* 16-27 */  52,  94, 100,  58,  22,  29,  23,  24,  17,  54,  53,  89,

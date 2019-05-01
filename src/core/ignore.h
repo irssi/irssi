@@ -1,7 +1,7 @@
 #ifndef __IGNORE_H
 #define __IGNORE_H
 
-#include "iregex.h"
+#include <irssi/src/core/iregex.h>
 
 typedef struct _IGNORE_REC IGNORE_REC;
 

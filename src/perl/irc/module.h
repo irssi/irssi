@@ -1,27 +1,27 @@
-#include "../common/module.h"
+#include <irssi/src/perl/common/module.h>
 
-#include "irc.h"
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "irc-queries.h"
-#include "irc-nicklist.h"
-#include "irc-masks.h"
-#include "irc-cap.h"
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/irc-masks.h>
+#include <irssi/src/irc/core/irc-cap.h>
 
-#include "bans.h"
-#include "modes.h"
-#include "mode-lists.h"
-#include "netsplit.h"
-#include "servers-redirect.h"
+#include <irssi/src/irc/core/bans.h>
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/irc/core/mode-lists.h>
+#include <irssi/src/irc/core/netsplit.h>
+#include <irssi/src/irc/core/servers-redirect.h>
 
-#include "dcc/dcc.h"
-#include "dcc/dcc-file.h"
-#include "dcc/dcc-chat.h"
-#include "dcc/dcc-get.h"
-#include "dcc/dcc-send.h"
-#include "notifylist/notifylist.h"
+#include <irssi/src/irc/dcc/dcc.h>
+#include <irssi/src/irc/dcc/dcc-file.h>
+#include <irssi/src/irc/dcc/dcc-chat.h>
+#include <irssi/src/irc/dcc/dcc-get.h>
+#include <irssi/src/irc/dcc/dcc-send.h>
+#include <irssi/src/irc/notifylist/notifylist.h>
 
-#include "proxy/proxy.h"
+#include <irssi/src/irc/proxy/proxy.h>
 
 typedef IRC_SERVER_REC *Irssi__Irc__Server;
 typedef IRC_SERVER_CONNECT_REC *Irssi__Irc__Connect;

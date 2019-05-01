@@ -19,14 +19,14 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "expandos.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/expandos.h>
 
-#include "irc.h"
-#include "irc-servers.h"
-#include "masks.h"
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/core/masks.h>
 
-#include "notifylist.h"
+#include <irssi/src/irc/notifylist/notifylist.h>
 
 static char *last_notify_nick;
 

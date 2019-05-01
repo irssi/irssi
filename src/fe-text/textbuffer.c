@@ -21,12 +21,12 @@
 #define	G_LOG_DOMAIN "TextBuffer"
 
 #include "module.h"
-#include "misc.h"
-#include "formats.h"
-#include "utf8.h"
-#include "iregex.h"
+#include <irssi/src/core/misc.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/core/utf8.h>
+#include <irssi/src/core/iregex.h>
 
-#include "textbuffer.h"
+#include <irssi/src/fe-text/textbuffer.h>
 
 #define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-(int)sizeof(char*))
 

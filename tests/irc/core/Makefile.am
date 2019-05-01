@@ -3,15 +3,12 @@ include $(top_srcdir)/utils/glib-tap.mk
 PACKAGE_STRING=irc/core
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/core \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	$(GLIB_CFLAGS)
 
 test_programs = test-channel-events test-irc
 
 CPPFLAGS = \
-	-I$(top_srcdir)/src/irc/core \
 	$(AM_CPPFLAGS)
 
 DEPENDENCIES = \

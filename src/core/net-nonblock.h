@@ -1,7 +1,7 @@
 #ifndef __NET_NONBLOCK_H
 #define __NET_NONBLOCK_H
 
-#include "network.h"
+#include <irssi/src/core/network.h>
 
 typedef struct {
 	IPADDR ip4, ip6; /* resolved ip addresses */

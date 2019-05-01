@@ -4,5 +4,5 @@ WriteMakefile('NAME' => 'Irssi::TextUI',
               'LIBS' => '',
 	      'OBJECT' => '$(O_FILES)',
               'TYPEMAPS' => ['../common/typemap', '../ui/typemap'],
-              'INC' => '-I../../.. -I@top_srcdir@/src -I@top_srcdir@/src/core -I@top_srcdir@/src/fe-common/core -I@top_srcdir@/src/fe-text @GLIB_CFLAGS@',
+              'INC' => '-I../../.. @GLIB_CFLAGS@',
 	      'VERSION_FROM' => '@srcdir@/TextUI.pm');

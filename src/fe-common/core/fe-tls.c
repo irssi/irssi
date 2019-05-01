@@ -17,15 +17,15 @@
  */
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
-#include "levels.h"
-#include "tls.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/tls.h>
 
-#include "module-formats.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
-#include "fe-tls.h"
+#include <irssi/src/fe-common/core/fe-tls.h>
 
 static void tls_handshake_finished(SERVER_REC *server, TLS_REC *tls)
 {

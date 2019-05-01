@@ -19,10 +19,10 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "levels.h"
-#include "ignore.h"
-#include "servers.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/core/servers.h>
 
 static void sig_message_public(SERVER_REC *server, const char *msg,
 			       const char *nick, const char *address,

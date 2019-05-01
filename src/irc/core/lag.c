@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include "irc-servers.h"
-#include "servers-redirect.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/servers-redirect.h>
 
 static int timeout_tag;
 

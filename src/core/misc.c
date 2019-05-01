@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include "misc.h"
-#include "commands.h"
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/commands.h>
 
 typedef struct {
 	int condition;

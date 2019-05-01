@@ -1,9 +1,9 @@
 #ifndef __IRC_SERVERS_H
 #define __IRC_SERVERS_H
 
-#include "chat-protocols.h"
-#include "servers.h"
-#include "modes.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/irc/core/modes.h>
 
 /* returns IRC_SERVER_REC if it's IRC server, NULL if it isn't */
 #define IRC_SERVER(server) \
@@ -22,7 +22,7 @@
 /* all strings should be either NULL or dynamically allocated */
 /* address and nick are mandatory, rest are optional */
 struct _IRC_SERVER_CONNECT_REC {
-#include "server-connect-rec.h"
+#include <irssi/src/core/server-connect-rec.h>
 
 	char *usermode;
 	char *alternate_nick;
@@ -40,7 +40,7 @@ struct _IRC_SERVER_CONNECT_REC {
 
 #define STRUCT_SERVER_CONNECT_REC IRC_SERVER_CONNECT_REC
 struct _IRC_SERVER_REC {
-#include "server-rec.h"
+#include <irssi/src/core/server-rec.h>
 
 	/* For deciding if event should be redirected */
 	GSList *redirects;

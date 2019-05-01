@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
 
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "irc-masks.h"
-#include "irc-nicklist.h"
-#include "modes.h"
-#include "servers.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-masks.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/core/servers.h>
 
 /* Add new nick to list */
 NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,

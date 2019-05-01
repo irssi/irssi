@@ -4,5 +4,5 @@ WriteMakefile('NAME' => 'Irssi::Irc',
               'LIBS' => '',
 	      'OBJECT' => '$(O_FILES)',
               'TYPEMAPS' => ['../common/typemap'],
-              'INC' => '-I../../.. -I@top_srcdir@/src -I@top_srcdir@/src/core -I@top_srcdir@/src/irc/core -I@top_srcdir@/src/irc @GLIB_CFLAGS@',
+              'INC' => '-I../../.. @GLIB_CFLAGS@',
 	      'VERSION_FROM' => '@srcdir@/Irc.pm');

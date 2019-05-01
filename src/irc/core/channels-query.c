@@ -39,16 +39,16 @@ loop:
 */
 
 #include "module.h"
-#include "misc.h"
-#include "signals.h"
-#include "settings.h"
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
-#include "modes.h"
-#include "mode-lists.h"
-#include "nicklist.h"
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "servers-redirect.h"
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/irc/core/mode-lists.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/servers-redirect.h>
 
 enum {
 	CHANNEL_QUERY_MODE,

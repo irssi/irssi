@@ -20,18 +20,18 @@
 
 #include <glib.h>
 
-#include <channel-events.h>
-#include <common.h>
-#include <core.h>
-#include <irc.h>
-#include <irc-channels.h>
-#include <irc-servers.h>
-#include <modules.h>
-#include <recode.h>
-#include <settings.h>
-#include <signals.h>
+#include <irssi/src/irc/core/channel-events.h>
+#include <irssi/src/common.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/recode.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/signals.h>
 #include <time.h>
-#include <args.h>
+#include <irssi/src/core/args.h>
 
 #define MODULE_NAME "test-channel-events"
 

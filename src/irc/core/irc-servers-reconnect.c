@@ -19,14 +19,14 @@
 */
 
 #include "module.h"
-#include "commands.h"
-#include "network.h"
-#include "signals.h"
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/signals.h>
 
-#include "modes.h"
-#include "irc-servers.h"
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/irc/core/irc-servers.h>
 
-#include "settings.h"
+#include <irssi/src/core/settings.h>
 
 static void sig_server_connect_copy(SERVER_CONNECT_REC **dest,
 				    IRC_SERVER_CONNECT_REC *src)

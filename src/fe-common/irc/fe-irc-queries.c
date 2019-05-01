@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
-#include "servers.h"
-#include "queries.h"
-#include "nicklist.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/nicklist.h>
 
 static QUERY_REC *query_find_address(SERVER_REC *server, const char *address)
 {

@@ -21,15 +21,15 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "network.h"
-#include "net-sendbuffer.h"
-#include "misc.h"
-#include "settings.h"
-#include "irc-servers.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/irc/core/irc-servers.h>
 
-#include "dcc-queue.h"
+#include <irssi/src/irc/dcc/dcc-queue.h>
 
 static GPtrArray *queuelist;
 

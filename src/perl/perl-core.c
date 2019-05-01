@@ -21,16 +21,16 @@
 #define NEED_PERL_H
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
-#include "modules.h"
-#include "core.h"
-#include "signals.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include "perl-core.h"
-#include "perl-common.h"
-#include "perl-signals.h"
-#include "perl-sources.h"
+#include <irssi/src/perl/perl-core.h>
+#include <irssi/src/perl/perl-common.h>
+#include <irssi/src/perl/perl-signals.h>
+#include <irssi/src/perl/perl-sources.h>
 
 #include "XSUB.h"
 #include "irssi-core.pl.h"

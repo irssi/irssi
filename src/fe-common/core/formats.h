@@ -1,8 +1,8 @@
 #ifndef __FORMATS_H
 #define __FORMATS_H
 
-#include "themes.h"
-#include "fe-windows.h"
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
 
 #define GUI_PRINT_FLAG_BOLD          0x0001
 #define GUI_PRINT_FLAG_REVERSE       0x0002

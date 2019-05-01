@@ -1,5 +1,5 @@
-#include "common.h"
-#include "term.h"
+#include <irssi/src/common.h>
+#include <irssi/src/fe-text/term.h>
 
 #define MODULE_NAME "fe-text"
 

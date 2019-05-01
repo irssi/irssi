@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "formats.h"
+#include <irssi/src/fe-common/core/formats.h>
 
 FORMAT_REC fecommon_irc_dcc_formats[] = {
 	{ MODULE_NAME, "IRC", 0 },
