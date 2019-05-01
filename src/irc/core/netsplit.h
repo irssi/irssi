@@ -1,5 +1,5 @@
-#ifndef __NETSPLIT_H
-#define __NETSPLIT_H
+#ifndef IRSSI_IRC_CORE_NETSPLIT_H
+#define IRSSI_IRC_CORE_NETSPLIT_H
 
 #include <irssi/src/core/nicklist.h>
 

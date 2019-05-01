@@ -1,5 +1,5 @@
-#ifndef __MISC_H
-#define __MISC_H
+#ifndef IRSSI_CORE_MISC_H
+#define IRSSI_CORE_MISC_H
 
 int g_input_add_poll(int fd, int priority, int condition,
 		     GInputFunction function, void *data);

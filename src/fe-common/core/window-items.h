@@ -1,5 +1,5 @@
-#ifndef __WINDOW_ITEMS_H
-#define __WINDOW_ITEMS_H
+#ifndef IRSSI_FE_COMMON_CORE_WINDOW_ITEMS_H
+#define IRSSI_FE_COMMON_CORE_WINDOW_ITEMS_H
 
 #include <irssi/src/fe-common/core/fe-windows.h>
 

@@ -1,5 +1,5 @@
-#ifndef __SPECIAL_VARS_H
-#define __SPECIAL_VARS_H
+#ifndef IRSSI_CORE_SPECIAL_VARS_H
+#define IRSSI_CORE_SPECIAL_VARS_H
 
 #include <irssi/src/core/signals.h>
 

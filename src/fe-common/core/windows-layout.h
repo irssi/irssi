@@ -1,5 +1,5 @@
-#ifndef __WINDOWS_LAYOUT_H
-#define __WINDOWS_LAYOUT_H
+#ifndef IRSSI_FE_COMMON_CORE_WINDOWS_LAYOUT_H
+#define IRSSI_FE_COMMON_CORE_WINDOWS_LAYOUT_H
 
 void windows_layout_restore(void);
 void windows_layout_save(void);

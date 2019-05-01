@@ -1,5 +1,5 @@
-#ifndef __PERL_CORE_H
-#define __PERL_CORE_H
+#ifndef IRSSI_PERL_PERL_CORE_H
+#define IRSSI_PERL_PERL_CORE_H
 
 typedef struct {
 	char *name; /* unique name */

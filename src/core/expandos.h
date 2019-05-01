@@ -1,5 +1,5 @@
-#ifndef __EXPANDOS_H
-#define __EXPANDOS_H
+#ifndef IRSSI_CORE_EXPANDOS_H
+#define IRSSI_CORE_EXPANDOS_H
 
 #include <irssi/src/core/signals.h>
 

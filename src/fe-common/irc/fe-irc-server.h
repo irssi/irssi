@@ -1,5 +1,5 @@
-#ifndef __FE_IRC_SERVER_H
-#define __FE_IRC_SERVER_H
+#ifndef IRSSI_FE_COMMON_IRC_FE_IRC_SERVER_H
+#define IRSSI_FE_COMMON_IRC_FE_IRC_SERVER_H
 
 const char *get_visible_target(IRC_SERVER_REC *server, const char *target);
 

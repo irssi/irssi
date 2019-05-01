@@ -1,5 +1,5 @@
-#ifndef __WINDOWS_H
-#define __WINDOWS_H
+#ifndef IRSSI_FE_COMMON_CORE_FE_WINDOWS_H
+#define IRSSI_FE_COMMON_CORE_FE_WINDOWS_H
 
 #include <irssi/src/core/window-item-def.h>
 #include <irssi/src/fe-common/core/command-history.h>

@@ -1,5 +1,5 @@
-#ifndef __MODES_H
-#define __MODES_H
+#ifndef IRSSI_IRC_CORE_MODES_H
+#define IRSSI_IRC_CORE_MODES_H
 
 #include <irssi/src/irc/core/irc-channels.h>
 #include <irssi/src/core/nicklist.h> /* MAX_USER_PREFIXES */

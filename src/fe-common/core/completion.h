@@ -1,5 +1,5 @@
-#ifndef __COMPLETION_H
-#define __COMPLETION_H
+#ifndef IRSSI_FE_COMMON_CORE_COMPLETION_H
+#define IRSSI_FE_COMMON_CORE_COMPLETION_H
 
 #include <irssi/src/fe-common/core/window-items.h>
 

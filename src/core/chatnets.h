@@ -1,5 +1,5 @@
-#ifndef __CHATNETS_H
-#define __CHATNETS_H
+#ifndef IRSSI_CORE_CHATNETS_H
+#define IRSSI_CORE_CHATNETS_H
 
 #include <irssi/src/core/modules.h>
 

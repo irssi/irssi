@@ -1,5 +1,5 @@
-#ifndef __GUI_WINDOWS_H
-#define __GUI_WINDOWS_H
+#ifndef IRSSI_FE_TEXT_GUI_WINDOWS_H
+#define IRSSI_FE_TEXT_GUI_WINDOWS_H
 
 #include <irssi/src/fe-text/mainwindows.h>
 #include <irssi/src/fe-text/textbuffer-view.h>

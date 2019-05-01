@@ -1,5 +1,5 @@
-#ifndef __SERVERS_SETUP_H
-#define __SERVERS_SETUP_H
+#ifndef IRSSI_CORE_SERVERS_SETUP_H
+#define IRSSI_CORE_SERVERS_SETUP_H
 
 #include <irssi/src/core/modules.h>
 

@@ -1,5 +1,5 @@
-#ifndef __PRINTTEXT_H
-#define __PRINTTEXT_H
+#ifndef IRSSI_FE_COMMON_CORE_PRINTTEXT_H
+#define IRSSI_FE_COMMON_CORE_PRINTTEXT_H
 
 #include <irssi/src/fe-common/core/fe-windows.h>
 #include <irssi/src/fe-common/core/formats.h>

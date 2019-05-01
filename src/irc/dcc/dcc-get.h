@@ -1,5 +1,5 @@
-#ifndef __DCC_GET_H
-#define __DCC_GET_H
+#ifndef IRSSI_IRC_DCC_DCC_GET_H
+#define IRSSI_IRC_DCC_DCC_GET_H
 
 #include <irssi/src/irc/dcc/dcc.h>
 

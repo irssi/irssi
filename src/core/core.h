@@ -1,5 +1,5 @@
-#ifndef __IRSSI_CORE_H
-#define __IRSSI_CORE_H
+#ifndef IRSSI_CORE_CORE_H
+#define IRSSI_CORE_CORE_H
 
 #include <irssi/src/common.h>
 

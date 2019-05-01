@@ -1,5 +1,5 @@
-#ifndef __IRC_CHANNELS_H
-#define __IRC_CHANNELS_H
+#ifndef IRSSI_IRC_CORE_IRC_CHANNELS_H
+#define IRSSI_IRC_CORE_IRC_CHANNELS_H
 
 #include <irssi/src/core/chat-protocols.h>
 #include <irssi/src/core/channels.h>

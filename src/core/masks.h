@@ -1,5 +1,5 @@
-#ifndef __MASKS_H
-#define __MASKS_H
+#ifndef IRSSI_CORE_MASKS_H
+#define IRSSI_CORE_MASKS_H
 
 int mask_match(SERVER_REC *server, const char *mask,
 	       const char *nick, const char *user, const char *host);

@@ -1,5 +1,5 @@
-#ifndef __PERL_COMMON_H
-#define __PERL_COMMON_H
+#ifndef IRSSI_PERL_PERL_COMMON_H
+#define IRSSI_PERL_PERL_COMMON_H
 
 /* helper defines */
 #define new_pv(a) \

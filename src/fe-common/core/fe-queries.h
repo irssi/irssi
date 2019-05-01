@@ -1,5 +1,5 @@
-#ifndef __FE_QUERIES_H
-#define __FE_QUERIES_H
+#ifndef IRSSI_FE_COMMON_CORE_FE_QUERIES_H
+#define IRSSI_FE_COMMON_CORE_FE_QUERIES_H
 
 #include <irssi/src/core/queries.h>
 

@@ -1,5 +1,5 @@
-#ifndef __TERM_H
-#define __TERM_H
+#ifndef IRSSI_FE_TEXT_TERM_H
+#define IRSSI_FE_TEXT_TERM_H
 
 typedef struct _TERM_WINDOW TERM_WINDOW;
 

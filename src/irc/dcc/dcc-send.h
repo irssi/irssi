@@ -1,5 +1,5 @@
-#ifndef __DCC_SEND_H
-#define __DCC_SEND_H
+#ifndef IRSSI_IRC_DCC_DCC_SEND_H
+#define IRSSI_IRC_DCC_DCC_SEND_H
 
 #include <irssi/src/irc/dcc/dcc.h>
 

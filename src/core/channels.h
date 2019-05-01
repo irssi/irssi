@@ -1,5 +1,5 @@
-#ifndef __CHANNELS_H
-#define __CHANNELS_H
+#ifndef IRSSI_CORE_CHANNELS_H
+#define IRSSI_CORE_CHANNELS_H
 
 #include <irssi/src/core/modules.h>
 

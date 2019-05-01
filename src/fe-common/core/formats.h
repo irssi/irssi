@@ -1,5 +1,5 @@
-#ifndef __FORMATS_H
-#define __FORMATS_H
+#ifndef IRSSI_FE_COMMON_CORE_FORMATS_H
+#define IRSSI_FE_COMMON_CORE_FORMATS_H
 
 #include <irssi/src/fe-common/core/themes.h>
 #include <irssi/src/fe-common/core/fe-windows.h>

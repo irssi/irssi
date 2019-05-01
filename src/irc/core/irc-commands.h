@@ -1,5 +1,5 @@
-#ifndef __IRC_COMMANDS_H
-#define __IRC_COMMANDS_H
+#ifndef IRSSI_IRC_CORE_IRC_COMMANDS_H
+#define IRSSI_IRC_CORE_IRC_COMMANDS_H
 
 #include <irssi/src/core/commands.h>
 

@@ -1,5 +1,5 @@
-#ifndef __PIDWAIT_H
-#define __PIDWAIT_H
+#ifndef IRSSI_CORE_PIDWAIT_H
+#define IRSSI_CORE_PIDWAIT_H
 
 void pidwait_init(void);
 void pidwait_deinit(void);

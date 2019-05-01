@@ -1,5 +1,5 @@
-#ifndef __MODE_LISTS_H
-#define __MODE_LISTS_H
+#ifndef IRSSI_IRC_CORE_MODE_LISTS_H
+#define IRSSI_IRC_CORE_MODE_LISTS_H
 
 typedef struct {
 	char *ban;

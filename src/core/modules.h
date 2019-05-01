@@ -1,5 +1,5 @@
-#ifndef __MODULES_H
-#define __MODULES_H
+#ifndef IRSSI_CORE_MODULES_H
+#define IRSSI_CORE_MODULES_H
 
 #define MODULE_DATA_INIT(rec) \
         (rec)->module_data = g_hash_table_new(g_str_hash, g_str_equal)

@@ -1,5 +1,5 @@
-#ifndef __DCC_SERVER_H
-#define __DCC_SERVER_H
+#ifndef IRSSI_IRC_DCC_DCC_SERVER_H
+#define IRSSI_IRC_DCC_DCC_SERVER_H
 
 #include <irssi/src/irc/dcc/dcc.h>
 

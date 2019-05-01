@@ -1,5 +1,5 @@
-#ifndef __QUERIES_H
-#define __QUERIES_H
+#ifndef IRSSI_CORE_QUERIES_H
+#define IRSSI_CORE_QUERIES_H
 
 #include <irssi/src/core/modules.h>
 

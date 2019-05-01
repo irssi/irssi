@@ -1,5 +1,5 @@
-#ifndef __NICKLIST_H
-#define __NICKLIST_H
+#ifndef IRSSI_CORE_NICKLIST_H
+#define IRSSI_CORE_NICKLIST_H
 
 /* Returns NICK_REC if it's nick, NULL if it isn't. */
 #define NICK(server) \

@@ -1,5 +1,5 @@
-#ifndef __NET_NONBLOCK_H
-#define __NET_NONBLOCK_H
+#ifndef IRSSI_CORE_NET_NONBLOCK_H
+#define IRSSI_CORE_NET_NONBLOCK_H
 
 #include <irssi/src/core/network.h>
 

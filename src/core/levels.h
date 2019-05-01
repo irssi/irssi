@@ -1,5 +1,5 @@
-#ifndef __LEVELS_H
-#define __LEVELS_H
+#ifndef IRSSI_CORE_LEVELS_H
+#define IRSSI_CORE_LEVELS_H
 
 /* This is pretty much IRC specific, but I think it would be easier for
    other chats to try to use these same levels instead of implementing too

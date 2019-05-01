@@ -1,5 +1,5 @@
-#ifndef __NOTIFYLIST_H
-#define __NOTIFYLIST_H
+#ifndef IRSSI_IRC_NOTIFYLIST_NOTIFYLIST_H
+#define IRSSI_IRC_NOTIFYLIST_NOTIFYLIST_H
 
 typedef struct {
 	char *mask; /* nick part must not contain wildcards */

@@ -1,5 +1,5 @@
-#ifndef __WINDOW_ACTIVITY_H
-#define __WINDOW_ACTIVITY_H
+#ifndef IRSSI_FE_COMMON_CORE_WINDOW_ACTIVITY_H
+#define IRSSI_FE_COMMON_CORE_WINDOW_ACTIVITY_H
 
 void window_activity(WINDOW_REC *window, int data_level,
 		     const char *hilight_color);

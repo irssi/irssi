@@ -1,5 +1,5 @@
-#ifndef __DCC_H
-#define __DCC_H
+#ifndef IRSSI_IRC_DCC_DCC_H
+#define IRSSI_IRC_DCC_DCC_H
 
 #include <irssi/src/core/modules.h>
 #include <irssi/src/core/network.h>

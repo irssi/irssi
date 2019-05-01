@@ -1,5 +1,5 @@
-#ifndef __IRC_CAP_H
-#define __IRC_CAP_H
+#ifndef IRSSI_IRC_CORE_IRC_CAP_H
+#define IRSSI_IRC_CORE_IRC_CAP_H
 
 void irc_cap_init(void);
 void irc_cap_deinit(void);

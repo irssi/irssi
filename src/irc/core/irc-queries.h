@@ -1,5 +1,5 @@
-#ifndef __IRC_QUERIES_H
-#define __IRC_QUERIES_H
+#ifndef IRSSI_IRC_CORE_IRC_QUERIES_H
+#define IRSSI_IRC_CORE_IRC_QUERIES_H
 
 #include <irssi/src/core/chat-protocols.h>
 #include <irssi/src/core/queries.h>

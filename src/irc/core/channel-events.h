@@ -1,5 +1,5 @@
-#ifndef __CHANNEL_EVENTS_H
-#define __CHANNEL_EVENTS_H
+#ifndef IRSSI_IRC_CORE_CHANNEL_EVENTS_H
+#define IRSSI_IRC_CORE_CHANNEL_EVENTS_H
 
 #include <irssi/src/irc/core/irc.h>
 

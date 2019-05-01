@@ -1,5 +1,5 @@
-#ifndef __IGNORE_H
-#define __IGNORE_H
+#ifndef IRSSI_CORE_IGNORE_H
+#define IRSSI_CORE_IGNORE_H
 
 #include <irssi/src/core/iregex.h>
 

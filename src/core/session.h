@@ -1,5 +1,5 @@
-#ifndef __SESSION_H
-#define __SESSION_H
+#ifndef IRSSI_CORE_SESSION_H
+#define IRSSI_CORE_SESSION_H
 
 extern char *irssi_binary;
 

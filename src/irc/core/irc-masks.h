@@ -1,5 +1,5 @@
-#ifndef __IRC_MASKS_H
-#define __IRC_MASKS_H
+#ifndef IRSSI_IRC_CORE_IRC_MASKS_H
+#define IRSSI_IRC_CORE_IRC_MASKS_H
 
 #include <irssi/src/core/masks.h>
 

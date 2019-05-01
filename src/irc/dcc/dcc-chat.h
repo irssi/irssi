@@ -1,5 +1,5 @@
-#ifndef __DCC_CHAT_H
-#define __DCC_CHAT_H
+#ifndef IRSSI_IRC_DCC_DCC_CHAT_H
+#define IRSSI_IRC_DCC_DCC_CHAT_H
 
 #include <irssi/src/irc/dcc/dcc.h>
 

@@ -1,5 +1,5 @@
-#ifndef __MAINWINDOWS_H
-#define __MAINWINDOWS_H
+#ifndef IRSSI_FE_TEXT_MAINWINDOWS_H
+#define IRSSI_FE_TEXT_MAINWINDOWS_H
 
 #include <irssi/src/fe-common/core/fe-windows.h>
 #include <irssi/src/fe-text/term.h>

@@ -1,5 +1,5 @@
-#ifndef PROXY_H
-#define PROXY_H
+#ifndef IRSSI_IRC_PROXY_PROXY_H
+#define IRSSI_IRC_PROXY_PROXY_H
 
 #include <irssi/src/common.h>
 

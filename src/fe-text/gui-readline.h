@@ -1,5 +1,5 @@
-#ifndef __GUI_READLINE_H
-#define __GUI_READLINE_H
+#ifndef IRSSI_FE_TEXT_GUI_READLINE_H
+#define IRSSI_FE_TEXT_GUI_READLINE_H
 
 extern char *cutbuffer;
 

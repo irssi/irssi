@@ -1,5 +1,5 @@
-#ifndef __COMMAND_HISTORY_H
-#define __COMMAND_HISTORY_H
+#ifndef IRSSI_FE_COMMON_CORE_COMMAND_HISTORY_H
+#define IRSSI_FE_COMMON_CORE_COMMAND_HISTORY_H
 
 #include <irssi/src/common.h>
 

@@ -1,5 +1,5 @@
-#ifndef __SETTINGS_H
-#define __SETTINGS_H
+#ifndef IRSSI_CORE_SETTINGS_H
+#define IRSSI_CORE_SETTINGS_H
 
 typedef enum {
 	SETTING_TYPE_STRING,

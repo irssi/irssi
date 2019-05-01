@@ -1,5 +1,5 @@
-#ifndef __NOTIFY_SETUP_H
-#define __NOTIFY_SETUP_H
+#ifndef IRSSI_IRC_NOTIFYLIST_NOTIFY_SETUP_H
+#define IRSSI_IRC_NOTIFYLIST_NOTIFY_SETUP_H
 
 void notifylist_add_config(NOTIFYLIST_REC *rec);
 void notifylist_remove_config(NOTIFYLIST_REC *rec);

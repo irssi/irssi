@@ -1,5 +1,5 @@
-#ifndef __PERL_SIGNALS_H
-#define __PERL_SIGNALS_H
+#ifndef IRSSI_PERL_PERL_SIGNALS_H
+#define IRSSI_PERL_PERL_SIGNALS_H
 
 void perl_signal_args_to_c(void (*callback)(void *, void **), void *cb_arg,
                            int signal_id, SV **args, size_t n_args);

@@ -1,5 +1,5 @@
-#ifndef __KEYBOARD_H
-#define __KEYBOARD_H
+#ifndef IRSSI_FE_COMMON_CORE_KEYBOARD_H
+#define IRSSI_FE_COMMON_CORE_KEYBOARD_H
 
 #include <irssi/src/core/signals.h>
 

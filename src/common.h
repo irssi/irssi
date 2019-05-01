@@ -1,5 +1,5 @@
-#ifndef __COMMON_H
-#define __COMMON_H
+#ifndef IRSSI_COMMON_H
+#define IRSSI_COMMON_H
 
 #define IRSSI_DIR_FULL "%s/.irssi" /* %s == g_get_home_dir() */
 

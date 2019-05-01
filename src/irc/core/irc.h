@@ -1,5 +1,5 @@
-#ifndef __IRC_H
-#define __IRC_H
+#ifndef IRSSI_IRC_CORE_IRC_H
+#define IRSSI_IRC_CORE_IRC_H
 
 typedef struct _IRC_CHATNET_REC IRC_CHATNET_REC;
 typedef struct _IRC_SERVER_CONNECT_REC IRC_SERVER_CONNECT_REC;

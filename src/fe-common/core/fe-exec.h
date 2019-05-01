@@ -1,5 +1,5 @@
-#ifndef __FE_EXEC_H
-#define __FE_EXEC_H
+#ifndef IRSSI_FE_COMMON_CORE_FE_EXEC_H
+#define IRSSI_FE_COMMON_CORE_FE_EXEC_H
 
 #include <irssi/src/fe-common/core/fe-windows.h>
 

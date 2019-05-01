@@ -1,5 +1,5 @@
-#ifndef __SERVERS_IDLE_H
-#define __SERVERS_IDLE_H
+#ifndef IRSSI_IRC_CORE_SERVERS_IDLE_H
+#define IRSSI_IRC_CORE_SERVERS_IDLE_H
 
 /* Add new idle command to queue */
 int server_idle_add_redir(IRC_SERVER_REC *server, const char *cmd,

@@ -1,5 +1,5 @@
-#ifndef __IRC_NICKLIST_H
-#define __IRC_NICKLIST_H
+#ifndef IRSSI_IRC_CORE_IRC_NICKLIST_H
+#define IRSSI_IRC_CORE_IRC_NICKLIST_H
 
 #include <irssi/src/core/nicklist.h>
 

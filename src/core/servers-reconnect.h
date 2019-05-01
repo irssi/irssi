@@ -1,5 +1,5 @@
-#ifndef __SERVER_RECONNECT_H
-#define __SERVER_RECONNECT_H
+#ifndef IRSSI_CORE_SERVERS_RECONNECT_H
+#define IRSSI_CORE_SERVERS_RECONNECT_H
 
 /* wait for half an hour before trying to reconnect to host where last
    connection failed */

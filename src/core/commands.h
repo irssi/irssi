@@ -1,5 +1,5 @@
-#ifndef __COMMANDS_H
-#define __COMMANDS_H
+#ifndef IRSSI_CORE_COMMANDS_H
+#define IRSSI_CORE_COMMANDS_H
 
 #include <irssi/src/core/signals.h>
 

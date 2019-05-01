@@ -1,5 +1,5 @@
-#ifndef __STATUSBAR_CONFIG_H
-#define __STATUSBAR_CONFIG_H
+#ifndef IRSSI_FE_TEXT_STATUSBAR_CONFIG_H
+#define IRSSI_FE_TEXT_STATUSBAR_CONFIG_H
 
 #include <irssi/src/fe-text/statusbar.h>
 

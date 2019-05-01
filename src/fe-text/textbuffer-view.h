@@ -1,5 +1,5 @@
-#ifndef __TEXTBUFFER_VIEW_H
-#define __TEXTBUFFER_VIEW_H
+#ifndef IRSSI_FE_TEXT_TEXTBUFFER_VIEW_H
+#define IRSSI_FE_TEXT_TEXTBUFFER_VIEW_H
 
 #include <irssi/src/fe-text/textbuffer.h>
 #include <irssi/src/fe-text/term.h>
