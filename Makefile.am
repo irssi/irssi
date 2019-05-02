@@ -21,6 +21,8 @@ SUBDIRS = src tests docs scripts themes utils
 confdir = $(sysconfdir)
 conf_DATA = irssi.conf
 
+pkgconfig_DATA = irssi-1.pc
+
 pkginclude_HEADERS = irssi-config.h irssi-version.h
 
 EXTRA_DIST = \
@@ -28,5 +30,4 @@ EXTRA_DIST = \
 	autogen.sh \
 	README.md \
 	$(conf_DATA) \
-	irssi-config.in \
 	irssi-icon.png

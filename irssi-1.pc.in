@@ -1,0 +1,20 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+prog_libs="@PROG_LIBS@"
+common_libs="@COMMON_LIBS@"
+
+perl_link_libs="@PERL_LINK_LIBS@"
+perl_fe_link_libs="@PERL_FE_LINK_LIBS@"
+perl_link_flags="@PERL_LINK_FLAGS@"
+
+chat_modules="@CHAT_MODULES@"
+irc_modules="@irc_MODULES@"
+
+Name: Irssi
+Description: Irssi chat client
+Version: @PACKAGE_VERSION@
+Cflags: -I${includedir} @OPENSSL_CFLAGS@
+Requires: glib-2.0

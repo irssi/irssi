@@ -18,6 +18,8 @@ AM_PROG_LIBTOOL
 AC_PATH_PROG(sedpath, sed)
 AC_PATH_PROG(perlpath, perl)
 
+PKG_INSTALLDIR
+
 AC_CHECK_HEADERS(unistd.h dirent.h sys/ioctl.h sys/resource.h)
 
 # check posix headers..
@@ -762,7 +764,7 @@ docs/help/Makefile
 docs/help/in/Makefile
 utils/Makefile
 themes/Makefile
-irssi-config
+irssi-1.pc
 ])
 
 dnl ** make the paths like include headers later
