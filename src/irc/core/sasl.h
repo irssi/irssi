@@ -18,8 +18,8 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#ifndef __SASL_H
-#define __SASL_H
+#ifndef IRSSI_IRC_CORE_SASL_H
+#define IRSSI_IRC_CORE_SASL_H
 
 enum {
 	SASL_MECHANISM_NONE = 0,

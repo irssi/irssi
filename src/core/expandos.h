@@ -1,7 +1,7 @@
-#ifndef __EXPANDOS_H
-#define __EXPANDOS_H
+#ifndef IRSSI_CORE_EXPANDOS_H
+#define IRSSI_CORE_EXPANDOS_H
 
-#include "signals.h"
+#include <irssi/src/core/signals.h>
 
 /* first argument of signal must match to active .. */
 typedef enum {

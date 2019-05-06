@@ -19,17 +19,17 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "levels.h"
-#include "settings.h"
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
 
-#include "irc-servers.h"
-#include "irc-commands.h"
-#include "ignore.h"
-#include "netsplit.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-commands.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/irc/core/netsplit.h>
 
-#include "printtext.h"
+#include <irssi/src/fe-common/core/printtext.h>
 
 #define SPLIT_WAIT_TIME 5 /* how many seconds to wait for the QUIT split messages to stop */
 

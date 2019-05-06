@@ -1,5 +1,5 @@
-#ifndef __GUI_ENTRY_H
-#define __GUI_ENTRY_H
+#ifndef IRSSI_FE_TEXT_GUI_ENTRY_H
+#define IRSSI_FE_TEXT_GUI_ENTRY_H
 
 typedef struct {
         int cutbuffer_len;

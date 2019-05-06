@@ -19,18 +19,18 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "signals.h"
-#include "settings.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
-#include "irc.h"
-#include "irc-channels.h"
-#include "servers-redirect.h"
-#include "masks.h"
-#include "nicklist.h"
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/servers-redirect.h>
+#include <irssi/src/core/masks.h>
+#include <irssi/src/core/nicklist.h>
 
-#include "notifylist.h"
-#include "notify-setup.h"
+#include <irssi/src/irc/notifylist/notifylist.h>
+#include <irssi/src/irc/notifylist/notify-setup.h>
 
 GSList *notifies;
 

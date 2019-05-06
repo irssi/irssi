@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "irc-nicklist.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
 
 static int massjoin_tag;
 static int massjoin_max_joins;

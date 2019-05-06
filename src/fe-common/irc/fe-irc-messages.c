@@ -19,25 +19,25 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "levels.h"
-#include "channels.h"
-#include "ignore.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/core/settings.h>
 
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "irc-queries.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-queries.h>
 
-#include "../core/module-formats.h"
-#include "module-formats.h"
-#include "printtext.h"
-#include "fe-messages.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-messages.h>
 
-#include "fe-queries.h"
-#include "window-items.h"
-#include "fe-irc-channels.h"
-#include "fe-irc-server.h"
+#include <irssi/src/fe-common/core/fe-queries.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/irc/fe-irc-channels.h>
+#include <irssi/src/fe-common/irc/fe-irc-server.h>
 
 static void sig_message_own_public(SERVER_REC *server, const char *msg,
 				   const char *target, const char *origtarget)

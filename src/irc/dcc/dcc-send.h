@@ -1,7 +1,7 @@
-#ifndef __DCC_SEND_H
-#define __DCC_SEND_H
+#ifndef IRSSI_IRC_DCC_DCC_SEND_H
+#define IRSSI_IRC_DCC_DCC_SEND_H
 
-#include "dcc.h"
+#include <irssi/src/irc/dcc/dcc.h>
 
 #define DCC_SEND(dcc) \
 	MODULE_CHECK_CAST_MODULE(dcc, SEND_DCC_REC, type, "DCC", "SEND")
@@ -10,7 +10,7 @@
 	(DCC_SEND(dcc) ? TRUE : FALSE)
 
 typedef struct {
-#include "dcc-file-rec.h"
+#include <irssi/src/irc/dcc/dcc-file-rec.h>
 
 	unsigned int file_quoted:1; /* file name was received quoted ("file name") */
 

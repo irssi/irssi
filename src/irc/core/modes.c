@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
-#include "irc-commands.h"
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "servers-redirect.h"
-#include "modes.h"
-#include "mode-lists.h"
-#include "nicklist.h"
+#include <irssi/src/irc/core/irc-commands.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/servers-redirect.h>
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/irc/core/mode-lists.h>
+#include <irssi/src/core/nicklist.h>
 
 /* Change nick's mode in channel */
 static void nick_mode_change(IRC_CHANNEL_REC *channel, const char *nick,

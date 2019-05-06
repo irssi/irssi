@@ -1,5 +1,5 @@
-#ifndef __PERL_SOURCES_H
-#define __PERL_SOURCES_H
+#ifndef IRSSI_PERL_PERL_SOURCES_H
+#define IRSSI_PERL_PERL_SOURCES_H
 
 int perl_timeout_add(int msecs, SV *func, SV *data, int once);
 int perl_input_add(int source, int condition, SV *func, SV *data, int once);

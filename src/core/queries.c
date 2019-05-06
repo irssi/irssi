@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
 
-#include "servers.h"
-#include "queries.h"
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/queries.h>
 
 GSList *queries;
 

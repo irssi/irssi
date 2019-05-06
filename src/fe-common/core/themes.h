@@ -1,5 +1,5 @@
-#ifndef __THEMES_H
-#define __THEMES_H
+#ifndef IRSSI_FE_COMMON_CORE_THEMES_H
+#define IRSSI_FE_COMMON_CORE_THEMES_H
 
 typedef struct {
 	char *name;

@@ -19,22 +19,22 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
-#include "levels.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include "chat-protocols.h"
-#include "servers.h"
-#include "channels.h"
-#include "queries.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
 
-#include "module-formats.h"
-#include "printtext.h"
-#include "themes.h"
-#include "fe-windows.h"
-#include "window-items.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
 
 static WINDOW_REC *restore_win;
 

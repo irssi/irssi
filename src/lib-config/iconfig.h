@@ -1,5 +1,5 @@
-#ifndef __ICONFIG_H
-#define __ICONFIG_H
+#ifndef IRSSI_LIB_CONFIG_ICONFIG_H
+#define IRSSI_LIB_CONFIG_ICONFIG_H
 
 enum {
         NODE_TYPE_KEY,

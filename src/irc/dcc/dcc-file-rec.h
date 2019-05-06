@@ -1,4 +1,4 @@
-#include "dcc-rec.h"
+#include <irssi/src/irc/dcc/dcc-rec.h>
 
 uoff_t size, skipped; /* file size / skipped at start */
 int fhandle; /* file handle */

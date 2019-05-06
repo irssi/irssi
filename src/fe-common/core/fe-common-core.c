@@ -19,35 +19,35 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "args.h"
-#include "misc.h"
-#include "levels.h"
-#include "settings.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
 
-#include "servers.h"
-#include "channels.h"
-#include "servers-setup.h"
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/servers-setup.h>
 
-#include "special-vars.h"
-#include "fe-core-commands.h"
-#include "fe-queries.h"
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/fe-common/core/fe-core-commands.h>
+#include <irssi/src/fe-common/core/fe-queries.h>
 #ifdef HAVE_CAPSICUM
-#include "fe-capsicum.h"
+#include <irssi/src/fe-common/core/fe-capsicum.h>
 #endif
-#include "hilight-text.h"
-#include "command-history.h"
-#include "completion.h"
-#include "keyboard.h"
-#include "printtext.h"
-#include "formats.h"
-#include "themes.h"
-#include "fe-channels.h"
-#include "fe-windows.h"
-#include "window-activity.h"
-#include "window-items.h"
-#include "windows-layout.h"
-#include "fe-recode.h"
+#include <irssi/src/fe-common/core/hilight-text.h>
+#include <irssi/src/fe-common/core/command-history.h>
+#include <irssi/src/fe-common/core/completion.h>
+#include <irssi/src/fe-common/core/keyboard.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/fe-channels.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-activity.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/windows-layout.h>
+#include <irssi/src/fe-common/core/fe-recode.h>
 
 #include <signal.h>
 

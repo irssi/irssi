@@ -1,7 +1,7 @@
-#ifndef __WINDOW_ITEMS_H
-#define __WINDOW_ITEMS_H
+#ifndef IRSSI_FE_COMMON_CORE_WINDOW_ITEMS_H
+#define IRSSI_FE_COMMON_CORE_WINDOW_ITEMS_H
 
-#include "fe-windows.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
 
 /* Add/remove/destroy window item from `window' */
 void window_item_add(WINDOW_REC *window, WI_ITEM_REC *item, int automatic);

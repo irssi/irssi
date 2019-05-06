@@ -1,5 +1,5 @@
-#ifndef __NETWORK_H
-#define __NETWORK_H
+#ifndef IRSSI_CORE_NETWORK_H
+#define IRSSI_CORE_NETWORK_H
 
 #ifdef HAVE_SOCKS_H
 #include <socks.h>

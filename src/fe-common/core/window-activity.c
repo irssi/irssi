@@ -19,19 +19,19 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "levels.h"
-#include "servers.h"
-#include "channels.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include "fe-windows.h"
-#include "window-items.h"
-#include "nicklist.h"
-#include "hilight-text.h"
-#include "formats.h"
-#include "fe-common-core.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/fe-common/core/hilight-text.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/fe-common-core.h>
 
 static char **hide_targets;
 static int hide_level, msg_level, hilight_level, signal_window_hilight_check;

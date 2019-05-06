@@ -1,7 +1,7 @@
-#ifndef __IRC_NICKLIST_H
-#define __IRC_NICKLIST_H
+#ifndef IRSSI_IRC_CORE_IRC_NICKLIST_H
+#define IRSSI_IRC_CORE_IRC_NICKLIST_H
 
-#include "nicklist.h"
+#include <irssi/src/core/nicklist.h>
 
 /* Add new nick to list */
 NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,

@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include "misc.h"
-#include "signals.h"
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/signals.h>
 
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "mode-lists.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/mode-lists.h>
 
 static void ban_free(GSList **list, BAN_REC *rec)
 {

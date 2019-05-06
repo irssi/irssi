@@ -1,5 +1,5 @@
-#ifndef __NICKMATCH_CACHE_H
-#define __NICKMATCH_CACHE_H
+#ifndef IRSSI_CORE_NICKMATCH_CACHE_H
+#define IRSSI_CORE_NICKMATCH_CACHE_H
 
 typedef void (*NICKMATCH_REBUILD_FUNC) (GHashTable *list,
 					CHANNEL_REC *channel, NICK_REC *nick);

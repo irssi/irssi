@@ -1,7 +1,7 @@
-#ifndef __CHANNELS_H
-#define __CHANNELS_H
+#ifndef IRSSI_CORE_CHANNELS_H
+#define IRSSI_CORE_CHANNELS_H
 
-#include "modules.h"
+#include <irssi/src/core/modules.h>
 
 /* Returns CHANNEL_REC if it's channel, NULL if it isn't. */
 #define CHANNEL(channel) \
@@ -13,7 +13,7 @@
 
 #define STRUCT_SERVER_REC SERVER_REC
 struct _CHANNEL_REC {
-#include "channel-rec.h"
+#include <irssi/src/core/channel-rec.h>
 };
 
 extern GSList *channels;

@@ -1,7 +1,7 @@
-#ifndef __MODULES_LOAD_H
-#define __MODULES_LOAD_H
+#ifndef IRSSI_CORE_MODULES_LOAD_H
+#define IRSSI_CORE_MODULES_LOAD_H
 
-#include "modules.h"
+#include <irssi/src/core/modules.h>
 
 /* Load module - automatically tries to load also the related non-core
    modules given in `prefixes' (like irc, fe, fe_text, ..) */

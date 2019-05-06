@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "modules.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/modules.h>
 
 typedef struct _SignalHook {
 	struct _SignalHook *next;

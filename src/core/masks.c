@@ -19,10 +19,10 @@
 */
 
 #include "module.h"
-#include "network.h"
-#include "misc.h"
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/misc.h>
 
-#include "servers.h"
+#include <irssi/src/core/servers.h>
 
 /* Returns TRUE if mask contains '!' ie. address should be checked too.
    Also checks if mask contained any wildcards. */

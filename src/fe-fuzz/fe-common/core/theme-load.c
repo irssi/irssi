@@ -18,17 +18,17 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "module.h"
-#include "modules-load.h"
-#include "levels.h"
-#include "../fe-text/module-formats.h" // need to explicitly grab from fe-text
-#include "themes.h"
-#include "core.h"
-#include "fe-common-core.h"
-#include "args.h"
-#include "printtext.h"
-#include "irc.h"
-#include "themes.h"
+#include <irssi/src/fe-text/module.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/fe-text/module-formats.h> // need to explicitly grab from fe-text
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/fe-common/core/fe-common-core.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/fe-common/core/themes.h>
 
 #include <stddef.h>
 #include <stdint.h>

@@ -1,7 +1,7 @@
-#ifndef __COMMANDS_H
-#define __COMMANDS_H
+#ifndef IRSSI_CORE_COMMANDS_H
+#define IRSSI_CORE_COMMANDS_H
 
-#include "signals.h"
+#include <irssi/src/core/signals.h>
 
 typedef struct {
 	SIGNAL_FUNC func;

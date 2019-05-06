@@ -19,13 +19,13 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "modules-load.h"
-#include "signals.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/core/signals.h>
 
-#include "settings.h"
-#include "commands.h"
-#include "misc.h"
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
 
 #ifdef HAVE_GMODULE
 

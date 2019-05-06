@@ -1,8 +1,6 @@
 noinst_LIBRARIES = libirc_core.a
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/core \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	$(GLIB_CFLAGS)
 

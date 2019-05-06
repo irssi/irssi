@@ -1,5 +1,5 @@
-#ifndef __CHAT_PROTOCOLS_H
-#define __CHAT_PROTOCOLS_H
+#ifndef IRSSI_CORE_CHAT_PROTOCOLS_H
+#define IRSSI_CORE_CHAT_PROTOCOLS_H
 
 struct _CHAT_PROTOCOL_REC {
 	int id;

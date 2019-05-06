@@ -1,12 +1,12 @@
-#include "../common/module.h"
+#include <irssi/src/perl/common/module.h>
 
-#include "fe-windows.h"
-#include "fe-exec.h"
-#include "formats.h"
-#include "printtext.h"
-#include "window-items.h"
-#include "themes.h"
-#include "keyboard.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/fe-exec.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/keyboard.h>
 
 typedef WINDOW_REC *Irssi__UI__Window;
 typedef TEXT_DEST_REC *Irssi__UI__TextDest;

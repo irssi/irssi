@@ -19,17 +19,17 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "net-sendbuffer.h"
-#include "servers-redirect.h"
-#include "levels.h"
-#include "settings.h"
-#include "misc.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/irc/core/servers-redirect.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/misc.h>
 
-#include "irc.h"
-#include "irc-channels.h"
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-channels.h>
 
-#include "fe-common/core/printtext.h" /* FIXME: evil. need to do fe-proxy */
+#include <irssi/src/fe-common/core/printtext.h> /* FIXME: evil. need to do fe-proxy */
 
 #include <sys/un.h>
 

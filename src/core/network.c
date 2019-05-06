@@ -19,9 +19,9 @@
 */
 
 #include "module.h"
-#include "network.h"
+#include <irssi/src/core/network.h>
 #ifdef HAVE_CAPSICUM
-#include "capsicum.h"
+#include <irssi/src/core/capsicum.h>
 #endif
 
 #include <sys/un.h>

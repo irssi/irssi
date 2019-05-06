@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "misc.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
-#include "levels.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/levels.h>
 
-#include "mainwindows.h"
-#include "gui-windows.h"
-#include "textbuffer-view.h"
+#include <irssi/src/fe-text/mainwindows.h>
+#include <irssi/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-text/textbuffer-view.h>
 
 static void sig_layout_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 {

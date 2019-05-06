@@ -19,22 +19,22 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "misc.h"
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
 
-#include "servers-setup.h"
+#include <irssi/src/core/servers-setup.h>
 
-#include "levels.h"
-#include "irc-chatnets.h"
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "servers-reconnect.h"
-#include "irc-servers-setup.h"
+#include <irssi/src/core/levels.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/irc/core/irc-servers-setup.h>
 
-#include "fe-windows.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 {

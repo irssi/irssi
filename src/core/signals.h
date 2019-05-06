@@ -1,5 +1,5 @@
-#ifndef __SIGNAL_H
-#define __SIGNAL_H
+#ifndef IRSSI_CORE_SIGNALS_H
+#define IRSSI_CORE_SIGNALS_H
 
 #define SIGNAL_PRIORITY_LOW    	100
 #define SIGNAL_PRIORITY_DEFAULT	0

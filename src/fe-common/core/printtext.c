@@ -19,18 +19,18 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "modules.h"
-#include "signals.h"
-#include "commands.h"
-#include "settings.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/settings.h>
 
-#include "levels.h"
-#include "servers.h"
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/servers.h>
 
-#include "themes.h"
-#include "fe-windows.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 static int beep_msg_level, beep_when_away, beep_when_window_active;
 

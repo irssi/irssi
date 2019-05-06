@@ -1,5 +1,5 @@
-#ifndef __IRC_H
-#define __IRC_H
+#ifndef IRSSI_IRC_CORE_IRC_H
+#define IRSSI_IRC_CORE_IRC_H
 
 typedef struct _IRC_CHATNET_REC IRC_CHATNET_REC;
 typedef struct _IRC_SERVER_CONNECT_REC IRC_SERVER_CONNECT_REC;
@@ -49,7 +49,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 		       int send_now, int immediate, int raw);
 
 /* Get count parameters from data */
-#include "commands.h"
+#include <irssi/src/core/commands.h>
 char *event_get_param(char **data);
 char *event_get_params(const char *data, int count, ...);
 

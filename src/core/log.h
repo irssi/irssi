@@ -1,5 +1,5 @@
-#ifndef __LOG_H
-#define __LOG_H
+#ifndef IRSSI_CORE_LOG_H
+#define IRSSI_CORE_LOG_H
 
 enum {
 	LOG_ITEM_TARGET, /* channel, query, .. */

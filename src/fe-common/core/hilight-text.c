@@ -19,23 +19,23 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "misc.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
-#include "iregex.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/iregex.h>
 
-#include "servers.h"
-#include "channels.h"
-#include "nicklist.h"
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/nicklist.h>
 
-#include "hilight-text.h"
-#include "nickmatch-cache.h"
-#include "printtext.h"
-#include "formats.h"
+#include <irssi/src/fe-common/core/hilight-text.h>
+#include <irssi/src/core/nickmatch-cache.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 static NICKMATCH_REC *nickmatch;
 static int never_hilight_level, default_hilight_level;

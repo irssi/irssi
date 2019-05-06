@@ -1,5 +1,5 @@
-#ifndef __RAWLOG_H
-#define __RAWLOG_H
+#ifndef IRSSI_CORE_RAWLOG_H
+#define IRSSI_CORE_RAWLOG_H
 
 struct _RAWLOG_REC {
 	int logging;

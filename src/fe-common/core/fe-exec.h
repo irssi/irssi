@@ -1,7 +1,7 @@
-#ifndef __FE_EXEC_H
-#define __FE_EXEC_H
+#ifndef IRSSI_FE_COMMON_CORE_FE_EXEC_H
+#define IRSSI_FE_COMMON_CORE_FE_EXEC_H
 
-#include "fe-windows.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
 
 #define EXEC_WI(query) \
 	MODULE_CHECK_CAST_MODULE(query, EXEC_WI_REC, type, \
@@ -14,7 +14,7 @@ typedef struct PROCESS_REC PROCESS_REC;
 
 #define STRUCT_SERVER_REC void
 typedef struct {
-#include "window-item-rec.h"
+#include <irssi/src/core/window-item-rec.h>
 	PROCESS_REC *process;
 	unsigned int destroying:1;
 } EXEC_WI_REC;

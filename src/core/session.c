@@ -19,19 +19,19 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "args.h"
-#include "network.h"
-#include "net-sendbuffer.h"
-#include "pidwait.h"
-#include "lib-config/iconfig.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/pidwait.h>
+#include <irssi/src/lib-config/iconfig.h>
 
-#include "chat-protocols.h"
-#include "servers.h"
-#include "servers-setup.h"
-#include "channels.h"
-#include "nicklist.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/nicklist.h>
 
 static char *session_file;
 char *irssi_binary = NULL;

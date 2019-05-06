@@ -1,10 +1,10 @@
-#ifndef __DCC_FILE_H
-#define __DCC_FILE_H
+#ifndef IRSSI_IRC_DCC_DCC_FILE_H
+#define IRSSI_IRC_DCC_DCC_FILE_H
 
-#include "dcc.h"
+#include <irssi/src/irc/dcc/dcc.h>
 
 typedef struct {
-#include "dcc-file-rec.h"
+#include <irssi/src/irc/dcc/dcc-file-rec.h>
 } FILE_DCC_REC;
 
 #endif

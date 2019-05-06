@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include "args.h"
+#include <irssi/src/core/args.h>
 
 static GOptionContext *context = NULL;
 

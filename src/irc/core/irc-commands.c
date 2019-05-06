@@ -19,22 +19,22 @@
 */
 
 #include "module.h"
-#include "misc.h"
-#include "recode.h"
-#include "special-vars.h"
-#include "settings.h"
-#include "window-item-def.h"
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/recode.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/window-item-def.h>
 
-#include "servers-reconnect.h"
-#include "servers-redirect.h"
-#include "servers-setup.h"
-#include "nicklist.h"
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/irc/core/servers-redirect.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/nicklist.h>
 
-#include "bans.h"
-#include "irc-commands.h"
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "irc-queries.h"
+#include <irssi/src/irc/core/bans.h>
+#include <irssi/src/irc/core/irc-commands.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-queries.h>
 
 /* How often to check if there's anyone to be unbanned in knockout list */
 #define KNOCKOUT_TIMECHECK 10000

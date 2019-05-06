@@ -19,17 +19,17 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "misc.h"
-#include "levels.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
 
-#include "module-formats.h"
-#include "printtext.h"
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
-#include "gui-windows.h"
-#include "gui-printtext.h"
+#include <irssi/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-text/gui-printtext.h>
 
 #define DEFAULT_LASTLOG_BEFORE 3
 #define DEFAULT_LASTLOG_AFTER 3

@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "misc.h"
-#include "settings.h"
-#include "printtext.h"
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
-#include "term.h"
-#include "gui-windows.h"
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/fe-text/gui-windows.h>
 
 #define NEW_WINDOW_SIZE (WINDOW_MIN_SIZE + 1)
 

@@ -23,11 +23,11 @@
 */
 
 #include "module.h"
-#include "fe-capsicum.h"
-#include "levels.h"
-#include "module-formats.h"
-#include "printtext.h"
-#include "signals.h"
+#include <irssi/src/fe-common/core/fe-capsicum.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/core/signals.h>
 
 static void capability_mode_enabled(void)
 {

@@ -19,21 +19,21 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "misc.h"
-#include "servers.h"
-#include "settings.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/settings.h>
 
-#include "levels.h"
+#include <irssi/src/core/levels.h>
 
-#include "themes.h"
-#include "fe-windows.h"
-#include "window-items.h"
-#include "windows-layout.h"
-#include "printtext.h"
-#include "command-history.h"
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/windows-layout.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/command-history.h>
 
 static void window_print_binds(WINDOW_REC *win)
 {

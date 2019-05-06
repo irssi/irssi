@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "signals.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
 
 GSList *modules;
 

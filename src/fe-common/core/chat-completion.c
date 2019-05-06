@@ -19,24 +19,24 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "misc.h"
-#include "levels.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include "chatnets.h"
-#include "servers.h"
-#include "servers-setup.h"
-#include "channels.h"
-#include "channels-setup.h"
-#include "queries.h"
-#include "nicklist.h"
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/channels-setup.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/nicklist.h>
 
-#include "completion.h"
-#include "chat-completion.h"
-#include "window-items.h"
+#include <irssi/src/fe-common/core/completion.h>
+#include <irssi/src/fe-common/core/chat-completion.h>
+#include <irssi/src/fe-common/core/window-items.h>
 
 enum {
 	COMPLETE_MCASE_NEVER = 0,

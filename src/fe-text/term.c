@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/settings.h>
 
-#include "term.h"
-#include "mainwindows.h"
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/fe-text/mainwindows.h>
 
 #ifdef HAVE_SYS_IOCTL_H
 #  include <sys/ioctl.h>

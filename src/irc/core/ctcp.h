@@ -1,5 +1,5 @@
-#ifndef __CTCP_H
-#define __CTCP_H
+#ifndef IRSSI_IRC_CORE_CTCP_H
+#define IRSSI_IRC_CORE_CTCP_H
 
 /* Register/unregister CTCP command, so it shows in CTCP CLIENTINFO */
 void ctcp_register(const char *name);

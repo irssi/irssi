@@ -19,19 +19,19 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "misc.h"
-#include "servers.h"
-#include "log.h"
-#include "write-buffer.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/write-buffer.h>
 #ifdef HAVE_CAPSICUM
-#include "capsicum.h"
+#include <irssi/src/core/capsicum.h>
 #endif
 
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
 #define DEFAULT_LOG_FILE_CREATE_MODE 600
 

@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "term.h"
-#include "terminfo-core.h"
-#include "fe-windows.h"
-#include "gui-printtext.h"
-#include "utf8.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/fe-text/terminfo-core.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-text/gui-printtext.h>
+#include <irssi/src/core/utf8.h>
 
 #include <signal.h>
 #include <termios.h>

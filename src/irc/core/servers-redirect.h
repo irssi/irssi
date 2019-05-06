@@ -1,5 +1,5 @@
-#ifndef __SERVERS_REDIRECT_H
-#define __SERVERS_REDIRECT_H
+#ifndef IRSSI_IRC_CORE_SERVERS_REDIRECT_H
+#define IRSSI_IRC_CORE_SERVERS_REDIRECT_H
 
 /* Register new redirection command.
 

@@ -19,21 +19,21 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "modules.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "settings.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
 
-#include "chat-protocols.h"
-#include "servers.h"
-#include "queries.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/queries.h>
 
-#include "fe-core-commands.h"
-#include "fe-windows.h"
-#include "window-items.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/fe-core-commands.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 static int queryclose_tag, query_auto_close, querycreate_level;
 

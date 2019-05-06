@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "network.h"
-#include "net-sendbuffer.h"
-#include "settings.h"
-#include "irssi-version.h"
-#include "recode.h"
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/irssi-version.h>
+#include <irssi/src/core/recode.h>
 
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "irc-nicklist.h"
-#include "modes.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/modes.h>
 
 void proxy_outdata(CLIENT_REC *client, const char *data, ...)
 {

@@ -3,10 +3,6 @@ include $(top_srcdir)/utils/glib-tap.mk
 PACKAGE_STRING=fe-text
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/core \
-	-I$(top_srcdir)/src/fe-common/core \
-	-I$(top_srcdir)/src/fe-text \
 	$(GLIB_CFLAGS)
 
 test_programs = test-paste-join-multiline

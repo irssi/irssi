@@ -19,22 +19,22 @@
 */
 
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "misc.h"
-#include "settings.h"
-#include "levels.h"
-#include "recode.h"
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/recode.h>
 
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "nicklist.h"
-#include "mode-lists.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/irc/core/mode-lists.h>
 
-#include "../core/module-formats.h"
-#include "printtext.h"
-#include "fe-channels.h"
-#include "fe-irc-server.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-channels.h>
+#include <irssi/src/fe-common/irc/fe-irc-server.h>
 
 static void print_event_received(IRC_SERVER_REC *server, const char *data,
 				 const char *nick, int target_param);

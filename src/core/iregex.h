@@ -1,7 +1,7 @@
-#ifndef __REGEX_H
-#define __REGEX_H
+#ifndef IRSSI_CORE_IREGEX_H
+#define IRSSI_CORE_IREGEX_H
 
-#include "common.h"
+#include <irssi/src/common.h>
 
 #ifdef USE_GREGEX
 

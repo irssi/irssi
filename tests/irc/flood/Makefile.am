@@ -3,8 +3,6 @@ include $(top_srcdir)/utils/glib-tap.mk
 PACKAGE_STRING=irc/flood
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/core \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	$(GLIB_CFLAGS)
 
@@ -12,9 +10,6 @@ test_programs = \
 	test-796
 
 test_796_CPPFLAGS = \
-	-I$(top_srcdir)/src/fe-common/core \
-	-I$(top_srcdir)/src/irc/core \
-	-I$(top_srcdir)/src/irc/flood \
 	$(AM_CPPFLAGS)
 
 test_796_DEPENDENCIES = \

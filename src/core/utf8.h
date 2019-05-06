@@ -1,5 +1,5 @@
-#ifndef __UTF8_H
-#define __UTF8_H
+#ifndef IRSSI_CORE_UTF8_H
+#define IRSSI_CORE_UTF8_H
 
 /* XXX I didn't check the encoding range of big5+. This is standard big5. */
 #define is_big5_los(lo) (0x40 <= (lo) && (lo) <= 0x7E) /* standard */

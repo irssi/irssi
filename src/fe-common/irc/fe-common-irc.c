@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include "modules.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "misc.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/core/modules.h>
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include "themes.h"
-#include "fe-irc-server.h"
-#include "fe-irc-channels.h"
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/irc/fe-irc-server.h>
+#include <irssi/src/fe-common/irc/fe-irc-channels.h>
 
 void fe_irc_modules_init(void);
 void fe_irc_modules_deinit(void);

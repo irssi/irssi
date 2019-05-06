@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301,USA
  */
 
-#ifndef __FE_TLS_H
-#define __FE_TLS_H
+#ifndef IRSSI_FE_COMMON_CORE_FE_TLS_H
+#define IRSSI_FE_COMMON_CORE_FE_TLS_H
 
 void fe_tls_init(void);
 void fe_tls_deinit(void);

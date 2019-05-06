@@ -18,22 +18,22 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "core.h"
+#include <irssi/src/core/core.h>
 #include "module.h"
-#include "module-formats.h"
-#include "signals.h"
-#include "commands.h"
-#include "levels.h"
-#include "misc.h"
-#include "settings.h"
-#include "irssi-version.h"
-#include "servers.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/irssi-version.h>
+#include <irssi/src/core/servers.h>
 #ifdef HAVE_CAPSICUM
-#include "capsicum.h"
+#include <irssi/src/core/capsicum.h>
 #endif
 
-#include "fe-windows.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 #define PASTE_CHECK_SPEED 200 /* 0.2 sec */
 

@@ -1,5 +1,5 @@
-#ifndef __BANS_H
-#define __BANS_H
+#ifndef IRSSI_IRC_CORE_BANS_H
+#define IRSSI_IRC_CORE_BANS_H
 
 void bans_init(void);
 void bans_deinit(void);

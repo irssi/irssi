@@ -1,8 +1,8 @@
-#ifndef __STATUSBAR_H
-#define __STATUSBAR_H
+#ifndef IRSSI_FE_TEXT_STATUSBAR_H
+#define IRSSI_FE_TEXT_STATUSBAR_H
 
-#include "mainwindows.h"
-#include "statusbar-item.h"
+#include <irssi/src/fe-text/mainwindows.h>
+#include <irssi/src/fe-text/statusbar-item.h>
 
 #define STATUSBAR_PRIORITY_HIGH		100
 #define STATUSBAR_PRIORITY_NORMAL	0

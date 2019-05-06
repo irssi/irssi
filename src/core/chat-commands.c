@@ -19,20 +19,20 @@
 */
 
 #include "module.h"
-#include "network.h"
-#include "signals.h"
-#include "commands.h"
-#include "special-vars.h"
-#include "settings.h"
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
-#include "chat-protocols.h"
-#include "servers.h"
-#include "servers-setup.h"
-#include "servers-reconnect.h"
-#include "channels.h"
-#include "queries.h"
-#include "window-item-def.h"
-#include "rawlog.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/window-item-def.h>
+#include <irssi/src/core/rawlog.h>
 
 static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 					      char **rawlog_file)

@@ -20,30 +20,30 @@
 
 #include "module.h"
 
-#include "net-sendbuffer.h"
-#include "signals.h"
-#include "rawlog.h"
-#include "misc.h"
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/misc.h>
 
-#include "channels.h"
-#include "queries.h"
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
 
-#include "irc-nicklist.h"
-#include "irc-queries.h"
-#include "irc-servers-setup.h"
-#include "irc-servers.h"
-#include "irc-cap.h"
-#include "sasl.h"
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/core/irc-servers-setup.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-cap.h>
+#include <irssi/src/irc/core/sasl.h>
 
-#include "channels-setup.h"
-#include "channel-rejoin.h"
-#include "servers-idle.h"
-#include "servers-reconnect.h"
-#include "servers-redirect.h"
-#include "modes.h"
+#include <irssi/src/core/channels-setup.h>
+#include <irssi/src/irc/core/channel-rejoin.h>
+#include <irssi/src/irc/core/servers-idle.h>
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/irc/core/servers-redirect.h>
+#include <irssi/src/irc/core/modes.h>
 
-#include "settings.h"
-#include "recode.h"
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/recode.h>
 
 #define DEFAULT_MAX_KICKS 1
 #define DEFAULT_MAX_MODES 3

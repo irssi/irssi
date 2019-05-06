@@ -1,7 +1,7 @@
-#ifndef __DCC_QUEUE_H_
-#define __DCC_QUEUE_H_
+#ifndef IRSSI_IRC_DCC_DCC_QUEUE_H_
+#define IRSSI_IRC_DCC_DCC_QUEUE_H_
 
-#include "dcc-chat.h"
+#include <irssi/src/irc/dcc/dcc-chat.h>
 
 enum {
 	DCC_QUEUE_NORMAL,

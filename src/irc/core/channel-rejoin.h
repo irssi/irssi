@@ -1,5 +1,5 @@
-#ifndef __CHANNEL_REJOIN_H
-#define __CHANNEL_REJOIN_H
+#ifndef IRSSI_IRC_CORE_CHANNEL_REJOIN_H
+#define IRSSI_IRC_CORE_CHANNEL_REJOIN_H
 
 typedef struct {
 	char *channel;

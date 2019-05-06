@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301,USA
  */
 
-#ifndef __TLS_H
-#define __TLS_H
+#ifndef IRSSI_CORE_TLS_H
+#define IRSSI_CORE_TLS_H
 
 #include <openssl/ssl.h>
 

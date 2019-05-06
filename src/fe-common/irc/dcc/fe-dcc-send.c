@@ -19,20 +19,20 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "levels.h"
-#include "misc.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include "dcc-file.h"
-#include "dcc-send.h"
-#include "dcc-queue.h"
+#include <irssi/src/irc/dcc/dcc-file.h>
+#include <irssi/src/irc/dcc/dcc-send.h>
+#include <irssi/src/irc/dcc/dcc-queue.h>
 
-#include "module-formats.h"
-#include "printtext.h"
-#include "completion.h"
+#include <irssi/src/fe-common/irc/dcc/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/completion.h>
 
-#include "fe-dcc.h"
+#include <irssi/src/fe-common/irc/dcc/fe-dcc.h>
 
 static void dcc_connected(SEND_DCC_REC *dcc)
 {

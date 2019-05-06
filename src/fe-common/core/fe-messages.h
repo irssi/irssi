@@ -1,5 +1,5 @@
-#ifndef __FE_MESSAGES_H
-#define __FE_MESSAGES_H
+#ifndef IRSSI_FE_COMMON_CORE_FE_MESSAGES_H
+#define IRSSI_FE_COMMON_CORE_FE_MESSAGES_H
 
 /* convert _underlined_ and *bold* words (and phrases) to use real
    underlining or bolding */

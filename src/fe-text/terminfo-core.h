@@ -1,5 +1,5 @@
-#ifndef __TERMINFO_CORE_H
-#define __TERMINFO_CORE_H
+#ifndef IRSSI_FE_TEXT_TERMINFO_CORE_H
+#define IRSSI_FE_TEXT_TERMINFO_CORE_H
 
 #include <termios.h>
 

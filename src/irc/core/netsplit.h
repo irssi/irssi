@@ -1,7 +1,7 @@
-#ifndef __NETSPLIT_H
-#define __NETSPLIT_H
+#ifndef IRSSI_IRC_CORE_NETSPLIT_H
+#define IRSSI_IRC_CORE_NETSPLIT_H
 
-#include "nicklist.h"
+#include <irssi/src/core/nicklist.h>
 
 typedef struct {
 	char *server;

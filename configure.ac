@@ -18,6 +18,8 @@ AM_PROG_LIBTOOL
 AC_PATH_PROG(sedpath, sed)
 AC_PATH_PROG(perlpath, perl)
 
+PKG_INSTALLDIR
+
 AC_CHECK_HEADERS(unistd.h dirent.h sys/ioctl.h sys/resource.h)
 
 # check posix headers..
@@ -762,10 +764,15 @@ docs/help/Makefile
 docs/help/in/Makefile
 utils/Makefile
 themes/Makefile
-irssi-config
+irssi-1.pc
 ])
 
+dnl ** make the paths like include headers later
+AC_CONFIG_LINKS([irssi/irssi-config.h:irssi-config.h])
+AC_LINK_FILES([$srcdir/src],[irssi/src])
+
 AC_OUTPUT
+$LN_S ../irssi-version.h irssi/irssi-version.h
 
 dnl ** for building from objdir
 old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir

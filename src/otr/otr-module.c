@@ -24,21 +24,21 @@
 
 #include "module.h"
 
-#include "common.h"
-#include "signals.h"
-#include "queries.h"
-#include "commands.h"
+#include <irssi/src/common.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/commands.h>
 
-#include "irc.h"
-#include "irc-servers.h"
-#include "irc-queries.h"
-#include "irc-commands.h"
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/core/irc-commands.h>
 
-#include "key.h"
-#include "otr.h"
-#include "otr-formats.h"
-#include "otr-fe.h"
-#include "misc.h"
+#include <irssi/src/otr/key.h>
+#include <irssi/src/otr/otr.h>
+#include <irssi/src/otr/otr-formats.h>
+#include <irssi/src/otr/otr-fe.h>
+#include <irssi/src/core/misc.h>
 
 /*
  * Global state for the user. Init when the module loads.

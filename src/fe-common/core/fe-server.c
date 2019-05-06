@@ -19,20 +19,20 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "commands.h"
-#include "network.h"
-#include "levels.h"
-#include "settings.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
 
-#include "chat-protocols.h"
-#include "chatnets.h"
-#include "servers.h"
-#include "servers-setup.h"
-#include "servers-reconnect.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/servers-reconnect.h>
 
-#include "module-formats.h"
-#include "printtext.h"
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 static void print_servers(void)
 {

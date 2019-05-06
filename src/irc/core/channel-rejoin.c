@@ -20,14 +20,14 @@
 */
 
 #include "module.h"
-#include "signals.h"
-#include "settings.h"
-#include "misc.h"
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/misc.h>
 
-#include "irc-servers.h"
-#include "irc-channels.h"
-#include "irc-commands.h"
-#include "channel-rejoin.h"
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-commands.h>
+#include <irssi/src/irc/core/channel-rejoin.h>
 
 #define REJOIN_TIMEOUT (1000*60*5) /* try to rejoin every 5 minutes */
 

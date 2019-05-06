@@ -1,5 +1,5 @@
-#ifndef __COMMON_H
-#define __COMMON_H
+#ifndef IRSSI_COMMON_H
+#define IRSSI_COMMON_H
 
 #define IRSSI_DIR_FULL "%s/.irssi" /* %s == g_get_home_dir() */
 
@@ -11,9 +11,7 @@
 #define DEFAULT_SERVER_ADD_PORT 6667
 #define DEFAULT_SERVER_ADD_TLS_PORT 6697
 
-#ifdef HAVE_CONFIG_H
-#include "irssi-config.h"
-#endif
+#include <irssi/irssi-config.h>
 
 #include <stdio.h>
 #include <stddef.h>

@@ -1,8 +1,6 @@
 noinst_LIBRARIES = libcore.a
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/core \
 	$(GLIB_CFLAGS) \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DMODULEDIR=\""$(libdir)/irssi/modules"\"

@@ -1,5 +1,5 @@
-#ifndef __CHAT_COMPLETION_H
-#define __CHAT_COMPLETION_H
+#ifndef IRSSI_FE_COMMON_CORE_CHAT_COMPLETION_H
+#define IRSSI_FE_COMMON_CORE_CHAT_COMPLETION_H
 
 GList *completion_get_chatnets(const char *word);
 GList *completion_get_servers(const char *word);

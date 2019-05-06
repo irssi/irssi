@@ -1,7 +1,7 @@
-#ifndef __KEYBOARD_H
-#define __KEYBOARD_H
+#ifndef IRSSI_FE_COMMON_CORE_KEYBOARD_H
+#define IRSSI_FE_COMMON_CORE_KEYBOARD_H
 
-#include "signals.h"
+#include <irssi/src/core/signals.h>
 
 typedef struct _KEYBOARD_REC KEYBOARD_REC;
 typedef struct _KEYINFO_REC KEYINFO_REC;

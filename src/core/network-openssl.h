@@ -1,6 +1,6 @@
-#ifndef __NETWORK_OPENSSL_H
-#define __NETWORK_OPENSSL_H
+#ifndef IRSSI_CORE_NETWORK_OPENSSL_H
+#define IRSSI_CORE_NETWORK_OPENSSL_H
 
 gboolean irssi_ssl_init(void);
 
-#endif /* !__NETWORK_OPENSSL_H */
+#endif /* !IRSSI_CORE_NETWORK_OPENSSL_H */

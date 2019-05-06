@@ -1,32 +1,32 @@
 #define NEED_PERL_H
 #define HAVE_CONFIG_H
-#include "../module.h"
+#include <irssi/src/perl/module.h>
 #include <XSUB.h>
 
-#include "network.h"
-#include "levels.h"
-#include "commands.h"
-#include "log.h"
-#include "rawlog.h"
-#include "ignore.h"
-#include "settings.h"
-#include "masks.h"
-#include "special-vars.h"
-#include "window-item-def.h"
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/masks.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/window-item-def.h>
 
-#include "chat-protocols.h"
-#include "chatnets.h"
-#include "servers.h"
-#include "servers-reconnect.h"
-#include "servers-setup.h"
-#include "channels.h"
-#include "queries.h"
-#include "nicklist.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/nicklist.h>
 
-#include "perl/perl-core.h"
-#include "perl/perl-common.h"
-#include "perl/perl-signals.h"
-#include "perl/perl-sources.h"
+#include <irssi/src/perl/perl-core.h>
+#include <irssi/src/perl/perl-common.h>
+#include <irssi/src/perl/perl-signals.h>
+#include <irssi/src/perl/perl-sources.h>
 
 typedef COMMAND_REC *Irssi__Command;
 typedef LOG_REC *Irssi__Log;

@@ -1,5 +1,5 @@
-#ifndef __TEXTBUFFER_H
-#define __TEXTBUFFER_H
+#ifndef IRSSI_FE_TEXT_TEXTBUFFER_H
+#define IRSSI_FE_TEXT_TEXTBUFFER_H
 
 /* Make sure TEXT_CHUNK_REC is not slightly more than a page, as that
    wastes a lot of memory. */

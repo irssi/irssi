@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include "network.h"
-#include "signals.h"
-#include "special-vars.h"
-#include "lib-config/iconfig.h"
-#include "settings.h"
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include "chat-protocols.h"
-#include "chatnets.h"
-#include "servers.h"
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
 
 GSList *chatnets; /* list of available chat networks */
 

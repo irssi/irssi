@@ -1,8 +1,8 @@
-#ifndef __PRINTTEXT_H
-#define __PRINTTEXT_H
+#ifndef IRSSI_FE_COMMON_CORE_PRINTTEXT_H
+#define IRSSI_FE_COMMON_CORE_PRINTTEXT_H
 
-#include "fe-windows.h"
-#include "formats.h"
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 void printformat_module(const char *module, void *server, const char *target, int level, int formatnum, ...);
 void printformat_module_window(const char *module, WINDOW_REC *window, int level, int formatnum, ...);

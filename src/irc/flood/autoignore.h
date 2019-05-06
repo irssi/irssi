@@ -1,5 +1,5 @@
-#ifndef __AUTOIGNORE_H
-#define __AUTOIGNORE_H
+#ifndef IRSSI_IRC_FLOOD_AUTOIGNORE_H
+#define IRSSI_IRC_FLOOD_AUTOIGNORE_H
 
 void autoignore_add(IRC_SERVER_REC *server, char *nick, int level);
 

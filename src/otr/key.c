@@ -28,15 +28,15 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include "key.h"
+#include <irssi/src/otr/key.h>
 
-#include "levels.h"
-#include "network.h"
-#include "pidwait.h"
-#include "printtext.h"
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/pidwait.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
-#include "irssi-otr.h"
-#include "otr-formats.h"
+#include <irssi/src/otr/irssi-otr.h>
+#include <irssi/src/otr/otr-formats.h>
 
 /*
  * Status of key generation.
