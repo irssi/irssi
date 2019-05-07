@@ -27,6 +27,7 @@
 #include <irssi/src/core/misc.h>
 
 #include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
 #include <irssi/src/irc/core/irc-channels.h>
 
 #include <irssi/src/fe-common/core/printtext.h> /* FIXME: evil. need to do fe-proxy */
@@ -176,7 +177,7 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 		if (!client->multiplex) {
 			args_pass = args;
 		} else {
-			IRC_SERVER_REC *server;
+			IRC_CHATNET_REC *chatnet;
 			char *tag;
 			const char *tag_end;
 
@@ -188,18 +189,19 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 			}
 
 			tag = g_strndup(args, tag_end - args);
-			server = IRC_SERVER(server_find_chatnet(tag));
-			g_free(tag);
+			chatnet = IRC_CHATNET(chatnet_find(tag));
 
-			if (!server) {
+			if (!chatnet) {
 				/* an invalid network was specified */
 				remove_client(client);
+				g_free(tag);
 				return;
 			}
 
-			client->server = server;
+			client->server = IRC_SERVER(server_find_chatnet(tag));
 			g_free(client->proxy_address);
-			client->proxy_address = g_strdup_printf("%.*s.proxy", (int)(tag_end - args), args);
+			client->proxy_address = g_strdup_printf("%s.proxy", tag);
+			g_free(tag);
 		}
 
 		if (g_strcmp0(password, args_pass) != 0) {
@@ -578,7 +580,8 @@ static void event_connected(IRC_SERVER_REC *server)
 		if (rec->connected && rec->server == NULL &&
 		    (g_strcmp0(rec->listen->ircnet, "*") == 0 ||
 		     (chatnet != NULL &&
-		      g_ascii_strcasecmp(chatnet, rec->listen->ircnet) == 0))) {
+		      strstr(rec->proxy_address, chatnet) == rec->proxy_address &&
+		      rec->proxy_address[strlen(chatnet)] == '.'))) {
 			proxy_outdata(rec, ":%s NOTICE %s :Connected to server\r\n",
 			                    rec->proxy_address, rec->nick);
 			rec->server = server;
