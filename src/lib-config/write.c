@@ -315,6 +315,15 @@ int config_write(CONFIG_REC *rec, const char *fname, int create_mode)
 	/* expand all symlinks; else we may replace a symlink with a regular file */
 	dest_name = realpath(base_name, NULL);
 
+	if (errno == EINVAL) {
+		/* variable path length not supported by glibc < 2.3, Solaris < 11 */
+		char resolved_path[PATH_MAX] = { 0 };
+		errno = 0;
+		if ((dest_name = realpath(base_name, resolved_path)) != NULL) {
+			dest_name = g_strdup(dest_name);
+		}
+	}
+
 	if (dest_name == NULL) {
 		if (errno == ENOENT) {
 			dest_name = g_strdup(base_name);
