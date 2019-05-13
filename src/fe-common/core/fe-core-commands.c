@@ -114,10 +114,11 @@ static void cmd_version(char *data)
 	}
 }
 
-/* SYNTAX: CAT <file> [<seek position>] */
-static void cmd_cat(const char *data)
+/* SYNTAX: CAT [-window] <file> [<seek position>] */
+static void cmd_cat(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
-	char *fname, *fposstr;
+	char *fname, *fposstr, *target;
+	GHashTable *optlist;
 	void *free_arg;
 	int fpos;
 	GIOChannel *handle;
@@ -127,12 +128,14 @@ static void cmd_cat(const char *data)
 	int fd;
 #endif
 
-	if (!cmd_get_params(data, &free_arg, 2, &fname, &fposstr))
+	g_return_if_fail(data != NULL);
+
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS,
+				"cat", &optlist, &fname, &fposstr))
 		return;
 
 	fname = convert_home(fname);
 	fpos = atoi(fposstr);
-        cmd_params_free(free_arg);
 
 #ifdef HAVE_CAPSICUM
 	fd = capsicum_open_wrapper(fname, O_RDONLY, 0);
@@ -152,15 +155,18 @@ static void cmd_cat(const char *data)
 		return;
 	}
 
+	target = g_hash_table_lookup(optlist, "window") != NULL ? item->name : NULL;
+
 	g_io_channel_set_encoding(handle, NULL, NULL);
 	g_io_channel_seek_position(handle, fpos, G_SEEK_SET, NULL);
 	buf = g_string_sized_new(512);
 	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
 		buf->str[tpos] = '\0';
-		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP |
+		printtext(target != NULL ? server : NULL, target, MSGLEVEL_CLIENTCRAP |
 			  MSGLEVEL_NEVER, "%s", buf->str);
 	}
 	g_string_free(buf, TRUE);
+	cmd_params_free(free_arg);
 
 	g_io_channel_unref(handle);
 }
@@ -344,6 +350,7 @@ void fe_core_commands_init(void)
 	signal_add("list subcommands", (SIGNAL_FUNC) event_list_subcommands);
 
 	command_set_options("echo", "+level +window");
+	command_set_options("cat", "window");
 }
 
 void fe_core_commands_deinit(void)
