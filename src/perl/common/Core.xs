@@ -304,6 +304,13 @@ CODE:
 
 # maybe there's some easier way than this..? :)
 int
+MSGLEVEL_HIDDEN()
+CODE:
+	RETVAL = MSGLEVEL_HIDDEN;
+OUTPUT:
+	RETVAL
+
+int
 MSGLEVEL_CRAP()
 CODE:
 	RETVAL = MSGLEVEL_CRAP;
