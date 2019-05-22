@@ -378,7 +378,8 @@ static void complete_from_nicklist(GList **outlist, CHANNEL_REC *channel,
 		     : g_ascii_strncasecmp(rec->nick, nick, len)) == 0 &&
 		    (match_case? glist_find_string(*outlist, rec->nick)
 		     : glist_find_icase_string(*outlist, rec->nick)) == NULL) {
-			str = g_strconcat(rec->nick, suffix, NULL);
+			/* use twitter style @nick if completion_char is '@', otherwise completion_char goes after nick */
+			str = *suffix == '@' ? g_strconcat(suffix, rec->nick, NULL) : g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase) ascii_strdown(str);
 			if (rec->own)
 				ownlist = g_list_append(ownlist, str);
