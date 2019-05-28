@@ -69,6 +69,29 @@ static void set_print_pattern(const char *pattern)
 	g_slist_free(sets);
 }
 
+static void set_print_section(const char *pattern)
+{
+	GSList *sets, *tmp;
+	const char *last_section;
+
+	last_section = "";
+	sets = settings_get_sorted();
+	for (tmp = sets; tmp != NULL; tmp = tmp->next) {
+		SETTINGS_REC *rec = tmp->data;
+
+		if (stristr(rec->section, pattern) != NULL) {
+			if (g_strcmp0(last_section, rec->section) != 0) {
+				/* print section */
+				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+						TXT_SET_TITLE, rec->section);
+				last_section = rec->section;
+			}
+			set_print(rec);
+		}
+	}
+	g_slist_free(sets);
+}
+
 static void set_boolean(const char *key, const char *value)
 {
 	char *stripped_value;
@@ -123,13 +146,13 @@ static void set_choice(const char *key, const char *value)
 	g_free(stripped_value);
 }
 
-/* SYNTAX: SET [-clear | -default] [<key> [<value>]] */
+/* SYNTAX: SET [-clear | -default | -section] [<key> [<value>]] */
 static void cmd_set(char *data)
 {
         GHashTable *optlist;
 	char *key, *value;
 	void *free_arg;
-	int clear, set_default;
+	int clear, set_default, list_section;
 	SETTINGS_REC *rec;
 
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST |
@@ -139,11 +162,14 @@ static void cmd_set(char *data)
 
 	clear = g_hash_table_lookup(optlist, "clear") != NULL;
 	set_default = g_hash_table_lookup(optlist, "default") != NULL;
+	list_section = g_hash_table_lookup(optlist, "section") != NULL;
 
 	if (*key == '\0')
-		clear = set_default = FALSE;
+		clear = set_default = list_section = FALSE;
 
-	if (!(clear || set_default || *value != '\0'))
+	if (list_section)
+		set_print_section(key);
+	else if (!(clear || set_default || *value != '\0'))
 		set_print_pattern(key);
 	else {
 		rec = settings_get_record(key);
@@ -408,7 +434,7 @@ void fe_settings_init(void)
 	command_bind("unalias", NULL, (SIGNAL_FUNC) cmd_unalias);
 	command_bind("reload", NULL, (SIGNAL_FUNC) cmd_reload);
 	command_bind("save", NULL, (SIGNAL_FUNC) cmd_save);
-	command_set_options("set", "clear default");
+	command_set_options("set", "clear default section");
 
         signal_add("settings errors", (SIGNAL_FUNC) sig_settings_errors);
 }
