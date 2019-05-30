@@ -30,7 +30,9 @@
     -before:      This item is added before the other item.
     -after:       This item is added after the other item.
     -priority:    When the statusbar items overflow, the item with the
-                  lowest priority is removed first
+                  lowest priority is removed or truncated first.
+                  Priority can be negative, in which case it'll have to be
+                  quoted (e.g. -priority "-1")
     -alignment:   Display the item on the right side.
 
     Where statusbar refers to the name of the statusbar; if no argument is
