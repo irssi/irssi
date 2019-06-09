@@ -1298,9 +1298,7 @@ static void window_balance_vertical(void)
 				rec->last_line++;
 			}
 
-			rec->height = rec->last_line-rec->first_line+1;
-
-			mainwindow_resize(rec, 0, rec->height-old_size);
+			mainwindow_resize(rec, 0, rec->last_line - rec->first_line + 1 - old_size);
 		}
 		if (line != NULL && bigger_units > 0) {
 			bigger_units--;
