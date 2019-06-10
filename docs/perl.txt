@@ -178,6 +178,9 @@ listed after the generic ones.
 Window active_win() - return active window
 Server active_server() - return server in active window
 
+get_irssi_dir() - returns the absolute path to the user configuration
+  directory - either the value passed to --home at startup, or ~/.irssi
+
 windows() - return list of all windows
 servers() - return list of all servers
 reconnects() - return list of all server reconnections
