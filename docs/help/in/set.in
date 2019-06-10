@@ -7,6 +7,7 @@
 
     -clear:      Removes the setting's value from the configuration.
     -default:    Restore the setting to its default value.
+    -section:    Print settings under the specified section
 
     The setting and the value; if no value is given, the list of settings that
     matched will be returned. If no arguments are given, all the settings will
@@ -27,6 +28,7 @@
     /SET -clear nick
     /SET log_timestamp %%H:%%H:%%S
     /SET -default log_timestamp
+    /SET -section lookandfeel
     /SET close
 
 %9See also:%9 SAVE, TOGGLE
