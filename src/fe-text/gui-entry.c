@@ -379,11 +379,19 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 		if (new_xpos > end_xpos)
 			break;
 
-		if (entry->hidden)
+		if (entry->hidden) {
                         g_string_append_c(str, ' ');
-		else if (unichar_isprint(c))
-			g_string_append_unichar(str, c);
-		else {
+		} else if (unichar_isprint(c)) {
+			if (entry->utf8) {
+				g_string_append_unichar(str, c);
+			} else if (term_type == TERM_TYPE_BIG5) {
+				if(c > 0xff)
+					g_string_append_c(str, (c >> 8) & 0xff);
+				g_string_append_c(str, c & 0xff);
+			} else {
+				g_string_append_c(str, c);
+			}
+		} else {
 			g_string_append_c(str, 4);
 			g_string_append_c(str, FORMAT_STYLE_REVERSE);
 			g_string_append_c(str, (c & 127)+'A'-1);
