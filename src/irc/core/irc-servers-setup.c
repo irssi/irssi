@@ -101,8 +101,8 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 			conn->sasl_mechanism = SASL_MECHANISM_PLAIN;
 			if (ircnet->sasl_username != NULL && *ircnet->sasl_username &&
 			    ircnet->sasl_password != NULL && *ircnet->sasl_password) {
-				conn->sasl_username = ircnet->sasl_username;
-				conn->sasl_password = ircnet->sasl_password;
+				conn->sasl_username = g_strdup(ircnet->sasl_username);
+				conn->sasl_password = g_strdup(ircnet->sasl_password);
 			} else
 				g_warning("The fields sasl_username and sasl_password are either missing or empty");
 		}
