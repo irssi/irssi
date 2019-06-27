@@ -30,6 +30,7 @@
 #include <irssi/src/fe-text/gui-printtext.h>
 #include <irssi/src/fe-text/gui-windows.h>
 
+/* Terminal indexed colour map */
 int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7,
 	 /* 16-27 */  52,  94, 100,  58,  22,  29,  23,  24,  17,  54,  53,  89,
 	 /* 28-39 */  88, 130, 142,  64,  28,  35,  30,  25,  18,  91,  90, 125,
@@ -38,6 +39,17 @@ int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7,
 	 /* 64-75 */ 203, 215, 227, 191,  83, 122,  87, 111,  63, 177, 207, 205,
 	 /* 76-87 */ 217, 223, 229, 193, 157, 158, 159, 153, 147, 183, 219, 212,
 	 /* 88-98 */  16, 233, 235, 237, 239, 241, 244, 247, 250, 254, 231, -1 };
+
+/* RGB colour map */
+int mirc_colors24[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	 /* 16-27 */ 0x470000, 0x472100, 0x474700, 0x324700, 0x004700, 0x00472c, 0x004747, 0x002747, 0x000047, 0x2e0047, 0x470047, 0x47002a,
+	 /* 28-39 */ 0x740000, 0x743a00, 0x747400, 0x517400, 0x007400, 0x007449, 0x007474, 0x004074, 0x000074, 0x4b0074, 0x740074, 0x740045,
+	 /* 40-51 */ 0xb50000, 0xb56300, 0xb5b500, 0x7db500, 0x00b500, 0x00b571, 0x00b5b5, 0x0063b5, 0x0000b5, 0x7500b5, 0xb500b5, 0xb5006b,
+	 /* 52-63 */ 0xff0000, 0xff8c00, 0xffff00, 0xb2ff00, 0x00ff00, 0x00ffa0, 0x00ffff, 0x008cff, 0x0000ff, 0xa500ff, 0xff00ff, 0xff0098,
+	 /* 64-75 */ 0xff5959, 0xffb459, 0xffff71, 0xcfff60, 0x6fff6f, 0x65ffc9, 0x6dffff, 0x59b4ff, 0x5959ff, 0xc459ff, 0xff66ff, 0xff59bc,
+	 /* 76-87 */ 0xff9c9c, 0xffd39c, 0xffff9c, 0xe2ff9c, 0x9cff9c, 0x9cffdb, 0x9cffff, 0x9cd3ff, 0x9c9cff, 0xdc9cff, 0xff9cff, 0xff94d3,
+	 /* 88-98 */ 0x000000, 0x131313, 0x282828, 0x363636, 0x4d4d4d, 0x656565, 0x818181, 0x9f9f9f, 0xbcbcbc, 0xe2e2e2, 0xffffff, -1 };
+
 static int scrollback_lines, scrollback_time, scrollback_burst_remove;
 /*
  * If positive, remove lines older than scrollback_max_age seconds.
@@ -225,28 +237,42 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 	}
 }
 
-static void get_colors(int flags, int *fg, int *bg, int *attr)
+static void get_colors(int *flags, int *fg, int *bg, int *attr)
 {
 	*attr = 0;
-	if (flags & GUI_PRINT_FLAG_MIRC_COLOR) {
+	if (*flags & GUI_PRINT_FLAG_MIRC_COLOR) {
 		/* mirc colors - extended colours proposal */
-                if (*bg >= 0) {
-			*bg = mirc_colors[*bg % 100];
-			flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-			/* ignore mirc color 99 = -1 (reset) */
-			if (*bg != -1 && settings_get_bool("mirc_blink_fix")) {
-				if (*bg < 16) /* ansi bit flip :-( */
-					*bg = (*bg&8) | (*bg&4)>>2 | (*bg&2) | (*bg&1)<<2;
-				*bg = term_color256map[*bg&0xff] & 7;
+		gboolean use_24_map = FALSE;
+#ifdef TERM_TRUECOLOR
+		use_24_map = settings_get_bool("colors_ansi_24bit");
+#endif
+		if (*bg >= 0) {
+			if (use_24_map && mirc_colors24[*bg % 100] != -1) {
+				*bg = mirc_colors24[*bg % 100];
+				*flags |= GUI_PRINT_FLAG_COLOR_24_BG;
+			} else {
+				*bg = mirc_colors[*bg % 100];
+				*flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				/* ignore mirc color 99 = -1 (reset) */
+				if (*bg != -1 && settings_get_bool("mirc_blink_fix")) {
+					if (*bg < 16) /* ansi bit flip :-( */
+						*bg = (*bg&8) | (*bg&4)>>2 | (*bg&2) | (*bg&1)<<2;
+					*bg = term_color256map[*bg&0xff] & 7;
+				}
 			}
 		}
 		if (*fg >= 0) {
-			*fg = mirc_colors[*fg % 100];
-			flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+			if (use_24_map && mirc_colors24[*fg % 100] != -1) {
+				*fg = mirc_colors24[*fg % 100];
+				*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
+			} else {
+				*fg = mirc_colors[*fg % 100];
+				*flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+			}
 		}
 	}
 
-	if (flags & GUI_PRINT_FLAG_COLOR_24_FG)
+	if (*flags & GUI_PRINT_FLAG_COLOR_24_FG)
 		*attr |= ATTR_FGCOLOR24;
 	else if (*fg < 0 || *fg > 255) {
 		*fg = -1;
@@ -255,7 +281,7 @@ static void get_colors(int flags, int *fg, int *bg, int *attr)
 	else
 		*attr |= *fg;
 
-	if (flags & GUI_PRINT_FLAG_COLOR_24_BG)
+	if (*flags & GUI_PRINT_FLAG_COLOR_24_BG)
 		*attr |= ATTR_BGCOLOR24;
 	else if (*bg < 0 || *bg > 255) {
                 *bg = -1;
@@ -264,11 +290,11 @@ static void get_colors(int flags, int *fg, int *bg, int *attr)
 	else
 		*attr |= (*bg << BG_SHIFT);
 
-	if (flags & GUI_PRINT_FLAG_REVERSE) *attr |= ATTR_REVERSE;
-	if (flags & GUI_PRINT_FLAG_ITALIC) *attr |= ATTR_ITALIC;
-	if (flags & GUI_PRINT_FLAG_BOLD) *attr |= ATTR_BOLD;
-	if (flags & GUI_PRINT_FLAG_UNDERLINE) *attr |= ATTR_UNDERLINE;
-	if (flags & GUI_PRINT_FLAG_BLINK) *attr |= ATTR_BLINK;
+	if (*flags & GUI_PRINT_FLAG_REVERSE) *attr |= ATTR_REVERSE;
+	if (*flags & GUI_PRINT_FLAG_ITALIC) *attr |= ATTR_ITALIC;
+	if (*flags & GUI_PRINT_FLAG_BOLD) *attr |= ATTR_BOLD;
+	if (*flags & GUI_PRINT_FLAG_UNDERLINE) *attr |= ATTR_UNDERLINE;
+	if (*flags & GUI_PRINT_FLAG_BLINK) *attr |= ATTR_BLINK;
 }
 
 static void view_add_eol(TEXT_BUFFER_VIEW_REC *view, LINE_REC **line)
@@ -309,7 +335,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	flags = GPOINTER_TO_INT(pflags);
 	fg = GPOINTER_TO_INT(fgcolor);
 	bg = GPOINTER_TO_INT(bgcolor);
-	get_colors(flags, &fg, &bg, &attr);
+	get_colors(&flags, &fg, &bg, &attr);
 
 	if (window == NULL) {
 		print_text_no_window(flags, fg, bg, attr, str);
