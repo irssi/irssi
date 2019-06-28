@@ -19,9 +19,11 @@ v1.2.0 2019-02-11 The Irssi team <staff@irssi.org>
 	  calculate the width of emojis on your terminal screen (#917,
 	  #720)
 	+ Make the wcwidth functions available from Perl (#973):
+
 	      string_width(str)
 	      string_chars_for_width(str, width)
 	      wcwidth(char)
+
 	+ Added completion_keep_word setting (#979)
 	+ Allow activity_hide_targets to hide activity in itemless
 	  windows (#967, #997, #1001, #1003)
@@ -35,6 +37,7 @@ v1.2.0 2019-02-11 The Irssi team <staff@irssi.org>
 	  channels that are in the config (#968)
 	+ Add format support for the input line. By Ben Paxton,
 	  originally by Jonas Hurrelmann (#764, FS#621, #1004)
+
 	      use Irssi::TextUI;
 	      gui_input_set_extent(pos, text)
 	      gui_input_set_extents(pos, len, left, right)
@@ -42,6 +45,7 @@ v1.2.0 2019-02-11 The Irssi team <staff@irssi.org>
 	      gui_input_get_extent(pos)
 	      gui_input_get_text_and_extents()
 	      gui_input_set_text_and_extents(...)
+
 	+ Parsing of IRCv3 CAP 3.2 (#775, #869)
 	+ Show CAP-related events in the user interface (#918, #916,
 	  #870, #704)
