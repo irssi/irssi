@@ -75,6 +75,8 @@ static void destroy_server_connect(SERVER_CONNECT_REC *conn)
 
 	g_free_not_null(ircconn->usermode);
 	g_free_not_null(ircconn->alternate_nick);
+	g_free_not_null(ircconn->sasl_username);
+	g_free_not_null(ircconn->sasl_password);
 }
 
 void irc_core_init(void)
