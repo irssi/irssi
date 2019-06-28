@@ -1,3 +1,8 @@
+v1.0.8 2019-06-29 The Irssi team <staff@irssi.org>
+	- Fix a use after free issue when sending the SASL login on
+          (automatic and manual) reconnects (#1055, #1058). Reported
+          by ilbelkyr
+
 v1.0.7 2018-02-15 The Irssi team <staff@irssi.org>
 	- Prevent use after free error during the execution of some
 	  commands. Found by Joseph Bisch (GL#17, GL!24).

@@ -1,4 +1,4 @@
-AC_INIT(irssi, 1.0.7)
+AC_INIT(irssi, 1.0.8)
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_AUX_DIR(build-aux)
 AC_PREREQ(2.50)
