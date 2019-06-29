@@ -172,6 +172,11 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		rec->use_tls = FALSE;
 		/* tls_verify implies use_tls, disable it explicitly */
 		rec->tls_verify = FALSE;
+		/* explicitly null tls_cafile and tls_capath if we don't use tls */
+		if (rec->tls_cafile != NULL)
+			g_free_and_null(rec->tls_cafile);
+		if (rec->tls_capath != NULL)
+			g_free_and_null(rec->tls_capath);
 	}
 
 	value = g_hash_table_lookup(optlist, "tls_cert");
