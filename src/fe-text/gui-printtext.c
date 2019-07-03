@@ -329,7 +329,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
         GUI_WINDOW_REC *gui;
         TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;
-        LINE_INFO_REC lineinfo;
+        LINE_INFO_REC lineinfo = { 0 };
 	int fg, bg, flags, attr;
 
 	flags = GPOINTER_TO_INT(pflags);
@@ -346,6 +346,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
         gui = WINDOW_GUI(window);
         lineinfo.time = (gui->use_insert_after && gui->insert_after_time) ?
 		gui->insert_after_time : time(NULL);
+	lineinfo.format = dest != NULL && dest->flags & PRINT_FLAG_FORMAT ? LINE_INFO_FORMAT_SET : NULL;
 
 	view = gui->view;
 	insert_after = gui->use_insert_after ?

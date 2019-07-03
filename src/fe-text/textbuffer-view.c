@@ -22,6 +22,7 @@
 
 #include "module.h"
 #include <irssi/src/fe-text/textbuffer-view.h>
+#include <irssi/src/core/levels.h>
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/utf8.h>
 
@@ -45,7 +46,7 @@ static GSList *views;
         textbuffer_view_get_line_cache(view, line)->count
 
 #define view_line_is_hidden(view, line) \
-	(((line)->info.level & (view)->hidden_level) != 0)
+	(((line)->info.level & ((view)->hidden_level | MSGLEVEL_FORMAT)) != 0)
 
 #define view_get_linecount(view, line) \
 	(view_line_is_hidden(view, line) ? 0 : view_get_linecount_hidden(view, line))

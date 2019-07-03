@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/fe-text/textbuffer-formats.h>
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/commands.h>
 #include <irssi/src/core/misc.h>
@@ -360,6 +361,25 @@ static void cmd_scrollback_status(void)
 		  total_lines, (int)(total_mem / 1024));
 }
 
+/* SYNTAX: SCROLLBACK REDRAW */
+static void cmd_scrollback_redraw(void)
+{
+	GUI_WINDOW_REC *gui;
+	LINE_REC *line;
+
+	gui = WINDOW_GUI(active_win);
+
+	term_refresh_freeze();
+	line = gui->view->buffer->cur_line;
+	while (line != NULL) {
+		line = textbuffer_reformat_line(active_win, line);
+		line = line->prev;
+	}
+
+	gui_window_redraw(active_win);
+	term_refresh_thaw();
+}
+
 static void sig_away_changed(SERVER_REC *server)
 {
 	GSList *tmp;
@@ -411,6 +431,7 @@ void textbuffer_commands_init(void)
 	command_bind("scrollback home", NULL, (SIGNAL_FUNC) cmd_scrollback_home);
 	command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
 	command_bind("scrollback status", NULL, (SIGNAL_FUNC) cmd_scrollback_status);
+	command_bind("scrollback redraw", NULL, (SIGNAL_FUNC) cmd_scrollback_redraw);
 
 	command_set_options("clear", "all");
 	command_set_options("scrollback clear", "all");
@@ -434,6 +455,7 @@ void textbuffer_commands_deinit(void)
 	command_unbind("scrollback home", (SIGNAL_FUNC) cmd_scrollback_home);
 	command_unbind("scrollback end", (SIGNAL_FUNC) cmd_scrollback_end);
 	command_unbind("scrollback status", (SIGNAL_FUNC) cmd_scrollback_status);
+	command_unbind("scrollback redraw", (SIGNAL_FUNC) cmd_scrollback_redraw);
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_remove("away mode changed", (SIGNAL_FUNC) sig_away_changed);

@@ -38,7 +38,8 @@ enum {
 	MSGLEVEL_NEVER        = 0x4000000, /* never ignore / never log */
 	MSGLEVEL_LASTLOG      = 0x8000000, /* used for /lastlog */
 
-	MSGLEVEL_HIDDEN       = 0x10000000 /* Hidden from view */
+	MSGLEVEL_HIDDEN       = 0x10000000, /* Hidden from view */
+	MSGLEVEL_FORMAT       = 0x80000000  /* Format data */
 };
 
 int level_get(const char *level);

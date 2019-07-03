@@ -27,6 +27,7 @@
 #include <irssi/src/core/iregex.h>
 
 #include <irssi/src/fe-text/textbuffer.h>
+#include <irssi/src/fe-text/textbuffer-formats.h>
 
 #define TEXT_CHUNK_USABLE_SIZE (LINE_TEXT_CHUNK_SIZE-2-(int)sizeof(char*))
 
@@ -396,6 +397,10 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 
 	buffer->lines_count--;
         text_chunk_line_free(buffer, line);
+	if (line->info.format != NULL &&
+	    line->info.format != LINE_INFO_FORMAT_SET) {
+		textbuffer_format_rec_free(line->info.format);
+	}
 	g_slice_free(LINE_REC, line);
 }
 
@@ -414,6 +419,10 @@ void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 
 	while (buffer->first_line != NULL) {
 		line = buffer->first_line->next;
+		if (buffer->first_line->info.format != NULL &&
+		    buffer->first_line->info.format != LINE_INFO_FORMAT_SET) {
+			textbuffer_format_rec_free(buffer->first_line->info.format);
+		}
 		g_slice_free(LINE_REC, buffer->first_line);
                 buffer->first_line = line;
 	}

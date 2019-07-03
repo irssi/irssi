@@ -38,6 +38,7 @@ static int signal_gui_print_text_finished;
 static int signal_print_starting;
 static int signal_print_text;
 static int signal_print_format;
+static int signal_print_noformat;
 
 static int sending_print_starting;
 
@@ -313,6 +314,8 @@ static void printtext_dest_args(TEXT_DEST_REC *dest, const char *text, va_list v
 	}
 
 	str = printtext_get_args(dest, text, va);
+	signal_emit_id(signal_print_noformat, 2,
+		       dest, str);
 	print_line(dest, str);
 	g_free(str);
 }
@@ -515,6 +518,7 @@ void printtext_init(void)
 	signal_print_starting = signal_get_uniq_id("print starting");
 	signal_print_text = signal_get_uniq_id("print text");
 	signal_print_format = signal_get_uniq_id("print format");
+	signal_print_noformat = signal_get_uniq_id("print noformat");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_print_text);

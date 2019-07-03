@@ -45,6 +45,7 @@ irssi_SOURCES = \
         textbuffer.c \
         textbuffer-commands.c \
         textbuffer-view.c \
+        textbuffer-formats.c \
         irssi.c \
 	module-formats.c
 
@@ -57,7 +58,8 @@ pkginc_fe_text_HEADERS = \
 	statusbar-item.h \
 	term.h \
 	textbuffer.h \
-	textbuffer-view.h
+	textbuffer-view.h \
+	textbuffer-formats.h
 
 noinst_HEADERS = \
 	gui-entry.h \

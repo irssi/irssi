@@ -8,6 +8,8 @@
 #define LINE_COLOR_BG		0x20
 #define LINE_COLOR_DEFAULT	0x10
 
+#define LINE_INFO_FORMAT_SET    (void*) 0x1
+
 enum {
 	LINE_CMD_EOL=0x80,	/* line ends here */
 	LINE_CMD_CONTINUE,	/* line continues in next block */
@@ -26,9 +28,12 @@ enum {
 #endif
 };
 
+struct _TEXT_BUFFER_FORMAT_REC;
+
 typedef struct {
 	int level;
 	time_t time;
+	struct _TEXT_BUFFER_FORMAT_REC *format;
 } LINE_INFO_REC;
 
 typedef struct _LINE_REC {
