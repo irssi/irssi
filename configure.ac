@@ -243,22 +243,6 @@ else
   offt_64bit=no
 fi
 
-if test x$ac_cv_sizeof_off_t = x$ac_cv_sizeof_long; then
-  # try to use unsigned long always first
-  AC_DEFINE_UNQUOTED(PRIuUOFF_T, "lu")
-  AC_DEFINE(UOFF_T_LONG)
-elif test x$ac_cv_sizeof_off_t = x$ac_cv_sizeof_int; then
-  # next try int
-  AC_DEFINE_UNQUOTED(PRIuUOFF_T, "u")
-  AC_DEFINE(UOFF_T_INT)
-elif test x$ac_cv_sizeof_off_t = x$ac_cv_sizeof_long_long; then
-  # and finally long long
-  AC_DEFINE_UNQUOTED(PRIuUOFF_T, "llu")
-  AC_DEFINE(UOFF_T_LONG_LONG)
-else
-  AC_ERROR([Couldn't find integer type for off_t])
-fi
-
 dnl **
 dnl ** check for socks
 dnl **

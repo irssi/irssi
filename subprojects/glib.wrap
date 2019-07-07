@@ -1,0 +1,4 @@
+[wrap-git]
+directory = glib
+url = https://github.com/GNOME/glib
+revision = glib-2-60

@@ -36,10 +36,10 @@
 #include <string.h>
 
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
-	core_register_options();
-	fe_common_core_register_options();
 	char *irssi_argv[] = {*argv[0], "--home", "/tmp/irssi", NULL};
 	int irssi_argc = sizeof(irssi_argv) / sizeof(char *) - 1;
+	core_register_options();
+	fe_common_core_register_options();
 	args_execute(irssi_argc, irssi_argv);
 	core_preinit((*argv)[0]);
 	core_init();
@@ -50,6 +50,7 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+	THEME_REC *theme;
 	gchar *copy = g_strndup((const gchar *)data, size);
 
 	FILE *fp = fopen("/tmp/irssi/fuzz.theme", "wb");
@@ -58,7 +59,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 		fclose(fp);
 	}
 
-	THEME_REC *theme = theme_load("fuzz");
+	theme = theme_load("fuzz");
 	theme_destroy(theme);
 
 	g_free(copy);

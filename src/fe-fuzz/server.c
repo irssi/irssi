@@ -150,13 +150,18 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+	gboolean prefixedChoice = (gboolean)*data;
+	gchar *copy;
+	gchar **lines;
+	gchar **head;
+
 	if (size < 1) return 0;
 
 	test_server();
-	gboolean prefixedChoice = (gboolean)*data;
-	gchar *copy = g_strndup((const gchar *)data+1, size-1);
-	gchar **lines = g_strsplit(copy, "\r\n", -1);
-	gchar **head = lines;
+
+	copy = g_strndup((const gchar *)data+1, size-1);
+	lines = g_strsplit(copy, "\r\n", -1);
+	head = lines;
 
 	for (; *lines != NULL; lines++) {
 		gchar *prefixedLine;
