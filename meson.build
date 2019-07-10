@@ -6,6 +6,7 @@ project('irssi', 'c',
 ############################
 ############################
 
+glib_internal_version = 'glib-2.58.3' # keep this in sync with subprojects/glib.wrap
 cc = meson.get_compiler('c')
 rootinc = include_directories('.')
 dep = []
@@ -145,11 +146,53 @@ message('*** On Redhat: dnf install glib2-devel')
 glib_dep = dependency('glib-2.0', version : '>=2.58', required : not want_glib_internal)
 if not glib_dep.found()
   glib_internal = true
-  glib_proj = subproject('glib', default_options : [
-    'libmount=false',
-  ])
-  glib_dep = glib_proj.get_variable('libglib_dep')
-  gmodule_dep = glib_proj.get_variable('libgmodule_dep')
+  meson_cmd = find_program('meson')
+  ninja = find_program('ninja')
+  glib_internal_download_t = custom_target('glib-internal-download',
+    command : [ meson_cmd, 'subprojects', 'download', 'glib', '--sourcedir', meson.current_source_dir() ],
+    console : true,
+    output : ['glib-internal-download'],
+  )
+  glib_internal_configure_t = custom_target('glib-internal-configure',
+    command : [ meson_cmd, 'setup', '--prefix=/irssi-glib-internal',
+      '--buildtype=' + get_option('buildtype'),
+      '-Dlibmount=false', '-Dselinux=false', '-Ddefault_library=static', '-Dinternal_pcre=true',
+      (meson.current_build_dir() / 'build-subprojects' / 'glib'),
+      (meson.current_source_dir() / 'subprojects' / glib_internal_version) ],
+    console : true,
+    output : ['glib-internal-configure'],
+    depends : glib_internal_download_t,)
+  glib_internal_build_t = custom_target('glib-internal-build',
+    command : [ ninja, '-C', meson.current_build_dir() / 'build-subprojects' / 'glib',
+      'glib' / 'libglib-2.0.a',
+      'gmodule' / 'libgmodule-2.0.a'],
+    console : true,
+    output : ['glib-internal-build'],
+    depends : glib_internal_configure_t,)
+  glib_dep = declare_dependency(
+    dependencies : [
+      dependency('threads'),
+    ],
+    sources : glib_internal_build_t,
+    compile_args : [
+      '-I' + (meson.current_source_dir() / 'subprojects' / glib_internal_version / 'glib'),
+      '-I' + (meson.current_source_dir() / 'subprojects' / glib_internal_version),
+      '-I' + (meson.current_build_dir() / 'build-subprojects' / 'glib' / 'glib'),
+    ],
+    link_args : [ meson.current_build_dir() / 'build-subprojects' / 'glib' / 'glib' / 'libglib-2.0.a' ],
+  )
+  libdl_dep = []
+  prov_lib = cc.find_library('dl', required : false)
+  if prov_lib.found() and cc.has_function('dlopen', dependencies : prov_lib)
+    libdl_dep += prov_lib
+  endif
+  gmodule_dep = declare_dependency(sources : glib_internal_build_t,
+    dependencies : libdl_dep,
+    compile_args : [
+      '-I' + (meson.current_source_dir() / 'subprojects' / glib_internal_version / 'gmodule'),
+    ],
+    link_args : [ meson.current_build_dir() / 'build-subprojects' / 'glib' / 'gmodule' / 'libgmodule-2.0.a' ],
+  )
 else
   gmodule_dep = dependency('gmodule-2.0')
 endif
