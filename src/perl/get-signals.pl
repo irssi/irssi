@@ -6,7 +6,7 @@ print " * do not edit.\n";
 print " */\n\n";
 print "static PERL_SIGNAL_ARGS_REC perl_signal_args[] =\n{\n";
 
-while (<STDIN>) {
+while (<>) {
 	chomp;
 
 	next if (!/^ "([^"]*)"(<.*>)?(?:,\s*(.*))?/);

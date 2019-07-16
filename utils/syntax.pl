@@ -39,6 +39,7 @@ foreach $file (@files) {
 }
 while (<docs/help/in/*.in>) {
    next if (/Makefile/);
+   next if (/meson\.build/);
 
    open (FILE, "$_");
    @data = <FILE>;

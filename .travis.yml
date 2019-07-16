@@ -1,15 +1,9 @@
 sudo: false
-dist: trusty
+dist: xenial
 language: perl
 perl:
     # ~stretch
     - "5.24-shrplib"
-    # ~xenial
-    # - "5.22-shrplib"
-    # ~jessie
-    # - "5.20-shrplib"
-    # ~trusty
-    # - "5.18-shrplib"
     - "system-perl"
 env:
     - CC=clang UNITTESTS=false
@@ -28,22 +22,23 @@ addons:
             - libperl-dev
             - elinks
             - libgcrypt11-dev
+            - libotr5-dev
 
 before_install:
     - perl -V
-    - wget https://github.com/irssi-import/libotr/releases/download/4.1.1/travis-trusty-libotr-4.1.1.tar.gz
-    - tar zxf travis-trusty-libotr*.tar.gz -C $HOME
-    - ./autogen.sh --with-proxy --with-bot --with-perl=module --with-otr=yes --with-libotr-prefix=$HOME/otr-build/lib --with-libotr-inc-prefix=$HOME/otr-build/include
-    - make dist
-    - cd ..
-    - tar xaf */irssi-*.tar.*
-    - cd irssi-*
+    - pushd ~
+    - curl -sSLf https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip | funzip > bin/ninja
+    - chmod +x bin/ninja
+    - curl -sSLf https://github.com/mesonbuild/meson/releases/download/0.51.1/meson-0.51.1.tar.gz | tar xz
+    - ( cd bin ; ln -s ../meson-*/meson.py meson )
+    - curl -sSLf https://github.com/irssi-import/glib-travis-build/releases/download/2.58.3/travis-xenial-glib-2.58.3.tar.xz | tar xJ
+    - export PKG_CONFIG_PATH=$HOME/glib-build/lib/x86_64-linux-gnu/pkgconfig
+    - popd
 
 install:
-    - ./configure --with-proxy --with-bot --with-perl=module --with-otr=yes --with-libotr-prefix=$HOME/otr-build/lib --with-libotr-inc-prefix=$HOME/otr-build/include --prefix=$HOME/irssi-build
-      $( $UNITTESTS && echo --enable-always-build-tests )
-    - make CFLAGS="-Wall -Werror -Werror=declaration-after-statement"
-    - make install
+    - meson Build -Dwith-proxy=yes -Dwith-bot=yes -Dwith-perl=yes -Dwith-otr=yes --prefix=$HOME/irssi-build
+    - ninja -C Build
+    - ninja -C Build install
 
 before_script:
     - pushd ~
@@ -62,8 +57,8 @@ before_script:
 script:
     - irssi-build/bin/irssi --home irssi-test
     - popd
-    - if $UNITTESTS; then make -C tests -sk check; fi
+    - if $UNITTESTS; then ninja -C Build test; fi
 
 after_script:
     - cat ~/irc.log.*
-    - find -name test-suite.log -exec cat {} +
+    - find -name testlog.txt -exec sed -i -e '/Inherited environment:.* TRAVIS/d' {} + -exec cat {} +

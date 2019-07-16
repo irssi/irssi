@@ -41,15 +41,8 @@
 #  include <gmodule.h>
 #endif
 
-#if defined (UOFF_T_INT)
-typedef unsigned int uoff_t;
-#elif defined (UOFF_T_LONG)
-typedef unsigned long uoff_t;
-#elif defined (UOFF_T_LONG_LONG)
-typedef unsigned long long uoff_t;
-#else
-#  error uoff_t size not set
-#endif
+typedef guint64 uoff_t;
+#define PRIuUOFF_T G_GUINT64_FORMAT
 
 /* input functions */
 #define G_INPUT_READ	(1 << 0)
