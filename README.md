@@ -21,8 +21,8 @@ available.
 ```
 git clone https://github.com/irssi/irssi
 cd irssi
-./autogen.sh
-make && sudo make install
+meson Build
+ninja -C Build && sudo ninja -C Build install
 ```
 
 #### Release source installation

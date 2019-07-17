@@ -80,3 +80,7 @@ src/fe-fuzz/oom-*
 
 .deps
 .libs
+
+Build
+subprojects/*
+!subprojects/*.wrap

@@ -33,6 +33,7 @@ before_install:
     - ( cd bin ; ln -s ../meson-*/meson.py meson )
     - curl -sSLf https://github.com/irssi-import/glib-travis-build/releases/download/2.58.3/travis-xenial-glib-2.58.3.tar.xz | tar xJ
     - export PKG_CONFIG_PATH=$HOME/glib-build/lib/x86_64-linux-gnu/pkgconfig
+    - export LD_LIBRARY_PATH=$HOME/glib-build/lib/x86_64-linux-gnu
     - popd
 
 install:
