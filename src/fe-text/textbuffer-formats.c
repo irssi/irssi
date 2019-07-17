@@ -10,7 +10,6 @@
 #include <irssi/src/core/levels.h>
 #include <irssi/src/core/signals.h>
 
-static int skip_next_printtext;
 TEXT_BUFFER_FORMAT_REC *format_rec;
 
 #define g_ref_string_release_opt(str) ((str) == NULL ? (void)0 : g_ref_string_release(str))
@@ -18,8 +17,12 @@ TEXT_BUFFER_FORMAT_REC *format_rec;
 void textbuffer_format_rec_free(TEXT_BUFFER_FORMAT_REC *rec)
 {
 	int n;
+
 	if (rec == NULL)
 		return;
+	if (rec == LINE_INFO_FORMAT_SET)
+		return;
+
 	g_ref_string_release_opt(rec->module);
 	g_ref_string_release_opt(rec->format);
 	g_ref_string_release_opt(rec->server_tag);
@@ -64,7 +67,6 @@ static void sig_print_format(THEME_REC *theme, const char *module, TEXT_DEST_REC
 	int formatnum;
 	FORMAT_REC *formats;
 
-	skip_next_printtext = TRUE;
 	dest->flags |= PRINT_FLAG_FORMAT;
 
 	formatnum = GPOINTER_TO_INT(formatnump);
@@ -83,14 +85,6 @@ static void sig_print_noformat(TEXT_DEST_REC *dest, const char *text)
 	format_rec = format_rec_new(NULL, NULL, dest->server_tag, dest->target, dest->nick,
 				    2, (const char *[]){ NULL, text });
 	format_rec->flags  = dest->flags;
-}
-
-static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
-{
-	if (skip_next_printtext) {
-		skip_next_printtext = FALSE;
-		return;
-	}
 }
 
 static void sig_gui_print_text_finished(WINDOW_REC *window)
@@ -142,7 +136,7 @@ LINE_REC *textbuffer_reformat_line(WINDOW_REC *window, LINE_REC *line)
 
 		curr = line;
 		line = line->prev;
-		while (line != NULL && line->info.format != NULL && line->info.format == LINE_INFO_FORMAT_SET) {
+		while (line != NULL && line->info.format == LINE_INFO_FORMAT_SET) {
 			LINE_REC *prev = line->prev;
 			textbuffer_view_remove_line(gui->view, line);
 			line = prev;
@@ -196,13 +190,11 @@ LINE_REC *textbuffer_reformat_line(WINDOW_REC *window, LINE_REC *line)
 
 void textbuffer_formats_init(void)
 {
-	skip_next_printtext = FALSE;
 	format_rec = NULL;
 
 	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_add("print noformat", (SIGNAL_FUNC) sig_print_noformat);
 	signal_add("gui print text finished", (SIGNAL_FUNC) sig_gui_print_text_finished);
-	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
 }
 
 void textbuffer_formats_deinit(void)
@@ -210,7 +202,6 @@ void textbuffer_formats_deinit(void)
 	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_remove("print noformat", (SIGNAL_FUNC) sig_print_noformat);
 	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_gui_print_text_finished);
-	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
 
 	textbuffer_format_rec_free(format_rec);
 }
