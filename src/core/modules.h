@@ -24,6 +24,12 @@
 #  define MODULE_IS_STATIC(rec) TRUE
 #endif
 
+#define MODULE_ABICHECK(fn_modulename) \
+void fn_modulename ## _abicheck(int *version)	\
+{						\
+	*version = IRSSI_ABI_VERSION;		\
+}
+
 enum {
 	MODULE_ERROR_ALREADY_LOADED,
 	MODULE_ERROR_LOAD,

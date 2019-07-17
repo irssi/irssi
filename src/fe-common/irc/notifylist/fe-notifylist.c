@@ -246,3 +246,5 @@ void fe_irc_notifylist_deinit(void)
 	signal_remove("notifylist left", (SIGNAL_FUNC) notifylist_left);
 	signal_remove("notifylist away changed", (SIGNAL_FUNC) notifylist_away);
 }
+
+MODULE_ABICHECK(fe_irc_notifylist)

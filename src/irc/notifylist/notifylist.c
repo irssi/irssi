@@ -358,3 +358,5 @@ void irc_notifylist_deinit(void)
 
 	notifylist_destroy_all();
 }
+
+MODULE_ABICHECK(irc_notifylist)

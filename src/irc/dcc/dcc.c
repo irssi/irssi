@@ -597,3 +597,4 @@ void irc_dcc_deinit(void)
 	g_source_remove(dcc_timeouttag);
 }
 
+MODULE_ABICHECK(irc_dcc)

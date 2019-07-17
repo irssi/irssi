@@ -125,7 +125,7 @@ void irc_core_init(void)
 	sasl_init();
 
 	settings_check();
-	module_register("core", "irc");
+	module_register("irc", "core");
 }
 
 void irc_core_deinit(void)
@@ -149,3 +149,5 @@ void irc_core_deinit(void)
 
 	chat_protocol_unregister("IRC");
 }
+
+MODULE_ABICHECK(irc_core)
