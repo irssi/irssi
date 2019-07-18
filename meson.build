@@ -246,6 +246,7 @@ have_perl = false
 if want_perl
   perl_cflags = []
   perl_ldflags = []
+  perl_rpath_flags = []
   perl_rpath = ''
 
   #### ccopts ####
@@ -265,6 +266,7 @@ if want_perl
    if not fl.startswith('-A') and not skip_libs.contains(fl)
      if fl.startswith('-Wl,-rpath,')
        perl_rpath = fl.split(',')[2]
+       perl_rpath_flags += fl
      else
        perl_ldflags += fl
      endif
@@ -283,7 +285,8 @@ int main()
   perl_alloc();
   return 0;
 }
-''', args : perl_cflags + perl_ldflags, name : 'working Perl support').compiled()
+''', args : perl_cflags + perl_ldflags + perl_rpath_flags,
+     name : 'working Perl support').compiled()
     if require_perl
       error('error linking with perl libraries')
     else
