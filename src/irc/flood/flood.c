@@ -346,3 +346,5 @@ void irc_flood_deinit(void)
 	signal_remove("server connected", (SIGNAL_FUNC) flood_init_server);
 	signal_remove("server destroyed", (SIGNAL_FUNC) flood_deinit_server);
 }
+
+MODULE_ABICHECK(irc_flood)

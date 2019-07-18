@@ -102,7 +102,7 @@ void fe_common_irc_init(void)
         irc_completion_init();
 
 	settings_check();
-	module_register("core", "fe-irc");
+	module_register("irc", "fe-common");
 
 	fe_irc_modules_init();
 }
@@ -130,3 +130,5 @@ void fe_common_irc_deinit(void)
 
 	theme_unregister();
 }
+
+MODULE_ABICHECK(fe_common_irc)

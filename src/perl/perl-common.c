@@ -584,6 +584,9 @@ static void perl_register_protocol(CHAT_PROTOCOL_REC *rec)
 	chat_type = chat_protocol_lookup(rec->name);
 	g_return_if_fail(chat_type >= 0);
 
+	if (rec->not_initialized)
+		return;
+
 	name = g_ascii_strdown(rec->name,-1);
 	*name = *(rec->name);
 

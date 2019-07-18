@@ -31,9 +31,13 @@
 #include <irssi/src/irc/core/irc-servers.h>
 #include <irssi/src/irc/core/irc-channels.h>
 
-/* irc.c */
-void irc_init(void);
-void irc_deinit(void);
+/* flood.c */
+void irc_flood_init(void);
+void irc_flood_deinit(void);
+
+/* irc-core.c */
+void irc_core_init(void);
+void irc_core_deinit(void);
 
 /* irc-session.c */
 void irc_session_init(void);
@@ -72,7 +76,8 @@ static void server_destroy_flood_set_up(ServerDestroyFloodData *fixture, const v
 {
 	args_execute(0, NULL);
 	core_init();
-	irc_init();
+	irc_core_init();
+	irc_flood_init();
 	fe_common_core_init();
 	fe_common_irc_init();
 	signal_emit("irssi init finished", 0);
@@ -90,7 +95,8 @@ static void server_destroy_flood_tear_down(ServerDestroyFloodData *fixture, cons
 	command_unbind("echo", (SIGNAL_FUNC) cmd_echo);
 	fe_common_irc_deinit();
 	fe_common_core_deinit();
-	irc_deinit();
+	irc_flood_deinit();
+	irc_core_deinit();
 	core_deinit();
 }
 

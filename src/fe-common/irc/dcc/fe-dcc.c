@@ -191,3 +191,5 @@ void fe_irc_dcc_deinit(void)
 	command_unbind("dcc", (SIGNAL_FUNC) cmd_dcc);
 	command_unbind("dcc list", (SIGNAL_FUNC) cmd_dcc_list);
 }
+
+MODULE_ABICHECK(fe_irc_dcc)
