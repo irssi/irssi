@@ -39,6 +39,3 @@ pkginc_fe_common_irc_HEADERS = \
 	module-formats.h
 
 DISTFILES = $(DIST_COMMON) $(real_sources) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
-
-distclean-generic:
-	rm -f irc-modules.c
