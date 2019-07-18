@@ -10,7 +10,7 @@ typedef struct {
 	int lines;
 
 	int refcount;
-	int redo:1;
+	unsigned int redo:1;
 } HISTORY_REC;
 
 typedef struct {
