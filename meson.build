@@ -112,7 +112,10 @@ default_theme_h = custom_target('default-theme.h',
 #### inet_addr ####
 inet_addr_found = false
 foreach inet_addr_provider : ['', 'nsl']
-  prov_lib = inet_addr_provider != '' ? [cc.find_library(inet_addr_provider, required : false)] : []
+  prov_lib = []
+  if inet_addr_provider != ''
+    prov_lib += cc.find_library(inet_addr_provider, required : false)
+  endif
   if (prov_lib.length() == 0 or prov_lib[0].found()) and cc.has_function('inet_addr', dependencies : prov_lib)
     dep += prov_lib
     inet_addr_found = true
@@ -126,7 +129,10 @@ endif
 #### socket ####
 socket_found = false
 foreach socket_provider : ['', 'socket', 'network']
-  prov_lib = socket_provider != '' ? [cc.find_library(socket_provider, required : false)] : []
+  prov_lib = []
+  if socket_provider != ''
+    prov_lib += cc.find_library(socket_provider, required : false)
+  endif
   if (prov_lib.length() == 0 or prov_lib[0].found()) and cc.has_function('socket', dependencies : prov_lib)
     dep += prov_lib
     socket_found = true
@@ -343,6 +349,11 @@ int main()
         perl_library_dir += ' - prepends to @INC with /set perl_use_lib'
       endif
     endif
+    def_perl_use_lib = '-D' + 'PERL_USE_LIB' + '="'
+    if set_perl_use_lib
+      def_perl_use_lib += perl_use_lib
+    endif
+    def_perl_use_lib += '"'
 
     have_perl = true
   endif
@@ -446,7 +457,11 @@ endif
 ##############
 
 pc = import('pkgconfig')
-pc.generate(filebase : 'irssi-1', name : 'Irssi', description : 'Irssi chat client', requires : glib_internal ? [] : glib_dep)
+pc_requires = []
+if not glib_internal
+  pc_requires += glib_dep
+endif
+pc.generate(filebase : 'irssi-1', name : 'Irssi', description : 'Irssi chat client', requires : pc_requires)
 
 ###########
 # irssi.1 #
