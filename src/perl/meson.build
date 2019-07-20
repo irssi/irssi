@@ -26,7 +26,7 @@ shared_module('perl_core',
   ],
   c_args : [
     def_scriptdir,
-    '-D' + 'PERL_USE_LIB' + '="' + (set_perl_use_lib ? perl_use_lib : '') + '"',
+    def_perl_use_lib,
     '-D' + 'PERL_STATIC_LIBS' + '=' + 0.to_string(),
   ],
   include_directories : rootinc,
