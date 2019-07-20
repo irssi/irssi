@@ -18,7 +18,7 @@ available.
 
 #### Development source installation
 
-[Ninja](http://mesonbuild.com/) 1.5 and [Meson](http://mesonbuild.com/) 0.49
+[Ninja](https://ninja-build.org/) 1.5 and [Meson](https://mesonbuild.com/) 0.49
 
 ```
 git clone https://github.com/irssi/irssi
