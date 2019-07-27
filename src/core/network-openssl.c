@@ -226,7 +226,7 @@ static gboolean irssi_ssl_verify_hostname(X509 *cert, const char *hostname)
 		} else {
 			g_warning("No subjectAltNames and no valid common name in certificate");
 		}
-		free(cert_subject_cn);
+		g_free(cert_subject_cn);
 	}
 
 	return matched;
