@@ -229,6 +229,7 @@ static void settings_add(const char *module, const char *section,
 		if (rec->type != type) {
 			g_warning("Trying to add already existing "
 				  "setting '%s' with different type.", key);
+			g_strfreev(choices_vec);
 			return;
 		}
 		rec->refcount++;
