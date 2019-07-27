@@ -281,6 +281,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
                         /* long word, remove the indentation from this line */
 			xpos -= sub->indent;
                         sub->indent = 0;
+			sub->indent_func = NULL;
 		}
 
 		if (xpos + char_width > view->width) {
@@ -434,7 +435,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			if (subline > 0) {
 				/* continuing previous line - indent it */
 				indent_func = cache->lines[subline-1].indent_func;
-				if (indent_func == NULL)
+				if (indent_func == NULL || cache->lines[subline-1].continues)
 					xpos = cache->lines[subline-1].indent;
 				color = cache->lines[subline-1].color;
 #ifdef TERM_TRUECOLOR
@@ -445,7 +446,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				indent_func = NULL;
 			}
 
-			if (xpos == 0 && indent_func == NULL)
+			if (xpos == 0 && (indent_func == NULL || cache->lines[subline-1].continues))
 				need_clrtoeol = TRUE;
 			else {
 				/* line was indented - need to clear the
