@@ -108,6 +108,7 @@ textui_sources = \
 	textui/TextBufferView.xs \
 	textui/Statusbar.xs \
 	textui/Makefile.PL.in \
+	textui/wrapper_buffer_line.h \
 	textui/typemap \
 	textui/module.h
 

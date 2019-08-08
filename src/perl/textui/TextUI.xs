@@ -1,10 +1,16 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
+#include "wrapper_buffer_line.h"
 
 void perl_statusbar_init(void);
 void perl_statusbar_deinit(void);
 
 static int initialized = FALSE;
+
+static SV *buffer_line_bless(TEXT_BUFFER_REC *buffer, LINE_REC *line)
+{
+	return perl_buffer_line_bless(perl_wrap_buffer_line(buffer, line));
+}
 
 static void perl_main_window_fill_hash(HV *hv, MAIN_WINDOW_REC *window)
 {
@@ -20,9 +26,9 @@ static void perl_main_window_fill_hash(HV *hv, MAIN_WINDOW_REC *window)
 
 static void perl_text_buffer_fill_hash(HV *hv, TEXT_BUFFER_REC *buffer)
 {
-	(void) hv_store(hv, "first_line", 10, plain_bless(buffer->first_line, "Irssi::TextUI::Line"), 0);
+	(void) hv_store(hv, "first_line", 10, buffer_line_bless(buffer, buffer->first_line), 0);
 	(void) hv_store(hv, "lines_count", 11, newSViv(buffer->lines_count), 0);
-	(void) hv_store(hv, "cur_line", 8, plain_bless(buffer->cur_line, "Irssi::TextUI::Line"), 0);
+	(void) hv_store(hv, "cur_line", 8, buffer_line_bless(buffer, buffer->cur_line), 0);
 	(void) hv_store(hv, "last_eol", 8, newSViv(buffer->last_eol), 0);
 }
 
@@ -38,20 +44,22 @@ static void perl_text_buffer_view_fill_hash(HV *hv, TEXT_BUFFER_VIEW_REC *view)
 
 	(void) hv_store(hv, "ypos", 4, newSViv(view->ypos), 0);
 
-	(void) hv_store(hv, "startline", 9, plain_bless(view->startline, "Irssi::TextUI::Line"), 0);
+	(void) hv_store(hv, "startline", 9, buffer_line_bless(view->buffer, view->startline), 0);
 	(void) hv_store(hv, "subline", 7, newSViv(view->subline), 0);
 	(void) hv_store(hv, "hidden_level", 12, newSViv(view->hidden_level), 0);
 
-	(void) hv_store(hv, "bottom_startline", 16, plain_bless(view->bottom_startline, "Irssi::TextUI::Line"), 0);
+	(void) hv_store(hv, "bottom_startline", 16,
+	                buffer_line_bless(view->buffer, view->bottom_startline), 0);
 	(void) hv_store(hv, "bottom_subline", 14, newSViv(view->bottom_subline), 0);
 
 	(void) hv_store(hv, "empty_linecount", 15, newSViv(view->empty_linecount), 0);
 	(void) hv_store(hv, "bottom", 6, newSViv(view->bottom), 0);
 }
 
-static void perl_line_fill_hash(HV *hv, LINE_REC *line)
+static void perl_line_fill_hash(HV *hv, struct Buffer_Line_Wrapper *line)
 {
-	(void) hv_store(hv, "info", 4, plain_bless(&line->info, "Irssi::TextUI::LineInfo"), 0);
+	(void) hv_store(hv, "info", 4, plain_bless(&Line(line)->info, "Irssi::TextUI::LineInfo"),
+	                0);
 }
 
 static void perl_line_cache_fill_hash(HV *hv, LINE_CACHE_REC *cache)
@@ -242,7 +250,7 @@ CODE:
 	format_create_dest(&dest, NULL, NULL, level, window);
 	text = format_string_expand(str, NULL);
 	text2 = g_strconcat(text, "\n", NULL);
-	gui_printtext_after_time(&dest, prev, text2, time);
+	gui_printtext_after_time(&dest, Line(prev), text2, time);
 	g_free(text);
 	g_free(text2);
 
@@ -257,13 +265,14 @@ PREINIT:
 	TEXT_DEST_REC dest;
 CODE:
 	format_create_dest(&dest, NULL, NULL, level, window);
-	gui_printtext_after_time(&dest, prev, str, time);
+	gui_printtext_after_time(&dest, Line(prev), str, time);
 
 Irssi::TextUI::Line
 last_line_insert(window)
 	Irssi::UI::Window window
 CODE:
-	RETVAL = WINDOW_GUI(window)->insert_after;
+	RETVAL = perl_wrap_buffer_line(WINDOW_GUI(window)->view->buffer,
+	                               WINDOW_GUI(window)->insert_after);
 OUTPUT:
 	RETVAL
 
@@ -281,7 +290,7 @@ PREINIT:
 	TEXT_DEST_REC dest;
 CODE:
 	format_create_dest(&dest, server, target, level, NULL);
-	gui_printtext_after_time(&dest, prev, str, time);
+	gui_printtext_after_time(&dest, Line(prev), str, time);
 
 BOOT:
 	irssi_boot(TextUI__Statusbar);
