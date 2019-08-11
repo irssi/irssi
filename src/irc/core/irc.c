@@ -32,6 +32,7 @@
 char *current_server_event;
 static int signal_default_event;
 static int signal_server_event;
+static int signal_server_event_tags;
 static int signal_server_incoming;
 
 #ifdef BLOCKING_SOCKETS
@@ -158,6 +159,11 @@ static char *split_nicks(const char *cmd, char **pre, char **nicks, char **post,
 
 	*pre = g_strdup(cmd);
 	*post = *nicks = NULL;
+
+	if (**pre == '@') { /* message-tags */
+		arg++;
+	}
+
 	for (p = *pre; *p != '\0'; p++) {
 		if (*p != ' ')
 			continue;
@@ -342,13 +348,31 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 	g_free(event);
 }
 
-static char *irc_parse_prefix(char *line, char **nick, char **address)
+static void irc_server_event_tags(IRC_SERVER_REC *server, const char *line,
+				  const char *nick, const char *address, const char *tags)
+{
+	if (*line != '\0')
+		signal_emit_id(signal_server_event, 4, server, line, nick, address);
+}
+
+static char *irc_parse_prefix(char *line, char **nick, char **address, char **tags)
 {
 	char *p;
 
-	*nick = *address = NULL;
+	*nick = *address = *tags = NULL;
 
-	/* :<nick> [["!" <user>] "@" <host>] SPACE */
+	/* ["@" <tags> SPACE] :<nick> [["!" <user>] "@" <host>] SPACE */
+
+	if (*line == '@') {
+		*tags = ++line;
+		while (*line != '\0' && *line != ' ') {
+			line++;
+		}
+		if (*line == ' ') {
+			*line++ = '\0';
+			while (*line == ' ') line++;
+		}
+	}
 
 	if (*line != ':')
 		return line;
@@ -382,14 +406,14 @@ static char *irc_parse_prefix(char *line, char **nick, char **address)
 /* Parse command line sent by server */
 static void irc_parse_incoming_line(IRC_SERVER_REC *server, char *line)
 {
-	char *nick, *address;
+	char *nick, *address, *tags;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(line != NULL);
 
-	line = irc_parse_prefix(line, &nick, &address);
-	if (*line != '\0')
-		signal_emit_id(signal_server_event, 4, server, line, nick, address);
+	line = irc_parse_prefix(line, &nick, &address, &tags);
+	if (*line != '\0' || tags != NULL)
+		signal_emit_id(signal_server_event_tags, 5, server, line, nick, address, tags);
 }
 
 /* input function: handle incoming server messages */
@@ -441,12 +465,14 @@ static void irc_init_server(IRC_SERVER_REC *server)
 void irc_irc_init(void)
 {
 	signal_add("server event", (SIGNAL_FUNC) irc_server_event);
+	signal_add("server event tags", (SIGNAL_FUNC) irc_server_event_tags);
 	signal_add("server connected", (SIGNAL_FUNC) irc_init_server);
 	signal_add("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);
 
 	current_server_event = NULL;
 	signal_default_event = signal_get_uniq_id("default event");
 	signal_server_event = signal_get_uniq_id("server event");
+	signal_server_event_tags = signal_get_uniq_id("server event tags");
 	signal_server_incoming = signal_get_uniq_id("server incoming");
 }
 
