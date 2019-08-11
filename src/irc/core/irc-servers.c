@@ -55,12 +55,6 @@
 #define DEFAULT_CMDS_MAX_AT_ONCE 5
 #define DEFAULT_MAX_QUERY_CHANS 1 /* more and more IRC networks are using stupid ircds.. */
 
-/*
- * 63 is the maximum hostname length defined by the protocol.  10 is a common
- * username limit on many networks.  1 is for the `@'.
- */
-#define MAX_USERHOST_LEN (63 + 10 + 1)
-
 void irc_servers_reconnect_init(void);
 void irc_servers_reconnect_deinit(void);
 
@@ -208,7 +202,7 @@ static char **split_message(SERVER_REC *server, const char *target,
 
 	/* length calculation shamelessly stolen from splitlong_safe.pl */
 	return split_line(SERVER(server), msg, target,
-			  510 - strlen(":! PRIVMSG  :") -
+			  MAX_IRC_MESSAGE_LEN - strlen(":! PRIVMSG  :") -
 			  strlen(ircserver->nick) - MAX_USERHOST_LEN -
 			  strlen(target));
 }
@@ -498,7 +492,7 @@ char **irc_server_split_action(IRC_SERVER_REC *server, const char *target,
 	g_return_val_if_fail(data != NULL, NULL);
 
 	return split_line(SERVER(server), data, target,
-			  510 - strlen(":! PRIVMSG  :\001ACTION \001") -
+			  MAX_IRC_MESSAGE_LEN - strlen(":! PRIVMSG  :\001ACTION \001") -
 			  strlen(server->nick) - MAX_USERHOST_LEN -
 			  strlen(target));
 }

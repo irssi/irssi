@@ -51,7 +51,7 @@ static void sig_disconnect(NET_DISCONNECT_REC *rec)
 	char buf[512];
 	int count, ret;
 
-	/* check if there's any data waiting in socket. read max. 5kB so
+	/* check if there's any data waiting in socket. read max. 9kB so
 	   if server just keeps sending us stuff we won't get stuck */
 	count = 0;
 	do {
@@ -61,7 +61,7 @@ static void sig_disconnect(NET_DISCONNECT_REC *rec)
 			net_disconnect_remove(rec);
 		}
                 count++;
-	} while (ret == sizeof(buf) && count < 10);
+	} while (ret == sizeof(buf) && count < 18);
 }
 
 static int sig_timeout_disconnect(void)

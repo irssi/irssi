@@ -5,6 +5,15 @@
 #include <irssi/src/core/servers.h>
 #include <irssi/src/irc/core/modes.h>
 
+/*
+ * 63 is the maximum hostname length defined by the protocol.  10 is a common
+ * username limit on many networks.  1 is for the `@'.
+ */
+#define MAX_USERHOST_LEN (63 + 10 + 1)
+#define MAX_IRC_MESSAGE_LEN (512 - 2) /* (2 bytes for CR+LF) */
+#define MAX_IRC_TAGS_LEN (8191 - 2) /* (2 bytes for `@' and SPACE) */
+#define MAX_IRC_USER_TAGS_LEN 4094
+
 #define CAP_LS_VERSION "302"
 #define CAP_SASL "sasl"
 #define CAP_MULTI_PREFIX "multi-prefix"

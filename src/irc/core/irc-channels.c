@@ -142,7 +142,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 			/* don't try to send too long lines
 			   make sure it's not longer than 510
 			   so 510 - strlen("JOIN ") = 505 */
-			if (cmdlen < 505)
+			if (cmdlen < MAX_IRC_MESSAGE_LEN - 5 /* strlen("JOIN ") */)
 				continue;
 		}
 		if (outchans->len > 0) {

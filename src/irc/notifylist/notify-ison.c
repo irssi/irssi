@@ -131,7 +131,7 @@ static void notifylist_timeout_server(IRC_SERVER_REC *server)
 
 		len = strlen(nick);
 
-		if (cmd->len+len+1 > 510)
+		if (cmd->len+len+1 > MAX_IRC_MESSAGE_LEN)
                         ison_send(server, cmd);
 
 		g_string_append_printf(cmd, "%s ", nick);
