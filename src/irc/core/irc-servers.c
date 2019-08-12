@@ -229,11 +229,13 @@ static void server_init(IRC_SERVER_REC *server)
 		g_free(cmd);
 	}
 
-	if (conn->sasl_mechanism != SASL_MECHANISM_NONE)
+	if (conn->sasl_mechanism != SASL_MECHANISM_NONE) {
 		irc_cap_toggle(server, CAP_SASL, TRUE);
+	}
 
 	irc_cap_toggle(server, CAP_MULTI_PREFIX, TRUE);
 	irc_cap_toggle(server, CAP_EXTENDED_JOIN, TRUE);
+	irc_cap_toggle(server, CAP_SETNAME, TRUE);
 
 	irc_send_cmd_now(server, "CAP LS " CAP_LS_VERSION);
 

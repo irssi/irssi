@@ -1045,6 +1045,7 @@ void irc_commands_init(void)
 	command_bind_irc("wallops", NULL, (SIGNAL_FUNC) command_1self);
 	command_bind_irc("kickban", NULL, (SIGNAL_FUNC) cmd_kickban);
 	command_bind_irc("knockout", NULL, (SIGNAL_FUNC) cmd_knockout);
+	command_bind_irc("setname", NULL, (SIGNAL_FUNC) command_1self);
 	command_bind_irc("server purge", NULL, (SIGNAL_FUNC) cmd_server_purge);
 
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
@@ -1111,6 +1112,7 @@ void irc_commands_deinit(void)
 	command_unbind("wait", (SIGNAL_FUNC) cmd_wait);
 	command_unbind("wallops", (SIGNAL_FUNC) command_1self);
 	command_unbind("kickban", (SIGNAL_FUNC) cmd_kickban);
+	command_unbind("setname", (SIGNAL_FUNC) command_1self);
 	command_unbind("knockout", (SIGNAL_FUNC) cmd_knockout);
 	command_unbind("server purge", (SIGNAL_FUNC) cmd_server_purge);
 
