@@ -5,6 +5,8 @@
 #include <irssi/src/core/servers.h>
 #include <irssi/src/irc/core/modes.h>
 
+#define CAP_LS_VERSION "302"
+
 /* returns IRC_SERVER_REC if it's IRC server, NULL if it isn't */
 #define IRC_SERVER(server) \
 	PROTO_CHECK_CAST(SERVER(server), IRC_SERVER_REC, chat_type, "IRC")
