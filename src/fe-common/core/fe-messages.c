@@ -538,6 +538,20 @@ static void sig_message_invite(SERVER_REC *server, const char *channel,
 	g_free(str);
 }
 
+static void sig_message_invite_other(SERVER_REC *server, const char *channel,
+				     const char *invited, const char *nick, const char *address)
+{
+	char *str;
+	int level = MSGLEVEL_INVITES;
+
+	ignore_check_plus(server, nick, address, channel, invited, &level, FALSE);
+
+	str = show_lowascii(channel);
+	printformat(server, channel, level,
+		    TXT_INVITE_OTHER, invited, nick, str, address);
+	g_free(str);
+}
+
 static void sig_message_topic(SERVER_REC *server, const char *channel,
 			      const char *topic,
 			      const char *nick, const char *address)
@@ -706,6 +720,7 @@ void fe_messages_init(void)
 	signal_add_last("message nick", (SIGNAL_FUNC) sig_message_nick);
 	signal_add_last("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
 	signal_add_last("message invite", (SIGNAL_FUNC) sig_message_invite);
+	signal_add_last("message invite_other", (SIGNAL_FUNC) sig_message_invite_other);
 	signal_add_last("message topic", (SIGNAL_FUNC) sig_message_topic);
 
 	signal_add("nicklist new", (SIGNAL_FUNC) sig_nicklist_new);
@@ -730,6 +745,7 @@ void fe_messages_deinit(void)
 	signal_remove("message kick", (SIGNAL_FUNC) sig_message_kick);
 	signal_remove("message nick", (SIGNAL_FUNC) sig_message_nick);
 	signal_remove("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
+	signal_remove("message invite_other", (SIGNAL_FUNC) sig_message_invite_other);
 	signal_remove("message invite", (SIGNAL_FUNC) sig_message_invite);
 	signal_remove("message topic", (SIGNAL_FUNC) sig_message_topic);
 

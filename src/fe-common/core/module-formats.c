@@ -101,6 +101,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "quit_once", "{channel $3} {channick $0} {chanhost $1} has quit {reason $2}", 4, { 0, 0, 0, 0 } },
 	{ "invite", "{nick $0} invites you to {channel $1}", 3, { 0, 0, 0 } },
 	{ "not_invited", "You have not been invited to a channel!", 0 },
+	{ "invite_other", "{nick $0} has been invited to {channel $2} by {channick_hilight $1}", 4, { 0, 0, 0, 0 } },
 	{ "new_topic", "{nick $0} changed the topic of {channel $1} to: $2", 4, { 0, 0, 0, 0 } },
 	{ "topic_unset", "Topic unset by {nick $0} on {channel $1}", 4, { 0, 0, 0, 0 } },
 	{ "your_nick_changed", "You're now known as {nick $1}", 4, { 0, 0, 0, 0 } },
