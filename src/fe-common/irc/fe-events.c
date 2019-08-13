@@ -126,6 +126,23 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 }
 
+
+static void event_chghost(IRC_SERVER_REC *server, const char *data,
+			  const char *nick, const char *addr)
+{
+	char *params, *user, *host, *new_addr;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, &user, &host);
+	new_addr = g_strconcat(user, "@", host, NULL);
+
+	signal_emit("message host_changed", 4, server, nick, new_addr, addr);
+
+	g_free(new_addr);
+	g_free(params);
+}
+
 static void event_part(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
@@ -461,6 +478,7 @@ void fe_events_init(void)
 	signal_add("ctcp action", (SIGNAL_FUNC) ctcp_action);
 	signal_add("event notice", (SIGNAL_FUNC) event_notice);
 	signal_add("event join", (SIGNAL_FUNC) event_join);
+	signal_add("event chghost", (SIGNAL_FUNC) event_chghost);
 	signal_add("event part", (SIGNAL_FUNC) event_part);
 	signal_add("event quit", (SIGNAL_FUNC) event_quit);
 	signal_add("event kick", (SIGNAL_FUNC) event_kick);
@@ -491,6 +509,7 @@ void fe_events_deinit(void)
 	signal_remove("ctcp action", (SIGNAL_FUNC) ctcp_action);
 	signal_remove("event notice", (SIGNAL_FUNC) event_notice);
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
+	signal_remove("event chghost", (SIGNAL_FUNC) event_chghost);
 	signal_remove("event part", (SIGNAL_FUNC) event_part);
 	signal_remove("event quit", (SIGNAL_FUNC) event_quit);
 	signal_remove("event kick", (SIGNAL_FUNC) event_kick);

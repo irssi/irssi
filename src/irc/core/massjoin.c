@@ -106,6 +106,30 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	chanrec->massjoins++;
 }
 
+static void event_chghost(IRC_SERVER_REC *server, const char *data,
+			  const char *nick, const char *old_address)
+{
+	char *params, *user, *host, *address;
+	GSList *nicks, *tmp;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, &user, &host);
+
+	/* check that the nick isn't already in nicklist. seems to happen
+	   sometimes (server desyncs or something?) */
+	nicks = nicklist_get_same(SERVER(server), nick);
+	address = nicks != NULL ? g_strconcat(user, "@", host, NULL) : NULL;
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
+		NICK_REC *rec = tmp->next->data;
+
+		nicklist_set_host(CHANNEL(tmp->data), rec, address);
+	}
+	g_free(address);
+	g_slist_free(nicks);
+	g_free(params);
+}
+
 static void event_part(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
@@ -291,6 +315,7 @@ void massjoin_init(void)
 
 	read_settings();
 	signal_add_first("event join", (SIGNAL_FUNC) event_join);
+	signal_add("event chghost", (SIGNAL_FUNC) event_chghost);
 	signal_add("event part", (SIGNAL_FUNC) event_part);
 	signal_add("event kick", (SIGNAL_FUNC) event_kick);
 	signal_add("event quit", (SIGNAL_FUNC) event_quit);
@@ -302,6 +327,7 @@ void massjoin_deinit(void)
 	g_source_remove(massjoin_tag);
 
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
+	signal_remove("event chghost", (SIGNAL_FUNC) event_chghost);
 	signal_remove("event part", (SIGNAL_FUNC) event_part);
 	signal_remove("event kick", (SIGNAL_FUNC) event_kick);
 	signal_remove("event quit", (SIGNAL_FUNC) event_quit);

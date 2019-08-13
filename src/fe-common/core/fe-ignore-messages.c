@@ -46,6 +46,13 @@ static void sig_message_join(SERVER_REC *server, const char *channel,
 		signal_stop();
 }
 
+static void sig_message_host_changed(SERVER_REC *server, const char *nick,
+				     const char *address, const char *old_address)
+{
+	if (ignore_check(server, nick, address, NULL, NULL, MSGLEVEL_JOINS))
+		signal_stop();
+}
+
 static void sig_message_part(SERVER_REC *server, const char *channel,
 			     const char *nick, const char *address,
 			     const char *reason)
@@ -120,6 +127,7 @@ void fe_ignore_messages_init(void)
 	signal_add_first("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add_first("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_add_first("message join", (SIGNAL_FUNC) sig_message_join);
+	signal_add_first("message host_changed", (SIGNAL_FUNC) sig_message_host_changed);
 	signal_add_first("message part", (SIGNAL_FUNC) sig_message_part);
 	signal_add_first("message quit", (SIGNAL_FUNC) sig_message_quit);
 	signal_add_first("message kick", (SIGNAL_FUNC) sig_message_kick);
@@ -135,6 +143,7 @@ void fe_ignore_messages_deinit(void)
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_remove("message private", (SIGNAL_FUNC) sig_message_private);
 	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
+	signal_remove("message host_changed", (SIGNAL_FUNC) sig_message_host_changed);
 	signal_remove("message part", (SIGNAL_FUNC) sig_message_part);
 	signal_remove("message quit", (SIGNAL_FUNC) sig_message_quit);
 	signal_remove("message kick", (SIGNAL_FUNC) sig_message_kick);
