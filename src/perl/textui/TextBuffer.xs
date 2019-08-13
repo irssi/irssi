@@ -25,7 +25,8 @@ OUTPUT:
 	RETVAL
 
 void
-textbuffer_line_get_text(line, coloring)
+textbuffer_line_get_text(buffer, line, coloring)
+	Irssi::TextUI::TextBuffer buffer
 	Irssi::TextUI::Line line
 	int coloring
 PREINIT:
@@ -33,7 +34,7 @@ PREINIT:
 	SV *result;
 PPCODE:
 	str = g_string_new(NULL);
-	textbuffer_line2text(line, coloring, str);
+	textbuffer_line2text(buffer, line, coloring, str);
 	result = new_pv(str->str);
 	XPUSHs(sv_2mortal(result));
 	g_string_free(str, TRUE);

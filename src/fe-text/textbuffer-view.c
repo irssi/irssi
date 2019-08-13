@@ -21,9 +21,12 @@
 #define	G_LOG_DOMAIN "TextBufferView"
 
 #include "module.h"
-#include <irssi/src/fe-text/textbuffer-view.h>
+#include <irssi/src/core/levels.h>
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/utf8.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-text/textbuffer-formats.h>
+#include <irssi/src/fe-text/textbuffer-view.h>
 
 typedef struct {
 	char *name;
@@ -93,6 +96,7 @@ textbuffer_cache_get(GSList *views, int width)
 
 static int line_cache_destroy(void *key, LINE_CACHE_REC *cache)
 {
+	g_free(cache->line_text);
 	g_free(cache);
 	return TRUE;
 }
@@ -114,52 +118,6 @@ static void textbuffer_cache_unref(TEXT_BUFFER_CACHE_REC *cache)
 #define FGATTR (ATTR_NOCOLORS | ATTR_RESETFG | FG_MASK | ATTR_FGCOLOR24)
 #define BGATTR (ATTR_NOCOLORS | ATTR_RESETBG | BG_MASK | ATTR_BGCOLOR24)
 
-static void update_cmd_color(unsigned char cmd, int *color)
-{
-	if ((cmd & 0x80) == 0) {
-		if (cmd & LINE_COLOR_BG) {
-			/* set background color */
-			*color &= FGATTR;
-			if ((cmd & LINE_COLOR_DEFAULT) == 0)
-				*color |= (cmd & 0x0f) << BG_SHIFT;
-			else {
-				*color = (*color & FGATTR) | ATTR_RESETBG;
-			}
-		} else {
-			/* set foreground color */
-			*color &= BGATTR;
-			if ((cmd & LINE_COLOR_DEFAULT) == 0)
-				*color |= cmd & 0x0f;
-			else {
-				*color = (*color & BGATTR) | ATTR_RESETFG;
-			}
-		}
-	} else switch (cmd) {
-	case LINE_CMD_UNDERLINE:
-		*color ^= ATTR_UNDERLINE;
-		break;
-	case LINE_CMD_REVERSE:
-		*color ^= ATTR_REVERSE;
-		break;
-	case LINE_CMD_BLINK:
-		*color ^= ATTR_BLINK;
-		break;
-	case LINE_CMD_BOLD:
-		*color ^= ATTR_BOLD;
-		break;
-	case LINE_CMD_ITALIC:
-		*color ^= ATTR_ITALIC;
-		break;
-	case LINE_CMD_MONOSPACE:
-		/* ignored */
-		break;
-	case LINE_CMD_COLOR0:
-		*color &= BGATTR;
-		*color &= ~ATTR_FGCOLOR24;
-		break;
-	}
-}
-
 #ifdef TERM_TRUECOLOR
 static void unformat_24bit_line_color(const unsigned char **ptr, int off, int *flags, unsigned int *fg, unsigned int *bg)
 {
@@ -167,6 +125,8 @@ static void unformat_24bit_line_color(const unsigned char **ptr, int off, int *f
 	unsigned char rgbx[4];
 	unsigned int i;
 	for (i = 0; i < 4; ++i) {
+		if ((*ptr)[i + off] == '\0')
+			return;
 		rgbx[i] = (*ptr)[i + off];
 	}
 	rgbx[3] -= 0x20;
@@ -202,6 +162,94 @@ static inline unichar read_unichar(const unsigned char *data, const unsigned cha
 	return chr;
 }
 
+static inline void unformat(const unsigned char **ptr, int *color, unsigned int *fg24,
+                            unsigned int *bg24)
+{
+	switch (**ptr) {
+	case FORMAT_STYLE_BLINK:
+		*color ^= ATTR_BLINK;
+		break;
+	case FORMAT_STYLE_UNDERLINE:
+		*color ^= ATTR_UNDERLINE;
+		break;
+	case FORMAT_STYLE_BOLD:
+		*color ^= ATTR_BOLD;
+		break;
+	case FORMAT_STYLE_REVERSE:
+		*color ^= ATTR_REVERSE;
+		break;
+	case FORMAT_STYLE_ITALIC:
+		*color ^= ATTR_ITALIC;
+		break;
+	case FORMAT_STYLE_MONOSPACE:
+		/* *color ^= ATTR_MONOSPACE; */
+		break;
+	case FORMAT_STYLE_DEFAULTS:
+		*color = ATTR_RESET;
+		break;
+	case FORMAT_STYLE_CLRTOEOL:
+		break;
+	case FORMAT_COLOR_EXT1:
+		*color &= ~ATTR_FGCOLOR24;
+		*color = (*color & BGATTR) | (0x10 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		break;
+	case FORMAT_COLOR_EXT1_BG:
+		*color &= ~ATTR_BGCOLOR24;
+		*color = (*color & FGATTR) | (0x10 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		break;
+	case FORMAT_COLOR_EXT2:
+		*color &= ~ATTR_FGCOLOR24;
+		*color = (*color & BGATTR) | (0x60 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		break;
+	case FORMAT_COLOR_EXT2_BG:
+		*color &= ~ATTR_BGCOLOR24;
+		*color = (*color & FGATTR) | (0x60 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		break;
+	case FORMAT_COLOR_EXT3:
+		*color &= ~ATTR_FGCOLOR24;
+		*color = (*color & BGATTR) | (0xb0 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		break;
+	case FORMAT_COLOR_EXT3_BG:
+		*color &= ~ATTR_BGCOLOR24;
+		*color = (*color & FGATTR) | (0xb0 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		break;
+#ifdef TERM_TRUECOLOR
+	case FORMAT_COLOR_24:
+		unformat_24bit_line_color(ptr, 1, color, fg24, bg24);
+		break;
+#endif
+	default:
+		if (**ptr != FORMAT_COLOR_NOCHANGE) {
+			if (**ptr == (unsigned char) 0xff) {
+				*color = (*color & BGATTR) | ATTR_RESETFG;
+			} else {
+				*color = (*color & BGATTR) | (((unsigned char) **ptr - '0') & 0xf);
+			}
+		}
+		if ((*ptr)[1] == '\0')
+			break;
+
+		(*ptr)++;
+		if (**ptr != FORMAT_COLOR_NOCHANGE) {
+			if (**ptr == (unsigned char) 0xff) {
+				*color = (*color & FGATTR) | ATTR_RESETBG;
+			} else {
+				*color = (*color & FGATTR) |
+				         ((((unsigned char) **ptr - '0') & 0xf) << BG_SHIFT);
+			}
+		}
+	}
+	if (**ptr == '\0')
+		return;
+
+	(*ptr)++;
+}
+
+#define NEXT_CHAR_OR_BREAK(p)                                                                      \
+	(p)++;                                                                                     \
+	if (*(p) == '\0')                                                                          \
+	break
+
 static LINE_CACHE_REC *
 view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 {
@@ -209,13 +257,11 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	LINE_CACHE_REC *rec;
 	LINE_CACHE_SUB_REC *sub;
 	GSList *lines;
-        unsigned char cmd;
+	char *line_text;
 	const unsigned char *ptr, *next_ptr, *last_space_ptr;
 	int xpos, pos, indent_pos, last_space, last_color, color, linecount;
 	unsigned int last_bg24, last_fg24, bg24, fg24;
 	int char_width;
-
-	g_return_val_if_fail(line->text != NULL, NULL);
 
 	color = ATTR_RESETFG | ATTR_RESETBG;
 	xpos = 0; indent_pos = view->default_indent;
@@ -225,114 +271,132 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
         indent_func = view->default_indent_func;
         linecount = 1;
 	lines = NULL;
-	for (ptr = line->text;;) {
-		if (*ptr == '\0') {
-			/* command */
-			ptr++;
-			cmd = *ptr;
-                        ptr++;
 
-			if (cmd == LINE_CMD_EOL)
+	line_text = textbuffer_line_get_text(view->buffer, line);
+	if (line_text != NULL) {
+		for (ptr = (unsigned char *) line_text;;) {
+			if (*ptr == '\0')
 				break;
 
-			if (cmd == LINE_CMD_CONTINUE) {
-				unsigned char *tmp;
+			if (*ptr == '\n') {
+				/* newline */
+				xpos = 0;
+				last_space = 0;
 
-				memcpy(&tmp, ptr, sizeof(char *));
-				ptr = tmp;
+				sub = g_new0(LINE_CACHE_SUB_REC, 1);
+
+				sub->start = ++ptr;
+				sub->color = color;
+#ifdef TERM_TRUECOLOR
+				sub->fg24 = fg24;
+				sub->bg24 = bg24;
+#endif
+
+				lines = g_slist_append(lines, sub);
+				linecount++;
+
 				continue;
 			}
 
-			if (cmd == LINE_CMD_INDENT) {
-				/* set indentation position here - don't do
-				   it if we're too close to right border */
-				if (xpos < view->width-5) indent_pos = xpos;
-			} else if (cmd == LINE_COLOR_EXT) {
-				color &= ~ATTR_FGCOLOR24;
-				color = (color & BGATTR) | *ptr++;
-			} else if (cmd == LINE_COLOR_EXT_BG) {
-				color &= ~ATTR_BGCOLOR24;
-				color = (color & FGATTR) | (*ptr++ << BG_SHIFT);
-			}
-#ifdef TERM_TRUECOLOR
-			else if (cmd == LINE_COLOR_24)
-				unformat_24bit_line_color(&ptr, 0, &color, &fg24, &bg24);
-#endif
-			else
-				update_cmd_color(cmd, &color);
-			continue;
-		}
+			if (*ptr == 4) {
+				/* format */
+				NEXT_CHAR_OR_BREAK(ptr);
 
-		if (!view->utf8) {
-			/* MH */
-			if (term_type != TERM_TYPE_BIG5 ||
-			    ptr[1] == '\0' || !is_big5(ptr[0], ptr[1]))
-				char_width = 1;
-			else
-				char_width = 2;
-			next_ptr = ptr+char_width;
-		} else {
-			read_unichar(ptr, &next_ptr, &char_width);
-		}
-
-		if (xpos + char_width > view->width && sub != NULL &&
-		    (last_space <= indent_pos || last_space <= 10) &&
-		    view->longword_noindent) {
-                        /* long word, remove the indentation from this line */
-			xpos -= sub->indent;
-                        sub->indent = 0;
-			sub->indent_func = NULL;
-		}
-
-		if (xpos + char_width > view->width) {
-			xpos = indent_func == NULL ? indent_pos :
-				indent_func(view, line, -1);
-
-			sub = g_new0(LINE_CACHE_SUB_REC, 1);
-			if (last_space > indent_pos && last_space > 10) {
-                                /* go back to last space */
-                                color = last_color; fg24 = last_fg24; bg24 = last_bg24;
-				ptr = last_space_ptr;
-				while (*ptr == ' ') ptr++;
-			} else if (view->longword_noindent) {
-				/* long word, no indentation in next line */
-				xpos = 0;
-				sub->continues = TRUE;
+				if (*ptr == FORMAT_STYLE_INDENT) {
+					/* set indentation position here - don't do
+					   it if we're too close to right border */
+					if (xpos < view->width - 5)
+						indent_pos = xpos;
+					ptr++;
+				} else {
+					unformat(&ptr, &color, &fg24, &bg24);
+				}
+				continue;
 			}
 
-			sub->start = ptr;
-			sub->indent = xpos;
-                        sub->indent_func = indent_func;
-			sub->color = color;
+			if (!view->utf8) {
+				/* MH */
+				if (term_type != TERM_TYPE_BIG5 || ptr[1] == '\0' ||
+				    !is_big5(ptr[0], ptr[1]))
+					char_width = 1;
+				else
+					char_width = 2;
+				next_ptr = ptr + char_width;
+			} else {
+				read_unichar(ptr, &next_ptr, &char_width);
+			}
+
+			if (xpos + char_width > view->width && sub != NULL &&
+			    (last_space <= indent_pos || last_space <= 10) &&
+			    view->longword_noindent) {
+				/* long word, remove the indentation from this line */
+				xpos -= sub->indent;
+				sub->indent = 0;
+				sub->indent_func = NULL;
+			}
+
+			if (xpos + char_width > view->width) {
+				xpos =
+				    indent_func == NULL ? indent_pos : indent_func(view, line, -1);
+
+				sub = g_new0(LINE_CACHE_SUB_REC, 1);
+				if (last_space > indent_pos && last_space > 10) {
+					/* go back to last space */
+					color = last_color;
+					fg24 = last_fg24;
+					bg24 = last_bg24;
+					ptr = last_space_ptr;
+					while (*ptr == ' ')
+						ptr++;
+				} else if (view->longword_noindent) {
+					/* long word, no indentation in next line */
+					xpos = 0;
+					sub->continues = TRUE;
+				}
+
+				sub->start = ptr;
+				sub->indent = xpos;
+				sub->indent_func = indent_func;
+				sub->color = color;
 #ifdef TERM_TRUECOLOR
-			sub->fg24 = fg24; sub->bg24 = bg24;
+				sub->fg24 = fg24;
+				sub->bg24 = bg24;
 #endif
 
-			lines = g_slist_append(lines, sub);
-			linecount++;
+				lines = g_slist_append(lines, sub);
+				linecount++;
 
-			last_space = 0;
-			continue;
+				last_space = 0;
+				continue;
+			}
+
+			if (view->break_wide && char_width > 1) {
+				last_space = xpos;
+				last_space_ptr = next_ptr;
+				last_color = color;
+				last_fg24 = fg24;
+				last_bg24 = bg24;
+			} else if (*ptr == ' ') {
+				last_space = xpos;
+				last_space_ptr = ptr;
+				last_color = color;
+				last_fg24 = fg24;
+				last_bg24 = bg24;
+			}
+
+			xpos += char_width;
+			ptr = next_ptr;
 		}
-
-		if (view->break_wide && char_width > 1) {
-			last_space = xpos;
-			last_space_ptr = next_ptr;
-			last_color = color; last_fg24 = fg24; last_bg24 = bg24;
-		} else if (*ptr == ' ') {
-			last_space = xpos;
-			last_space_ptr = ptr;
-			last_color = color; last_fg24 = fg24; last_bg24 = bg24;
-		}
-
-		xpos += char_width;
-		ptr = next_ptr;
 	}
 
 	rec = g_malloc(sizeof(LINE_CACHE_REC)-sizeof(LINE_CACHE_SUB_REC) +
 		       sizeof(LINE_CACHE_SUB_REC) * (linecount-1));
 	rec->last_access = time(NULL);
+	if (line_text == NULL) {
+		linecount = 0;
+	}
 	rec->count = linecount;
+	rec->line_text = line_text;
 
 	if (rec->count > 1) {
 		for (pos = 0; lines != NULL; pos++) {
@@ -398,12 +462,9 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	INDENT_FUNC indent_func;
 	LINE_CACHE_REC *cache;
 	const unsigned char *text, *end, *text_newline;
-	unsigned char *tmp;
 	unichar chr;
 	int xpos, color, drawcount, first, need_move, need_clrtoeol, char_width;
-#ifdef TERM_TRUECOLOR
 	unsigned int fg24, bg24;
-#endif
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
 		return 0;
@@ -416,7 +477,8 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	need_move = TRUE; need_clrtoeol = FALSE;
 	xpos = drawcount = 0; first = TRUE;
 	text_newline = text =
-		subline == 0 ? line->text : cache->lines[subline-1].start;
+	    subline == 0 ? (unsigned char *) cache->line_text : cache->lines[subline - 1].start;
+
 	for (;;) {
 		if (text == text_newline) {
 			if (need_clrtoeol && xpos < view->width + (view->width == term_width ? 0 : 1)) {
@@ -484,31 +546,29 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			subline++;
 		}
 
-		if (*text == '\0') {
-			/* command */
-			text++;
-			if (*text == LINE_CMD_EOL)
-				break;
+		if (*text == '\n') {
+			/* newline */
+			NEXT_CHAR_OR_BREAK(text);
+			continue;
+		}
 
-			if (*text == LINE_CMD_CONTINUE) {
-				/* jump to next block */
-				memcpy(&tmp, text+1, sizeof(unsigned char *));
-				text = tmp;
-				continue;
+		if (*text == 0) {
+			break;
+		}
+
+		if (*text == 4) {
+			/* format */
+			NEXT_CHAR_OR_BREAK(text);
+
+			if (*text == FORMAT_STYLE_INDENT) {
+				/* ??? */
+				NEXT_CHAR_OR_BREAK(text);
 			} else {
-				if (*text == LINE_COLOR_EXT)
-					color = (color & BGATTR & ~ATTR_FGCOLOR24) | *++text;
-				else if (*text == LINE_COLOR_EXT_BG)
-					color = (color & FGATTR & ~ATTR_BGCOLOR24) | (*++text << BG_SHIFT);
-#ifdef TERM_TRUECOLOR
-				else if (*text == LINE_COLOR_24)
-					unformat_24bit_line_color(&text, 1, &color, &fg24, &bg24);
-#endif
-				else
-					update_cmd_color(*text, &color);
+				unformat(&text, &color, &fg24, &bg24);
 				term_set_color2(view->window, color, fg24, bg24);
+				if (*text == 0)
+					break;
 			}
-			text++;
 			continue;
 		}
 

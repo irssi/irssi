@@ -43,10 +43,9 @@ static GUI_WINDOW_REC *gui_window_init(WINDOW_REC *window,
 
 	gui = g_new0(GUI_WINDOW_REC, 1);
 	gui->parent = parent;
-	gui->view = textbuffer_view_create(textbuffer_create(),
-					   window->width, window->height,
-					   settings_get_bool("scroll"),
-					   term_type == TERM_TYPE_UTF8);
+	gui->view =
+	    textbuffer_view_create(textbuffer_create(window), window->width, window->height,
+	                           settings_get_bool("scroll"), term_type == TERM_TYPE_UTF8);
 	textbuffer_view_set_default_indent(gui->view,
 					   settings_get_int("indent"),
 					   !settings_get_bool("indent_always"),

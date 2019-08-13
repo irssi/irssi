@@ -35,6 +35,7 @@ struct _FORMAT_REC {
 	int paramtypes[MAX_FORMAT_PARAMS];
 };
 
+/* clang-format off */
 #define PRINT_FLAG_SET_LINE_START	0x0001
 #define PRINT_FLAG_SET_LINE_START_IRSSI	0x0002
 #define PRINT_FLAG_UNSET_LINE_START	0x0040
@@ -44,6 +45,9 @@ struct _FORMAT_REC {
 
 #define PRINT_FLAG_SET_SERVERTAG	0x0010
 #define PRINT_FLAG_UNSET_SERVERTAG	0x0020
+
+#define PRINT_FLAG_FORMAT         	0x0080
+/* clang-format on */
 
 typedef struct _HILIGHT_REC HILIGHT_REC;
 
@@ -113,7 +117,7 @@ void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
 			    const char *server_tag, const char *target,
 			    int level, WINDOW_REC *window);
 
-void format_newline(WINDOW_REC *window);
+void format_newline(TEXT_DEST_REC *dest);
 
 /* Return how many characters in `str' must be skipped before `len'
    characters of text is skipped. */
@@ -151,6 +155,8 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 int format_expand_styles(GString *out, const char **format, int *flags);
 void format_ext_color(GString *out, int bg, int color);
 void format_24bit_color(GString *out, int bg, unsigned int color);
+void format_gui_flags(GString *out, int *last_fg, int *last_bg, int *last_flags, int fg, int bg,
+                      int flags);
 
 void formats_init(void);
 void formats_deinit(void);

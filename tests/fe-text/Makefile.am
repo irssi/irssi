@@ -26,6 +26,7 @@ test_paste_join_multiline_SOURCES = \
 	../../src/fe-text/term-terminfo.c \
 	../../src/fe-text/terminfo-core.c \
 	../../src/fe-text/term.c \
+	../../src/fe-text/textbuffer-formats.c \
 	../../src/fe-text/textbuffer-view.c \
 	../../src/fe-text/textbuffer.c \
 	../../src/fe-text/gui-windows.c \

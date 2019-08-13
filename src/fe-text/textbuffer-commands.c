@@ -19,14 +19,15 @@
 */
 
 #include "module.h"
-#include <irssi/src/fe-text/module-formats.h>
-#include <irssi/src/core/signals.h>
 #include <irssi/src/core/commands.h>
-#include <irssi/src/core/misc.h>
 #include <irssi/src/core/levels.h>
-#include <irssi/src/core/settings.h>
-#include <irssi/src/core/servers.h>
+#include <irssi/src/core/misc.h>
 #include <irssi/src/core/refstrings.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/fe-text/textbuffer-formats.h>
 
 #include <irssi/src/fe-common/core/printtext.h>
 #include <irssi/src/fe-text/gui-windows.h>
@@ -340,14 +341,29 @@ static void cmd_scrollback_status(void)
         total_lines = 0; total_mem = 0;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
 		WINDOW_REC *window = tmp->data;
+		int i;
+		LINE_REC *tmp;
 		TEXT_BUFFER_VIEW_REC *view;
 
 		view = WINDOW_GUI(window)->view;
 
 		window_mem = sizeof(TEXT_BUFFER_REC);
-		window_mem += g_slist_length(view->buffer->text_chunks) *
-			sizeof(TEXT_CHUNK_REC);
 		window_mem += view->buffer->lines_count * sizeof(LINE_REC);
+		for (tmp = view->buffer->cur_line; tmp != NULL; tmp = tmp->prev) {
+			if (tmp->info.text != NULL) {
+				window_mem += sizeof(char) * (strlen(tmp->info.text) + 1);
+			}
+			if (tmp->info.format != NULL) {
+				window_mem += sizeof(TEXT_BUFFER_FORMAT_REC);
+				for (i = 0; i < tmp->info.format->nargs; i++) {
+					if (tmp->info.format->args[i] != NULL) {
+						window_mem +=
+						    sizeof(char) *
+						    (strlen(tmp->info.format->args[i]) + 1);
+					}
+				}
+			}
+		}
 		total_lines += view->buffer->lines_count;
                 total_mem += window_mem;
 		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
@@ -366,6 +382,19 @@ static void cmd_scrollback_status(void)
 				  "%s", tmp);
 		g_free(tmp);
 	}
+}
+
+/* SYNTAX: SCROLLBACK REDRAW */
+static void cmd_scrollback_redraw(void)
+{
+	GUI_WINDOW_REC *gui;
+
+	gui = WINDOW_GUI(active_win);
+
+	term_refresh_freeze();
+	textbuffer_view_reset_cache(gui->view);
+	gui_window_redraw(active_win);
+	term_refresh_thaw();
 }
 
 static void sig_away_changed(SERVER_REC *server)
@@ -419,6 +448,7 @@ void textbuffer_commands_init(void)
 	command_bind("scrollback home", NULL, (SIGNAL_FUNC) cmd_scrollback_home);
 	command_bind("scrollback end", NULL, (SIGNAL_FUNC) cmd_scrollback_end);
 	command_bind("scrollback status", NULL, (SIGNAL_FUNC) cmd_scrollback_status);
+	command_bind("scrollback redraw", NULL, (SIGNAL_FUNC) cmd_scrollback_redraw);
 
 	command_set_options("clear", "all");
 	command_set_options("scrollback clear", "all");
@@ -442,6 +472,7 @@ void textbuffer_commands_deinit(void)
 	command_unbind("scrollback home", (SIGNAL_FUNC) cmd_scrollback_home);
 	command_unbind("scrollback end", (SIGNAL_FUNC) cmd_scrollback_end);
 	command_unbind("scrollback status", (SIGNAL_FUNC) cmd_scrollback_status);
+	command_unbind("scrollback redraw", (SIGNAL_FUNC) cmd_scrollback_redraw);
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_remove("away mode changed", (SIGNAL_FUNC) sig_away_changed);

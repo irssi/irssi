@@ -5,33 +5,23 @@
    wastes a lot of memory. */
 #define LINE_TEXT_CHUNK_SIZE (16384 - 16)
 
-#define LINE_COLOR_BG		0x20
-#define LINE_COLOR_DEFAULT	0x10
+#define LINE_INFO_FORMAT_SET (void *) 0x1
 
 enum {
 	LINE_CMD_EOL=0x80,	/* line ends here */
-	LINE_CMD_CONTINUE,	/* line continues in next block */
-	LINE_CMD_COLOR0,	/* change to black, would be same as \0\0 but it breaks things.. */
-	LINE_CMD_UNDERLINE,	/* enable/disable underlining */
-	LINE_CMD_REVERSE,	/* enable/disable reversed text */
-	LINE_CMD_INDENT,	/* if line is split, indent it at this position */
-	LINE_CMD_BLINK,		/* enable/disable blink */
-	LINE_CMD_BOLD,		/* enable/disable bold */
-	LINE_CMD_ITALIC,	/* enable/disable italic */
-	LINE_CMD_MONOSPACE,	/* enable/disable monospace (gui only) */
-	LINE_COLOR_EXT,		/* extended color */
-	LINE_COLOR_EXT_BG,	/* extended bg */
-#ifdef TERM_TRUECOLOR
-	LINE_COLOR_24,          /* 24bit color */
-#endif
 };
+
+struct _TEXT_BUFFER_FORMAT_REC;
 
 typedef struct {
 	int level;
 	time_t time;
+	char *text;
+	struct _TEXT_BUFFER_FORMAT_REC *format;
 } LINE_INFO_REC;
 
 typedef struct _LINE_REC {
+	struct _LINE_REC *prev, *next;
 	/* Text in the line. \0 means that the next char will be a
 	   color or command.
 
@@ -45,9 +35,6 @@ typedef struct _LINE_REC {
 
 	   DO NOT ADD BLACK WITH \0\0 - this will break things. Use
 	   LINE_CMD_COLOR0 instead. */
-	struct _LINE_REC *prev, *next;
-
-	unsigned char *text;
         LINE_INFO_REC info;
 } LINE_REC;
 
@@ -58,12 +45,14 @@ typedef struct {
 } TEXT_CHUNK_REC;
 
 typedef struct {
-	GSList *text_chunks;
-        LINE_REC *first_line;
-        int lines_count;
+	WINDOW_REC *window;
+
+	LINE_REC *first_line;
+	int lines_count;
 
 	LINE_REC *cur_line;
-	TEXT_CHUNK_REC *cur_text;
+	GString *cur_text;
+	GSList *cur_info;
 
 	int last_fg;
 	int last_bg;
@@ -72,7 +61,7 @@ typedef struct {
 } TEXT_BUFFER_REC;
 
 /* Create new buffer */
-TEXT_BUFFER_REC *textbuffer_create(void);
+TEXT_BUFFER_REC *textbuffer_create(WINDOW_REC *window);
 /* Destroy the buffer */
 void textbuffer_destroy(TEXT_BUFFER_REC *buffer);
 
@@ -96,7 +85,7 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line);
 /* Removes all lines from buffer, ignoring reference counters */
 void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer);
 
-void textbuffer_line2text(LINE_REC *line, int coloring, GString *str);
+void textbuffer_line2text(TEXT_BUFFER_REC *buffer, LINE_REC *line, int coloring, GString *str);
 GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			    int level, int nolevel, const char *text,
 			    int before, int after,

@@ -850,14 +850,13 @@ char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 	return linestart;
 }
 
-void format_newline(WINDOW_REC *window)
+void format_newline(TEXT_DEST_REC *dest)
 {
-	g_return_if_fail(window != NULL);
+	g_return_if_fail(dest != NULL);
+	g_return_if_fail(dest->window != NULL);
 
-	signal_emit_id(signal_gui_print_text, 6, window,
-		       GINT_TO_POINTER(-1), GINT_TO_POINTER(-1),
-		       GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE),
-		       "", NULL);
+	signal_emit_id(signal_gui_print_text, 6, dest->window, GINT_TO_POINTER(-1),
+	               GINT_TO_POINTER(-1), GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE), "", dest);
 }
 
 #ifndef TERM_TRUECOLOR
@@ -1269,7 +1268,7 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 		}
 
 		if (type == '\n') {
-			format_newline(dest->window);
+			format_newline(dest);
 			fgcolor = theme->default_color;
 			bgcolor = -1;
 			flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
@@ -1413,6 +1412,90 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 	}
 
 	g_free(dup);
+}
+
+void format_gui_flags(GString *out, int *last_fg, int *last_bg, int *last_flags, int fg, int bg,
+                      int flags)
+{
+	if (fg != *last_fg ||
+	    (flags & GUI_PRINT_FLAG_COLOR_24_FG) != (*last_flags & GUI_PRINT_FLAG_COLOR_24_FG)) {
+		*last_fg = fg;
+
+#ifdef TERM_TRUECOLOR
+		if (flags & GUI_PRINT_FLAG_COLOR_24_FG) {
+			*last_flags |= GUI_PRINT_FLAG_COLOR_24_FG;
+			format_24bit_color(out, 0, fg);
+		} else {
+			*last_flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+#endif
+			if (fg < 0) {
+				g_string_append_c(out, 4);
+				g_string_append_c(out, (char) -1);
+				g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
+			} else {
+				format_ext_color(out, 0, fg);
+			}
+#ifdef TERM_TRUECOLOR
+		}
+#endif
+	}
+	if (bg != *last_bg ||
+	    (flags & GUI_PRINT_FLAG_COLOR_24_BG) != (*last_flags & GUI_PRINT_FLAG_COLOR_24_BG)) {
+		*last_bg = bg;
+#ifdef TERM_TRUECOLOR
+		if (flags & GUI_PRINT_FLAG_COLOR_24_BG) {
+			*last_flags |= GUI_PRINT_FLAG_COLOR_24_BG;
+			format_24bit_color(out, 1, bg);
+		} else {
+			*last_flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+#endif
+			if (bg < 0) {
+				g_string_append_c(out, 4);
+				g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
+				g_string_append_c(out, (char) -1);
+			} else {
+				format_ext_color(out, 1, bg);
+			}
+#ifdef TERM_TRUECOLOR
+		}
+#endif
+	}
+
+	if ((flags & GUI_PRINT_FLAG_UNDERLINE) != (*last_flags & GUI_PRINT_FLAG_UNDERLINE)) {
+		*last_flags ^= GUI_PRINT_FLAG_UNDERLINE;
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_UNDERLINE);
+	}
+	if ((flags & GUI_PRINT_FLAG_REVERSE) != (*last_flags & GUI_PRINT_FLAG_REVERSE)) {
+		*last_flags ^= GUI_PRINT_FLAG_REVERSE;
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_REVERSE);
+	}
+	if ((flags & GUI_PRINT_FLAG_BLINK) != (*last_flags & GUI_PRINT_FLAG_BLINK)) {
+		*last_flags ^= GUI_PRINT_FLAG_BLINK;
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_BLINK);
+	}
+	if ((flags & GUI_PRINT_FLAG_BOLD) != (*last_flags & GUI_PRINT_FLAG_BOLD)) {
+		*last_flags ^= GUI_PRINT_FLAG_BOLD;
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_BOLD);
+	}
+	if ((flags & GUI_PRINT_FLAG_ITALIC) != (*last_flags & GUI_PRINT_FLAG_ITALIC)) {
+		*last_flags ^= GUI_PRINT_FLAG_ITALIC;
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_ITALIC);
+	}
+	if ((flags & GUI_PRINT_FLAG_MONOSPACE) != (*last_flags & GUI_PRINT_FLAG_MONOSPACE)) {
+		*last_flags ^= GUI_PRINT_FLAG_MONOSPACE;
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_MONOSPACE);
+	}
+	if (flags & GUI_PRINT_FLAG_INDENT) {
+		*last_flags ^= GUI_PRINT_FLAG_INDENT;
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_INDENT);
+	}
 }
 
 static void read_settings(void)

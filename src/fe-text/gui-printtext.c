@@ -19,8 +19,9 @@
 */
 
 #include "module.h"
-#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
 #include <irssi/src/core/settings.h>
+#include <irssi/src/core/signals.h>
 
 #include <irssi/src/fe-common/core/formats.h>
 #include <irssi/src/fe-common/core/printtext.h>
@@ -329,7 +330,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
         GUI_WINDOW_REC *gui;
         TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;
-        LINE_INFO_REC lineinfo;
+	LINE_INFO_REC lineinfo = { 0 };
 	int fg, bg, flags, attr;
 
 	flags = GPOINTER_TO_INT(pflags);
@@ -342,10 +343,16 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 		return;
 	}
 
+	if (dest != NULL && dest->flags & PRINT_FLAG_FORMAT) {
+		return;
+	}
+
 	lineinfo.level = dest == NULL ? 0 : dest->level;
         gui = WINDOW_GUI(window);
         lineinfo.time = (gui->use_insert_after && gui->insert_after_time) ?
 		gui->insert_after_time : time(NULL);
+	lineinfo.format =
+	    dest != NULL && dest->flags & PRINT_FLAG_FORMAT ? LINE_INFO_FORMAT_SET : NULL;
 
 	view = gui->view;
 	insert_after = gui->use_insert_after ?
@@ -378,7 +385,8 @@ static void sig_gui_printtext_finished(WINDOW_REC *window)
 	insert_after = WINDOW_GUI(window)->use_insert_after ?
 		WINDOW_GUI(window)->insert_after : view->buffer->cur_line;
 
-        view_add_eol(view, &insert_after);
+	if (insert_after != NULL)
+		view_add_eol(view, &insert_after);
 	remove_old_lines(view);
 }
 
