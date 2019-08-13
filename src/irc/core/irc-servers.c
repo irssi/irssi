@@ -236,11 +236,11 @@ static void server_init(IRC_SERVER_REC *server)
 	}
 
 	if (conn->sasl_mechanism != SASL_MECHANISM_NONE)
-		irc_cap_toggle(server, "sasl", TRUE);
+		irc_cap_toggle(server, CAP_SASL, TRUE);
 
-	irc_cap_toggle(server, "multi-prefix", TRUE);
+	irc_cap_toggle(server, CAP_MULTI_PREFIX, TRUE);
 
-	irc_send_cmd_now(server, "CAP LS");
+	irc_send_cmd_now(server, "CAP LS " CAP_LS_VERSION);
 
 	if (conn->password != NULL && *conn->password != '\0') {
                 /* send password */
