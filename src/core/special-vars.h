@@ -32,6 +32,11 @@ char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 void eval_special_string(const char *cmd, const char *data,
 			 SERVER_REC *server, void *item);
 
+void special_push_collector(GSList **list);
+void special_pop_collector(void);
+
+void special_fill_cache(GSList *list);
+
 void special_history_func_set(SPECIAL_HISTORY_FUNC func);
 
 void special_vars_add_signals(const char *text,
@@ -40,5 +45,9 @@ void special_vars_remove_signals(const char *text,
 				 int funccount, SIGNAL_FUNC *funcs);
 /* Returns [<signal id>, EXPANDO_ARG_xxx, <signal id>, ..., -1] */
 int *special_vars_get_signals(const char *text);
+
+void special_vars_init(void);
+
+void special_vars_deinit(void);
 
 #endif

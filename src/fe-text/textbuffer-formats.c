@@ -4,6 +4,7 @@
 #include <irssi/src/core/refstrings.h>
 #include <irssi/src/core/servers.h>
 #include <irssi/src/core/signals.h>
+#include <irssi/src/core/special-vars.h>
 #include <irssi/src/fe-common/core/printtext.h>
 #include <irssi/src/fe-common/core/themes.h>
 #include <irssi/src/fe-text/gui-printtext.h>
@@ -12,6 +13,18 @@
 #include <irssi/src/fe-text/textbuffer-view.h>
 
 TEXT_BUFFER_REC *color_buf;
+
+static void collector_free(GSList **collector)
+{
+	while (*collector) {
+		GSList *next = (*collector)->next->next;
+		i_refstr_release((*collector)->data);
+		g_free((*collector)->next->data);
+		g_slist_free_1((*collector)->next);
+		g_slist_free_1((*collector));
+		*collector = next;
+	}
+}
 
 void textbuffer_format_rec_free(TEXT_BUFFER_FORMAT_REC *rec)
 {
@@ -35,6 +48,7 @@ void textbuffer_format_rec_free(TEXT_BUFFER_FORMAT_REC *rec)
 	}
 	rec->nargs = 0;
 	g_free(rec->args);
+	collector_free(&rec->expando_cache);
 	g_slice_free(TEXT_BUFFER_FORMAT_REC, rec);
 }
 
@@ -112,12 +126,14 @@ static void sig_print_format(THEME_REC *theme, const char *module, TEXT_DEST_REC
 
 	info->format = format_rec_new(module, formats[formatnum].tag, dest->server_tag,
 	                              dest->target, dest->nick, formats[formatnum].params, args);
+	special_push_collector(&info->format->expando_cache);
 
 	info->format->flags = dest->flags;
 	dest->flags |= PRINT_FLAG_FORMAT;
 
 	signal_continue(5, theme, module, dest, formatnump, args);
 
+	special_pop_collector();
 	free_lineinfo_tmp(dest->window);
 }
 
@@ -125,17 +141,34 @@ static void sig_print_noformat(TEXT_DEST_REC *dest, const char *text)
 {
 	LINE_INFO_REC *info;
 
+	special_push_collector(NULL);
 	info = store_lineinfo_tmp(dest);
 
 	info->format = format_rec_new(NULL, NULL, dest->server_tag, dest->target, dest->nick, 2,
 	                              (const char *[]){ NULL, text });
+	special_push_collector(&info->format->expando_cache);
 
 	info->format->flags = dest->flags;
 	dest->flags |= PRINT_FLAG_FORMAT;
 
 	signal_continue(2, dest, text);
 
+	special_pop_collector();
 	free_lineinfo_tmp(dest->window);
+}
+
+static GSList *reverse_collector(GSList *a1)
+{
+	GSList *b1, *c1;
+	c1 = NULL;
+	while (a1) {
+		b1 = a1->next->next;
+		a1->next->next = c1;
+
+		c1 = a1;
+		a1 = b1;
+	}
+	return c1;
 }
 
 static void sig_gui_print_text_finished(WINDOW_REC *window)
@@ -156,6 +189,8 @@ static void sig_gui_print_text_finished(WINDOW_REC *window)
 
 	if (info->format == NULL)
 		return;
+
+	info->format->expando_cache = reverse_collector(info->format->expando_cache);
 
 	info->level |= MSGLEVEL_FORMAT;
 
@@ -182,7 +217,7 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 	if (line == NULL || gui == NULL)
 		return NULL;
 
-	if (line->info.level & MSGLEVEL_FORMAT) {
+	if (line->info.level & MSGLEVEL_FORMAT && line->info.format != NULL) {
 		TEXT_DEST_REC dest;
 		THEME_REC *theme;
 		int formatnum;
@@ -200,6 +235,7 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 
 		theme = window_get_theme(dest.window);
 
+		special_fill_cache(format_rec->expando_cache);
 		if (format_rec->format != NULL) {
 			char *arglist[MAX_FORMAT_PARAMS] = { 0 };
 			formatnum = format_find_tag(format_rec->module, format_rec->format);
@@ -238,6 +274,7 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 		} else {
 			return text;
 		}
+		special_fill_cache(NULL);
 	} else {
 		return g_strdup(line->info.text);
 	}

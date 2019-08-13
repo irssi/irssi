@@ -34,16 +34,17 @@
 #endif
 
 #include <irssi/src/core/chat-protocols.h>
-#include <irssi/src/core/servers.h>
 #include <irssi/src/core/chatnets.h>
 #include <irssi/src/core/commands.h>
 #include <irssi/src/core/expandos.h>
-#include <irssi/src/core/write-buffer.h>
+#include <irssi/src/core/ignore.h>
 #include <irssi/src/core/log.h>
 #include <irssi/src/core/rawlog.h>
-#include <irssi/src/core/ignore.h>
 #include <irssi/src/core/recode.h>
 #include <irssi/src/core/refstrings.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/write-buffer.h>
 
 #include <irssi/src/core/channels.h>
 #include <irssi/src/core/queries.h>
@@ -262,6 +263,7 @@ void core_init(void)
 
 	chat_commands_init();
 	i_refstr_init();
+	special_vars_init();
 	wcwidth_wrapper_init();
 
 	settings_add_str("misc", "ignore_signals", "");
@@ -288,6 +290,7 @@ void core_deinit(void)
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_irssi_init_finished);
 
 	wcwidth_wrapper_deinit();
+	special_vars_deinit();
 	i_refstr_deinit();
 	chat_commands_deinit();
 

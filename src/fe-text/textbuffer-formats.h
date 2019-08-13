@@ -11,6 +11,7 @@ typedef struct _TEXT_BUFFER_FORMAT_REC {
 	char *nick;
 	char **args;
 	int nargs;
+	GSList *expando_cache;
 	int flags;
 } TEXT_BUFFER_FORMAT_REC;
 

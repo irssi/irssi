@@ -19,12 +19,13 @@
 */
 
 #include "module.h"
+#include <irssi/src/core/expandos.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/refstrings.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/settings.h>
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/special-vars.h>
-#include <irssi/src/core/expandos.h>
-#include <irssi/src/core/settings.h>
-#include <irssi/src/core/servers.h>
-#include <irssi/src/core/misc.h>
 #include <irssi/src/core/utf8.h>
 
 #define isvarchar(c) \
@@ -40,6 +41,8 @@
 #endif
 
 static SPECIAL_HISTORY_FUNC history_func = NULL;
+static GSList *special_collector;
+static GSList *special_cache;
 
 static char *get_argument(char **cmd, char **arglist)
 {
@@ -121,8 +124,40 @@ static char *get_long_variable_value(const char *key, SERVER_REC *server,
 	return NULL;
 }
 
-static char *get_long_variable(char **cmd, SERVER_REC *server,
-			       void *item, int *free_ret, int getname)
+static gboolean cache_find(GSList **cache, const char *var, char **ret)
+{
+	GSList *tmp;
+	GSList *prev = NULL;
+
+	if (cache == NULL)
+		return FALSE;
+
+	for (tmp = *cache; tmp;) {
+		if (g_strcmp0(var, tmp->data) == 0) {
+			*ret = tmp->next->data;
+			if (prev != NULL)
+				prev->next->next = tmp->next->next;
+			else
+				*cache = tmp->next->next;
+
+			g_slist_free_1(tmp->next);
+			g_slist_free_1(tmp);
+			return TRUE;
+		}
+		prev = tmp;
+		tmp = tmp->next->next;
+	}
+	return FALSE;
+}
+
+static gboolean cache_find_char(GSList **cache, char var, char **ret)
+{
+	char varn[] = { var, '\0' };
+	return cache_find(cache, varn, ret);
+}
+
+static char *get_long_variable(char **cmd, SERVER_REC *server, void *item, int *free_ret,
+                               int getname, GSList **collector, GSList **cache)
 {
 	char *start, *var, *ret;
 
@@ -135,16 +170,23 @@ static char *get_long_variable(char **cmd, SERVER_REC *server,
 		*free_ret = TRUE;
                 return var;
 	}
+	if (cache_find(cache, var, &ret)) {
+		g_free(var);
+		return ret;
+	}
 	ret = get_long_variable_value(var, server, item, free_ret);
+	if (collector != NULL) {
+		*collector = g_slist_prepend(*collector, g_strdup(ret));
+		*collector = g_slist_prepend(*collector, i_refstr_intern(var));
+	}
 	g_free(var);
 	return ret;
 }
 
 /* return the value of the variable found from `cmd'.
    if 'getname' is TRUE, return the name of the variable instead it's value */
-static char *get_variable(char **cmd, SERVER_REC *server, void *item,
-			  char **arglist, int *free_ret, int *arg_used,
-			  int getname)
+static char *get_variable(char **cmd, SERVER_REC *server, void *item, char **arglist, int *free_ret,
+                          int *arg_used, int getname, GSList **collector, GSList **cache)
 {
 	EXPANDO_FUNC func;
 
@@ -158,7 +200,7 @@ static char *get_variable(char **cmd, SERVER_REC *server, void *item,
 
 	if (i_isalpha(**cmd) && isvarchar((*cmd)[1])) {
 		/* long variable name.. */
-		return get_long_variable(cmd, server, item, free_ret, getname);
+		return get_long_variable(cmd, server, item, free_ret, getname, collector, cache);
 	}
 
 	/* single character variable. */
@@ -167,15 +209,27 @@ static char *get_variable(char **cmd, SERVER_REC *server, void *item,
                 return g_strdup_printf("%c", **cmd);
 	}
 	*free_ret = FALSE;
+	{
+		char *ret;
+		if (cache_find_char(cache, **cmd, &ret)) {
+			return ret;
+		}
+	}
 	func = expando_find_char(**cmd);
 	if (func == NULL)
 		return NULL;
 	else {
 		char str[2];
+		char *ret;
 
 		str[0] = **cmd; str[1] = '\0';
 		current_expando = str;
-		return func(server, item, free_ret);
+		ret = func(server, item, free_ret);
+		if (**cmd != 'Z' && collector != NULL) {
+			*collector = g_slist_prepend(*collector, g_strdup(ret));
+			*collector = g_slist_prepend(*collector, i_refstr_intern(str));
+		}
+		return ret;
 	}
 }
 
@@ -199,9 +253,9 @@ static char *get_history(char **cmd, void *item, int *free_ret)
 	return ret;
 }
 
-static char *get_special_value(char **cmd, SERVER_REC *server, void *item,
-			       char **arglist, int *free_ret, int *arg_used,
-			       int flags)
+static char *get_special_value(char **cmd, SERVER_REC *server, void *item, char **arglist,
+                               int *free_ret, int *arg_used, int flags, GSList **collector,
+                               GSList **cache)
 {
 	char command, *value, *p;
 	int len;
@@ -236,8 +290,8 @@ static char *get_special_value(char **cmd, SERVER_REC *server, void *item,
 		}
 	}
 
-	value = get_variable(cmd, server, item, arglist, free_ret,
-			     arg_used, flags & PARSE_FLAG_GETNAME);
+	value = get_variable(cmd, server, item, arglist, free_ret, arg_used,
+	                     flags & PARSE_FLAG_GETNAME, collector, cache);
 
 	if (flags & PARSE_FLAG_GETNAME)
 		return value;
@@ -440,8 +494,9 @@ char *parse_special(char **cmd, SERVER_REC *server, void *item,
 		brackets = TRUE;
 	}
 
-	value = get_special_value(cmd, server, item, arglist,
-				  free_ret, arg_used, flags);
+	value = get_special_value(cmd, server, item, arglist, free_ret, arg_used, flags,
+	                          special_collector != NULL ? special_collector->data : NULL,
+	                          &special_cache);
 	if (**cmd == '\0')
 		g_error("parse_special() : buffer overflow!");
 
@@ -635,6 +690,22 @@ void special_history_func_set(SPECIAL_HISTORY_FUNC func)
 	history_func = func;
 }
 
+void special_push_collector(GSList **list)
+{
+	special_collector = g_slist_prepend(special_collector, list);
+}
+
+void special_pop_collector(void)
+{
+	special_collector = g_slist_delete_link(special_collector, special_collector);
+}
+
+void special_fill_cache(GSList *list)
+{
+	g_slist_free(special_cache);
+	special_cache = g_slist_copy(list);
+}
+
 static void update_signals_hash(GHashTable **hash, int *signals)
 {
 	void *signal_id;
@@ -757,4 +828,16 @@ void special_vars_remove_signals(const char *text,
 int *special_vars_get_signals(const char *text)
 {
 	return special_vars_signals_task(text, 0, NULL, TASK_GET_SIGNALS);
+}
+
+void special_vars_init(void)
+{
+	special_cache = NULL;
+	special_collector = NULL;
+}
+
+void special_vars_deinit(void)
+{
+	g_slist_free(special_cache);
+	g_slist_free(special_collector);
 }
