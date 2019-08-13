@@ -8,6 +8,7 @@ time_t last_check; /* last time gone was checked */
 char *nick;
 char *host;
 char *realname;
+char *account;
 int hops;
 
 /* status in server */

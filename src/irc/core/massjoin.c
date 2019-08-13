@@ -35,7 +35,7 @@ static int massjoin_max_joins;
 static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
-	char *params, *channel, *ptr;
+	char *params, *channel, *account, *realname, *ptr;
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 	GSList *nicks, *tmp;
@@ -47,7 +47,8 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 		return;
 	}
 
-	params = event_get_params(data, 1, &channel);
+	params = event_get_params(data, 3, &channel, &account, &realname);
+
 	ptr = strchr(channel, 7); /* ^G does something weird.. */
 	if (ptr != NULL) *ptr = '\0';
 
@@ -66,6 +67,11 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 
 	/* add user to nicklist */
 	nickrec = irc_nicklist_insert(chanrec, nick, FALSE, FALSE, FALSE, TRUE, NULL);
+	if (*account != '\0' && g_strcmp0(nickrec->account, account) != 0) {
+		g_free(nickrec->account);
+		nickrec->account = g_strdup(account);
+	}
+
         nicklist_set_host(CHANNEL(chanrec), nickrec, address);
 
 	if (chanrec->massjoins == 0) {
@@ -90,6 +96,11 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 			}
 		}
 		g_slist_free(nicks);
+	}
+
+	if (*realname != '\0' && g_strcmp0(nickrec->realname, realname) != 0) {
+		g_free(nickrec->realname);
+		nickrec->realname = g_strdup(realname);
 	}
 
 	chanrec->massjoins++;
