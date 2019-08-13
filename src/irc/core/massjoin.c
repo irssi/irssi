@@ -68,8 +68,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	/* add user to nicklist */
 	nickrec = irc_nicklist_insert(chanrec, nick, FALSE, FALSE, FALSE, TRUE, NULL);
 	if (*account != '\0' && g_strcmp0(nickrec->account, account) != 0) {
-		g_free(nickrec->account);
-		nickrec->account = g_strdup(account);
+		nicklist_set_account(CHANNEL(chanrec), nickrec, account);
 	}
 
         nicklist_set_host(CHANNEL(chanrec), nickrec, address);
@@ -126,6 +125,25 @@ static void event_chghost(IRC_SERVER_REC *server, const char *data,
 		nicklist_set_host(CHANNEL(tmp->data), rec, address);
 	}
 	g_free(address);
+	g_slist_free(nicks);
+	g_free(params);
+}
+
+static void event_account(IRC_SERVER_REC *server, const char *data,
+			  const char *nick, const char *address)
+{
+	char *params, *account;
+	GSList *nicks, *tmp;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 1, &account);
+	nicks = nicklist_get_same(SERVER(server), nick);
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
+		NICK_REC *rec = tmp->next->data;
+
+		nicklist_set_account(CHANNEL(tmp->data), rec, account);
+	}
 	g_slist_free(nicks);
 	g_free(params);
 }
@@ -316,6 +334,7 @@ void massjoin_init(void)
 	read_settings();
 	signal_add_first("event join", (SIGNAL_FUNC) event_join);
 	signal_add("event chghost", (SIGNAL_FUNC) event_chghost);
+	signal_add("event account", (SIGNAL_FUNC) event_account);
 	signal_add("event part", (SIGNAL_FUNC) event_part);
 	signal_add("event kick", (SIGNAL_FUNC) event_kick);
 	signal_add("event quit", (SIGNAL_FUNC) event_quit);
@@ -328,6 +347,7 @@ void massjoin_deinit(void)
 
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
 	signal_remove("event chghost", (SIGNAL_FUNC) event_chghost);
+	signal_remove("event account", (SIGNAL_FUNC) event_account);
 	signal_remove("event part", (SIGNAL_FUNC) event_part);
 	signal_remove("event kick", (SIGNAL_FUNC) event_kick);
 	signal_remove("event quit", (SIGNAL_FUNC) event_quit);

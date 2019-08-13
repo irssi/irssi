@@ -18,6 +18,7 @@ struct _NICK_REC {
 void nicklist_insert(CHANNEL_REC *channel, NICK_REC *nick);
 /* Set host address for nick */
 void nicklist_set_host(CHANNEL_REC *channel, NICK_REC *nick, const char *host);
+void nicklist_set_account(CHANNEL_REC *channel, NICK_REC *nick, const char *account);
 /* Remove nick from list */
 void nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick);
 /* Change nick */
