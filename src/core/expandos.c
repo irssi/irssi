@@ -48,6 +48,7 @@ typedef struct {
 } EXPANDO_REC;
 
 const char *current_expando = NULL;
+time_t current_time = (time_t)-1;
 
 static int timer_tag;
 
@@ -441,7 +442,7 @@ static char *expando_time(SERVER_REC *server, void *item, int *free_ret)
 	struct tm *tm;
         char str[256];
 
-        now = time(NULL);
+        now = current_time != (time_t)-1 ? current_time : time(NULL);
 	tm = localtime(&now);
 
 	if (strftime(str, sizeof(str), timestamp_format, tm) == 0)
