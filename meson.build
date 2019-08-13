@@ -149,7 +149,7 @@ message('*** to download and build it automatically')
 message('*** Or alternatively install your distribution\'s package')
 message('*** On Debian: sudo apt-get install libglib2.0-dev')
 message('*** On Redhat: dnf install glib2-devel')
-glib_dep = dependency('glib-2.0', version : '>=2.58', required : not want_glib_internal)
+glib_dep = dependency('glib-2.0', version : '>=2.28', required : not want_glib_internal)
 if not glib_dep.found()
   glib_internal = true
   meson_cmd = find_program('meson')
