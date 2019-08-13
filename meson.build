@@ -443,6 +443,9 @@ add_project_arguments(cc.get_supported_arguments('-Werror=declaration-after-stat
 
 #### personality ####
 add_project_arguments(cc.get_supported_arguments('-fno-strict-aliasing'), language : 'c')
+if get_option('buildtype').contains('debug')
+  add_project_arguments(cc.get_supported_arguments('-fno-omit-frame-pointer'), language : 'c')
+endif
 
 if want_fuzzer
   if not cc.has_argument('-fsanitize=fuzzer-no-link')
