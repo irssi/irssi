@@ -26,6 +26,7 @@
 #include <irssi/src/core/levels.h>
 #include <irssi/src/core/settings.h>
 #include <irssi/src/core/servers.h>
+#include <irssi/src/core/refstrings.h>
 
 #include <irssi/src/fe-common/core/printtext.h>
 #include <irssi/src/fe-text/gui-windows.h>
@@ -358,6 +359,13 @@ static void cmd_scrollback_status(void)
 	printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
 		  "Total: %d lines, %dkB of data",
 		  total_lines, (int)(total_mem / 1024));
+	{
+		char *tmp = i_refstr_table_size_info();
+		if (tmp != NULL)
+			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+				  "%s", tmp);
+		g_free(tmp);
+	}
 }
 
 static void sig_away_changed(SERVER_REC *server)
