@@ -426,6 +426,7 @@ void perl_nick_fill_hash(HV *hv, NICK_REC *nick)
 	(void) hv_store(hv, "nick", 4, new_pv(nick->nick), 0);
 	(void) hv_store(hv, "host", 4, new_pv(nick->host), 0);
 	(void) hv_store(hv, "realname", 8, new_pv(nick->realname), 0);
+	(void) hv_store(hv, "account", 7, new_pv(nick->account), 0);
 	(void) hv_store(hv, "hops", 4, newSViv(nick->hops), 0);
 
 	(void) hv_store(hv, "gone", 4, newSViv(nick->gone), 0);

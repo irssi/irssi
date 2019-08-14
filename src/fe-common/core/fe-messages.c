@@ -349,14 +349,15 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 }
 
 static void sig_message_join(SERVER_REC *server, const char *channel,
-			     const char *nick, const char *address)
+			     const char *nick, const char *address,
+			     const char *account, const char *realname)
 {
 	int level = MSGLEVEL_JOINS;
 
 	ignore_check_plus(server, nick, address, channel, NULL, &level, FALSE);
 
 	printformat(server, channel, level,
-		    TXT_JOIN, nick, address, channel);
+		    TXT_JOIN, nick, address, channel, account, realname);
 }
 
 static void sig_message_part(SERVER_REC *server, const char *channel,

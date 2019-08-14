@@ -17,6 +17,7 @@
 #define CAP_LS_VERSION "302"
 #define CAP_SASL "sasl"
 #define CAP_MULTI_PREFIX "multi-prefix"
+#define CAP_EXTENDED_JOIN "extended-join"
 
 /* returns IRC_SERVER_REC if it's IRC server, NULL if it isn't */
 #define IRC_SERVER(server) \
