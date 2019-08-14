@@ -237,6 +237,21 @@ static void event_mode(IRC_SERVER_REC *server, const char *data,
 	g_free(params);
 }
 
+static void event_away_notify(IRC_SERVER_REC *server, const char *data,
+			      const char *nick, const char *addr)
+{
+	char *params, *awaymsg;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 1 | PARAM_FLAG_GETREST,
+				  &awaymsg);
+
+	signal_emit("message irc away", 4,
+		    server, nick, addr, awaymsg);
+	g_free(params);
+}
+
 static void event_pong(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
 	char *params, *host, *reply;
@@ -458,6 +473,7 @@ void fe_events_init(void)
 	signal_add("event error", (SIGNAL_FUNC) event_error);
 	signal_add("event wallops", (SIGNAL_FUNC) event_wallops);
 	signal_add("event silence", (SIGNAL_FUNC) event_silence);
+	signal_add("event away", (SIGNAL_FUNC) event_away_notify);
 
 	signal_add("default event", (SIGNAL_FUNC) event_received);
 
@@ -487,6 +503,7 @@ void fe_events_deinit(void)
 	signal_remove("event error", (SIGNAL_FUNC) event_error);
 	signal_remove("event wallops", (SIGNAL_FUNC) event_wallops);
 	signal_remove("event silence", (SIGNAL_FUNC) event_silence);
+	signal_remove("event away", (SIGNAL_FUNC) event_away_notify);
 
 	signal_remove("default event", (SIGNAL_FUNC) event_received);
 

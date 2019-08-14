@@ -467,6 +467,20 @@ static void event_setname(SERVER_REC *server, const char *data, const char *nick
 	g_slist_free(nicks);
 }
 
+static void event_away_notify(IRC_SERVER_REC *server, const char *data, const char *nick, const char *add)
+{
+	char *params, *awaymsg;
+
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 1 | PARAM_FLAG_GETREST, &awaymsg);
+	nicklist_update_flags(SERVER(server), nick, *awaymsg != '\0', -1);
+	g_free(params);
+}
+
 static void sig_usermode(SERVER_REC *server)
 {
 	g_return_if_fail(IS_SERVER(server));
@@ -507,6 +521,7 @@ void irc_nicklist_init(void)
 	signal_add_first("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_add_first("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_add_first("event 302", (SIGNAL_FUNC) event_userhost);
+	signal_add_first("event away", (SIGNAL_FUNC) event_away_notify);
 	signal_add("userhost event", (SIGNAL_FUNC) event_userhost);
 	signal_add("event setname", (SIGNAL_FUNC) event_setname);
 	signal_add("user mode changed", (SIGNAL_FUNC) sig_usermode);
@@ -530,6 +545,7 @@ void irc_nicklist_deinit(void)
 	signal_remove("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_remove("event 437", (SIGNAL_FUNC) event_target_unavailable);
 	signal_remove("event 302", (SIGNAL_FUNC) event_userhost);
+	signal_remove("event away", (SIGNAL_FUNC) event_away_notify);
 	signal_remove("userhost event", (SIGNAL_FUNC) event_userhost);
 	signal_remove("event setname", (SIGNAL_FUNC) event_setname);
 	signal_remove("user mode changed", (SIGNAL_FUNC) sig_usermode);
