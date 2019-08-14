@@ -484,8 +484,10 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 
 static void cap_maxline(IRC_SERVER_REC *server)
 {
-	int maxline = atoi(g_hash_table_lookup(server->cap_supported, CAP_MAXLINE));
-	if (maxline >= MAX_IRC_MESSAGE_LEN + 2 /* 2 bytes for CR+LF */) {
+	unsigned int maxline = 0;
+	if (parse_uint(g_hash_table_lookup(server->cap_supported, CAP_MAXLINE),
+		       NULL, 10, &maxline) &&
+	    maxline >= MAX_IRC_MESSAGE_LEN + 2 /* 2 bytes for CR+LF */) {
 		server->max_message_len = maxline - 2;
 	}
 }
