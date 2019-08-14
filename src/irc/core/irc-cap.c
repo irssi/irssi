@@ -184,6 +184,9 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 
 				avail_caps = 0;
 
+				/* To process the queue in order, we need to reverse the stack once */
+				server->cap_queue = g_slist_reverse(server->cap_queue);
+
 				/* Check whether the cap is supported by the server */
 				for (tmp = server->cap_queue; tmp != NULL; tmp = tmp->next) {
 					if (g_hash_table_lookup_extended(server->cap_supported, tmp->data, NULL, NULL)) {
