@@ -247,7 +247,7 @@ static void event_away_notify(IRC_SERVER_REC *server, const char *data,
 	params = event_get_params(data, 1 | PARAM_FLAG_GETREST,
 				  &awaymsg);
 
-	signal_emit("message irc away", 4,
+	signal_emit("message away_notify", 4,
 		    server, nick, addr, awaymsg);
 	g_free(params);
 }

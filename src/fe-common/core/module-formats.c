@@ -106,6 +106,8 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "topic_unset", "Topic unset by {nick $0} on {channel $1}", 4, { 0, 0, 0, 0 } },
 	{ "your_nick_changed", "You're now known as {nick $1}", 4, { 0, 0, 0, 0 } },
 	{ "nick_changed", "{channick $0} is now known as {channick_hilight $1}", 4, { 0, 0, 0, 0 } },
+	{ "notify_away_channel", "{channick $0} {chanhost $1} is now away: {reason $2}", 4, { 0, 0, 0, 0 } },
+	{ "notify_unaway_channel", "{channick_hilight $0} {chanhost $1} is no longer away", 4, { 0, 0, 0, 0 } },
 	{ "talking_in", "You are now talking in {channel $0}", 1, { 0 } },
 	{ "not_in_channels", "You are not on any channels", 0 },
 	{ "current_channel", "Current channel {channel $0}", 1, { 0 } },

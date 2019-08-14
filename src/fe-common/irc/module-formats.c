@@ -95,8 +95,6 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "away", "You have been marked as being away", 0 },
 	{ "unaway", "You are no longer marked as being away", 0 },
 	{ "nick_away", "{nick $0} is away: $1", 2, { 0, 0 } },
-	{ "notify_away_channel", "{channick $0} {chanhost $1} is now away: {reason $3}", 4, { 0, 0, 0, 0 } },
-	{ "notify_unaway_channel", "{channick_hilight $0} {chanhost $1} is no longer away", 3, { 0, 0, 0 } },
 	{ "no_such_nick", "{nick $0}: No such nick/channel", 1, { 0 } },
 	{ "nick_in_use", "Nick {nick $0} is already in use", 1, { 0 } },
 	{ "nick_unavailable", "Nick {nick $0} is temporarily unavailable", 1, { 0 } },

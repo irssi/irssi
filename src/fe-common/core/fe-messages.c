@@ -587,6 +587,25 @@ static void sig_message_topic(SERVER_REC *server, const char *channel,
 		    nick, channel, topic, address);
 }
 
+static void sig_message_away_notify(SERVER_REC *server, const char *nick,
+				    const char *addr, const char *awaymsg)
+{
+	int txt = *awaymsg == '\0' ? TXT_NOTIFY_UNAWAY_CHANNEL :
+		TXT_NOTIFY_AWAY_CHANNEL;
+
+	if (!settings_get_bool("away_notify_public"))
+		return;
+
+	spread_server_message_to_windows(server, FALSE,
+					 FALSE,
+					 MSGLEVEL_CRAP,
+					 txt, txt,
+					 nick, addr,
+					 awaymsg,
+					 awaymsg
+					);
+}
+
 static int printnick_exists(NICK_REC *first, NICK_REC *ignore,
 			    const char *nick)
 {
@@ -730,6 +749,7 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "print_active_channel", FALSE);
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 	settings_add_bool("lookandfeel", "show_own_nickchange_once", FALSE);
+	settings_add_bool("lookandfeel", "away_notify_public", FALSE);
 
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
@@ -744,6 +764,7 @@ void fe_messages_init(void)
 	signal_add_last("message invite", (SIGNAL_FUNC) sig_message_invite);
 	signal_add_last("message invite_other", (SIGNAL_FUNC) sig_message_invite_other);
 	signal_add_last("message topic", (SIGNAL_FUNC) sig_message_topic);
+	signal_add_last("message away_notify", (SIGNAL_FUNC) sig_message_away_notify);
 
 	signal_add("nicklist new", (SIGNAL_FUNC) sig_nicklist_new);
 	signal_add("nicklist remove", (SIGNAL_FUNC) sig_nicklist_remove);
@@ -770,6 +791,7 @@ void fe_messages_deinit(void)
 	signal_remove("message invite_other", (SIGNAL_FUNC) sig_message_invite_other);
 	signal_remove("message invite", (SIGNAL_FUNC) sig_message_invite);
 	signal_remove("message topic", (SIGNAL_FUNC) sig_message_topic);
+	signal_remove("message away_notify", (SIGNAL_FUNC) sig_message_away_notify);
 
 	signal_remove("nicklist new", (SIGNAL_FUNC) sig_nicklist_new);
 	signal_remove("nicklist remove", (SIGNAL_FUNC) sig_nicklist_remove);

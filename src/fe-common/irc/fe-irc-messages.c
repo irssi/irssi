@@ -295,43 +295,9 @@ static void sig_message_irc_ctcp(IRC_SERVER_REC *server, const char *cmd,
 		    IRCTXT_CTCP_REQUESTED, nick, addr, cmd, data, oldtarget);
 }
 
-static void sig_message_irc_away(IRC_SERVER_REC *server, const char *nick,
-				 const char *addr, const char *awaymsg)
-{
-	GSList *tmp, *windows;
-
-	if (!settings_get_bool("away_notify_public"))
-		return;
-
-	windows = NULL;
-	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
-		int level = MSGLEVEL_CRAP;
-		CHANNEL_REC *channel = tmp->data;
-		WINDOW_REC *window =
-			window_item_window((WI_ITEM_REC *) channel);
-
-		if (nicklist_find(channel, nick) == NULL ||
-		    g_slist_find(windows, window) != NULL)
-			continue;
-
-		if (ignore_check_plus(SERVER(server), nick, addr,
-				      channel->visible_name, awaymsg, &level, TRUE))
-			continue;
-
-		windows = g_slist_prepend(windows, window);
-
-		printformat(server, channel->visible_name, level,
-			    *awaymsg == '\0' ? IRCTXT_NOTIFY_UNAWAY_CHANNEL :
-			    IRCTXT_NOTIFY_AWAY_CHANNEL,
-			    nick, addr, channel->visible_name, awaymsg);
-	}
-	g_slist_free(windows);
-}
-
 void fe_irc_messages_init(void)
 {
 	settings_add_bool("misc", "notice_channel_context", TRUE);
-	settings_add_bool("lookandfeel", "away_notify_public", FALSE);
 
         signal_add_last("message own_public", (SIGNAL_FUNC) sig_message_own_public);
         signal_add_last("message irc op_public", (SIGNAL_FUNC) sig_message_irc_op_public);
@@ -342,7 +308,6 @@ void fe_irc_messages_init(void)
         signal_add_last("message irc notice", (SIGNAL_FUNC) sig_message_irc_notice);
         signal_add_last("message irc own_ctcp", (SIGNAL_FUNC) sig_message_own_ctcp);
         signal_add_last("message irc ctcp", (SIGNAL_FUNC) sig_message_irc_ctcp);
-        signal_add_last("message irc away", (SIGNAL_FUNC) sig_message_irc_away);
 }
 
 void fe_irc_messages_deinit(void)
@@ -356,5 +321,4 @@ void fe_irc_messages_deinit(void)
         signal_remove("message irc notice", (SIGNAL_FUNC) sig_message_irc_notice);
         signal_remove("message irc own_ctcp", (SIGNAL_FUNC) sig_message_own_ctcp);
         signal_remove("message irc ctcp", (SIGNAL_FUNC) sig_message_irc_ctcp);
-        signal_remove("message irc away", (SIGNAL_FUNC) sig_message_irc_away);
 }
