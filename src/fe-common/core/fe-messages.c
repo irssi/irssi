@@ -471,6 +471,9 @@ static void sig_message_account_changed(SERVER_REC *server, const char *nick,
 	gboolean logged_in;
 	int txt;
 
+	if (!settings_get_bool("show_account_notify"))
+		return;
+
 	logged_in = g_strcmp0("*", account) != 0;
 	txt = logged_in ? TXT_LOGGED_IN : TXT_LOGGED_OUT;
 
@@ -784,6 +787,7 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 	settings_add_bool("lookandfeel", "show_own_nickchange_once", FALSE);
 	settings_add_bool("lookandfeel", "away_notify_public", FALSE);
+	settings_add_bool("lookandfeel", "show_account_notify", FALSE);
 
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
