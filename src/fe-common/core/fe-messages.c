@@ -465,6 +465,29 @@ static void sig_message_host_changed(SERVER_REC *server, const char *nick,
 	);
 }
 
+static void sig_message_account_changed(SERVER_REC *server, const char *nick,
+					const char *address, const char *account)
+{
+	gboolean logged_in;
+	int txt;
+
+	if (!settings_get_bool("show_account_notify"))
+		return;
+
+	logged_in = g_strcmp0("*", account) != 0;
+	txt = logged_in ? TXT_LOGGED_IN : TXT_LOGGED_OUT;
+
+	spread_server_message_to_windows(
+		server,
+		settings_get_bool("show_quit_once"),
+		TRUE,
+		MSGLEVEL_MODES,
+		txt, txt,
+		nick, address, account,
+		"account"
+	);
+}
+
 static void sig_message_quit(SERVER_REC *server, const char *nick,
 			     const char *address, const char *reason)
 {
@@ -764,6 +787,7 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 	settings_add_bool("lookandfeel", "show_own_nickchange_once", FALSE);
 	settings_add_bool("lookandfeel", "away_notify_public", FALSE);
+	settings_add_bool("lookandfeel", "show_account_notify", FALSE);
 
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);
@@ -771,6 +795,7 @@ void fe_messages_init(void)
 	signal_add_last("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_add_last("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_add_last("message host_changed", (SIGNAL_FUNC) sig_message_host_changed);
+	signal_add_last("message account_changed", (SIGNAL_FUNC) sig_message_account_changed);
 	signal_add_last("message part", (SIGNAL_FUNC) sig_message_part);
 	signal_add_last("message quit", (SIGNAL_FUNC) sig_message_quit);
 	signal_add_last("message kick", (SIGNAL_FUNC) sig_message_kick);
@@ -799,6 +824,7 @@ void fe_messages_deinit(void)
 	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
 	signal_remove("message host_changed", (SIGNAL_FUNC) sig_message_host_changed);
+	signal_remove("message account_changed", (SIGNAL_FUNC) sig_message_account_changed);
 	signal_remove("message part", (SIGNAL_FUNC) sig_message_part);
 	signal_remove("message quit", (SIGNAL_FUNC) sig_message_quit);
 	signal_remove("message kick", (SIGNAL_FUNC) sig_message_kick);

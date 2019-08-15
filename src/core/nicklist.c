@@ -101,6 +101,14 @@ void nicklist_set_host(CHANNEL_REC *channel, NICK_REC *nick, const char *host)
         signal_emit("nicklist host changed", 2, channel, nick);
 }
 
+void nicklist_set_account(CHANNEL_REC *channel, NICK_REC *nick, const char *account)
+{
+	g_free(nick->account);
+	nick->account = g_strdup(account);
+
+	signal_emit("nicklist account changed", 2, channel, nick);
+}
+
 static void nicklist_destroy(CHANNEL_REC *channel, NICK_REC *nick)
 {
 	signal_emit("nicklist remove", 2, channel, nick);
