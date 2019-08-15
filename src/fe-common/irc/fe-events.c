@@ -252,13 +252,18 @@ static void event_pong(IRC_SERVER_REC *server, const char *data, const char *nic
 static void event_invite(IRC_SERVER_REC *server, const char *data,
 			 const char *nick, const char *addr)
 {
-	char *params, *channel;
+	char *params, *invited, *channel;
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 2, NULL, &channel);
-	signal_emit("message invite", 4,
-		    server, get_visible_target(server, channel), nick, addr);
+	params = event_get_params(data, 2, &invited, &channel);
+	if (server->nick_comp_func(invited, server->nick) == 0) {
+		signal_emit("message invite", 4,
+			    server, get_visible_target(server, channel), nick, addr);
+	} else {
+		signal_emit("message invite_other", 5,
+			    server, get_visible_target(server, channel), invited, nick, addr);
+	}
 	g_free(params);
 }
 

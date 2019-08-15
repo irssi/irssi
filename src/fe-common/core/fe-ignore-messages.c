@@ -98,6 +98,14 @@ static void sig_message_invite(SERVER_REC *server, const char *channel,
 		signal_stop();
 }
 
+static void sig_message_invite_other(SERVER_REC *server, const char *channel,
+			      const char *invited, const char *nick, const char *address)
+{
+	if (ignore_check(server, nick, address,
+			 channel, invited, MSGLEVEL_INVITES))
+		signal_stop();
+}
+
 static void sig_message_topic(SERVER_REC *server, const char *channel,
 			      const char *topic,
 			      const char *nick, const char *address)
@@ -118,6 +126,7 @@ void fe_ignore_messages_init(void)
 	signal_add_first("message nick", (SIGNAL_FUNC) sig_message_nick);
 	signal_add_first("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
 	signal_add_first("message invite", (SIGNAL_FUNC) sig_message_invite);
+	signal_add_first("message invite_other", (SIGNAL_FUNC) sig_message_invite_other);
 	signal_add_first("message topic", (SIGNAL_FUNC) sig_message_topic);
 }
 
@@ -132,5 +141,6 @@ void fe_ignore_messages_deinit(void)
 	signal_remove("message nick", (SIGNAL_FUNC) sig_message_nick);
 	signal_remove("message own_nick", (SIGNAL_FUNC) sig_message_own_nick);
 	signal_remove("message invite", (SIGNAL_FUNC) sig_message_invite);
+	signal_remove("message invite_other", (SIGNAL_FUNC) sig_message_invite_other);
 	signal_remove("message topic", (SIGNAL_FUNC) sig_message_topic);
 }
