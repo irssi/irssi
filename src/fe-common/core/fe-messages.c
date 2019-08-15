@@ -451,6 +451,20 @@ static void spread_server_message_to_windows(SERVER_REC *server, gboolean once,
 	g_string_free(chans, TRUE);
 }
 
+static void sig_message_host_changed(SERVER_REC *server, const char *nick,
+				     const char *address, const char *old_address)
+{
+	spread_server_message_to_windows(
+		server,
+		settings_get_bool("show_quit_once"),
+		TRUE,
+		MSGLEVEL_JOINS,
+		TXT_HOST_CHANGED, TXT_HOST_CHANGED,
+		nick, address, old_address,
+		NULL
+	);
+}
+
 static void sig_message_quit(SERVER_REC *server, const char *nick,
 			     const char *address, const char *reason)
 {
@@ -756,6 +770,7 @@ void fe_messages_init(void)
 	signal_add_last("message own_public", (SIGNAL_FUNC) sig_message_own_public);
 	signal_add_last("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_add_last("message join", (SIGNAL_FUNC) sig_message_join);
+	signal_add_last("message host_changed", (SIGNAL_FUNC) sig_message_host_changed);
 	signal_add_last("message part", (SIGNAL_FUNC) sig_message_part);
 	signal_add_last("message quit", (SIGNAL_FUNC) sig_message_quit);
 	signal_add_last("message kick", (SIGNAL_FUNC) sig_message_kick);
@@ -783,6 +798,7 @@ void fe_messages_deinit(void)
 	signal_remove("message own_public", (SIGNAL_FUNC) sig_message_own_public);
 	signal_remove("message own_private", (SIGNAL_FUNC) sig_message_own_private);
 	signal_remove("message join", (SIGNAL_FUNC) sig_message_join);
+	signal_remove("message host_changed", (SIGNAL_FUNC) sig_message_host_changed);
 	signal_remove("message part", (SIGNAL_FUNC) sig_message_part);
 	signal_remove("message quit", (SIGNAL_FUNC) sig_message_quit);
 	signal_remove("message kick", (SIGNAL_FUNC) sig_message_kick);
