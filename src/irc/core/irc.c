@@ -160,7 +160,10 @@ static char *split_nicks(const char *cmd, char **pre, char **nicks, char **post,
 	*pre = g_strdup(cmd);
 	*post = *nicks = NULL;
 
-	if (**pre == '@') { /* message-tags */
+	if (**pre == '@') {
+		/* the message-tags "add" one space separated argument
+		   in front of the non message-tagged IRC commands. So
+		   the nicks are now off-set by one to the right. */
 		arg++;
 	}
 
