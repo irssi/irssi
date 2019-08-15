@@ -37,5 +37,3 @@ pkginc_fe_common_irc_HEADERS = \
 	fe-irc-channels.h \
 	module.h \
 	module-formats.h
-
-DISTFILES = $(DIST_COMMON) $(real_sources) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
