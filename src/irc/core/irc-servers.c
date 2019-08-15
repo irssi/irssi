@@ -485,8 +485,16 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 static void cap_maxline(IRC_SERVER_REC *server)
 {
 	unsigned int maxline = 0;
-	if (parse_uint(g_hash_table_lookup(server->cap_supported, CAP_MAXLINE),
-		       NULL, 10, &maxline) &&
+	gboolean parse_successful = FALSE;
+	const char *maxline_str;
+
+	maxline_str = g_hash_table_lookup(server->cap_supported, CAP_MAXLINE);
+	if (maxline_str != NULL) {
+		parse_successful = parse_uint(maxline_str, NULL, 10, &maxline);
+
+	}
+
+	if (parse_successful &&
 	    maxline >= MAX_IRC_MESSAGE_LEN + 2 /* 2 bytes for CR+LF */) {
 		server->max_message_len = maxline - 2;
 	}
