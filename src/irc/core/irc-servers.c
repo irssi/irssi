@@ -237,6 +237,7 @@ static void server_init(IRC_SERVER_REC *server)
 	irc_cap_toggle(server, CAP_EXTENDED_JOIN, TRUE);
 	irc_cap_toggle(server, CAP_SETNAME, TRUE);
 	irc_cap_toggle(server, CAP_INVITE_NOTIFY, TRUE);
+	irc_cap_toggle(server, CAP_AWAY_NOTIFY, TRUE);
 
 	irc_send_cmd_now(server, "CAP LS " CAP_LS_VERSION);
 
