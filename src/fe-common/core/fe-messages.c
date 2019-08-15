@@ -372,50 +372,57 @@ static void sig_message_part(SERVER_REC *server, const char *channel,
 		    TXT_PART, nick, address, channel, reason);
 }
 
-static void sig_message_quit(SERVER_REC *server, const char *nick,
-			     const char *address, const char *reason)
+static void spread_server_message_to_windows(SERVER_REC *server, gboolean once,
+					     gboolean in_query,
+					     int base_level,
+					     int txt, int txt_once,
+					     const char *nick, const char *address,
+					     const char *data,
+					     const char *ignore_data
+					    )
 {
 	WINDOW_REC *window;
 	GString *chans;
 	GSList *tmp, *windows;
 	char *print_channel;
-	int once, count, level = MSGLEVEL_QUITS;
+	int count, level = base_level;
 
-	if (ignore_check_plus(server, nick, address, NULL, reason, &level, TRUE))
+	if (ignore_check_plus(server, nick, address, NULL, ignore_data, &level, TRUE))
 		return;
 
 	print_channel = NULL;
-	once = settings_get_bool("show_quit_once");
 
 	count = 0; windows = NULL;
 	chans = g_string_new(NULL);
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec;
-		level = MSGLEVEL_QUITS;
+		level = base_level;
 		rec = tmp->data;
 
-		if (!nicklist_find(rec, nick))
+		if (!nicklist_find(rec, nick)) {
 			continue;
+		}
 
 		if (ignore_check_plus(server, nick, address, rec->visible_name,
-				      reason, &level, TRUE)) {
+				      ignore_data, &level, TRUE)) {
 			count++;
 			continue;
 		}
 
 		if (print_channel == NULL ||
-		    active_win->active == (WI_ITEM_REC *) rec)
+		    active_win->active == (WI_ITEM_REC *) rec) {
 			print_channel = rec->visible_name;
+		}
 
-		if (once)
+		if (once) {
 			g_string_append_printf(chans, "%s,", rec->visible_name);
-		else {
+		} else {
 			window = window_item_window((WI_ITEM_REC *) rec);
 			if (g_slist_find(windows, window) == NULL) {
-				windows = g_slist_append(windows, window);
+				windows = g_slist_prepend(windows, window);
 				printformat(server, rec->visible_name,
 					    level,
-					    TXT_QUIT, nick, address, reason,
+					    txt, nick, address, data,
 					    rec->visible_name);
 			}
 		}
@@ -423,24 +430,39 @@ static void sig_message_quit(SERVER_REC *server, const char *nick,
 	}
 	g_slist_free(windows);
 
-	if (!once) {
+	if (!once && in_query) {
 		/* check if you had query with the nick and
-		   display the quit there too */
+		   display the change there too */
 		QUERY_REC *query = query_find(server, nick);
 		if (query != NULL) {
 			printformat(server, nick, level,
-				    TXT_QUIT, nick, address, reason, "");
+				    txt, nick, address, data, "");
 		}
 	}
 
 	if (once || count == 0) {
-		if (chans->len > 0)
+		if (chans->len > 0) {
 			g_string_truncate(chans, chans->len-1);
-		printformat(server, print_channel, MSGLEVEL_QUITS,
-			    count <= 1 ? TXT_QUIT : TXT_QUIT_ONCE,
-			    nick, address, reason, chans->str);
+		}
+		printformat(server, print_channel, base_level,
+			    count <= 1 ? txt : txt_once,
+			    nick, address, data, chans->str);
 	}
 	g_string_free(chans, TRUE);
+}
+
+static void sig_message_quit(SERVER_REC *server, const char *nick,
+			     const char *address, const char *reason)
+{
+	spread_server_message_to_windows(
+		server,
+		settings_get_bool("show_quit_once"),
+		TRUE,
+		MSGLEVEL_QUITS,
+		TXT_QUIT, TXT_QUIT_ONCE,
+		nick, address, reason,
+		reason
+	);
 }
 
 static void sig_message_kick(SERVER_REC *server, const char *channel,
