@@ -19,3 +19,4 @@ jobs:
         TERM: xterm
       with:
         args: before_script script after_script
+
