@@ -454,6 +454,7 @@ static void event_setname(SERVER_REC *server, const char *data, const char *nick
 	if (!IS_IRC_SERVER(server))
 		return;
 
+	g_return_if_fail(nick != NULL);
 	g_return_if_fail(data != NULL);
 	if (*data == ':') data++;
 
