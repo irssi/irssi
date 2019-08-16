@@ -111,6 +111,7 @@ static void event_chghost(IRC_SERVER_REC *server, const char *data,
 	char *params, *user, *host, *address;
 	GSList *nicks, *tmp;
 
+	g_return_if_fail(nick != NULL);
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 2, &user, &host);
@@ -135,6 +136,7 @@ static void event_account(IRC_SERVER_REC *server, const char *data,
 	char *params, *account;
 	GSList *nicks, *tmp;
 
+	g_return_if_fail(nick != NULL);
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 1, &account);
