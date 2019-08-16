@@ -475,6 +475,7 @@ static void event_away_notify(IRC_SERVER_REC *server, const char *data, const ch
 	if (!IS_IRC_SERVER(server))
 		return;
 
+	g_return_if_fail(nick != NULL);
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 1 | PARAM_FLAG_GETREST, &awaymsg);
