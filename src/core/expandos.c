@@ -48,6 +48,7 @@ typedef struct {
 } EXPANDO_REC;
 
 const char *current_expando = NULL;
+time_t reference_time = (time_t) -1;
 time_t current_time = (time_t)-1;
 
 static int timer_tag;
@@ -59,6 +60,7 @@ static char *last_privmsg_from, *last_public_from;
 static char *sysname, *sysrelease, *sysarch;
 
 static char *timestamp_format;
+static char *timestamp_format_alt;
 static int timestamp_seconds;
 static time_t last_timestamp;
 
@@ -441,12 +443,24 @@ static char *expando_time(SERVER_REC *server, void *item, int *free_ret)
 	time_t now;
 	struct tm *tm;
         char str[256];
+	char *format;
 
-        now = current_time != (time_t)-1 ? current_time : time(NULL);
+	now = current_time != (time_t) -1 ? current_time : time(NULL);
 	tm = localtime(&now);
+	format = timestamp_format;
 
-	if (strftime(str, sizeof(str), timestamp_format, tm) == 0)
-                return "";
+	if (reference_time != (time_t) -1) {
+		time_t ref = reference_time;
+		struct tm tm_ref;
+		if (localtime_r(&ref, &tm_ref)) {
+			if (tm_ref.tm_yday != tm->tm_yday || tm_ref.tm_year != tm->tm_year) {
+				format = timestamp_format_alt;
+			}
+		}
+	}
+
+	if (strftime(str, sizeof(str), format, tm) == 0)
+		return "";
 
 	*free_ret = TRUE;
         return g_strdup(str);
@@ -576,7 +590,9 @@ static int sig_timer(void)
 static void read_settings(void)
 {
 	g_free_not_null(timestamp_format);
+	g_free_not_null(timestamp_format_alt);
 	timestamp_format = g_strdup(settings_get_str("timestamp_format"));
+	timestamp_format_alt = g_strdup(settings_get_str("timestamp_format_alt"));
 
 	timestamp_seconds =
 		strstr(timestamp_format, "%r") != NULL ||
@@ -594,6 +610,7 @@ void expandos_init(void)
 #endif
 	settings_add_str("misc", "STATUS_OPER", "*");
 	settings_add_str("lookandfeel", "timestamp_format", "%H:%M");
+	settings_add_str("lookandfeel", "timestamp_format_alt", "%a %e %b %H:%M");
 	settings_add_bool("lookandfeel", "chanmode_expando_strip", FALSE);
 
 	last_sent_msg = NULL; last_sent_msg_body = NULL;
@@ -730,6 +747,7 @@ void expandos_deinit(void)
 	g_free_not_null(sysrelease);
 	g_free_not_null(sysarch);
 	g_free_not_null(timestamp_format);
+	g_free_not_null(timestamp_format_alt);
 
 	g_source_remove(timer_tag);
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);

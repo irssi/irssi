@@ -14,7 +14,8 @@
 #include <irssi/src/fe-text/textbuffer-view.h>
 
 TEXT_BUFFER_REC *color_buf;
-int scrollback_format;
+gboolean scrollback_format;
+gboolean show_server_time;
 
 #if GLIB_CHECK_VERSION(2, 56, 0)
 /* nothing */
@@ -101,6 +102,55 @@ static void format_rec_set_dest(TEXT_BUFFER_FORMAT_REC *rec, const TEXT_DEST_REC
 	rec->flags = dest->flags & ~PRINT_FLAG_FORMAT;
 }
 
+void textbuffer_meta_rec_free(TEXT_BUFFER_META_REC *rec)
+{
+	if (rec == NULL)
+		return;
+
+	if (rec->hash != NULL)
+		g_hash_table_destroy(rec->hash);
+
+	g_free(rec);
+}
+
+static void meta_hash_create(struct _TEXT_BUFFER_META_REC *meta)
+{
+	if (meta->hash == NULL) {
+		meta->hash = g_hash_table_new_full(g_str_hash, (GEqualFunc) g_strcmp0,
+		                                   (GDestroyNotify) i_refstr_release,
+		                                   (GDestroyNotify) g_free);
+	}
+}
+
+static TEXT_BUFFER_META_REC *line_meta_create(GHashTable *meta_hash)
+{
+	struct _TEXT_BUFFER_META_REC *meta;
+	GHashTableIter iter;
+	const char *key;
+	const char *val;
+
+	if (meta_hash == NULL || g_hash_table_size(meta_hash) == 0)
+		return NULL;
+
+	meta = g_new0(struct _TEXT_BUFFER_META_REC, 1);
+
+	g_hash_table_iter_init(&iter, meta_hash);
+	while (g_hash_table_iter_next(&iter, (gpointer *) &key, (gpointer *) &val)) {
+		if (g_strcmp0("time", key) == 0) {
+			GDateTime *time;
+			if ((time = g_date_time_new_from_iso8601(val, NULL)) != NULL) {
+				meta->server_time = g_date_time_to_unix(time);
+				g_date_time_unref(time);
+			}
+		} else {
+			meta_hash_create(meta);
+			g_hash_table_replace(meta->hash, i_refstr_intern(key), g_strdup(val));
+		}
+	}
+
+	return meta;
+}
+
 static LINE_INFO_REC *store_lineinfo_tmp(TEXT_DEST_REC *dest)
 {
 	GUI_WINDOW_REC *gui;
@@ -135,7 +185,7 @@ static void free_lineinfo_tmp(WINDOW_REC *window)
 
 	info = buffer->cur_info->data;
 	buffer->cur_info = g_slist_delete_link(buffer->cur_info, buffer->cur_info);
-	textbuffer_format_rec_free(info->format);
+	textbuffer_line_info_free1(info);
 	g_free(info);
 }
 
@@ -226,14 +276,17 @@ static void sig_gui_print_text_finished(WINDOW_REC *window, TEXT_DEST_REC *dest)
 	info->format->expando_cache = reverse_collector(info->format->expando_cache);
 	format_rec_set_dest(info->format, dest);
 
+	info->meta = line_meta_create(dest->meta);
+
 	info->level |= MSGLEVEL_FORMAT;
 
 	/* the line will be inserted into the view with textbuffer_view_insert_line by
 	   gui-printtext.c:view_add_eol */
 	insert_after = textbuffer_insert(buffer, insert_after, (const unsigned char[]){}, 0, info);
 
-	/* the TEXT_BUFFER_FORMAT_REC pointer is now owned by the textbuffer */
+	/* the TEXT_BUFFER_FORMAT_REC and meta pointer is now owned by the textbuffer */
 	info->format = LINE_INFO_FORMAT_SET;
+	info->meta = NULL;
 
 	if (gui->use_insert_after)
 		gui->insert_after = insert_after;
@@ -309,12 +362,14 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 		THEME_REC *theme;
 		int formatnum;
 		TEXT_BUFFER_FORMAT_REC *format_rec;
+		TEXT_BUFFER_META_REC *meta;
 		char *str;
 
 		curr = line;
 		line = NULL;
-
 		format_rec = curr->info.format;
+		meta = curr->info.meta;
+
 		format_create_dest_tag(
 		    &dest,
 		    format_rec->server_tag != NULL ? server_find_tag(format_rec->server_tag) : NULL,
@@ -341,7 +396,12 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 		}
 
 		if (text != NULL && *text != '\0') {
-			current_time = curr->info.time;
+			reference_time = curr->info.time;
+			if (show_server_time && meta != NULL && meta->server_time != 0) {
+				current_time = meta->server_time;
+			} else {
+				current_time = curr->info.time;
+			}
 
 			tmp = format_get_level_tag(theme, &dest);
 			str = !theme->info_eol ? format_add_linestart(text, tmp) :
@@ -349,7 +409,7 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 			g_free_not_null(tmp);
 			g_free_not_null(text);
 			text = str;
-			tmp = format_get_line_start(theme, &dest, curr->info.time);
+			tmp = format_get_line_start(theme, &dest, current_time);
 			str = !theme->info_eol ? format_add_linestart(text, tmp) :
 			                         format_add_lineend(text, tmp);
 			g_free_not_null(tmp);
@@ -360,7 +420,7 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 
 			dest.flags |= PRINT_FLAG_FORMAT;
 
-			current_time = (time_t) -1;
+			reference_time = current_time = (time_t) -1;
 		} else if (format_rec->format != NULL) {
 			g_free(text);
 			text = NULL;
@@ -378,11 +438,13 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 static void read_settings(void)
 {
 	scrollback_format = settings_get_bool("scrollback_format");
+	show_server_time = settings_get_bool("show_server_time");
 }
 
 void textbuffer_formats_init(void)
 {
 	settings_add_bool("lookandfeel", "scrollback_format", TRUE);
+	settings_add_bool("lookandfeel", "show_server_time", FALSE);
 
 	read_settings();
 	signal_add("print format", (SIGNAL_FUNC) sig_print_format);

@@ -19,14 +19,15 @@
 */
 
 #include "module.h"
-#include <irssi/src/core/modules.h>
-#include <irssi/src/core/network.h>
-#include <irssi/src/core/net-sendbuffer.h>
-#include <irssi/src/core/rawlog.h>
 #include <irssi/src/core/misc.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/refstrings.h>
 
-#include <irssi/src/irc/core/irc-servers.h>
 #include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-servers.h>
 #include <irssi/src/irc/core/servers-redirect.h>
 
 char *current_server_event;
@@ -383,11 +384,83 @@ static void irc_server_event(IRC_SERVER_REC *server, const char *line,
 	g_free(event);
 }
 
-static void irc_server_event_tags(IRC_SERVER_REC *server, const char *line,
-				  const char *nick, const char *address, const char *tags)
+static void unescape_tag(char *tag)
 {
+	char *tmp;
+
+	if (tag == NULL)
+		return;
+
+	tmp = tag;
+	for (; *tmp != '\0'; tmp++, tag++) {
+		if (*tmp == '\\') {
+			tmp++;
+			switch (*tmp) {
+			case ':':
+				*tag = ';';
+				break;
+			case 'n':
+				*tag = '\n';
+				break;
+			case 'r':
+				*tag = '\r';
+				break;
+			case 's':
+				*tag = ' ';
+				break;
+			default:
+				*tag = *tmp;
+				break;
+			}
+		} else {
+			*tag = *tmp;
+		}
+	}
+	*tag = '\0';
+}
+
+static gboolean i_str0_equal(const char *s1, const char *s2)
+{
+	return g_strcmp0(s1, s2) == 0;
+}
+
+GHashTable *irc_parse_message_tags(const char *tags)
+{
+	char **split, **tmp, **kv;
+	GHashTable *hash;
+
+	hash = g_hash_table_new_full(g_str_hash, (GEqualFunc) i_str0_equal,
+	                             (GDestroyNotify) i_refstr_release, (GDestroyNotify) g_free);
+	split = g_strsplit(tags, ";", -1);
+	for (tmp = split; *tmp != NULL; tmp++) {
+		kv = g_strsplit(*tmp, "=", 2);
+		unescape_tag(kv[1]);
+		g_hash_table_replace(hash, i_refstr_intern(kv[0]),
+		                     g_strdup(kv[1] == NULL ? "" : kv[1]));
+		g_strfreev(kv);
+	}
+	g_strfreev(split);
+	return hash;
+}
+
+static void irc_server_event_tags(IRC_SERVER_REC *server, const char *line, const char *nick,
+                                  const char *address, const char *tags)
+{
+	char *timestr;
+	GHashTable *tags_hash = NULL;
+
+	if (tags != NULL && *tags != '\0') {
+		tags_hash = irc_parse_message_tags(tags);
+		if ((timestr = g_hash_table_lookup(tags_hash, "time")) != NULL) {
+			server_meta_stash(SERVER(server), "time", timestr);
+		}
+	}
+
 	if (*line != '\0')
 		signal_emit_id(signal_server_event, 4, server, line, nick, address);
+
+	if (tags_hash != NULL)
+		g_hash_table_destroy(tags_hash);
 }
 
 static char *irc_parse_prefix(char *line, char **nick, char **address, char **tags)
@@ -449,6 +522,8 @@ static void irc_parse_incoming_line(IRC_SERVER_REC *server, char *line)
 	line = irc_parse_prefix(line, &nick, &address, &tags);
 	if (*line != '\0' || tags != NULL)
 		signal_emit_id(signal_server_event_tags, 5, server, line, nick, address, tags);
+
+	server_meta_clear_all(SERVER(server));
 }
 
 /* input function: handle incoming server messages */

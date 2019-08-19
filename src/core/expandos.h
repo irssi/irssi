@@ -18,6 +18,7 @@ typedef char* (*EXPANDO_FUNC)
 
 extern const char *current_expando;
 extern time_t current_time;
+extern time_t reference_time;
 
 /* Create expando - overrides any existing ones.
    ... = signal, type, ..., NULL - list of signals that might change the
