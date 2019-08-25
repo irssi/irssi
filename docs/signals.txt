@@ -63,6 +63,7 @@ nicklist.c:
  "nicklist remove", CHANNEL_REC, NICK_REC
  "nicklist changed", CHANNEL_REC, NICK_REC, char *old_nick
  "nicklist host changed", CHANNEL_REC, NICK_REC
+ "nicklist account changed", CHANNEL_REC, NICK_REC, char *account
  "nicklist gone changed", CHANNEL_REC, NICK_REC
  "nicklist serverop changed", CHANNEL_REC, NICK_REC
 
@@ -265,14 +266,18 @@ fe-messages.c:
  "message private", SERVER_REC, char *msg, char *nick, char *address, char *target
  "message own_public", SERVER_REC, char *msg, char *target
  "message own_private", SERVER_REC, char *msg, char *target, char *orig_target
- "message join", SERVER_REC, char *channel, char *nick, char *address
+ "message join", SERVER_REC, char *channel, char *nick, char *address, char *account, char *realname
  "message part", SERVER_REC, char *channel, char *nick, char *address, char *reason
  "message quit", SERVER_REC, char *nick, char *address, char *reason
  "message kick", SERVER_REC, char *channel, char *nick, char *kicker, char *address, char *reason
  "message nick", SERVER_REC, char *newnick, char *oldnick, char *address
  "message own_nick", SERVER_REC, char *newnick, char *oldnick, char *address
  "message invite", SERVER_REC, char *channel, char *nick, char *address
+ "message invite_other", SERVER_REC, char *channel, char *invited, char *nick, char *address
  "message topic", SERVER_REC, char *channel, char *topic, char *nick, char *address
+ "message host_changed", SERVER_REC, char *nick, char *newaddress, char *oldaddress
+ "message account_changed", SERVER_REC, char *nick, char *address, char *account
+ "message away_notify", SERVER_REC, char *nick, char *address, char *awaymsg
 
 keyboard.c:
  "keyinfo created", KEYINFO_REC
