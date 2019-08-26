@@ -356,8 +356,17 @@ static void sig_message_join(SERVER_REC *server, const char *channel,
 
 	ignore_check_plus(server, nick, address, channel, NULL, &level, FALSE);
 
-	printformat(server, channel, level,
-		    TXT_JOIN, nick, address, channel, account, realname);
+	if (settings_get_bool("show_extended_join")) {
+		int txt;
+		if (*account == '\0') txt = TXT_JOIN;
+		else if (g_strcmp0("*", account) == 0) txt = TXT_JOIN_EXTENDED;
+		else txt = TXT_JOIN_EXTENDED_ACCOUNT;
+		printformat(server, channel, level,
+			    txt, nick, address, channel, account, realname);
+	} else {
+		printformat(server, channel, level,
+			    TXT_JOIN, nick, address, channel, account, realname);
+	}
 }
 
 static void sig_message_part(SERVER_REC *server, const char *channel,
@@ -787,6 +796,7 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "show_quit_once", FALSE);
 	settings_add_bool("lookandfeel", "show_own_nickchange_once", FALSE);
 	settings_add_bool("lookandfeel", "away_notify_public", FALSE);
+	settings_add_bool("lookandfeel", "show_extended_join", FALSE);
 	settings_add_bool("lookandfeel", "show_account_notify", FALSE);
 
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);

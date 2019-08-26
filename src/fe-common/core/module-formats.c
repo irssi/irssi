@@ -95,6 +95,8 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ NULL, "Channels", 0 },
 
 	{ "join", "{channick_hilight $0} {chanhost_hilight $1} has joined {channel $2}", 5, { 0, 0, 0, 0, 0 } },
+	{ "join_extended", "{channick_hilight $0} {chanhost_hilight $1} has joined {channel $2} {comment realname {reason $4}}", 5, { 0, 0, 0, 0, 0 } },
+	{ "join_extended_account", "{channick_hilight $0} {chanhost_hilight $1} has joined {channel $2} {reason account {hilight $3}} {comment realname {reason $4}}", 5, { 0, 0, 0, 0, 0 } },
 	{ "host_changed", "{channick_hilight $0} {chanhost_hilight $1} has changed host", 4, { 0, 0, 0, 0 } },
 	{ "logged_out", "{channick $0} {chanhost $1} has logged out of their account", 4, { 0, 0, 0, 0 } },
 	{ "logged_in", "{channick_hilight $0} {chanhost_hilight $1} has logged in to account {hilight $2}", 4, { 0, 0, 0, 0 } },
