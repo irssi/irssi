@@ -49,8 +49,9 @@ static void strip_params_colon(char *const);
 void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 		       int send_now, int immediate, int raw)
 {
-	char str[513];
+	GString *str;
 	int len;
+	gboolean server_supports_tag;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(cmd != NULL);
@@ -58,35 +59,66 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 	if (server->connection_lost)
 		return;
 
-	len = strlen(cmd);
+	str = g_string_sized_new(MAX_IRC_USER_TAGS_LEN + 2 /* `@'+SPACE */ +
+				 server->max_message_len + 2 /* CR+LF */ + 1 /* `\0' */);
+
 	if (server->cmdcount == 0)
 		irc_servers_start_cmd_timeout();
 	server->cmdcount++;
 
 	if (!raw) {
+		const char *tmp = cmd;
+
+		server_supports_tag = server->cap_supported != NULL &&
+			g_hash_table_lookup_extended(server->cap_supported, CAP_MESSAGE_TAGS, NULL, NULL);
+
+		if (*cmd == '@' && server_supports_tag) {
+			const char *end;
+
+			while (*tmp != ' ' && *tmp != '\0')
+				tmp++;
+
+			end = tmp;
+
+			if (tmp - cmd > MAX_IRC_USER_TAGS_LEN) {
+				g_warning("irc_send_cmd_full(); tags too long(%ld)", tmp - cmd);
+				while (tmp - cmd > MAX_IRC_USER_TAGS_LEN && cmd != tmp - 1) tmp--;
+				while (*tmp != ',' && cmd != tmp - 1) tmp--;
+			}
+			if (cmd != tmp)
+				g_string_append_len(str, cmd, tmp - cmd);
+
+			tmp = end;
+			while (*tmp == ' ') tmp++;
+
+			if (*tmp != '\0' && str->len > 0)
+				g_string_append_c(str, ' ');
+		}
+		len = strlen(tmp);
+
 		/* check that we don't send any longer commands
 		   than 510 bytes (2 bytes for CR+LF) */
-		strncpy(str, cmd, 510);
-		if (len > 510) len = 510;
-		str[len] = '\0';
-                cmd = str;
+		g_string_append_len(str, tmp, len > server->max_message_len ?
+				    server->max_message_len : len);
+	} else {
+		g_string_append(str, cmd);
 	}
 
 	if (send_now) {
-		rawlog_output(server->rawlog, cmd);
-		server_redirect_command(server, cmd, server->redirect_next);
+		rawlog_output(server->rawlog, str->str);
+		server_redirect_command(server, str->str, server->redirect_next);
                 server->redirect_next = NULL;
 	}
 
 	if (!raw) {
                 /* Add CR+LF to command */
-		str[len++] = 13;
-		str[len++] = 10;
-		str[len] = '\0';
+		g_string_append_c(str, 13);
+		g_string_append_c(str, 10);
 	}
 
 	if (send_now) {
-                irc_server_send_data(server, cmd, len);
+                irc_server_send_data(server, str->str, str->len);
+		g_string_free(str, TRUE);
 	} else {
 
 		/* add to queue */
@@ -94,10 +126,10 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 			server->cmdqueue = g_slist_prepend(server->cmdqueue,
 							   server->redirect_next);
 			server->cmdqueue = g_slist_prepend(server->cmdqueue,
-							   g_strdup(cmd));
+							   g_string_free(str, FALSE));
 		} else {
 			server->cmdqueue = g_slist_append(server->cmdqueue,
-							  g_strdup(cmd));
+							  g_string_free(str, FALSE));
 			server->cmdqueue = g_slist_append(server->cmdqueue,
 							  server->redirect_next);
 		}

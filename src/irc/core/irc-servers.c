@@ -202,7 +202,7 @@ static char **split_message(SERVER_REC *server, const char *target,
 
 	/* length calculation shamelessly stolen from splitlong_safe.pl */
 	return split_line(SERVER(server), msg, target,
-			  MAX_IRC_MESSAGE_LEN - strlen(":! PRIVMSG  :") -
+			  ircserver->max_message_len - strlen(":! PRIVMSG  :") -
 			  strlen(ircserver->nick) - MAX_USERHOST_LEN -
 			  strlen(target));
 }
@@ -233,6 +233,7 @@ static void server_init(IRC_SERVER_REC *server)
 		irc_cap_toggle(server, CAP_SASL, TRUE);
 	}
 
+	irc_cap_toggle(server, CAP_MAXLINE, TRUE);
 	irc_cap_toggle(server, CAP_MULTI_PREFIX, TRUE);
 	irc_cap_toggle(server, CAP_EXTENDED_JOIN, TRUE);
 	irc_cap_toggle(server, CAP_SETNAME, TRUE);
@@ -316,6 +317,8 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 		server->connrec->port =
 			server->connrec->use_tls ? 6697 : 6667;
 	}
+
+	server->max_message_len = MAX_IRC_MESSAGE_LEN;
 
 	server->cmd_queue_speed = ircconn->cmd_queue_speed > 0 ?
 		ircconn->cmd_queue_speed : settings_get_time("cmd_queue_speed");
@@ -482,6 +485,24 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 	g_free(recoded);
 }
 
+static void cap_maxline(IRC_SERVER_REC *server)
+{
+	unsigned int maxline = 0;
+	gboolean parse_successful = FALSE;
+	const char *maxline_str;
+
+	maxline_str = g_hash_table_lookup(server->cap_supported, CAP_MAXLINE);
+	if (maxline_str != NULL) {
+		parse_successful = parse_uint(maxline_str, NULL, 10, &maxline);
+
+	}
+
+	if (parse_successful &&
+	    maxline >= MAX_IRC_MESSAGE_LEN + 2 /* 2 bytes for CR+LF */) {
+		server->max_message_len = maxline - 2;
+	}
+}
+
 void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const char *data)
 {
 	char *recoded;
@@ -499,7 +520,7 @@ char **irc_server_split_action(IRC_SERVER_REC *server, const char *target,
 	g_return_val_if_fail(data != NULL, NULL);
 
 	return split_line(SERVER(server), data, target,
-			  MAX_IRC_MESSAGE_LEN - strlen(":! PRIVMSG  :\001ACTION \001") -
+			  server->max_message_len - strlen(":! PRIVMSG  :\001ACTION \001") -
 			  strlen(server->nick) - MAX_USERHOST_LEN -
 			  strlen(target));
 }
@@ -1036,6 +1057,7 @@ void irc_servers_init(void)
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add_last("server destroyed", (SIGNAL_FUNC) sig_destroyed);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
+	signal_add("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_add("event 005", (SIGNAL_FUNC) event_isupport);
@@ -1063,6 +1085,7 @@ void irc_servers_deinit(void)
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_remove("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
+	signal_remove("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_remove("event 005", (SIGNAL_FUNC) event_isupport);
