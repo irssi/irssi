@@ -169,7 +169,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 				 * duplicated values, let's just warn the user */
 				g_warning("The server sent the %s capability twice", key);
 			}
-			g_hash_table_insert(server->cap_supported, key, val);
+			g_hash_table_replace(server->cap_supported, key, val);
 		}
 
 		/* A multiline response is always terminated by a normal one,
@@ -252,7 +252,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 				continue;
 			}
 
-			g_hash_table_insert(server->cap_supported, key, val);
+			g_hash_table_replace(server->cap_supported, key, val);
 			cap_emit_signal(server, "new", key);
 		}
 	}
