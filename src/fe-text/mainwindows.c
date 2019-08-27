@@ -829,7 +829,7 @@ void mainwindows_resize(int width, int height)
 	}
 
 	/* if we lost our active mainwin, get a new one */
-	if (active_mainwin == NULL && !quitting) {
+	if (active_mainwin == NULL && active_win != NULL && !quitting) {
 		active_mainwin = WINDOW_MAIN(active_win);
 		window_set_active(active_mainwin->active);
 	}
