@@ -1,0 +1,21 @@
+on: [push]
+name: Check Irssi
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: install
+      uses: irssi-import/actions-irssi/check-irssi@master
+      with:
+        args: before_install install
+    - name: unit_tests
+      uses: irssi-import/actions-irssi/check-irssi@master
+      with:
+        args: unit_tests after_unit_tests
+    - name: script
+      uses: irssi-import/actions-irssi/check-irssi@master
+      env:
+        TERM: xterm
+      with:
+        args: before_script script after_script
