@@ -1,3 +1,9 @@
+v1.2.2 2019-08-29 The Irssi team <staff@irssi.org>
+	- Fix a use after free issue when receiving IRCv3 CAP
+          information from the server (GL#34)
+	- Fix a crash during startup when windows weren't fully
+          initialised yet (#1114, bdo#935813)
+
 v1.2.1 2019-06-29 The Irssi team <staff@irssi.org>
 	! Contains all changes from 1.1.3
 	- Fix a test on big endian machines (#1014)
