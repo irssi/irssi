@@ -115,6 +115,7 @@ void test_server() {
 	conn = server_create_conn(proto->id, "localhost", 0, "", "", "user");
 	server = proto->server_init_connect(conn);
 	server->session_reconnect = TRUE;
+	g_free(server->tag);
 	server->tag = g_strdup("testserver");
 
 	/* we skip some initialisations that would try to send data */
@@ -176,6 +177,6 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
 	g_strfreev(head);
 	g_free(copy);
-	server_unref(server);
+	server_disconnect(server);
 	return 0;
 }
