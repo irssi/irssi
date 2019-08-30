@@ -41,7 +41,10 @@ with_perl_lib       = get_option('with-perl-lib')
 require_otr         = get_option('with-otr') == 'yes'
 want_otr            = get_option('with-otr') != 'no'
 
-want_glib_internal  = get_option('install-glib') == 'yes'
+want_glib_internal  = get_option('install-glib') != 'no'
+require_glib_internal = get_option('install-glib') == 'force'
+
+want_static_dependency = get_option('static-dependency') == 'yes'
 
 chat_modules = ['irc']
 
@@ -149,7 +152,11 @@ message('*** to download and build it automatically')
 message('*** Or alternatively install your distribution\'s package')
 message('*** On Debian: sudo apt-get install libglib2.0-dev')
 message('*** On Redhat: dnf install glib2-devel')
-glib_dep = dependency('glib-2.0', version : '>=2.28', required : not want_glib_internal)
+if not require_glib_internal
+  glib_dep = dependency('glib-2.0', version : '>=2.28', required : not want_glib_internal, static : want_static_dependency)
+else
+  glib_dep = dependency('', required : false)
+endif
 if not glib_dep.found()
   glib_internal = true
   meson_cmd = find_program('meson')
@@ -200,12 +207,12 @@ if not glib_dep.found()
     link_args : [ meson.current_build_dir() / 'build-subprojects' / 'glib' / 'gmodule' / 'libgmodule-2.0.a' ],
   )
 else
-  gmodule_dep = dependency('gmodule-2.0')
+  gmodule_dep = dependency('gmodule-2.0', static : want_static_dependency)
 endif
 dep += glib_dep
 dep += gmodule_dep
 
-openssl_dep = dependency('openssl')
+openssl_dep = dependency('openssl', static : want_static_dependency)
 dep += openssl_dep
 
 ############
@@ -365,8 +372,8 @@ endif
 
 have_otr = false
 if want_otr
-  libgcrypt = dependency('libgcrypt', version : '>=1.2.0', required : require_otr)
-  libotr = dependency('libotr', version : '>=4.1.0', required : require_otr)
+  libgcrypt = dependency('libgcrypt', version : '>=1.2.0', required : require_otr, static : want_static_dependency)
+  libotr = dependency('libotr', version : '>=4.1.0', required : require_otr, static : want_static_dependency)
   if libgcrypt.found() and libotr.found()
     dep += libgcrypt
     dep += libotr

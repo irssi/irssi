@@ -10,5 +10,6 @@ option('enable-true-color', type : 'combo',  description : 'Build with true colo
 option('disable-gregex',    type : 'combo',  description : 'Build without GRegex (fall back to regex.h)', choices : ['no', 'yes'])
 option('disable-utf8proc',  type : 'combo',  description : 'Build without Julia\'s utf8proc',             choices : ['auto', 'yes', 'no'])
 option('with-capsicum',     type : 'combo',  description : 'Build with Capsicum support',                 choices : ['auto', 'yes', 'no'])
-option('install-glib',      type : 'combo',  description : 'Download and install GLib for you',           choices : ['no', 'yes'])
+option('static-dependency', type : 'combo',  description : 'Request static dependencies',                 choices : ['no', 'yes'])
+option('install-glib',      type : 'combo',  description : 'Download and install GLib for you',           choices : ['no', 'yes', 'force'])
 option('docdir',            type : 'string', description : 'Documentation directory')
