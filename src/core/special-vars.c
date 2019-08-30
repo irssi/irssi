@@ -33,7 +33,11 @@
 #define isarg(c) \
 	(i_isdigit(c) || (c) == '*' || (c) == '~' || (c) == '-')
 
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION /* fuzzer should not exhaust memory here */
+#define ALIGN_MAX 512
+#else
 #define ALIGN_MAX 222488
+#endif
 
 static SPECIAL_HISTORY_FUNC history_func = NULL;
 
