@@ -29,6 +29,8 @@
 #include <irssi/src/fe-common/core/printtext.h>
 #include <irssi/src/core/misc.h>
 #include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/net-sendbuffer.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -98,6 +100,7 @@ void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 }
 
 void irc_server_init_bare_minimum(IRC_SERVER_REC *server) {
+	server->rawlog = rawlog_create();
 	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
 					    (GCompareFunc) g_istr_equal);
 
@@ -110,6 +113,9 @@ void test_server() {
 	//SERVER_REC *server; /* = g_new0(IRC_SERVER_REC, 1); */
 	CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
+	GIOChannel *handle = g_io_channel_unix_new(open("/dev/null", O_RDWR));
+	g_io_channel_set_encoding(handle, NULL, NULL);
+	g_io_channel_set_close_on_unref(handle, TRUE);
 
 	proto = chat_protocol_find("IRC");
 	conn = server_create_conn(proto->id, "localhost", 0, "", "", "user");
@@ -117,6 +123,7 @@ void test_server() {
 	server->session_reconnect = TRUE;
 	g_free(server->tag);
 	server->tag = g_strdup("testserver");
+	server->handle = net_sendbuffer_create(handle, 0);
 
 	/* we skip some initialisations that would try to send data */
 	/* irc_servers_deinit(); */
@@ -147,6 +154,7 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 	fe_common_irc_init();
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	module_register("core", "fe-fuzz");
+	rawlog_set_size(1);
 	return 0;
 }
 
