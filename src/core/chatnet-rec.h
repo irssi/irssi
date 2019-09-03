@@ -9,4 +9,5 @@ char *realname;
 
 char *own_host; /* address to use when connecting this server */
 char *autosendcmd; /* command to send after connecting to this ircnet */
+char *identifycmd; /* command to use for identifying to this ircnet */
 IPADDR *own_ip4, *own_ip6; /* resolved own_address if not NULL */

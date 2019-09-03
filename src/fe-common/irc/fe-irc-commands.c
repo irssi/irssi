@@ -27,6 +27,7 @@
 
 #include <irssi/src/core/levels.h>
 #include <irssi/src/core/servers.h>
+#include <irssi/src/core/chatnets.h>
 #include <irssi/src/irc/core/mode-lists.h>
 #include <irssi/src/core/nicklist.h>
 #include <irssi/src/irc/core/irc-commands.h>
@@ -393,6 +394,53 @@ static void cmd_oper(const char *data, IRC_SERVER_REC *server)
 	cmd_params_free(free_arg);
 }
 
+static void identify_with_pass(const char *password, SERVER_REC *server_rec)
+{
+	if (*password != '\0' && IS_IRC_SERVER(server_rec)) {
+		char *identify_cmd = "PRIVMSG NickServ IDENTIFY %s";
+		CHATNET_REC *chatnet_rec = NULL;
+
+		if (server_rec->connrec->chatnet)
+			chatnet_rec = chatnet_find(server_rec->connrec->chatnet);
+		if (chatnet_rec && chatnet_rec->identifycmd)
+			identify_cmd = chatnet_rec->identifycmd;
+		irc_send_cmdv((IRC_SERVER_REC *) server_rec, identify_cmd, password);
+	}
+}
+
+static void cmd_identify_got_pass(const char *password, char *server_tag)
+{
+	identify_with_pass(password, server_find_tag(server_tag));
+	g_free(server_tag);
+}
+
+/* SYNTAX: IDENTIFY <password> */
+static void cmd_identify(const char *data, IRC_SERVER_REC *server)
+{
+	char *password, *format;
+	void *free_arg;
+
+	g_return_if_fail(data != NULL);
+	if (!IS_IRC_SERVER(server) || !server->connected)
+		cmd_return_error(CMDERR_NOT_CONNECTED);
+
+	if (!cmd_get_params(data, &free_arg, 1, &password))
+		return;
+	if (*password == '\0') {
+		format = format_get_text(MODULE_NAME, NULL, server, NULL,
+					 IRCTXT_ASK_USER_PASS);
+		keyboard_entry_redirect((SIGNAL_FUNC) cmd_identify_got_pass,
+					format,
+					ENTRY_REDIRECT_FLAG_HIDDEN, g_strdup(server->tag));
+                g_free(format);
+		signal_stop();
+	} else {
+		identify_with_pass(password, (SERVER_REC*) server);
+	}
+
+	cmd_params_free(free_arg);
+}
+
 /* SYNTAX: SETHOST <host> <password> (non-ircops)
            SETHOST <ident> <host> (ircops) */
 static void cmd_sethost(const char *data, IRC_SERVER_REC *server)
@@ -428,6 +476,7 @@ void fe_irc_commands_init(void)
 	command_bind_irc("topic", NULL, (SIGNAL_FUNC) cmd_topic);
 	command_bind_irc("ts", NULL, (SIGNAL_FUNC) cmd_ts);
 	command_bind_irc("oper", NULL, (SIGNAL_FUNC) cmd_oper);
+	command_bind_irc("identify", NULL, (SIGNAL_FUNC) cmd_identify);
 	command_bind_irc("sethost", NULL, (SIGNAL_FUNC) cmd_sethost);
 }
 

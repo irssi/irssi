@@ -58,6 +58,8 @@ static void cmd_network_list(void)
 			g_string_append_printf(str, "host: %s, ", rec->own_host);
 		if (rec->autosendcmd != NULL)
 			g_string_append_printf(str, "autosendcmd: %s, ", rec->autosendcmd);
+		if (rec->identifycmd != NULL)
+			g_string_append_printf(str, "identifycmd: %s, ", rec->identifycmd);
 		if (rec->usermode != NULL)
 			g_string_append_printf(str, "usermode: %s, ", rec->usermode);
 		if (rec->sasl_mechanism != NULL)
@@ -125,6 +127,7 @@ static void cmd_network_add_modify(const char *data, gboolean add)
 		}
 		if (g_hash_table_lookup(optlist, "usermode")) g_free_and_null(rec->usermode);
 		if (g_hash_table_lookup(optlist, "autosendcmd")) g_free_and_null(rec->autosendcmd);
+		if (g_hash_table_lookup(optlist, "identifycmd")) g_free_and_null(rec->identifycmd);
 		if (g_hash_table_lookup(optlist, "sasl_mechanism")) g_free_and_null(rec->sasl_mechanism);
 		if (g_hash_table_lookup(optlist, "sasl_username")) g_free_and_null(rec->sasl_username);
 		if (g_hash_table_lookup(optlist, "sasl_password")) g_free_and_null(rec->sasl_password);
@@ -165,6 +168,8 @@ static void cmd_network_add_modify(const char *data, gboolean add)
 	if (value != NULL && *value != '\0') rec->usermode = g_strdup(value);
 	value = g_hash_table_lookup(optlist, "autosendcmd");
 	if (value != NULL && *value != '\0') rec->autosendcmd = g_strdup(value);
+	value = g_hash_table_lookup(optlist, "identifycmd");
+	if (value != NULL && *value != '\0') rec->identifycmd = g_strdup(value);
 
 	/* the validity of the parameters is checked in sig_server_setup_fill_chatnet */
 	value = g_hash_table_lookup(optlist, "sasl_mechanism");
@@ -186,7 +191,7 @@ static void cmd_network_add_modify(const char *data, gboolean add)
                               [-kicks <count>] [-modes <count>] [-cmdspeed <ms>]
                               [-cmdmax <count>] [-sasl_mechanism <mechanism>]
                               [-sasl_username <username>] [-sasl_password <password>]
-                              <name> */
+                              [-identifycmd <cmd>] <name> */
 static void cmd_network_add(const char *data)
 {
 	cmd_network_add_modify(data, TRUE);
@@ -233,9 +238,9 @@ void fe_ircnet_init(void)
 	command_bind("network remove", NULL, (SIGNAL_FUNC) cmd_network_remove);
 
 	command_set_options("network add", "-kicks -msgs -modes -whois -cmdspeed "
-			    "-cmdmax -nick -alternate_nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
+			    "-cmdmax -nick -alternate_nick -user -realname -host -autosendcmd -identifycmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
 	command_set_options("network modify", "-kicks -msgs -modes -whois -cmdspeed "
-			    "-cmdmax -nick -alternate_nick -user -realname -host -autosendcmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
+			    "-cmdmax -nick -alternate_nick -user -realname -host -autosendcmd -identifycmd -querychans -usermode -sasl_mechanism -sasl_username -sasl_password");
 }
 
 void fe_ircnet_deinit(void)

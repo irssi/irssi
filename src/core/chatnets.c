@@ -45,6 +45,7 @@ static void chatnet_config_save(CHATNET_REC *chatnet)
 	iconfig_node_set_str(node, "realname", chatnet->realname);
 	iconfig_node_set_str(node, "host", chatnet->own_host);
 	iconfig_node_set_str(node, "autosendcmd", chatnet->autosendcmd);
+	iconfig_node_set_str(node, "identifycmd", chatnet->identifycmd);
 
         signal_emit("chatnet saved", 2, chatnet, node);
 }
@@ -91,6 +92,7 @@ void chatnet_destroy(CHATNET_REC *chatnet)
 	g_free_not_null(chatnet->realname);
 	g_free_not_null(chatnet->own_host);
 	g_free_not_null(chatnet->autosendcmd);
+	g_free_not_null(chatnet->identifycmd);
 	g_free(chatnet->name);
 	g_free(chatnet);
 }
@@ -154,6 +156,7 @@ static void chatnet_read(CONFIG_NODE *node)
 	rec->realname = g_strdup(config_node_get_str(node, "realname", NULL));
 	rec->own_host = g_strdup(config_node_get_str(node, "host", NULL));
 	rec->autosendcmd = g_strdup(config_node_get_str(node, "autosendcmd", NULL));
+	rec->identifycmd = g_strdup(config_node_get_str(node, "identifycmd", NULL));
 
 	chatnets = g_slist_append(chatnets, rec);
         signal_emit("chatnet read", 2, rec, node);
