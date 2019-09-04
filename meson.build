@@ -24,6 +24,7 @@ want_textui         = get_option('without-textui') != 'yes'
 want_bot            = get_option('with-bot') == 'yes'
 want_fuzzer         = get_option('with-fuzzer') == 'yes'
 fuzzer_lib          = get_option('with-fuzzer-lib')
+fuzzer_link_language = get_option('fuzzer-link-language')
 want_proxy          = get_option('with-proxy') == 'yes'
 want_truecolor      = get_option('enable-true-color') == 'yes'
 want_gregex         = get_option('disable-gregex') != 'yes'
@@ -459,7 +460,10 @@ if want_fuzzer
     error('compiler does not support -fsanitize=fuzzer-no-link, try clang?')
   endif
   add_project_arguments('-fsanitize=fuzzer-no-link', language : 'c')
-  add_project_link_arguments('-fsanitize=fuzzer-no-link', language : 'c')
+  if (fuzzer_link_language != 'c')
+    add_languages(fuzzer_link_language)
+  endif
+  add_project_link_arguments('-fsanitize=fuzzer-no-link', language : fuzzer_link_language)
 endif
 
 ##############
