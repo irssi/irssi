@@ -25,6 +25,7 @@
 #define CAP_AWAY_NOTIFY "away-notify"
 #define CAP_CHGHOST "chghost"
 #define CAP_ACCOUNT_NOTIFY "account-notify"
+#define CAP_SELF_MESSAGE "znc.in/self-message"
 
 /* returns IRC_SERVER_REC if it's IRC server, NULL if it isn't */
 #define IRC_SERVER(server) \
