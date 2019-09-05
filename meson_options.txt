@@ -2,6 +2,7 @@ option('without-textui',    type : 'combo',  description : 'Build without text f
 option('with-bot',          type : 'combo',  description : 'Build irssi-bot',                         	  choices : ['no', 'yes'])
 option('with-fuzzer',       type : 'combo',  description : 'Build irssi-fuzzer',                      	  choices : ['no', 'yes'])
 option('with-fuzzer-lib',   type : 'string', description : 'Specify path to fuzzer library', value : '-fsanitize=fuzzer')
+option('fuzzer-link-language', type : 'string', description : 'The linker to use for the fuzz targets [c, cpp]', value : 'c')
 option('with-proxy',        type : 'combo',  description : 'Build irssi-proxy',                       	  choices : ['no', 'yes'])
 option('with-perl-lib',     type : 'string', description : 'Specify where to install the Perl libraries for Irssi')
 option('with-perl',         type : 'combo',  description : 'Build with Perl support',                     choices : ['auto', 'yes', 'no'])
