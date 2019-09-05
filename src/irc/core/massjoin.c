@@ -54,8 +54,10 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 
 	/* find channel */
 	chanrec = irc_channel_find(server, channel);
-	g_free(params);
-	if (chanrec == NULL) return;
+	if (chanrec == NULL) {
+		g_free(params);
+		return;
+	}
 
 	/* check that the nick isn't already in nicklist. seems to happen
 	   sometimes (server desyncs or something?) */
@@ -103,6 +105,7 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	}
 
 	chanrec->massjoins++;
+	g_free(params);
 }
 
 static void event_chghost(IRC_SERVER_REC *server, const char *data,
