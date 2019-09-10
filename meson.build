@@ -456,14 +456,15 @@ if get_option('buildtype').contains('debug')
 endif
 
 if want_fuzzer
-  if not cc.has_argument('-fsanitize=fuzzer-no-link')
-    error('compiler does not support -fsanitize=fuzzer-no-link, try clang?')
+  if fuzzer_lib.startswith('-fsanitize=fuzzer')
+    if not cc.has_argument('-fsanitize=fuzzer-no-link')
+      error('compiler does not support -fsanitize=fuzzer-no-link, try clang?')
+    endif
+    add_project_arguments('-fsanitize=fuzzer-no-link', language : 'c')
   endif
-  add_project_arguments('-fsanitize=fuzzer-no-link', language : 'c')
-  if (fuzzer_link_language != 'c')
+  if fuzzer_link_language != 'c'
     add_languages(fuzzer_link_language)
   endif
-  add_project_link_arguments('-fsanitize=fuzzer-no-link', language : fuzzer_link_language)
 endif
 
 ##############
