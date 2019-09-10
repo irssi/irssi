@@ -29,6 +29,7 @@
 #include <irssi/src/fe-common/core/printtext.h>
 #include <irssi/src/irc/core/irc.h>
 #include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-fuzz/null-logger.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -38,6 +39,9 @@
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
 	char *irssi_argv[] = {*argv[0], "--home", "/tmp/irssi", NULL};
 	int irssi_argc = sizeof(irssi_argv) / sizeof(char *) - 1;
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+	g_log_set_null_logger();
+#endif
 	core_register_options();
 	fe_common_core_register_options();
 	args_execute(irssi_argc, irssi_argv);

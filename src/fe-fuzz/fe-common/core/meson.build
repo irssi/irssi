@@ -1,6 +1,7 @@
 # this file is part of irssi
 executable('theme-load-fuzz',
   files(
+    '../../null-logger.c',
     'theme-load.c',
     '../../../fe-text/module-formats.c',
   ),

@@ -17,6 +17,7 @@ irssi_fuzz_LDADD = \
 
 irssi_fuzz_SOURCES = \
         irssi.c \
+        null-logger.c \
 	../fe-text/module-formats.c
 
 server_fuzz_DEPENDENCIES = @COMMON_LIBS@
@@ -28,7 +29,9 @@ server_fuzz_LDADD = \
 
 server_fuzz_SOURCES = \
 	server.c \
+        null-logger.c \
 	../fe-text/module-formats.c
 
 noinst_HEADERS = \
+        null-logger.h \
 	../fe-text/module-formats.h

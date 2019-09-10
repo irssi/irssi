@@ -22,6 +22,7 @@ LDADD = \
 	$(FUZZER_LIBS)
 
 theme_load_fuzz_SOURCES = \
+        ../../null-logger.c \
         theme-load.c \
 	$(top_srcdir)/src/fe-text/module-formats.c
 
