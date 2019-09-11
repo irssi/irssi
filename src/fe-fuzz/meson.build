@@ -5,6 +5,7 @@ subdir('fe-common')
 
 executable('irssi-fuzz',
   files(
+    'null-logger.c',
     'irssi.c',
     '../fe-text/module-formats.c',
   ),
@@ -23,6 +24,7 @@ executable('irssi-fuzz',
 
 executable('server-fuzz',
   files(
+    'null-logger.c',
     'server.c',
     '../fe-text/module-formats.c',
   ),
@@ -44,5 +46,6 @@ executable('server-fuzz',
 )
 
 # noinst_headers = files(
+#   'null-logger.h',
 #   '../fe-text/module-formats.h',
 # )

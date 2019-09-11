@@ -2,6 +2,7 @@
 
 executable('event-get-params-fuzz',
   files(
+    '../../null-logger.c',
     'event-get-params.c',
     '../../../fe-text/module-formats.c',
   ),

@@ -22,6 +22,7 @@ LDADD = \
 	$(FUZZER_LIBS)
 
 event_get_params_fuzz_SOURCES = \
+        ../../null-logger.c \
         event-get-params.c \
 	$(top_srcdir)/src/fe-text/module-formats.c
 

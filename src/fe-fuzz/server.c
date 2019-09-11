@@ -41,6 +41,7 @@
 #include <irssi/src/irc/core/irc.h>
 #include <irssi/src/irc/core/irc-servers.h>
 #include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/fe-fuzz/null-logger.h>
 
 /* irc.c */
 void irc_init(void);
@@ -143,6 +144,9 @@ void test_server() {
 }
 
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+	g_log_set_null_logger();
+#endif
 	core_register_options();
 	fe_common_core_register_options();
 	/* no args */
