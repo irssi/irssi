@@ -270,11 +270,6 @@ char *gslist_to_string(GSList *list, const char *delimiter)
 	return ret;
 }
 
-void hash_save_key(char *key, void *value, GSList **list)
-{
-        *list = g_slist_append(*list, key);
-}
-
 /* remove all the options from the optlist hash table that are valid for the
  * command cmd */
 GList *optlist_remove_known(const char *cmd, GHashTable *optlist)
