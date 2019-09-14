@@ -50,7 +50,7 @@ int match_wildcards(const char *mask, const char *data);
 
 /* octal <-> decimal conversions */
 int octal2dec(int octal);
-int dec2octal(int decimal);
+int dec2octal(int decimal) G_GNUC_DEPRECATED;
 
 /* Get time in human readable form with localtime() + asctime() */
 char *my_asctime(time_t t);
