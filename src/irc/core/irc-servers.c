@@ -457,7 +457,7 @@ static void sig_destroyed(IRC_SERVER_REC *server)
 	server->cap_queue = NULL;
 
 	/* was g_free_and_null, but can't use on a GString */
-	g_string_free(server->sasl_buffer);
+	g_string_free(server->sasl_buffer, TRUE);
 	server->sasl_buffer = NULL;
 
 	/* these are dynamically allocated only if isupport was sent */
