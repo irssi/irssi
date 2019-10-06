@@ -120,6 +120,7 @@ static void nicklist_destroy(CHANNEL_REC *channel, NICK_REC *nick)
 	g_free(nick->nick);
 	g_free_not_null(nick->realname);
 	g_free_not_null(nick->host);
+	g_free(nick->account);
 	g_free(nick);
 }
 
