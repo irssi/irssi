@@ -159,11 +159,11 @@ static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
 
 	sserver->last_connect = time(NULL);
 
-        if (sserver->no_proxy)
+	if (sserver->no_proxy)
 		g_free_and_null(conn->proxy);
 
 	if (sserver->family != 0 && conn->family == 0)
-                conn->family = sserver->family;
+		conn->family = sserver->family;
 	if (sserver->port > 0 && conn->port <= 0)
 		conn->port = sserver->port;
 
