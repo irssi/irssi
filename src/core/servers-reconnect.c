@@ -185,6 +185,16 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 		dest->address = g_strdup(src->address);
 		dest->port = src->port;
 		dest->password = g_strdup(src->password);
+
+		dest->use_tls = src->use_tls;
+		dest->tls_cert = g_strdup(src->tls_cert);
+		dest->tls_pkey = g_strdup(src->tls_pkey);
+		dest->tls_verify = src->tls_verify;
+		dest->tls_cafile = g_strdup(src->tls_cafile);
+		dest->tls_capath = g_strdup(src->tls_capath);
+		dest->tls_ciphers = g_strdup(src->tls_ciphers);
+		dest->tls_pinned_cert = g_strdup(src->tls_pinned_cert);
+		dest->tls_pinned_pubkey = g_strdup(src->tls_pinned_pubkey);
 	}
 
 	dest->chatnet = g_strdup(src->chatnet);
@@ -206,16 +216,6 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 	dest->no_autojoin_channels = src->no_autojoin_channels;
 	dest->no_autosendcmd = src->no_autosendcmd;
 	dest->unix_socket = src->unix_socket;
-
-	dest->use_tls = src->use_tls;
-	dest->tls_cert = g_strdup(src->tls_cert);
-	dest->tls_pkey = g_strdup(src->tls_pkey);
-	dest->tls_verify = src->tls_verify;
-	dest->tls_cafile = g_strdup(src->tls_cafile);
-	dest->tls_capath = g_strdup(src->tls_capath);
-	dest->tls_ciphers = g_strdup(src->tls_ciphers);
-	dest->tls_pinned_cert = g_strdup(src->tls_pinned_cert);
-	dest->tls_pinned_pubkey = g_strdup(src->tls_pinned_pubkey);
 
 	return dest;
 }
