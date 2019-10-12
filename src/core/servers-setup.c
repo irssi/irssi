@@ -108,6 +108,16 @@ void server_setup_fill_reconn(SERVER_CONNECT_REC *conn,
 	if (sserver->password != NULL && conn->password == NULL)
 		conn->password = g_strdup(sserver->password);
 
+	if (sserver->no_proxy)
+		g_free_and_null(conn->proxy);
+
+	if (sserver->family != 0 && conn->family == 0)
+		conn->family = sserver->family;
+	if (sserver->address && !conn->address)
+		conn->address = g_strdup(sserver->address);
+	if (sserver->port > 0 && conn->port <= 0)
+		conn->port = sserver->port;
+
 	conn->use_tls = sserver->use_tls;
 	if (conn->tls_cert == NULL && sserver->tls_cert != NULL && sserver->tls_cert[0] != '\0')
 		conn->tls_cert = g_strdup(sserver->tls_cert);
@@ -177,14 +187,6 @@ static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
 	g_return_if_fail(IS_SERVER_SETUP(sserver));
 
 	sserver->last_connect = time(NULL);
-
-	if (sserver->no_proxy)
-		g_free_and_null(conn->proxy);
-
-	if (sserver->family != 0 && conn->family == 0)
-		conn->family = sserver->family;
-	if (sserver->port > 0 && conn->port <= 0)
-		conn->port = sserver->port;
 
 	server_setup_fill_reconn(conn, sserver);
 

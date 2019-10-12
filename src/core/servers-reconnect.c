@@ -151,10 +151,6 @@ static int server_reconnect_timeout(void)
 
 static void sserver_connect(SERVER_SETUP_REC *rec, SERVER_CONNECT_REC *conn)
 {
-        conn->family = rec->family;
-	conn->address = g_strdup(rec->address);
-	if (conn->port == 0) conn->port = rec->port;
-
 	server_setup_fill_reconn(conn, rec);
 	server_reconnect_add(conn, rec->last_connect+reconnect_time);
 	server_connect_unref(conn);
