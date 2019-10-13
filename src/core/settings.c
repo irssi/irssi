@@ -566,6 +566,12 @@ static int backwards_compatibility(const char *module, CONFIG_NODE *node,
 			return TRUE;
 		}
 	}
+	if (g_strcmp0(module, "core") == 0 &&
+			g_strcmp0(node->key, "resolve_reverse_lookup") == 0) {
+		config_node_set_str(mainconfig, parent, node->key, NULL);
+		config_changed = TRUE;
+		return TRUE;
+	}
 	return new_key != NULL;
 }
 
