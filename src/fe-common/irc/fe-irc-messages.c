@@ -35,6 +35,7 @@
 #include <irssi/src/fe-common/core/fe-messages.h>
 
 #include <irssi/src/fe-common/core/fe-queries.h>
+#include <irssi/src/fe-common/core/hilight-text.h>
 #include <irssi/src/fe-common/core/window-items.h>
 #include <irssi/src/fe-common/irc/fe-irc-channels.h>
 #include <irssi/src/fe-common/irc/fe-irc-server.h>
@@ -66,13 +67,18 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 
 }
 
-/* received msg to all ops in channel */
+/* received msg to all ops in channel.
+   TODO: this code is a duplication of sig_message_public */
 static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 				      const char *nick, const char *address,
 				      const char *target)
 {
-	char *nickmode, *optarget, *prefix;
+	CHANNEL_REC *chanrec;
+	char *nickmode, *optarget, *prefix, *color, *freemsg = NULL;
 	const char *cleantarget;
+	int for_me, level;
+	HILIGHT_REC *hilight;
+	TEXT_DEST_REC dest;
 
 	/* only skip here so the difference can be stored in prefix */
 	cleantarget = fe_channel_skip_prefix(IRC_SERVER(server), target);
@@ -81,16 +87,50 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 	/* and clean the rest here */
 	cleantarget = get_visible_target(IRC_SERVER(server), cleantarget);
 
-	nickmode = channel_get_nickmode(channel_find(server, cleantarget),
-					nick);
+	if (ignore_check_plus(server, nick, address, cleantarget, msg, &level, TRUE)) {
+		g_free(prefix);
+		return;
+	}
+
+	chanrec = channel_find(server, cleantarget);
+
+	nickmode = channel_get_nickmode(chanrec, nick);
 
 	optarget = g_strconcat(prefix, cleantarget, NULL);
 
-	printformat_module("fe-common/core", server, cleantarget,
-			   MSGLEVEL_PUBLIC,
-			   TXT_PUBMSG_CHANNEL,
-			   nick, optarget, msg, nickmode);
+	/* Check for hilights */
+	for_me = !settings_get_bool("hilight_nick_matches") ? FALSE :
+		!settings_get_bool("hilight_nick_matches_everywhere") ?
+		nick_match_msg(chanrec, msg, server->nick) :
+		nick_match_msg_everywhere(chanrec, msg, server->nick);
+	hilight = for_me ? NULL :
+		hilight_match_nick(server, cleantarget, nick, address, MSGLEVEL_PUBLIC, msg);
+	color = (hilight == NULL) ? NULL : hilight_get_color(hilight);
+
+	level = MSGLEVEL_PUBLIC;
+	if (for_me)
+		level |= MSGLEVEL_HILIGHT;
+
+	if (settings_get_bool("emphasis"))
+		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
+
+	if (color != NULL) {
+		format_create_dest(&dest, server, cleantarget, level, NULL);
+		dest.address = address;
+		dest.nick = nick;
+		hilight_update_text_dest(&dest,hilight);
+		printformat_module_dest("fe-common/core", &dest,
+			TXT_PUBMSG_HILIGHT_CHANNEL,
+			color, nick, optarget, msg, nickmode);
+	} else {
+		printformat_module("fe-common/core", server, cleantarget, level,
+			for_me ? TXT_PUBMSG_ME_CHANNEL : TXT_PUBMSG_CHANNEL,
+			nick, optarget, msg, nickmode);
+	}
+
 	g_free(nickmode);
+	g_free(freemsg);
+	g_free(color);
 	g_free(optarget);
 	g_free(prefix);
 }
