@@ -1205,14 +1205,14 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		LINE_REC *prevline;
 
 		prevline = view->buffer->first_line == line ? NULL :
-			textbuffer_line_last(view->buffer);
+			textbuffer_line_last(view->buffer)->prev;
 		view->cache->last_linecount = prevline == NULL ? 0 :
 			view_get_linecount(view, prevline);
 	}
 
+	/* first line in the buffer - this is the most commonly
+	   removed line.. */
 	if (view->buffer->first_line == line) {
-		/* first line in the buffer - this is the most commonly
-		   removed line.. */
 		if (view->bottom_startline == line) {
 			/* very small scrollback.. */
                         view->bottom_startline = view->bottom_startline->next;
@@ -1289,6 +1289,11 @@ void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 	}
 
 	textbuffer_remove(view->buffer, line);
+	if (view->bottom_startline == NULL) {
+		/* We may have removed the bottom_startline, make sure
+		   that scroll doesn't get stuck */
+		textbuffer_view_init_bottom(view);
+	}
 }
 
 void textbuffer_view_remove_lines_by_level(TEXT_BUFFER_VIEW_REC *view, int level)
