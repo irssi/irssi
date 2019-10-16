@@ -407,7 +407,7 @@ int server_start_connect(SERVER_REC *server)
 			server->connrec->proxy : server->connrec->address;
 		server->connect_pid =
 			net_gethostbyname_nonblock(connect_address,
-						   server->connect_pipe[1]);
+						   server->connect_pipe[1], 0);
 		server->connect_tag =
 			g_input_add(server->connect_pipe[0], G_INPUT_READ,
 				    (GInputFunction)

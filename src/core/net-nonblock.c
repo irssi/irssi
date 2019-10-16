@@ -27,11 +27,13 @@
 
 /* nonblocking gethostbyname(), ip (IPADDR) + error (int, 0 = not error) is
    written to pipe when found PID of the resolver child is returned */
-int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe)
+int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe, int reverse_lookup)
 {
 	RESOLVED_IP_REC rec;
 	const char *errorstr;
 	int pid;
+
+	(void) reverse_lookup; /* Kept for API backward compatibility */
 
 	g_return_val_if_fail(addr != NULL, FALSE);
 
