@@ -173,19 +173,24 @@ int combine_level(int dest, const char *src)
 
 	g_return_val_if_fail(src != NULL, dest);
 
-	list = g_strsplit(src, " ", -1);
-	for (item = list; *item != NULL; item++) {
-		itemname = *item + (**item == '+' || **item == '-' ? 1 : 0);
-		itemlevel = level_get(itemname);
-
-		if (g_strcmp0(itemname, "NONE") == 0)
-                        dest = 0;
-		else if (**item == '-')
-			dest &= ~(itemlevel);
-		else
-			dest |= itemlevel;
+	if (index(src, '+') == NULL && index(src, '-') == NULL) {
+		dest = level2bits(src, NULL);
 	}
-	g_strfreev(list);
+	else {
+		list = g_strsplit(src, " ", -1);
+		for (item = list; *item != NULL; item++) {
+			itemname = *item + (**item == '+' || **item == '-' ? 1 : 0);
+			itemlevel = level_get(itemname);
+
+			if (g_strcmp0(itemname, "NONE") == 0)
+                	        dest = 0;
+			else if (**item == '-')
+				dest &= ~(itemlevel);
+			else
+				dest |= itemlevel;
+		}
+		g_strfreev(list);
+	}
 
 	return dest;
 }
