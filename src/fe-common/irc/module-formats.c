@@ -98,7 +98,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "no_such_nick", "{nick $0}: No such nick/channel", 1, { 0 } },
 	{ "nick_in_use", "Nick {nick $0} is already in use", 1, { 0 } },
 	{ "nick_unavailable", "Nick {nick $0} is temporarily unavailable", 1, { 0 } },
-        { "your_nick_owned", "Your nick is owned by {nick $3} {comment $1@$2}", 4, { 0, 0, 0, 0 } },
+        { "your_nick_owned", "Your nick is in use by {nick $3} {comment $1@$2}", 4, { 0, 0, 0, 0 } },
 
 	/* ---- */
 	{ NULL, "Who queries", 0 },
