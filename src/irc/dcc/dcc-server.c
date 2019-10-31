@@ -261,7 +261,7 @@ static void dcc_server_msg(SERVER_DCC_REC *dcc, const char *msg)
 			if (len > 1 && *fname == '"' && fname[len-1] == '"') {
 				/* "file name" - MIRC sends filenames with spaces like this */
 				fname[len-1] = '\0';
-				g_memmove(fname, fname+1, len);
+				memmove(fname, fname+1, len);
 				quoted = TRUE;
 			}
 

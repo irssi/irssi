@@ -600,7 +600,7 @@ static void print_event_received(IRC_SERVER_REC *server, const char *data,
 		args = g_strdup(ptr);
 		ptr = strstr(args, " :");
 		if (ptr != NULL)
-			g_memmove(ptr+1, ptr+2, strlen(ptr+1));
+			memmove(ptr+1, ptr+2, strlen(ptr+1));
 	}
 
 	recoded = recode_in(SERVER(server), args, NULL);

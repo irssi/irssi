@@ -477,8 +477,8 @@ static void ctcp_msg_dcc_send(IRC_SERVER_REC *server, const char *data,
 	if (len > 1 && *fname == '"' && fname[len-1] == '"') {
 		/* "file name" - MIRC sends filenames with spaces like this */
 		fname[len-1] = '\0';
-		g_memmove(fname, fname+1, len);
-                quoted = TRUE;
+		memmove(fname, fname+1, len);
+		quoted = TRUE;
 	}
 
 	if (passive && port != 0) {
