@@ -446,7 +446,6 @@ configure_file(output : 'irssi-config.h',
 ##########
 
 #### warnings ####
-add_project_arguments('-Wall', language : 'c')
 add_project_arguments(cc.get_supported_arguments('-Werror=declaration-after-statement'), language : 'c')
 
 #### personality ####
