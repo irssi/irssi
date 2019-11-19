@@ -75,7 +75,7 @@ char *ban_get_mask(IRC_CHANNEL_REC *channel, const char *nick, int ban_type)
         size = (int) (host-user);
 	if (size >= 10) {
 		/* too long user mask */
-		g_memmove(user+1, user+(size-9), strlen(user+(size-9))+1);
+		memmove(user+1, user+(size-9), strlen(user+(size-9))+1);
 	}
 	return str;
 }

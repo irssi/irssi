@@ -150,7 +150,7 @@ index ad79e0c..84d0c5c 100644
 +++ b/src/fe-text/irssi.c
 @@ -314,20 +314,16 @@ int main(int argc, char **argv)
  	textui_finish_init();
- 	main_loop = g_main_new(TRUE);
+ 	main_loop = g_main_loop_new(NULL, TRUE);
  
 +#ifdef __AFL_HAVE_MANUAL_CONTROL
 +	__AFL_INIT();
@@ -162,7 +162,7 @@ index ad79e0c..84d0c5c 100644
  	   can call our dirty-checker after each iteration */
  	while (!quitting) {
 -		term_refresh_freeze();
- 		g_main_iteration(TRUE);
+ 		g_main_context_iteration(NULL, TRUE);
 -                term_refresh_thaw();
 -
 -		if (reload_config) {
@@ -174,7 +174,7 @@ index ad79e0c..84d0c5c 100644
 -		dirty_check();
  	}
  
- 	g_main_destroy(main_loop);
+ 	g_main_loop_unref(main_loop);
 diff --git a/src/fe-text/term-terminfo.c b/src/fe-text/term-terminfo.c
 index b2478c6..cebe260 100644
 --- a/src/fe-text/term-terminfo.c

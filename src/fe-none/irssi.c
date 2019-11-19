@@ -103,9 +103,9 @@ int main(int argc, char **argv)
 	do {
 		reload = FALSE;
 		module_load(autoload_module, NULL);
-		main_loop = g_main_new(TRUE);
-		g_main_run(main_loop);
-		g_main_destroy(main_loop);
+		main_loop = g_main_loop_new(NULL, TRUE);
+		g_main_loop_run(main_loop);
+		g_main_loop_unref(main_loop);
 	}
 	while (reload);
 	noui_deinit();

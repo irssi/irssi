@@ -334,7 +334,7 @@ int main(int argc, char **argv)
 
 	g_log_set_always_fatal(loglev);
 	textui_finish_init();
-	main_loop = g_main_new(TRUE);
+	main_loop = g_main_loop_new(NULL, TRUE);
 
 	/* Does the same as g_main_run(main_loop), except we
 	   can call our dirty-checker after each iteration */
@@ -348,11 +348,11 @@ int main(int argc, char **argv)
 		dirty_check();
 
 		term_refresh_freeze();
-		g_main_iteration(TRUE);
+		g_main_context_iteration(NULL, TRUE);
 		term_refresh_thaw();
 	}
 
-	g_main_destroy(main_loop);
+	g_main_loop_unref(main_loop);
 	textui_deinit();
 
 	session_upgrade(); /* if we /UPGRADEd, start the new process */

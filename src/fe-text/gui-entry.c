@@ -611,13 +611,13 @@ void gui_entry_insert_text(GUI_ENTRY_REC *entry, const char *str)
         entry_text_grow(entry, len);
 
         /* make space for the string */
-	g_memmove(entry->text + entry->pos + len, entry->text + entry->pos,
-		  (entry->text_len-entry->pos + 1) * sizeof(unichar));
+	memmove(entry->text + entry->pos + len, entry->text + entry->pos,
+	        (entry->text_len-entry->pos + 1) * sizeof(unichar));
 
 	/* make space for the color */
 	if (entry->uses_extents) {
-		g_memmove(entry->extents + entry->pos + len + 1, entry->extents + entry->pos + 1,
-			  (entry->text_len-entry->pos) * sizeof(char *));
+		memmove(entry->extents + entry->pos + len + 1, entry->extents + entry->pos + 1,
+		        (entry->text_len-entry->pos) * sizeof(char *));
 		for (i = 0; i < len; i++) {
 			entry->extents[entry->pos + i + 1] = NULL;
 		}
@@ -662,12 +662,12 @@ void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr)
 	entry_text_grow(entry, 1);
 
 	/* make space for the string */
-	g_memmove(entry->text + entry->pos + 1, entry->text + entry->pos,
-		  (entry->text_len-entry->pos + 1) * sizeof(unichar));
+	memmove(entry->text + entry->pos + 1, entry->text + entry->pos,
+	        (entry->text_len-entry->pos + 1) * sizeof(unichar));
 
 	if (entry->uses_extents) {
-		g_memmove(entry->extents + entry->pos + 1 + 1, entry->extents + entry->pos + 1,
-			  (entry->text_len-entry->pos) * sizeof(char *));
+		memmove(entry->extents + entry->pos + 1 + 1, entry->extents + entry->pos + 1,
+		        (entry->text_len-entry->pos) * sizeof(char *));
 		entry->extents[entry->pos + 1] = NULL;
 	}
 
@@ -838,8 +838,8 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 		while (entry->pos-size-w > 0 &&
 		       i_wcwidth(entry->text[entry->pos-size-w]) == 0) w++;
 
-	g_memmove(entry->text + entry->pos - size, entry->text + entry->pos,
-		  (entry->text_len-entry->pos+1) * sizeof(unichar));
+	memmove(entry->text + entry->pos - size, entry->text + entry->pos,
+	        (entry->text_len-entry->pos+1) * sizeof(unichar));
 
 	if (entry->uses_extents) {
 		for (i = entry->pos - size; i < entry->pos; i++) {
@@ -847,8 +847,8 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 				g_free(entry->extents[i+1]);
 			}
 		}
-		g_memmove(entry->extents + entry->pos - size + 1, entry->extents + entry->pos + 1,
-			  (entry->text_len - entry->pos) * sizeof(void *)); /* no null terminator here */
+		memmove(entry->extents + entry->pos - size + 1, entry->extents + entry->pos + 1,
+		        (entry->text_len - entry->pos) * sizeof(void *)); /* no null terminator here */
 		for (i = 0; i < size; i++) {
 			entry->extents[entry->text_len - i] = NULL;
 		}
@@ -876,16 +876,16 @@ void gui_entry_erase_cell(GUI_ENTRY_REC *entry)
 		while (entry->pos+size < entry->text_len &&
 		       i_wcwidth(entry->text[entry->pos+size]) == 0) size++;
 
-	g_memmove(entry->text + entry->pos, entry->text + entry->pos + size,
-	          (entry->text_len-entry->pos-size+1) * sizeof(unichar));
+	memmove(entry->text + entry->pos, entry->text + entry->pos + size,
+	        (entry->text_len-entry->pos-size+1) * sizeof(unichar));
 
 	if (entry->uses_extents) {
 		int i;
 		for (i = 0; i < size; i++) {
 			g_free(entry->extents[entry->pos + i + 1]);
 		}
-		g_memmove(entry->extents + entry->pos + 1, entry->extents + entry->pos + size + 1,
-			  (entry->text_len-entry->pos-size) * sizeof(char *));
+		memmove(entry->extents + entry->pos + 1, entry->extents + entry->pos + size + 1,
+		        (entry->text_len-entry->pos-size) * sizeof(char *));
 		for (i = 0; i < size; i++) {
 			entry->extents[entry->text_len - i] = NULL;
 		}
