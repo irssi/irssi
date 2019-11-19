@@ -557,13 +557,20 @@ static int backwards_compatibility(const char *module, CONFIG_NODE *node,
 			g_free(new_value);
 			config_changed = TRUE;
 			return new_key != NULL;
-		} else if (g_ascii_strcasecmp(node->key, "actlist_moves") == 0 &&
+		}
+		if (g_ascii_strcasecmp(node->key, "actlist_moves") == 0 &&
 			   node->value != NULL && g_ascii_strcasecmp(node->value, "yes") == 0) {
 			config_node_set_str(mainconfig, parent, "actlist_sort", "recent");
 			config_node_set_str(mainconfig, parent, node->key, NULL);
 			config_changed = TRUE;
 			return TRUE;
 		}
+	}
+	if (g_strcmp0(module, "core") == 0 &&
+			g_strcmp0(node->key, "resolve_reverse_lookup") == 0) {
+		config_node_set_str(mainconfig, parent, node->key, NULL);
+		config_changed = TRUE;
+		return TRUE;
 	}
 	return new_key != NULL;
 }
