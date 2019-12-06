@@ -11,11 +11,14 @@ int g_input_add_poll(int fd, int priority, int condition,
 typedef void* (*FOREACH_FIND_FUNC) (void *item, void *data);
 typedef int (*COLUMN_LEN_FUNC)(void *data);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 /* Returns 1 if tv1 > tv2, -1 if tv2 > tv1 or 0 if they're equal. */
-int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2);
+int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2) G_GNUC_DEPRECATED;
 /* Returns "tv1 - tv2", returns the result in milliseconds. Note that
    if the difference is too large, the result might be invalid. */
-long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2);
+long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2) G_GNUC_DEPRECATED;
+#pragma GCC diagnostic pop
 
 GSList *gslist_find_string(GSList *list, const char *key);
 GSList *gslist_find_icase_string(GSList *list, const char *key);

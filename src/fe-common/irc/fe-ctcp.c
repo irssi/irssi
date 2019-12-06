@@ -123,22 +123,23 @@ static void ctcp_ping_reply(IRC_SERVER_REC *server, const char *data,
 			    const char *nick, const char *addr,
 			    const char *target)
 {
-	GTimeVal tv, tv2;
+	gint64 tv, tv2;
 	long usecs;
 
 	g_return_if_fail(data != NULL);
 
-	if (sscanf(data, "%ld %ld", &tv2.tv_sec, &tv2.tv_usec) < 1) {
-                char *tmp = g_strconcat("PING ", data, NULL);
+	if (sscanf(data, "%ld %ld", &tv, &tv2) < 1) {
+		char *tmp = g_strconcat("PING ", data, NULL);
 		ctcp_default_reply(server, tmp, nick, addr, target);
 		g_free(tmp);
 		return;
 	}
 
-        g_get_current_time(&tv);
-	usecs = get_timeval_diff(&tv, &tv2);
-        printformat(server, server_ischannel(SERVER(server), target) ? target : nick, MSGLEVEL_CTCPS,
-                    IRCTXT_CTCP_PING_REPLY, nick, usecs/1000, usecs%1000);
+	tv2 += tv * G_TIME_SPAN_SECOND;
+	tv = g_get_real_time();
+	usecs = tv - tv2;
+	printformat(server, server_ischannel(SERVER(server), target) ? target : nick, MSGLEVEL_CTCPS,
+		    IRCTXT_CTCP_PING_REPLY, nick, usecs / G_TIME_SPAN_SECOND, usecs % G_TIME_SPAN_SECOND);
 }
 
 void fe_ctcp_init(void)

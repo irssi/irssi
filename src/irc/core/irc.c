@@ -140,15 +140,15 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 /* Send command to IRC server */
 void irc_send_cmd(IRC_SERVER_REC *server, const char *cmd)
 {
-	GTimeVal now;
+	gint64 now;
 	int send_now;
 
-        g_get_current_time(&now);
-	send_now = g_timeval_cmp(&now, &server->wait_cmd) >= 0 &&
-		(server->cmdcount < server->max_cmds_at_once ||
-		 server->cmd_queue_speed <= 0);
+	now = g_get_real_time();
+	send_now = now >= server->wait_cmd &&
+	           (server->cmdcount < server->max_cmds_at_once ||
+		    server->cmd_queue_speed <= 0);
 
-        irc_send_cmd_full(server, cmd, send_now, FALSE, FALSE);
+	irc_send_cmd_full(server, cmd, send_now, FALSE, FALSE);
 }
 
 /* Send command to IRC server */

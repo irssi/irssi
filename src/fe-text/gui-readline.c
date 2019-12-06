@@ -58,7 +58,7 @@ static int escape_next_key;
 
 static int readtag;
 static unichar prev_key;
-static GTimeVal last_keypress;
+static gint64 last_keypress;
 
 static int paste_detect_time, paste_verify_line_count;
 static char *paste_entry;
@@ -395,8 +395,8 @@ static void insert_paste_prompt(void)
 
 static void sig_gui_key_pressed(gpointer keyp)
 {
-	GTimeVal now;
-        unichar key;
+	gint64 now;
+	unichar key;
 	char str[20];
 	int ret;
 
@@ -407,7 +407,7 @@ static void sig_gui_key_pressed(gpointer keyp)
 		return;
 	}
 
-        g_get_current_time(&now);
+	now = g_get_real_time();
 
 	if (key < 32) {
 		/* control key */
@@ -875,7 +875,7 @@ static void key_paste_start(void)
 
 time_t get_idle_time(void)
 {
-	return last_keypress.tv_sec;
+	return last_keypress / G_TIME_SPAN_SECOND;
 }
 
 static void key_scroll_backward(void)
@@ -1154,8 +1154,8 @@ void gui_readline_init(void)
         paste_old_prompt = NULL;
 	paste_timeout_id = -1;
 	paste_bracketed_mode = FALSE;
-	g_get_current_time(&last_keypress);
-        input_listen_init(STDIN_FILENO);
+	last_keypress = g_get_real_time();
+	input_listen_init(STDIN_FILENO);
 
 	settings_add_bool("lookandfeel", "term_appkey_mode", TRUE);
 	settings_add_str("history", "scroll_page_count", "/2");
