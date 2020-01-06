@@ -11,6 +11,7 @@ int proxy_port;
 char *proxy_string, *proxy_string_after, *proxy_password;
 
 unsigned short family; /* 0 = don't care, AF_INET or AF_INET6 */
+unsigned short chosen_family; /* family actually chosen during name resolution */
 char *tag; /* try to keep this tag when connected to server */
 char *address;
 int port;
@@ -43,5 +44,6 @@ unsigned int unix_socket:1; /* Connect using named unix socket */
 unsigned int use_tls:1; /* this connection uses TLS */
 unsigned int tls_verify:1;
 unsigned int no_connect:1; /* don't connect() at all, it's done by plugin */
+unsigned short last_failed_family; /* #641: if we failed to connect to ipv6, try ipv4 and vice versa */
 char *channels;
 char *away_reason;
