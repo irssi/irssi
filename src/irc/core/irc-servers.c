@@ -294,8 +294,8 @@ static void server_init(IRC_SERVER_REC *server)
 
 	/* prevent the queue from sending too early, we have a max cut off of 120 secs */
 	/* this will reset to 1 sec after we get the 001 event */
-	g_get_current_time(&server->wait_cmd);
-	g_time_val_add(&server->wait_cmd, 120 * G_USEC_PER_SEC);
+	server->wait_cmd = g_get_real_time();
+	server->wait_cmd += 120 * G_USEC_PER_SEC;
 }
 
 SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
@@ -559,21 +559,21 @@ void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 		return;
 	}
 
-	g_get_current_time(&server->last_cmd);
+	server->last_cmd = g_get_real_time();
 
 	/* A bit kludgy way to do the flood protection. In ircnet, there
 	   actually is 1sec / 100 bytes penalty, but we rather want to deal
 	   with the max. 1000 bytes input buffer problem. If we send more
 	   than that with the burst, we'll get excess flooded. */
 	if (len < 100 || server->cmd_queue_speed <= 10)
-		server->wait_cmd.tv_sec = 0;
+		server->wait_cmd = 0;
 	else {
-		memcpy(&server->wait_cmd, &server->last_cmd, sizeof(GTimeVal));
-		g_time_val_add(&server->wait_cmd, (2 + len/100) * G_USEC_PER_SEC);
+		server->wait_cmd = server->last_cmd;
+		server->wait_cmd += (2 + len / 100) * G_USEC_PER_SEC;
 	}
 }
 
-static int server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
+static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
 {
 	REDIRECT_REC *redirect;
         GSList *link;
@@ -587,10 +587,10 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 	if (server->cmdcount == 0 && server->cmdqueue == NULL)
 		return 0;
 
-	if (g_timeval_cmp(now, &server->wait_cmd) == -1)
+	if (now < server->wait_cmd)
 		return 1;
 
-	usecs = get_timeval_diff(now, &server->last_cmd);
+	usecs = (now - server->last_cmd) / G_TIME_SPAN_MILLISECOND;
 	if (usecs < server->cmd_queue_speed)
 		return 1;
 
@@ -626,13 +626,13 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, GTimeVal *now)
 /* check every now and then if there's data to be sent in command buffer */
 static int servers_cmd_timeout(void)
 {
-	GTimeVal now;
+	gint64 now;
 	GSList *tmp;
 	int keep = 0;
 
-	g_get_current_time(&now);
+	now = g_get_real_time();
 	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
-		keep |= server_cmd_timeout(tmp->data, &now);
+		keep |= server_cmd_timeout(tmp->data, now);
 	}
 	if (keep)
 		return 1;
@@ -735,7 +735,7 @@ static void event_connected(IRC_SERVER_REC *server, const char *data, const char
 	server->real_connect_time = time(NULL);
 
 	/* let the queue send now that we are identified */
-	g_get_current_time(&server->wait_cmd);
+	server->wait_cmd = g_get_real_time();
 
 	if (server->connrec->usermode != NULL) {
 		/* Send the user mode, before the autosendcmd.

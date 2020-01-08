@@ -528,7 +528,7 @@ static void cmd_whowas(const char *data, IRC_SERVER_REC *server)
 /* SYNTAX: PING [<nick> | <channel> | *] */
 static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
 {
-	GTimeVal tv;
+	gint64 tv;
 	char *str;
 
 	CMD_IRC_SERVER(server);
@@ -539,9 +539,9 @@ static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 		data = window_item_get_target(item);
 	}
 
-	g_get_current_time(&tv);
+	tv = g_get_real_time();
 
-	str = g_strdup_printf("%s PING %ld %ld", data, tv.tv_sec, tv.tv_usec);
+	str = g_strdup_printf("%s PING %ld %ld", data, tv / G_TIME_SPAN_SECOND, tv % G_TIME_SPAN_SECOND);
 	signal_emit("command ctcp", 3, str, server, item);
 	g_free(str);
 }
@@ -616,13 +616,8 @@ static void cmd_wait(const char *data, IRC_SERVER_REC *server)
 
 	n = atoi(msecs);
 	if (server != NULL && n > 0) {
-		g_get_current_time(&server->wait_cmd);
-		server->wait_cmd.tv_sec += n/1000;
-		server->wait_cmd.tv_usec += n%1000;
-		if (server->wait_cmd.tv_usec >= 1000) {
-			server->wait_cmd.tv_sec++;
-			server->wait_cmd.tv_usec -= 1000;
-		}
+		server->wait_cmd = g_get_real_time();
+		server->wait_cmd += n * G_TIME_SPAN_MILLISECOND;
 	}
 	cmd_params_free(free_arg);
 }

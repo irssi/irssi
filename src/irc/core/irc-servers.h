@@ -113,8 +113,8 @@ struct _IRC_SERVER_REC {
 			 how many messages can be sent before starting the
 			 flood control */
 	GSList *cmdqueue; /* command, redirection, ... */
-	GTimeVal wait_cmd; /* don't send anything to server before this */
-	GTimeVal last_cmd; /* last time command was sent to server */
+	gint64 wait_cmd; /* don't send anything to server before this */
+	gint64 last_cmd; /* last time command was sent to server */
 
 	int max_cmds_at_once; /* How many messages can be sent immediately before timeouting starts */
 	int cmd_queue_speed; /* Timeout between sending commands */

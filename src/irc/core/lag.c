@@ -30,7 +30,7 @@ static int timeout_tag;
 
 static void lag_get(IRC_SERVER_REC *server)
 {
-	g_get_current_time(&server->lag_sent);
+	server->lag_sent = g_get_real_time();
 	server->lag_last_check = time(NULL);
 
 	server_redirect_event(server, "ping", 1, NULL, FALSE,
@@ -48,18 +48,18 @@ static void lag_ping_error(IRC_SERVER_REC *server)
 static void lag_event_pong(IRC_SERVER_REC *server, const char *data,
 			   const char *nick, const char *addr)
 {
-	GTimeVal now;
+	gint64 now;
 
 	g_return_if_fail(data != NULL);
 
-	if (server->lag_sent.tv_sec == 0) {
+	if (server->lag_sent == 0) {
 		/* not expecting lag reply.. */
 		return;
 	}
 
-	g_get_current_time(&now);
-	server->lag = (int) get_timeval_diff(&now, &server->lag_sent);
-	memset(&server->lag_sent, 0, sizeof(server->lag_sent));
+	now = g_get_real_time();
+	server->lag = (now - server->lag_sent) / G_TIME_SPAN_MILLISECOND;
+	server->lag_sent = 0;
 
 	signal_emit("server lag", 1, server);
 }
@@ -76,8 +76,8 @@ static void sig_unknown_command(IRC_SERVER_REC *server, const char *data)
 		   trying alternative methods to detect lag with these
 		   servers. */
 		server->disable_lag = TRUE;
-		server->lag_sent.tv_sec = 0;
-                server->lag = 0;
+		server->lag_sent = 0;
+		server->lag = 0;
 	}
 	g_free(params);
 }
@@ -102,16 +102,16 @@ static int sig_check_lag(void)
 		if (!IS_IRC_SERVER(rec) || rec->disable_lag)
 			continue;
 
-		if (rec->lag_sent.tv_sec != 0) {
+		if (rec->lag_sent != 0) {
 			/* waiting for lag reply */
-			if (max_lag > 1 && now-rec->lag_sent.tv_sec > max_lag) {
+			if (max_lag > 1 && now - rec->lag_sent > max_lag * G_TIME_SPAN_SECOND) {
 				/* too much lag, disconnect */
 				signal_emit("server lag disconnect", 1, rec);
 				rec->connection_lost = TRUE;
 				server_disconnect((SERVER_REC *) rec);
 			}
-		} else if (rec->lag_last_check+lag_check_time < now &&
-			 rec->cmdcount == 0 && rec->connected) {
+		} else if (rec->lag_last_check + lag_check_time < now && rec->cmdcount == 0 &&
+		           rec->connected) {
 			/* no commands in buffer - get the lag */
 			lag_get(rec);
 		}

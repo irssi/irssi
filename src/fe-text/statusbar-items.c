@@ -333,15 +333,15 @@ static int get_lag(SERVER_REC *server, int *unknown)
 		return 0;
 	}
 
-	if (server->lag_sent.tv_sec == 0) {
+	if (server->lag_sent == 0) {
 		/* no lag queries going on currently */
                 return server->lag;
 	}
 
-        /* we're not sure about our current lag.. */
+	/* we're not sure about our current lag.. */
 	*unknown = TRUE;
 
-        lag = (long) (time(NULL)-server->lag_sent.tv_sec);
+	lag = (long) (time(NULL) - (server->lag_sent / G_TIME_SPAN_SECOND));
 	if (server->lag/1000 > lag) {
 		/* we've been waiting the lag reply less time than
 		   what last known lag was -> use the last known lag */

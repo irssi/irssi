@@ -94,8 +94,11 @@ int g_input_add_poll(int fd, int priority, int condition,
 	return ret;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2)
 {
+#pragma GCC diagnostic pop
 	if (tv1->tv_sec < tv2->tv_sec)
 		return -1;
 	if (tv1->tv_sec > tv2->tv_sec)
@@ -105,8 +108,11 @@ int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2)
 		tv1->tv_usec > tv2->tv_usec ? 1 : 0;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2)
 {
+#pragma GCC diagnostic pop
 	long secs, usecs;
 
 	secs = tv1->tv_sec - tv2->tv_sec;

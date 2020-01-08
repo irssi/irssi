@@ -65,7 +65,7 @@ int command_hide_output;
    the line had one or two command chars, and which one.. */
 static const char *current_cmdline;
 
-static GTimeVal time_command_last, time_command_now;
+static gint64 time_command_last, time_command_now;
 static int last_command_cmd, command_cmd;
 
 /* SYNTAX: ECHO [-window <name>] [-level <level>] <text> */
@@ -222,7 +222,7 @@ static void event_command(const char *data)
 	time_command_last = time_command_now;
 	last_command_cmd = command_cmd;
 
-	g_get_current_time(&time_command_now);
+	time_command_now = g_get_real_time();
 	command_cmd = *data != '\0' &&
 		strchr(settings_get_str("cmdchars"), *data) != NULL;
 
@@ -271,7 +271,7 @@ static void event_default_command(const char *data, void *server,
 
 	/* maybe we're copy+pasting text? check how long it was since the
 	   last line */
-	diff = get_timeval_diff(&time_command_now, &time_command_last);
+	diff = time_command_now - time_command_last;
 	if (item != NULL && !last_command_cmd && diff < PASTE_CHECK_SPEED) {
 		signal_emit("send text", 3, current_cmdline, active_win->active_server, active_win->active);
 		command_cmd = FALSE;
@@ -334,7 +334,7 @@ void fe_core_commands_init(void)
 	command_hide_output = 0;
 
 	command_cmd = FALSE;
-	memset(&time_command_now, 0, sizeof(GTimeVal));
+	time_command_now = 0;
 
 	command_bind("echo", NULL, (SIGNAL_FUNC) cmd_echo);
 	command_bind("version", NULL, (SIGNAL_FUNC) cmd_version);

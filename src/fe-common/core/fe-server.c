@@ -415,7 +415,7 @@ static void sig_server_lag_disconnected(SERVER_REC *server)
 
 	printformat(server, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_LAG_DISCONNECTED, server->connrec->address,
-		    time(NULL)-server->lag_sent.tv_sec);
+		    time(NULL)-(server->lag_sent / G_TIME_SPAN_SECOND));
 }
 
 static void sig_server_reconnect_removed(RECONNECT_REC *reconnect)
