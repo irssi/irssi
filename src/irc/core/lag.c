@@ -58,7 +58,7 @@ static void lag_event_pong(IRC_SERVER_REC *server, const char *data,
 	}
 
 	now = g_get_real_time();
-	server->lag = now - server->lag_sent;
+	server->lag = (now - server->lag_sent) / G_TIME_SPAN_MILLISECOND;
 	server->lag_sent = 0;
 
 	signal_emit("server lag", 1, server);
