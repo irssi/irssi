@@ -117,7 +117,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 	}
 
 	if (send_now) {
-                irc_server_send_data(server, str->str, str->len);
+                signal_emit("server outgoing", 3, server, str->str, str->len);
 		g_string_free(str, TRUE);
 	} else {
 

@@ -128,6 +128,7 @@ irc-nicklist.c:
  "server nick changed", SERVER_REC
 
 irc-servers.c:
+ "server outgoing", SERVER_REC, char *str
  "event connected", SERVER_REC
 
 irc-cap.c
