@@ -155,7 +155,9 @@ static void cmd_cat(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		return;
 	}
 
-	target = g_hash_table_lookup(optlist, "window") != NULL ? item->name : NULL;
+	target = item != NULL && g_hash_table_lookup(optlist, "window") != NULL
+			? item->name
+			: NULL;
 
 	g_io_channel_set_encoding(handle, NULL, NULL);
 	g_io_channel_seek_position(handle, fpos, G_SEEK_SET, NULL);
