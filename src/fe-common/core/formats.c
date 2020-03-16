@@ -1222,8 +1222,14 @@ char *strip_codes(const char *input)
 	return str;
 }
 
-/* send a fully parsed text string for GUI to print */
-void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
+/* parse text string into GUI_PRINT_FLAG_* separated pieces and emit them to handler
+   handler is a SIGNAL_FUNC with the following arguments:
+
+   WINDOW_REC *window, void *fgcolor_int, void *bgcolor_int,
+       void *flags_int, const char *textpiece, TEXT_DEST_REC *dest
+
+ */
+void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC handler)
 {
 	THEME_REC *theme;
 	char *dup, *str, *ptr, type;
@@ -1238,8 +1244,8 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 
 	if (*str == '\0') {
 		/* empty line, write line info only */
-		signal_emit_id(signal_gui_print_text, 6, dest->window, GINT_TO_POINTER(fgcolor),
-		               GINT_TO_POINTER(bgcolor), GINT_TO_POINTER(flags), str, dest);
+		handler(dest->window, GINT_TO_POINTER(fgcolor), GINT_TO_POINTER(bgcolor),
+		        GINT_TO_POINTER(flags), str, dest);
 	}
 
 	while (*str != '\0') {
@@ -1259,16 +1265,14 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 
 		if (*str != '\0' || (flags & GUI_PRINT_FLAG_CLRTOEOL)) {
 			/* send the text to gui handler */
-			signal_emit_id(signal_gui_print_text, 6, dest->window,
-				       GINT_TO_POINTER(fgcolor),
-				       GINT_TO_POINTER(bgcolor),
-				       GINT_TO_POINTER(flags), str,
-				       dest);
+			handler(dest->window, GINT_TO_POINTER(fgcolor), GINT_TO_POINTER(bgcolor),
+			        GINT_TO_POINTER(flags), str, dest);
 			flags &= ~(GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_CLRTOEOL);
 		}
 
 		if (type == '\n') {
-			format_newline(dest);
+			handler(dest->window, GINT_TO_POINTER(-1), GINT_TO_POINTER(-1),
+			        GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE), "", dest);
 			fgcolor = theme->default_color;
 			bgcolor = -1;
 			flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
@@ -1412,6 +1416,20 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
 	}
 
 	g_free(dup);
+}
+
+inline static void gui_print_text_emitter(WINDOW_REC *window, void *fgcolor_int, void *bgcolor_int,
+                                          void *flags_int, const char *textpiece,
+                                          TEXT_DEST_REC *dest)
+{
+	signal_emit_id(signal_gui_print_text, 6, window, fgcolor_int, bgcolor_int, flags_int,
+	               textpiece, dest);
+}
+
+/* send a fully parsed text string for GUI to print */
+void format_send_to_gui(TEXT_DEST_REC *dest, const char *text)
+{
+	format_send_as_gui_flags(dest, text, (SIGNAL_FUNC) gui_print_text_emitter);
 }
 
 void format_gui_flags(GString *out, int *last_fg, int *last_bg, int *last_flags, int fg, int bg,

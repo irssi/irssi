@@ -205,10 +205,47 @@ static void sig_gui_print_text_finished(WINDOW_REC *window)
 		gui->insert_after = insert_after;
 }
 
+static void parse_colors_collector(const WINDOW_REC *window, const void *fgcolor_int,
+                                   const void *bgcolor_int, const void *flags_int,
+                                   const char *textpiece, const TEXT_DEST_REC *dest)
+{
+	int fg, bg, flags, attr;
+
+	flags = GPOINTER_TO_INT(flags_int);
+	fg = GPOINTER_TO_INT(fgcolor_int);
+	bg = GPOINTER_TO_INT(bgcolor_int);
+	gui_printtext_get_colors(&flags, &fg, &bg, &attr);
+
+	if (flags & GUI_PRINT_FLAG_NEWLINE) {
+		g_string_append_c(color_buf->cur_text, '\n');
+	}
+	format_gui_flags(color_buf->cur_text, &color_buf->last_fg, &color_buf->last_bg,
+	                 &color_buf->last_flags, fg, bg, flags);
+
+	g_string_append(color_buf->cur_text, textpiece);
+}
+
+static char *parse_colors(TEXT_DEST_REC *dest, const char *text)
+{
+	char *tmp;
+
+	if (text == NULL)
+		return NULL;
+
+	color_buf = textbuffer_create(NULL);
+	format_send_as_gui_flags(dest, text, (SIGNAL_FUNC) parse_colors_collector);
+	tmp = g_strdup(color_buf->cur_text->str);
+	textbuffer_destroy(color_buf);
+	color_buf = NULL;
+
+	return tmp;
+}
+
 char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 {
+	TEXT_DEST_REC dest;
 	GUI_WINDOW_REC *gui;
-	LINE_REC *curr;
+	char *tmp, *text = NULL;
 
 	g_return_val_if_fail(buffer != NULL, NULL);
 	g_return_val_if_fail(buffer->window != NULL, NULL);
@@ -218,11 +255,11 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 		return NULL;
 
 	if (line->info.level & MSGLEVEL_FORMAT && line->info.format != NULL) {
-		TEXT_DEST_REC dest;
+		LINE_REC *curr;
 		THEME_REC *theme;
 		int formatnum;
 		TEXT_BUFFER_FORMAT_REC *format_rec;
-		char *text, *tmp, *str;
+		char *str;
 
 		curr = line;
 		line = NULL;
@@ -267,17 +304,18 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 			dest.flags |= PRINT_FLAG_FORMAT;
 
 			current_time = (time_t) -1;
-			return str;
 		} else if (format_rec->format != NULL) {
 			g_free(text);
-			return NULL;
-		} else {
-			return text;
+			text = NULL;
 		}
 		special_fill_cache(NULL);
 	} else {
-		return g_strdup(line->info.text);
+		format_create_dest(&dest, NULL, NULL, line->info.level, buffer->window);
+		text = g_strdup(line->info.text);
 	}
+	tmp = parse_colors(&dest, text);
+	g_free(text);
+	return tmp;
 }
 
 void textbuffer_formats_init(void)

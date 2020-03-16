@@ -238,7 +238,7 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 	}
 }
 
-static void get_colors(int *flags, int *fg, int *bg, int *attr)
+void gui_printtext_get_colors(int *flags, int *fg, int *bg, int *attr)
 {
 	*attr = 0;
 	if (*flags & GUI_PRINT_FLAG_MIRC_COLOR) {
@@ -336,7 +336,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 	flags = GPOINTER_TO_INT(pflags);
 	fg = GPOINTER_TO_INT(fgcolor);
 	bg = GPOINTER_TO_INT(bgcolor);
-	get_colors(&flags, &fg, &bg, &attr);
+	gui_printtext_get_colors(&flags, &fg, &bg, &attr);
 
 	if (window == NULL) {
 		print_text_no_window(flags, fg, bg, attr, str);

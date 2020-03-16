@@ -1,8 +1,9 @@
 #ifndef IRSSI_FE_COMMON_CORE_FORMATS_H
 #define IRSSI_FE_COMMON_CORE_FORMATS_H
 
-#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/core/signals.h>
 #include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/themes.h>
 
 #define GUI_PRINT_FLAG_BOLD          0x0001
 #define GUI_PRINT_FLAG_REVERSE       0x0002
@@ -130,6 +131,14 @@ char *strip_codes(const char *input);
 
 /* send a fully parsed text string for GUI to print */
 void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
+/* parse text string into GUI_PRINT_FLAG_* separated pieces and emit them to handler
+   handler is a SIGNAL_FUNC with the following arguments:
+
+   WINDOW_REC *window, void *fgcolor_int, void *bgcolor_int,
+       void *flags_int, const char *textpiece, TEXT_DEST_REC *dest
+
+ */
+void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC handler);
 
 #define FORMAT_COLOR_NOCHANGE	('0'-1) /* don't change this, at least hilighting depends this value */
 #define FORMAT_COLOR_EXT1	('0'-2)
