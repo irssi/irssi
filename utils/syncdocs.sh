@@ -13,7 +13,7 @@ design=$site/documentation/design/
 # FOOTER. May need to be adjusted as the source pages change
 pageclean_regex='s{.*(?=<h1)}{}s;
 s{(\s*<script\s.*?</script>)?\s*(</div>\s*){0,3}<footer.*}{}s;
-s{(<.*?)\sclass="(?:highlighter-rouge|highlight)"(.*?>)}{\1\2}g;'
+s{(<.*?)\sclass="(?:[^"]*\s+)*(?:highlighter-rouge|highlight)"(.*?>)}{\1\2}g;'
 
 srcdir=`dirname "$0"`
 test -z "$srcdir" && srcdir=.

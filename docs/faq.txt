@@ -117,8 +117,8 @@ A: Check [6]here
    References:
 
    [1] https://github.com/irssi-import/xirssi
-   [2] http://tmux.github.io/
-   [3] http://www.gnu.org/software/screen/screen.html
+   [2] https://tmux.github.io/
+   [3] https://www.gnu.org/software/screen/screen.html
    [4] http://dtach.sf.net/
-   [5] http://dgl.cx/irssi/hack-whois-in-current-window.pl
+   [5] https://dgl.cx/irssi/hack-whois-in-current-window.pl
    [6] https://irssi.org/assets/irssi.wav

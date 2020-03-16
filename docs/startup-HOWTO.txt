@@ -578,7 +578,7 @@ Irssi proxy works fine with other IRC clients as well.
 
 SOCKS
 
-Irssi can be compiled with socks support (\--with-socks option to configure),
+Irssi can be compiled with socks support (--with-socks option to configure),
 which requires “dante” and routes all connections through the proxy specified
 in the system-wide /etc/socks.conf. This method is known to have issues in Mac
 OS X.
@@ -792,8 +792,8 @@ ADD -before act mail.
 
 References:
 
-[1] http://www.gnu.org/licenses/fdl.html
+[1] https://www.gnu.org/licenses/fdl.html
 [2] https://www.iterm2.com/
-[3] http://quadpoint.org/articles/irssisplit/
+[3] https://quadpoint.org/articles/irssisplit/
 [4] https://github.com/rofl0r/proxychains-ng
 [5] https://irssi.org/documentation/settings/
