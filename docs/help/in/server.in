@@ -56,7 +56,7 @@
     disconnected unless you prepend the server with the '+' character; the same
     method is applicable to the CONNECT parameter.
 
-    Specify '-' as password to remove a added server password
+    Specify '-' as password to remove a server password
 
 %9Examples:%9
 
