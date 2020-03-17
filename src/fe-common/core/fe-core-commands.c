@@ -117,7 +117,8 @@ static void cmd_version(char *data)
 /* SYNTAX: CAT [-window] <file> [<seek position>] */
 static void cmd_cat(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 {
-	char *fname, *fposstr, *target;
+	char *fname, *fposstr;
+	gboolean target;
 	GHashTable *optlist;
 	void *free_arg;
 	int fpos;
@@ -155,16 +156,14 @@ static void cmd_cat(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		return;
 	}
 
-	target = item != NULL && g_hash_table_lookup(optlist, "window") != NULL
-			? item->name
-			: NULL;
+	target = g_hash_table_lookup(optlist, "window") != NULL;
 
 	g_io_channel_set_encoding(handle, NULL, NULL);
 	g_io_channel_seek_position(handle, fpos, G_SEEK_SET, NULL);
 	buf = g_string_sized_new(512);
 	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
 		buf->str[tpos] = '\0';
-		printtext(target != NULL ? server : NULL, target, MSGLEVEL_CLIENTCRAP |
+		printtext(target ? server : NULL, target && item != NULL ? item->name : NULL, MSGLEVEL_CLIENTCRAP |
 			  MSGLEVEL_NEVER, "%s", buf->str);
 	}
 	g_string_free(buf, TRUE);
