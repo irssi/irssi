@@ -70,7 +70,7 @@ static void ignore_print(int index, IGNORE_REC *rec)
 		g_string_append_printf(options, "-network %s ", rec->servertag);
 	if (rec->pattern != NULL)
 		g_string_append_printf(options, "-pattern %s ", rec->pattern);
-	if (rec->unignore_time != NULL) {
+	if (rec->unignore_time != 0) {
 		ts = *localtime(&rec->unignore_time);
 		strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &ts);
 		g_string_append_printf(options, "ignore ends: %s ", buf);
