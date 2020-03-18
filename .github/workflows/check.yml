@@ -1,4 +1,4 @@
-on: [push]
+on: [pull_request]
 name: Check Irssi
 jobs:
   install:
