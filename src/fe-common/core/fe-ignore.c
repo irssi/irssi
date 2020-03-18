@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include <time.h>
 #include <irssi/src/fe-common/core/module-formats.h>
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/commands.h>
@@ -48,6 +49,8 @@ static void ignore_print(int index, IGNORE_REC *rec)
 {
 	GString *options;
 	char *key, *levels;
+	struct tm ts;
+	char buf[20];
 
 	key = ignore_get_key(rec);
 	levels = bits2level(rec->level);
@@ -67,6 +70,11 @@ static void ignore_print(int index, IGNORE_REC *rec)
 		g_string_append_printf(options, "-network %s ", rec->servertag);
 	if (rec->pattern != NULL)
 		g_string_append_printf(options, "-pattern %s ", rec->pattern);
+	if (rec->unignore_time != NULL) {
+		ts = *localtime(&rec->unignore_time);
+		strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &ts);
+		g_string_append_printf(options, "ignore ends: %s ", buf);
+	}
 
 	if (options->len > 1) g_string_truncate(options, options->len-1);
 
