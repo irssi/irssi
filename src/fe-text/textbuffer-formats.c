@@ -3,6 +3,7 @@
 #include <irssi/src/core/levels.h>
 #include <irssi/src/core/refstrings.h>
 #include <irssi/src/core/servers.h>
+#include <irssi/src/core/settings.h>
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/special-vars.h>
 #include <irssi/src/fe-common/core/printtext.h>
@@ -13,6 +14,7 @@
 #include <irssi/src/fe-text/textbuffer-view.h>
 
 TEXT_BUFFER_REC *color_buf;
+int scrollback_format;
 
 static void collector_free(GSList **collector)
 {
@@ -119,6 +121,9 @@ static void sig_print_format(THEME_REC *theme, const char *module, TEXT_DEST_REC
 	FORMAT_REC *formats;
 	LINE_INFO_REC *info;
 
+	if (!scrollback_format)
+		return;
+
 	info = store_lineinfo_tmp(dest);
 
 	formatnum = GPOINTER_TO_INT(formatnump);
@@ -140,6 +145,9 @@ static void sig_print_format(THEME_REC *theme, const char *module, TEXT_DEST_REC
 static void sig_print_noformat(TEXT_DEST_REC *dest, const char *text)
 {
 	LINE_INFO_REC *info;
+
+	if (!scrollback_format)
+		return;
 
 	special_push_collector(NULL);
 	info = store_lineinfo_tmp(dest);
@@ -318,15 +326,25 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 	return tmp;
 }
 
+static void read_settings(void)
+{
+	scrollback_format = settings_get_bool("scrollback_format");
+}
+
 void textbuffer_formats_init(void)
 {
+	settings_add_bool("lookandfeel", "scrollback_format", TRUE);
+
+	read_settings();
 	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_add("print noformat", (SIGNAL_FUNC) sig_print_noformat);
 	signal_add_first("gui print text finished", (SIGNAL_FUNC) sig_gui_print_text_finished);
+	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
 
 void textbuffer_formats_deinit(void)
 {
+	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_remove("print noformat", (SIGNAL_FUNC) sig_print_noformat);
 	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_gui_print_text_finished);
