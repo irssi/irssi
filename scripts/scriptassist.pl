@@ -5,22 +5,22 @@
 
 use strict;
 
-our $VERSION = '2003020806';
+our $VERSION = '2003020807';
 our %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
     name        => 'scriptassist',
     description => 'keeps your scripts on the cutting edge',
     license     => 'GPLv2',
-    url         => 'http://irssi.org/scripts/',
-    modules     => 'Data::Dumper LWP::UserAgent (GnuPG)',
+    url         => 'https://scripts.irssi.org/',
+    modules     => 'CPAN::Meta::YAML LWP::Protocol::https (GnuPG)',
     commands	=> "scriptassist"
 );
 
 our ($forked, %remote_db, $have_gpg, @complist);
 
 use Irssi 20020324;
-use Data::Dumper;
+use CPAN::Meta::YAML;
 use LWP::UserAgent;
 use POSIX;
 
@@ -170,14 +170,13 @@ sub bg_do {
 		my $cmd = $items[1];
 		$result{data}{unknown}{$cmd} = get_unknown($cmd, $xml);
 	    }
-	    my $dumper = Data::Dumper->new([\%result]);
-	    $dumper->Purity(1)->Deepcopy(1)->Indent(0);
-	    my $data = $dumper->Dump;
+	    my $yaml = CPAN::Meta::YAML->new(\%result);
+	    my $data = $yaml->write_string();
 	    print($wh $data);
 	};
 	if ($@) {
-	    print($wh Data::Dumper->new([+{data=>+{error=>$@}}])
-		      ->Purity(1)->Deepcopy(1)->Indent(0)->Dump);
+	    print($wh CPAN::Meta::YAML->new(+{data=>+{error=>$@}})
+		      ->write_string());
 	}
 	close($wh);
 	POSIX::_exit(1);
@@ -313,7 +312,7 @@ sub get_new {
     my ($num) = @_;
     my $result;
     my $xml = get_scripts();
-    foreach (sort {$xml->{$b}{last_modified} cmp $xml->{$a}{last_modified}} keys %$xml) {
+    foreach (sort {$xml->{$b}{modified} cmp $xml->{$a}{modified}} keys %$xml) {
 	my %entry = %{ $xml->{$_} };
 	next if $entry{HIDDEN};
 	$result->{$_} = \%entry;
@@ -427,8 +426,8 @@ sub pipe_input {
 	print CLIENTCRAP "%R<<%n Something weird happend (no text)";
 	return();
     }
-    local our $VAR1;
-    my $incoming = eval($text);
+    utf8::decode($text);
+    my $incoming = CPAN::Meta::YAML->read_string($text)->[0];
     if ($incoming->{db} && $incoming->{timestamp}) {
     	$remote_db{db} = $incoming->{db};
     	$remote_db{timestamp} = $incoming->{timestamp};
@@ -628,7 +627,7 @@ sub print_ratings {
 sub print_new {
     my ($list) = @_;
     my @table;
-    foreach (sort {$list->{$b}{last_modified} cmp $list->{$a}{last_modified}} keys %$list) {
+    foreach (sort {$list->{$b}{modified} cmp $list->{$a}{modified}} keys %$list) {
 	my @line;
 	my ($name) = get_names($_);
         if (get_local_version($name)) {
@@ -637,7 +636,7 @@ sub print_new {
             push @line, "%yo%n";
         }
 	push @line, "%9".$name."%9";
-	push @line, $list->{$_}{last_modified};
+	push @line, $list->{$_}{modified};
 	push @table, \@line;
     }
     print CLIENTCRAP draw_box('ScriptAssist', array2table(@table), 'new scripts', 1) ;
@@ -822,7 +821,7 @@ sub contact_author {
 
 sub get_scripts {
     my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>30);
-    $ua->agent('ScriptAssist/'.2003020803);
+    $ua->agent('ScriptAssist/'.$VERSION);
     $ua->env_proxy();
     my @mirrors = split(/ /, Irssi::settings_get_str('scriptassist_script_sources'));
     my %sites_db;
@@ -852,22 +851,25 @@ sub get_scripts {
 	    $type = $2;
 	}
 	push @sources, $src;
-	#my @header = ('name', 'contact', 'authors', 'description', 'version', 'modules', 'last_modified');
+	#my @header = ('name', 'contact', 'authors', 'description', 'version', 'modules', 'modified');
 	if ($type eq 'dmp') {
-	    no strict 'vars';
-	    my $new_db = eval "$data";
-	    foreach (keys %$new_db) {
-		if (defined $sites_db{script}{$_}) {
-		    my $old = $sites_db{$_}{version};
-		    my $new = $new_db->{$_}{version};
+	    die("Support for $type script database has been removed. Please /set scriptassist_script_sources and change $type -> yml.\n");
+	} elsif ($type eq 'yml') {
+	    utf8::decode($data);
+	    my $new_db = CPAN::Meta::YAML->read_string($data);
+	    foreach (@{$new_db->[0]}) {
+		my $K = $_->{filename};
+		if (defined $sites_db{script}{$K}) {
+		    my $old = $sites_db{$K}{version};
+		    my $new = $_->{version};
 		    next if (compare_versions($old, $new) eq 'newer');
 		}
 		#foreach my $key (@header) {
-		foreach my $key (keys %{ $new_db->{$_} }) {
-		    next unless defined $new_db->{$_}{$key};
-		    $sites_db{$_}{$key} = $new_db->{$_}{$key};
+		foreach my $key (keys %$_) {
+		    next unless defined $_->{$key};
+		    $sites_db{$K}{$key} = $_->{$key};
 		}
-		$sites_db{$_}{source} = $src;
+		$sites_db{$K}{source} = $src;
 	    }
 	} else {
 	    die("Unknown script database type ($type).\n");
@@ -1093,6 +1095,7 @@ sub missing_module {
 
 sub cmd_scripassist {
     my ($arg, $server, $witem) = @_;
+    utf8::decode($arg);
     my @args = split(/ /, $arg);
     if ($args[0] eq 'help' || $args[0] eq '-h') {
 	show_help();
@@ -1176,7 +1179,7 @@ sub sig_complete {
 }
 
 
-Irssi::settings_add_str($IRSSI{name}, 'scriptassist_script_sources', 'https://scripts.irssi.org/scripts.dmp');
+Irssi::settings_add_str($IRSSI{name}, 'scriptassist_script_sources', 'https://scripts.irssi.org/scripts.yml');
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_cache_sources', 1);
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_update_verbose', 1);
 Irssi::settings_add_bool($IRSSI{name}, 'scriptassist_check_verbose', 1);
