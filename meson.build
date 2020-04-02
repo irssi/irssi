@@ -406,6 +406,12 @@ if want_capsicum
   endif
 endif
 
+# dependency helper sets
+dep_cflagsonly = []
+foreach d : dep
+  dep_cflagsonly += d.partial_dependency(includes : true, compile_args : true)
+endforeach
+
 ##################
 # irssi-config.h #
 ##################
