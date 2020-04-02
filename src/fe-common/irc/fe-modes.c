@@ -36,6 +36,7 @@
 
 typedef struct {
 	IRC_CHANNEL_REC *channel;
+	int level;
 	char *mode;
 	GSList *nicks;
 	time_t last_mode;
@@ -84,9 +85,8 @@ static void print_mode(MODE_REC *rec)
 	tmp = modes; modes = NULL;
 
 	nicks = gslist_to_string(rec->nicks, ", ");
-	printformat(rec->channel->server, rec->channel->visible_name,
-		    MSGLEVEL_MODES, IRCTXT_CHANMODE_CHANGE,
-		    rec->channel->visible_name, rec->mode, nicks, "");
+	printformat(rec->channel->server, rec->channel->visible_name, rec->level,
+	            IRCTXT_CHANMODE_CHANGE, rec->channel->visible_name, rec->mode, nicks, "");
 	g_free(nicks);
 
 	modes = tmp;
@@ -126,8 +126,8 @@ static int sig_check_modes(void)
 	return 1;
 }
 
-static void msg_multi_mode(IRC_CHANNEL_REC *channel, const char *sender,
-			   const char *addr, const char *mode)
+static void msg_multi_mode(IRC_CHANNEL_REC *channel, int level, const char *sender,
+                           const char *addr, const char *mode)
 {
 	MODE_REC *rec;
 
@@ -147,10 +147,13 @@ static void msg_multi_mode(IRC_CHANNEL_REC *channel, const char *sender,
 		rec = g_new0(MODE_REC, 1);
 		modes = g_slist_append(modes, rec);
 
+		rec->level = level;
 		rec->channel = channel;
 		rec->mode = g_strdup(mode);
 	}
-
+	/* the levels (everything below MSGLEVEL_ALL) are combined (|)
+	    whereas the flags (anything above) must all match (&) */
+	rec->level = ((rec->level | level) & MSGLEVEL_ALL) | (rec->level & level);
 	rec->nicks = g_slist_append(rec->nicks, g_strdup(sender));
 	rec->last_mode = time(NULL);
 
@@ -187,7 +190,7 @@ static void sig_message_mode(IRC_SERVER_REC *server, const char *channel,
 			irc_channel_find(server, channel);
 
 		if (chanrec != NULL && g_ascii_strcasecmp(nick, server->nick) != 0)
-			msg_multi_mode(chanrec, nick, addr, mode);
+			msg_multi_mode(chanrec, level, nick, addr, mode);
 		else {
 			printformat(server, channel, level,
 				    IRCTXT_CHANMODE_CHANGE,
