@@ -541,7 +541,8 @@ static void cmd_ping(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item
 
 	tv = g_get_real_time();
 
-	str = g_strdup_printf("%s PING %ld %ld", data, tv / G_TIME_SPAN_SECOND, tv % G_TIME_SPAN_SECOND);
+	str = g_strdup_printf("%s PING %ld %ld", data, (long) (tv / G_TIME_SPAN_SECOND),
+	                      (long) (tv % G_TIME_SPAN_SECOND));
 	signal_emit("command ctcp", 3, str, server, item);
 	g_free(str);
 }

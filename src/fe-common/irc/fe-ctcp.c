@@ -124,18 +124,18 @@ static void ctcp_ping_reply(IRC_SERVER_REC *server, const char *data,
 			    const char *target)
 {
 	gint64 tv, tv2;
-	long usecs;
+	long usecs, secs;
 
 	g_return_if_fail(data != NULL);
 
-	if (sscanf(data, "%ld %ld", &tv, &tv2) < 1) {
+	if (sscanf(data, "%ld %ld", &secs, &usecs) < 1) {
 		char *tmp = g_strconcat("PING ", data, NULL);
 		ctcp_default_reply(server, tmp, nick, addr, target);
 		g_free(tmp);
 		return;
 	}
 
-	tv2 += tv * G_TIME_SPAN_SECOND;
+	tv2 = secs * G_TIME_SPAN_SECOND + usecs;
 	tv = g_get_real_time();
 	usecs = tv - tv2;
 	printformat(server, server_ischannel(SERVER(server), target) ? target : nick, MSGLEVEL_CTCPS,
