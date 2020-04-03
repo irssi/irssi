@@ -90,7 +90,7 @@ static void sig_reload_config(int signo)
 
 static void sig_quit_on_hup(int signo)
 {
-	signal_emit("gui exit", 0);	
+	signal_emit("gui exit", 0);
 }
 
 static void read_settings(void)
@@ -115,8 +115,8 @@ static void read_settings(void)
 	act.sa_flags = 0;
 
 	quit_on_hup = settings_get_bool("quit_on_hup");
-	
-        act.sa_handler = quit_on_hup ?  sig_quit_on_hup : sig_reload_config;
+
+	act.sa_handler = quit_on_hup ? sig_quit_on_hup : sig_reload_config;
 	sigaction(SIGHUP, &act, NULL);
 
 	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
@@ -275,7 +275,6 @@ void core_init(void)
 	settings_add_str("misc", "ignore_signals", "");
 	settings_add_bool("misc", "override_coredump_limit", FALSE);
 	settings_add_bool("misc", "quit_on_hup", FALSE);
-
 
 #ifdef HAVE_SYS_RESOURCE_H
 	getrlimit(RLIMIT_CORE, &orig_core_rlimit);
