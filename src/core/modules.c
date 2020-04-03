@@ -214,7 +214,7 @@ MODULE_FILE_REC *module_register_full(const char *name, const char *submodule,
 		module = g_new0(MODULE_REC, 1);
 		module->name = g_strdup(name);
 
-                modules = g_slist_append(modules, module);
+		modules = g_slist_prepend(modules, module);
 	}
 
 	file = module_file_find(module, submodule);
@@ -226,8 +226,8 @@ MODULE_FILE_REC *module_register_full(const char *name, const char *submodule,
 	file->name = g_strdup(submodule);
         file->defined_module_name = g_strdup(defined_module_name);
 
-	module->files = g_slist_append(module->files, file);
-        return file;
+	module->files = g_slist_prepend(module->files, file);
+	return file;
 }
 
 MODULE_REC *module_find(const char *name)
