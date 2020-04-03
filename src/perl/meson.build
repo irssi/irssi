@@ -35,7 +35,8 @@ shared_module('perl_core',
   install_dir : moduledir,
   install_rpath : perl_rpath,
   build_rpath : perl_rpath,
-  dependencies : dep + [ perl_dep ],
+  dependencies : dep_cflagsonly + [ perl_dep ],
+  override_options : ['b_asneeded=false'],
 )
 
 shared_module('fe_perl',
