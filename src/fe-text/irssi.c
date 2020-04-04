@@ -339,10 +339,15 @@ int main(int argc, char **argv)
 	/* Does the same as g_main_run(main_loop), except we
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
-		if (reload_config) {
-			/* SIGHUP received, do /RELOAD */
-			reload_config = FALSE;
-			signal_emit("command reload", 1, "");
+		if (sighup_received) {
+                        sighup_received = FALSE;
+
+                        if (settings_get_bool("quit_on_hup")) {
+                                signal_emit("gui exit", 0);
+                        }
+                        else {
+                                signal_emit("command reload", 1, "");
+                        }
 		}
 
 		dirty_check();

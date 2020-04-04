@@ -66,7 +66,7 @@ void wcwidth_wrapper_deinit(void);
 
 int irssi_gui;
 int irssi_init_finished;
-int reload_config;
+int sighup_received;
 time_t client_start_time;
 
 static char *irssi_dir, *irssi_config_file;
@@ -83,14 +83,9 @@ const char *get_irssi_config(void)
         return irssi_config_file;
 }
 
-static void sig_reload_config(int signo)
+static void sig_hup(int signo)
 {
-        reload_config = TRUE;
-}
-
-static void sig_quit_on_hup(int signo)
-{
-	signal_emit("gui exit", 0);
+        sighup_received = TRUE;
 }
 
 static void read_settings(void)
@@ -107,16 +102,13 @@ static void read_settings(void)
 	const char *ignores;
 	struct sigaction act;
         int n;
-	int quit_on_hup;
 
 	ignores = settings_get_str("ignore_signals");
 
 	sigemptyset (&act.sa_mask);
 	act.sa_flags = 0;
 
-	quit_on_hup = settings_get_bool("quit_on_hup");
-
-	act.sa_handler = quit_on_hup ? sig_quit_on_hup : sig_reload_config;
+        act.sa_handler = sig_hup;
 	sigaction(SIGHUP, &act, NULL);
 
 	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
