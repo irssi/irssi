@@ -517,7 +517,12 @@ void chat_commands_init(void)
 
 	signal_add("server sendmsg", (SIGNAL_FUNC) sig_server_sendmsg);
 
-	command_set_options("connect", "4 6 !! -network ssl +ssl_cert +ssl_pkey +ssl_pass ssl_verify +ssl_cafile +ssl_capath +ssl_ciphers +ssl_pinned_cert +ssl_pinned_pubkey tls +tls_cert +tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert +tls_pinned_pubkey +host noproxy -rawlog noautosendcmd");
+	command_set_options(
+	    "connect",
+	    "4 6 !! -network ~ssl ~+ssl_cert ~+ssl_pkey ~+ssl_pass ~ssl_verify ~+ssl_cafile "
+	    "~+ssl_capath ~+ssl_ciphers ~+ssl_pinned_cert ~+ssl_pinned_pubkey tls +tls_cert "
+	    "+tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert "
+	    "+tls_pinned_pubkey +host noproxy -rawlog noautosendcmd");
 	command_set_options("msg", "channel nick");
 }
 

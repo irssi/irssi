@@ -544,7 +544,11 @@ static GList *completion_get_options(const char *cmd, const char *option)
 	list = NULL;
 	len = strlen(option);
 	for (tmp = rec->options; *tmp != NULL; tmp++) {
-		const char *optname = *tmp + iscmdtype(**tmp);
+		const char *optname;
+		if (**tmp == '~')
+			continue; /* deprecated or hidden option */
+
+		optname = *tmp + iscmdtype(**tmp);
 
 		if (len == 0 || g_ascii_strncasecmp(optname, option, len) == 0)
                         list = g_list_append(list, g_strconcat("-", optname, NULL));
