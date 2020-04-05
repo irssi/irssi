@@ -51,6 +51,8 @@ static void sig_server_connect_copy(SERVER_CONNECT_REC **dest,
 	rec->sasl_mechanism = src->sasl_mechanism;
 	rec->sasl_username = g_strdup(src->sasl_username);
 	rec->sasl_password = g_strdup(src->sasl_password);
+	rec->no_starttls = src->no_starttls;
+	rec->starttls = src->starttls;
 	*dest = (SERVER_CONNECT_REC *) rec;
 }
 

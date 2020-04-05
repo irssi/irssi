@@ -51,12 +51,12 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 	return target;
 }
 
-/* SYNTAX: SERVER ADD|MODIFY [-4 | -6] [-tls] [-tls_cert <cert>] [-tls_pkey <pkey>] [-tls_pass <password>]
-                             [-tls_verify] [-tls_cafile <cafile>] [-tls_capath <capath>]
-                             [-tls_ciphers <list>]
+/* SYNTAX: SERVER ADD|MODIFY [-4 | -6] [-tls] [-tls_cert <cert>] [-tls_pkey <pkey>]
+                             [-tls_pass <password>] [-tls_verify] [-tls_cafile <cafile>]
+                             [-tls_capath <capath>] [-tls_ciphers <list>] [-starttls | -nostarttls]
                              [-auto | -noauto] [-network <network>] [-host <hostname>]
-                             [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>]
-                             <address> [<port> [<password>]] */
+                             [-cmdspeed <ms>] [-cmdmax <count>] [-port <port>] <address> [<port>
+                             [<password>]] */
 /* NOTE: -network replaces the old -ircnet flag. */
 static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 				GHashTable *optlist)
@@ -85,6 +85,12 @@ static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 	if (value != NULL && *value != '\0') rec->max_cmds_at_once = atoi(value);
 	value = g_hash_table_lookup(optlist, "querychans");
 	if (value != NULL && *value != '\0') rec->max_query_chans = atoi(value);
+	if (g_hash_table_lookup(optlist, "nonostarttls"))
+		rec->starttls = -1;
+	if (g_hash_table_lookup(optlist, "nostarttls"))
+		rec->starttls = 0;
+	if (g_hash_table_lookup(optlist, "starttls"))
+		rec->starttls = 1;
 }
 
 /* SYNTAX: SERVER LIST */
@@ -108,29 +114,31 @@ static void cmd_server_list(const char *data)
 			g_string_append(str, "autoconnect, ");
 		if (rec->no_proxy)
 			g_string_append(str, "noproxy, ");
-		if (rec->use_tls) {
+		if (rec->starttls >= 0)
+			g_string_append_printf(str, "%sstarttls, ", rec->starttls ? "" : "no");
+		if (rec->use_tls)
 			g_string_append(str, "tls, ");
-			if (rec->tls_cert) {
-				g_string_append_printf(str, "tls_cert: %s, ", rec->tls_cert);
-				if (rec->tls_pkey)
-					g_string_append_printf(str, "tls_pkey: %s, ", rec->tls_pkey);
-				if (rec->tls_pass)
-					g_string_append_printf(str, "(pass), ");
-			}
-			if (rec->tls_verify)
-				g_string_append(str, "tls_verify, ");
-			if (rec->tls_cafile)
-				g_string_append_printf(str, "tls_cafile: %s, ", rec->tls_cafile);
-			if (rec->tls_capath)
-				g_string_append_printf(str, "tls_capath: %s, ", rec->tls_capath);
-			if (rec->tls_ciphers)
-				g_string_append_printf(str, "tls_ciphers: %s, ", rec->tls_ciphers);
-			if (rec->tls_pinned_cert)
-				g_string_append_printf(str, "tls_pinned_cert: %s, ", rec->tls_pinned_cert);
-			if (rec->tls_pinned_pubkey)
-				g_string_append_printf(str, "tls_pinned_pubkey: %s, ", rec->tls_pinned_pubkey);
-
+		if (rec->tls_cert) {
+			g_string_append_printf(str, "tls_cert: %s, ", rec->tls_cert);
+			if (rec->tls_pkey)
+				g_string_append_printf(str, "tls_pkey: %s, ", rec->tls_pkey);
+			if (rec->tls_pass)
+				g_string_append_printf(str, "(pass), ");
 		}
+		if (rec->tls_verify)
+			g_string_append(str, "tls_verify, ");
+		if (rec->tls_cafile)
+			g_string_append_printf(str, "tls_cafile: %s, ", rec->tls_cafile);
+		if (rec->tls_capath)
+			g_string_append_printf(str, "tls_capath: %s, ", rec->tls_capath);
+		if (rec->tls_ciphers)
+			g_string_append_printf(str, "tls_ciphers: %s, ", rec->tls_ciphers);
+		if (rec->tls_pinned_cert)
+			g_string_append_printf(str, "tls_pinned_cert: %s, ", rec->tls_pinned_cert);
+		if (rec->tls_pinned_pubkey)
+			g_string_append_printf(str, "tls_pinned_pubkey: %s, ",
+			                       rec->tls_pinned_pubkey);
+
 		if (rec->max_cmds_at_once > 0)
 			g_string_append_printf(str, "cmdmax: %d, ", rec->max_cmds_at_once);
 		if (rec->cmd_queue_speed > 0)
@@ -155,7 +163,12 @@ void fe_irc_server_init(void)
 	signal_add("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
 	command_bind("server list", NULL, (SIGNAL_FUNC) cmd_server_list);
 
-	command_set_options("server add", "-ircnet -network -cmdspeed -cmdmax -querychans");
+	command_set_options(
+	    "server add",
+	    "-ircnet -network -cmdspeed -cmdmax -querychans starttls nostarttls nonostarttls");
+	command_set_options(
+	    "server modify",
+	    "-ircnet -network -cmdspeed -cmdmax -querychans starttls nostarttls nonostarttls");
 }
 
 void fe_irc_server_deinit(void)

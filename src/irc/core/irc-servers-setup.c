@@ -44,9 +44,13 @@ static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
 		conn->max_cmds_at_once = sserver->max_cmds_at_once;
 	if (sserver->max_query_chans > 0)
 		conn->max_query_chans = sserver->max_query_chans;
+	if (sserver->starttls == 0)
+		conn->no_starttls = 1;
+	else if (sserver->starttls == 1)
+		conn->starttls = 1;
 }
 
-static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn)
+static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn, GHashTable *optlist)
 {
 	const char *value;
 
@@ -60,6 +64,11 @@ static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn)
 	value = settings_get_str("usermode");
 	conn->usermode = (value != NULL && *value != '\0') ?
 		g_strdup(value) : NULL;
+
+	if (g_hash_table_lookup(optlist, "starttls") != NULL)
+		conn->starttls = 1;
+	else if (g_hash_table_lookup(optlist, "nostarttls") != NULL)
+		conn->no_starttls = 1;
 }
 
 static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
@@ -174,6 +183,7 @@ static void sig_server_setup_read(IRC_SERVER_SETUP_REC *rec, CONFIG_NODE *node)
 	rec->max_cmds_at_once = config_node_get_int(node, "cmds_max_at_once", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmd_queue_speed", 0);
 	rec->max_query_chans = config_node_get_int(node, "max_query_chans", 0);
+	rec->starttls = config_node_get_bool(node, "starttls", -1);
 }
 
 static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
@@ -188,6 +198,10 @@ static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
 		iconfig_node_set_int(node, "cmd_queue_speed", rec->cmd_queue_speed);
 	if (rec->max_query_chans > 0)
 		iconfig_node_set_int(node, "max_query_chans", rec->max_query_chans);
+	if (rec->starttls >= 0)
+		iconfig_node_set_bool(node, "starttls", rec->starttls);
+	else
+		iconfig_node_set_str(node, "starttls", NULL);
 }
 
 void irc_servers_setup_init(void)

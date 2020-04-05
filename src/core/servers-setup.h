@@ -31,6 +31,10 @@ server_create_conn(int chat_type, const char *dest, int port,
 		   const char *chatnet, const char *password,
 		   const char *nick);
 
+SERVER_CONNECT_REC *server_create_conn_opt(int chat_type, const char *dest, int port,
+                                           const char *chatnet, const char *password,
+                                           const char *nick, GHashTable *optlist);
+
 /* Find matching server from setup. Try to find record with a same port,
    but fallback to any server with the same address. */
 SERVER_SETUP_REC *server_setup_find(const char *address, int port,

@@ -104,12 +104,54 @@ static gboolean parse_cap_name(char *name, char **key, char **val)
 	return TRUE;
 }
 
+static void cap_process_request_queue(IRC_SERVER_REC *server)
+{
+	/* No CAP has been requested */
+	if (server->cap_queue == NULL) {
+		irc_cap_finish_negotiation(server);
+	} else {
+		GSList *tmp;
+		GString *cmd;
+		int avail_caps = 0;
+
+		cmd = g_string_new("CAP REQ :");
+
+		/* To process the queue in order, we need to reverse the stack once */
+		server->cap_queue = g_slist_reverse(server->cap_queue);
+
+		/* Check whether the cap is supported by the server */
+		for (tmp = server->cap_queue; tmp != NULL; tmp = tmp->next) {
+			if (g_hash_table_lookup_extended(server->cap_supported, tmp->data, NULL,
+			                                 NULL)) {
+				if (avail_caps > 0)
+					g_string_append_c(cmd, ' ');
+				g_string_append(cmd, tmp->data);
+
+				avail_caps++;
+			}
+		}
+
+		/* Clear the queue here */
+		i_slist_free_full(server->cap_queue, (GDestroyNotify) g_free);
+		server->cap_queue = NULL;
+
+		/* If the server doesn't support any cap we requested close the negotiation here */
+		if (avail_caps > 0) {
+			signal_emit("server cap req", 2, server,
+			            cmd->str + sizeof("CAP REQ :") - 1);
+			irc_send_cmd_now(server, cmd->str);
+		} else {
+			irc_cap_finish_negotiation(server);
+		}
+
+		g_string_free(cmd, TRUE);
+	}
+}
+
 static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *address)
 {
-	GSList *tmp;
-	GString *cmd;
 	char *params, *evt, *list, *star, **caps;
-	int i, caps_length, disable, avail_caps, multiline;
+	int i, caps_length, disable, multiline;
 
 	params = event_get_params(args, 4, NULL, &evt, &star, &list);
 	if (params == NULL)
@@ -174,42 +216,20 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		/* A multiline response is always terminated by a normal one,
 		 * wait until we receive that one to require any CAP */
 		if (multiline == FALSE) {
-			/* No CAP has been requested */
-			if (server->cap_queue == NULL) {
-				irc_cap_finish_negotiation(server);
-			}
-			else {
-				cmd = g_string_new("CAP REQ :");
-
-				avail_caps = 0;
-
-				/* To process the queue in order, we need to reverse the stack once */
-				server->cap_queue = g_slist_reverse(server->cap_queue);
-
-				/* Check whether the cap is supported by the server */
-				for (tmp = server->cap_queue; tmp != NULL; tmp = tmp->next) {
-					if (g_hash_table_lookup_extended(server->cap_supported, tmp->data, NULL, NULL)) {
-						if (avail_caps > 0)
-							g_string_append_c(cmd, ' ');
-						g_string_append(cmd, tmp->data);
-
-						avail_caps++;
-					}
-				}
-
-				/* Clear the queue here */
-				i_slist_free_full(server->cap_queue, (GDestroyNotify) g_free);
-				server->cap_queue = NULL;
-
-				/* If the server doesn't support any cap we requested close the negotiation here */
-				if (avail_caps > 0) {
-					signal_emit("server cap req", 2, server, cmd->str + sizeof("CAP REQ :") - 1);
-					irc_send_cmd_now(server, cmd->str);
-				} else {
-					irc_cap_finish_negotiation(server);
-				}
-
-				g_string_free(cmd, TRUE);
+			gboolean want_starttls =
+			    i_slist_find_string(server->cap_queue, CAP_STARTTLS) != NULL;
+			server->cap_queue =
+			    i_slist_delete_string(server->cap_queue, CAP_STARTTLS, g_free);
+			if (server->connrec->starttls) {
+				/* the connection has requested starttls,
+				   no more data must be sent now */
+			} else if (want_starttls &&
+			           g_hash_table_lookup_extended(server->cap_supported, CAP_STARTTLS,
+			                                        NULL, NULL)) {
+				irc_server_send_starttls(server);
+				/* no more data must be sent now */
+			} else {
+				cap_process_request_queue(server);
 			}
 		}
 	}
@@ -301,12 +321,14 @@ static void event_invalid_cap (IRC_SERVER_REC *server, const char *data, const c
 
 void irc_cap_init (void)
 {
+	signal_add_last("server cap continue", (SIGNAL_FUNC) cap_process_request_queue);
 	signal_add_first("event cap", (SIGNAL_FUNC) event_cap);
 	signal_add_first("event 410", (SIGNAL_FUNC) event_invalid_cap);
 }
 
 void irc_cap_deinit (void)
 {
+	signal_remove("server cap continue", (SIGNAL_FUNC) cap_process_request_queue);
 	signal_remove("event cap", (SIGNAL_FUNC) event_cap);
 	signal_remove("event 410", (SIGNAL_FUNC) event_invalid_cap);
 }

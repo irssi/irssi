@@ -18,6 +18,7 @@ typedef struct {
 	int max_cmds_at_once;
 	int cmd_queue_speed;
         int max_query_chans;
+	int starttls;
 } IRC_SERVER_SETUP_REC;
 
 void irc_servers_setup_init(void);
