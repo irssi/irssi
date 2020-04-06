@@ -66,7 +66,7 @@ void wcwidth_wrapper_deinit(void);
 
 int irssi_gui;
 int irssi_init_finished;
-int reload_config;
+int sighup_received;
 time_t client_start_time;
 
 static char *irssi_dir, *irssi_config_file;
@@ -83,9 +83,9 @@ const char *get_irssi_config(void)
         return irssi_config_file;
 }
 
-static void sig_reload_config(int signo)
+static void sig_hup(int signo)
 {
-        reload_config = TRUE;
+	sighup_received = TRUE;
 }
 
 static void read_settings(void)
@@ -108,8 +108,7 @@ static void read_settings(void)
 	sigemptyset (&act.sa_mask);
 	act.sa_flags = 0;
 
-	/* reload config on SIGHUP */
-        act.sa_handler = sig_reload_config;
+	act.sa_handler = sig_hup;
 	sigaction(SIGHUP, &act, NULL);
 
 	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
@@ -267,6 +266,7 @@ void core_init(void)
 
 	settings_add_str("misc", "ignore_signals", "");
 	settings_add_bool("misc", "override_coredump_limit", FALSE);
+	settings_add_bool("misc", "quit_on_hup", FALSE);
 
 #ifdef HAVE_SYS_RESOURCE_H
 	getrlimit(RLIMIT_CORE, &orig_core_rlimit);
