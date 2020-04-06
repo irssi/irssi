@@ -340,14 +340,14 @@ int main(int argc, char **argv)
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
 		if (sighup_received) {
-                        sighup_received = FALSE;
+			sighup_received = FALSE;
 
-                        if (settings_get_bool("quit_on_hup")) {
-                                signal_emit("gui exit", 0);
-                        }
-                        else {
-                                signal_emit("command reload", 1, "");
-                        }
+			if (settings_get_bool("quit_on_hup")) {
+				signal_emit("gui exit", 0);
+			} 
+			else {
+				signal_emit("command reload", 1, "");
+			}
 		}
 
 		dirty_check();

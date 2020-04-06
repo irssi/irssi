@@ -85,7 +85,7 @@ const char *get_irssi_config(void)
 
 static void sig_hup(int signo)
 {
-        sighup_received = TRUE;
+	sighup_received = TRUE;
 }
 
 static void read_settings(void)
@@ -108,7 +108,7 @@ static void read_settings(void)
 	sigemptyset (&act.sa_mask);
 	act.sa_flags = 0;
 
-        act.sa_handler = sig_hup;
+	act.sa_handler = sig_hup;
 	sigaction(SIGHUP, &act, NULL);
 
 	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
