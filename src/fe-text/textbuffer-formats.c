@@ -16,6 +16,21 @@
 TEXT_BUFFER_REC *color_buf;
 int scrollback_format;
 
+#if GLIB_CHECK_VERSION(2, 56, 0)
+/* nothing */
+#else
+/* compatibility code for old GLib */
+static GDateTime *g_date_time_new_from_iso8601(const gchar *iso_date, GTimeZone *default_tz)
+{
+	GTimeVal time;
+	if (g_time_val_from_iso8601(iso_date, &time)) {
+		return g_date_time_new_from_timeval_utc(&time);
+	} else {
+		return NULL;
+	}
+}
+#endif
+
 static void collector_free(GSList **collector)
 {
 	while (*collector) {
