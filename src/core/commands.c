@@ -339,11 +339,28 @@ void command_runsub(const char *cmd, const char *data,
 	g_free(orig);
 }
 
+static char *optname(char *option)
+{
+	char *opt = option;
+	if (*opt == '~')
+		opt++;
+	if (iscmdtype(*opt))
+		opt++;
+	return opt;
+}
+
+static gboolean optflag(char *option, char *flag)
+{
+	if (*option == '~')
+		return optflag(option + 1, flag);
+
+	return (strchr(flag, *option) != NULL) || (!iscmdtype(*option) && strchr(flag, ' '));
+}
+
 static GSList *optlist_find(GSList *optlist, const char *option)
 {
 	while (optlist != NULL) {
-		char *name = optlist->data;
-		if (iscmdtype(*name)) name++;
+		char *name = optname(optlist->data);
 
 		if (g_ascii_strcasecmp(name, option) == 0)
 			return optlist;
@@ -369,7 +386,7 @@ int command_have_option(const char *cmd, const char *option)
 		return FALSE;
 
 	for (tmp = rec->options; *tmp != NULL; tmp++) {
-		char *name = iscmdtype(**tmp) ? (*tmp)+1 : *tmp;
+		char *name = optname(*tmp);
 
 		if (g_ascii_strcasecmp(name, option) == 0)
 			return TRUE;
@@ -399,7 +416,7 @@ static void command_calc_options(COMMAND_REC *rec, const char *options)
 
 	/* merge the options */
 	for (tmp = optlist; *tmp != NULL; tmp++) {
-		name = iscmdtype(**tmp) ? (*tmp)+1 : *tmp;
+		name = optname(*tmp);
 
 		oldopt = optlist_find(list, name);
 		if (oldopt != NULL) {
@@ -529,7 +546,7 @@ static int option_find(char **array, const char *option)
 
 	found = -1; index = 0; multiple = FALSE;
 	for (tmp = array; *tmp != NULL; tmp++, index++) {
-		const char *text = *tmp + iscmdtype(**tmp);
+		const char *text = optname(*tmp);
 
 		if (g_ascii_strncasecmp(text, option, len) == 0) {
 			if (text[len] == '\0') {
@@ -568,9 +585,9 @@ static int get_cmd_options(char **data, int ignore_unknown,
 	option = NULL; pos = -1;
 	for (;;) {
 		if (**data == '\0' || **data == '-') {
-			if (option != NULL && *optlist[pos] == '+') {
+			if (option != NULL && optflag(optlist[pos], "+")) {
 				/* required argument missing! */
-                                *data = optlist[pos] + 1;
+				*data = optname(optlist[pos]);
 				return CMDERR_OPTION_ARG_MISSING;
 			}
 		}
@@ -621,14 +638,12 @@ static int get_cmd_options(char **data, int ignore_unknown,
 			if (pos >= 0) {
 				/* if we used a shortcut of parameter, put
 				   the whole parameter name in options table */
-				option = optlist[pos] +
-					iscmdtype(*optlist[pos]);
+				option = optname(optlist[pos]);
 			}
 			if (options != NULL && pos != -3)
 				g_hash_table_insert(options, option, "");
 
-			if (pos < 0 || !iscmdtype(*optlist[pos]) ||
-			    *optlist[pos] == '!')
+			if (pos < 0 || optflag(optlist[pos], " !"))
 				option = NULL;
 
 			while (**data == ' ') (*data)++;
@@ -638,7 +653,7 @@ static int get_cmd_options(char **data, int ignore_unknown,
 		if (option == NULL)
 			break;
 
-		if (*optlist[pos] == '@' && !is_numeric(*data, ' '))
+		if (optflag(optlist[pos], "@") && !is_numeric(*data, ' '))
 			break; /* expected a numeric argument */
 
 		/* save the argument */
