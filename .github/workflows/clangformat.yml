@@ -1,0 +1,22 @@
+on: [pull_request]
+name: clang-format
+jobs:
+  check-clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: fetch target ref
+        run:
+          |
+            refs=($(git log -1 --format=%s))
+            git fetch --depth=1 origin "${refs[3]}"
+      - name: run git-clang-format and Check if no changes are needed
+        run:
+          |
+            git-clang-format-9 --diff FETCH_HEAD HEAD | tee git-clang-format.diff
+            cmp -s <(echo no modified files to format) git-clang-format.diff
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: git-clang-format.diff
+          path: git-clang-format.diff
