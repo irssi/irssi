@@ -147,6 +147,7 @@ if not socket_found
   error('socket not found')
 endif
 
+built_src = []
 glib_internal = false
 message('*** If you don\'t have GLib, you can run meson ... -Dinstall-glib=yes')
 message('*** to download and build it automatically')
@@ -162,15 +163,64 @@ if not glib_dep.found()
   glib_internal = true
   meson_cmd = find_program('meson')
   ninja = find_program('ninja')
+
   glib_internal_download_t = custom_target('glib-internal-download',
     command : [ meson_cmd, 'subprojects', 'download', 'glib', '--sourcedir', meson.current_source_dir() ],
     console : true,
     output : ['glib-internal-download'],
   )
+
+  glib_internal_dependencies = [
+    dependency('threads'),
+  ]
+  glib_internal_configure_args = []
+
+  glib_internal_usr_local = false
+  if not cc.has_function('iconv_open')
+    prov_lib = cc.find_library('iconv', required : false)
+    if not prov_lib.found()
+      prov_lib = cc.find_library('iconv', dirs : '/usr/local/lib')
+      glib_internal_usr_local = true
+    endif
+    if cc.has_function('libiconv_open', dependencies : prov_lib)
+      glib_internal_configure_args += '-Diconv=gnu'
+    else
+      glib_internal_configure_args += '-Diconv=native'
+    endif
+    glib_internal_dependencies += prov_lib
+  endif
+
+  if not cc.has_function('ngettext')
+    prov_lib = cc.find_library('intl', required : false)
+    if not prov_lib.found()
+      prov_lib = cc.find_library('intl', dirs : '/usr/local/lib')
+      glib_internal_usr_local = true
+    endif
+    glib_internal_dependencies += prov_lib
+  endif
+
+  if glib_internal_usr_local
+    glib_internal_configure_args += ['-Dc_args=-I/usr/local/include', '-Dc_link_args=-L/usr/local/lib']
+  endif
+
+  if not cc.has_function('getxattr') or not cc.has_header('sys/xattr.h')
+    if cc.has_header_symbol('attr/xattr.h', 'getxattr')
+      prov_lib = cc.find_library('xattr', required : false)
+    else
+      prov_lib = dependency('', required : false)
+    endif
+    if prov_lib.found()
+      glib_internal_dependencies += prov_lib
+    else
+      glib_internal_configure_args += '-Dxattr=false'
+    endif
+  endif
+
   glib_internal_configure_t = custom_target('glib-internal-configure',
     command : [ meson_cmd, 'setup', '--prefix=/irssi-glib-internal',
       '--buildtype=' + get_option('buildtype'),
       '-Dlibmount=false', '-Dselinux=false', '-Ddefault_library=static', '-Dinternal_pcre=true',
+      glib_internal_configure_args,
       (meson.current_build_dir() / 'build-subprojects' / 'glib'),
       (meson.current_source_dir() / 'subprojects' / glib_internal_version) ],
     console : true,
@@ -184,9 +234,7 @@ if not glib_dep.found()
     output : ['glib-internal-build'],
     depends : glib_internal_configure_t,)
   glib_dep = declare_dependency(
-    dependencies : [
-      dependency('threads'),
-    ],
+    dependencies : glib_internal_dependencies,
     sources : glib_internal_build_t,
     compile_args : [
       '-I' + (meson.current_source_dir() / 'subprojects' / glib_internal_version / 'glib'),
@@ -195,6 +243,7 @@ if not glib_dep.found()
     ],
     link_args : [ meson.current_build_dir() / 'build-subprojects' / 'glib' / 'glib' / 'libglib-2.0.a' ],
   )
+  built_src += glib_internal_build_t
   libdl_dep = []
   prov_lib = cc.find_library('dl', required : false)
   if prov_lib.found() and cc.has_function('dlopen', dependencies : prov_lib)
