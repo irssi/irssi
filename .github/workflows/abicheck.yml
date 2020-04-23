@@ -1,0 +1,71 @@
+on: [pull_request]
+name: abicheck
+jobs:
+  check-abi-diff:
+    runs-on: ubuntu-latest
+    env:
+      build_options: -Dbuildtype=debug -Denable-true-color=yes -Dwith-proxy=yes
+      prefix: /usr/local
+    steps:
+      - name: set PATH
+        run: |
+          echo "::add-path::$HOME/.local/bin"
+      - name: prepare required software
+        run: |
+          sudo apt install abigail-tools ninja-build libutf8proc-dev libperl-dev libotr5-dev
+          pip3 install setuptools
+          pip3 install wheel
+          pip3 install meson
+      - name: checkout merge ref
+        uses: actions/checkout@master
+        with:
+          path: merge.src
+      - name: checkout base ref
+        uses: actions/checkout@master
+        with:
+          path: base.src
+          ref: ${{ github.base_ref }}
+      - name: build base ref
+        run: |
+          meson Build.base base.src $build_options
+          ninja -C Build.base
+          DESTDIR=$PWD/base ninja -C Build.base install
+      - name: build merge ref
+        run: |
+          meson Build.merge merge.src $build_options
+          ninja -C Build.merge
+          DESTDIR=$PWD/merge ninja -C Build.merge install
+      - run: |
+          # print versions and abi versions
+          getabidef() { awk '$1=="#define" && $2=="IRSSI_ABI_VERSION" { print $3 }' "$1"/include/irssi/src/common.h; }
+          base_abi=$(getabidef base$prefix)
+          echo base abi : $base_abi
+          ./base$prefix/bin/irssi --version
+          echo "::set-env name=base_abi::$base_abi"
+          merge_abi=$(getabidef merge$prefix)
+          echo merge abi : $merge_abi
+          ./merge$prefix/bin/irssi --version
+          echo "::set-env name=merge_abi::$merge_abi"
+      - run: |
+          # abipkgdiff
+          abipkgdiff -l base merge && diff_ret=0 || diff_ret=$?
+          echo "::set-env name=diff_ret::$diff_ret"
+      - run: |
+          # Check if no changes are needed
+          if [ "$diff_ret" -ne 0 ]; then
+              if [ "$base_abi" -lt "$merge_abi" ]; then
+                  echo "::warning ::abigail found changes and ABI changed from $base_abi to $merge_abi"
+                  exit 0
+              else
+                  echo "::error ::Looks like the ABI changed but the IRSSI_ABI_VERSION did not"
+                  exit $diff_ret
+              fi
+          else
+              if [ "$base_abi" -ne "$merge_abi" ]; then
+                  echo "::error ::abigail found no changes yet the IRSSI_ABI_VERSION changed. Is this correct?"
+                  exit 1
+              else
+                  : "No changes detected and IRSSI_ABI_VERSION untouched"
+                  exit 0
+              fi
+          fi
