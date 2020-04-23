@@ -23,7 +23,7 @@ shared_module('perl_core',
   ) + [
     irssi_core_pl_h,
     perl_signals_list_h,
-  ],
+  ] + built_src,
   c_args : [
     def_scriptdir,
     def_perl_use_lib,
