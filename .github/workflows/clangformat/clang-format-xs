@@ -1,0 +1,114 @@
+#!/bin/bash
+
+set -eu
+
+srcdir=$(dirname "$(readlink -f "$0")")
+test -z "$srcdir" && srcdir=.
+
+CLANG_FORMAT=${CLANG_FORMAT:-clang-format}
+options=()
+files=()
+lines=()
+no_options=0;inplace=0;xml=0;keep_offset=0;keep_length=0;keep=0;
+filename=tmp.1.c
+offsets=
+karg=
+off_opts=()
+for arg in "$@"; do
+    if [[ $keep = 1 ]]; then
+	if [[ "$karg" = "-offset" ]]; then
+	    offsets="$offsets${offsets:+ }$arg"
+	    off_opts+=("$karg" "$arg")
+	elif [[ "$karg" = "-length" ]]; then
+	    offsets="$offsets:$arg"
+	    off_opts+=("$karg" "$arg")
+	elif [[ "$karg" = "-assume-filename" ]]; then
+	    filename="$arg"
+	    options+=("$karg" "$arg")
+	else
+	    options+=("$karg" "$arg")
+	fi
+	keep=0
+    elif [[ $no_options = 0 ]]; then
+	case "$arg" in
+	    -assume-filename=*)
+		filename="${arg#-assume-filename=}"
+		;;
+	    -lines=*)
+		lines+=("${arg#-lines=}")
+		;;
+	    *)
+		;;
+	esac
+	case "$arg" in
+	    --) no_options=1
+		;;
+	    -i) inplace=1
+		;;
+	    -output-replacements-xml)
+		xml=1
+		;;
+	    -offset|-length|-cursor|-assume-filename|-fallback-style|-style)
+		keep=1
+		karg="$arg"
+		;;
+	    -*) options+=("$arg")
+		;;
+	    *) files+=("$arg")
+	       ;;
+	esac
+    else
+	files+=("$arg")
+    fi
+done
+
+export IN_LINES="${lines[*]}"
+export OFFSETS="$offsets"
+
+options_o=("${options[@]}")
+if [[ $inplace = 1 ]]; then
+    options_o=("-i" "${options[@]}")
+fi
+if [[ $xml = 1 ]]; then
+    options_o=("-output-replacements-xml" "${options[@]}")
+fi
+options_o+=("${off_opts[@]}")
+
+do_xs() {
+    perl "$srcdir"/format-xs-1.pl "$1" > "$1".1.c
+    $CLANG_FORMAT -i "${options[@]}" -- "$1".1.c
+    if [[ $xml = 1 ]]; then
+	perl "$srcdir"/format-xs-2.pl "$1".1.c > "$1".1.xs
+	perl "$srcdir"/format-xs-xml.pl <(diff -U0 <(od -An -tu1 -w1 -v "$1") <(od -An -tu1 -w1 -v "$1".1.xs))
+	rm "$1".1.xs
+    elif [[ $inplace = 1 ]]; then
+	perl "$srcdir"/format-xs-2.pl "$1".1.c > "$1"
+    else
+	perl "$srcdir"/format-xs-2.pl "$1".1.c
+    fi
+    rm "$1".1.c
+}
+
+if [[ ${#files[@]} -eq 0 ]]; then
+    case "$filename" in
+	    *.xs)
+		cat > "$filename".1.xs
+		do_xs "$filename".1.xs
+		rm "$filename".1.xs
+		;;
+	    *)
+		$CLANG_FORMAT "${options_o[@]}"
+		;;
+    esac
+else
+    for file in "${files[@]}"; do
+	case "$file" in
+	    *.xs)
+		do_xs "$file"
+		;;
+	    *)
+		$CLANG_FORMAT "${options_o[@]}" -- "$file"
+		;;
+	esac
+    done
+fi
