@@ -233,6 +233,7 @@ static void event_command(const char *data)
 				(data[1] == *cmdchar && data[2] == '^'))
 			    && !command_hide_output++) {
 		signal_add_first("print starting", (SIGNAL_FUNC) sig_stop);
+		signal_add_first("print noformat", (SIGNAL_FUNC) sig_stop);
 		signal_add_first("print format", (SIGNAL_FUNC) sig_stop);
 		signal_add_first("print text", (SIGNAL_FUNC) sig_stop);
 	}
@@ -242,6 +243,7 @@ static void event_command_last(const char *data)
 {
 	if (command_hide_output && !--command_hide_output) {
 		signal_remove("print starting", (SIGNAL_FUNC) sig_stop);
+		signal_remove("print noformat", (SIGNAL_FUNC) sig_stop);
 		signal_remove("print format", (SIGNAL_FUNC) sig_stop);
 		signal_remove("print text", (SIGNAL_FUNC) sig_stop);
 	}

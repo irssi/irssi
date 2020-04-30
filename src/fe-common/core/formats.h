@@ -1,8 +1,9 @@
 #ifndef IRSSI_FE_COMMON_CORE_FORMATS_H
 #define IRSSI_FE_COMMON_CORE_FORMATS_H
 
-#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/core/signals.h>
 #include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/themes.h>
 
 #define GUI_PRINT_FLAG_BOLD          0x0001
 #define GUI_PRINT_FLAG_REVERSE       0x0002
@@ -35,6 +36,7 @@ struct _FORMAT_REC {
 	int paramtypes[MAX_FORMAT_PARAMS];
 };
 
+/* clang-format off */
 #define PRINT_FLAG_SET_LINE_START	0x0001
 #define PRINT_FLAG_SET_LINE_START_IRSSI	0x0002
 #define PRINT_FLAG_UNSET_LINE_START	0x0040
@@ -44,6 +46,9 @@ struct _FORMAT_REC {
 
 #define PRINT_FLAG_SET_SERVERTAG	0x0010
 #define PRINT_FLAG_UNSET_SERVERTAG	0x0020
+
+#define PRINT_FLAG_FORMAT         	0x0080
+/* clang-format on */
 
 typedef struct _HILIGHT_REC HILIGHT_REC;
 
@@ -113,7 +118,7 @@ void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
 			    const char *server_tag, const char *target,
 			    int level, WINDOW_REC *window);
 
-void format_newline(WINDOW_REC *window);
+void format_newline(TEXT_DEST_REC *dest);
 
 /* Return how many characters in `str' must be skipped before `len'
    characters of text is skipped. */
@@ -126,6 +131,14 @@ char *strip_codes(const char *input);
 
 /* send a fully parsed text string for GUI to print */
 void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
+/* parse text string into GUI_PRINT_FLAG_* separated pieces and emit them to handler
+   handler is a SIGNAL_FUNC with the following arguments:
+
+   WINDOW_REC *window, void *fgcolor_int, void *bgcolor_int,
+       void *flags_int, const char *textpiece, TEXT_DEST_REC *dest
+
+ */
+void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC handler);
 
 #define FORMAT_COLOR_NOCHANGE	('0'-1) /* don't change this, at least hilighting depends this value */
 #define FORMAT_COLOR_EXT1	('0'-2)
@@ -151,6 +164,8 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
 int format_expand_styles(GString *out, const char **format, int *flags);
 void format_ext_color(GString *out, int bg, int color);
 void format_24bit_color(GString *out, int bg, unsigned int color);
+void format_gui_flags(GString *out, int *last_fg, int *last_bg, int *last_flags, int fg, int bg,
+                      int flags);
 
 void formats_init(void);
 void formats_deinit(void);

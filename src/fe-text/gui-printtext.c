@@ -19,8 +19,9 @@
 */
 
 #include "module.h"
-#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
 #include <irssi/src/core/settings.h>
+#include <irssi/src/core/signals.h>
 
 #include <irssi/src/fe-common/core/formats.h>
 #include <irssi/src/fe-common/core/printtext.h>
@@ -237,7 +238,7 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 	}
 }
 
-static void get_colors(int *flags, int *fg, int *bg, int *attr)
+void gui_printtext_get_colors(int *flags, int *fg, int *bg, int *attr)
 {
 	*attr = 0;
 	if (*flags & GUI_PRINT_FLAG_MIRC_COLOR) {
@@ -329,16 +330,20 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
         GUI_WINDOW_REC *gui;
         TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;
-        LINE_INFO_REC lineinfo;
+	LINE_INFO_REC lineinfo = { 0 };
 	int fg, bg, flags, attr;
 
 	flags = GPOINTER_TO_INT(pflags);
 	fg = GPOINTER_TO_INT(fgcolor);
 	bg = GPOINTER_TO_INT(bgcolor);
-	get_colors(&flags, &fg, &bg, &attr);
+	gui_printtext_get_colors(&flags, &fg, &bg, &attr);
 
 	if (window == NULL) {
 		print_text_no_window(flags, fg, bg, attr, str);
+		return;
+	}
+
+	if (dest != NULL && dest->flags & PRINT_FLAG_FORMAT) {
 		return;
 	}
 
@@ -346,6 +351,8 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
         gui = WINDOW_GUI(window);
         lineinfo.time = (gui->use_insert_after && gui->insert_after_time) ?
 		gui->insert_after_time : time(NULL);
+	lineinfo.format =
+	    dest != NULL && dest->flags & PRINT_FLAG_FORMAT ? LINE_INFO_FORMAT_SET : NULL;
 
 	view = gui->view;
 	insert_after = gui->use_insert_after ?
@@ -378,7 +385,8 @@ static void sig_gui_printtext_finished(WINDOW_REC *window)
 	insert_after = WINDOW_GUI(window)->use_insert_after ?
 		WINDOW_GUI(window)->insert_after : view->buffer->cur_line;
 
-        view_add_eol(view, &insert_after);
+	if (insert_after != NULL)
+		view_add_eol(view, &insert_after);
 	remove_old_lines(view);
 }
 

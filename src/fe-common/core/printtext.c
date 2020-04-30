@@ -42,7 +42,7 @@ static int signal_print_noformat;
 
 static int sending_print_starting;
 
-static void print_line(TEXT_DEST_REC *dest, const char *text);
+static void print_line(TEXT_DEST_REC *dest, const char *text, int formatted);
 
 void printformat_module_dest_args(const char *module, TEXT_DEST_REC *dest,
 				  int formatnum, va_list va)
@@ -63,7 +63,6 @@ void printformat_module_dest_charargs(const char *module, TEXT_DEST_REC *dest,
 				      int formatnum, char **arglist)
 {
 	THEME_REC *theme;
-	char *str;
 
 	theme = window_get_theme(dest->window);
 
@@ -75,11 +74,6 @@ void printformat_module_dest_charargs(const char *module, TEXT_DEST_REC *dest,
 
 	signal_emit_id(signal_print_format, 5, theme, module,
 		       dest, GINT_TO_POINTER(formatnum), arglist);
-
-	str = format_get_text_theme_charargs(theme, module, dest,
-					     formatnum, arglist);
-	if (str != NULL && *str != '\0') print_line(dest, str);
-	g_free(str);
 }
 
 void printformat_module_dest(const char *module, TEXT_DEST_REC *dest,
@@ -164,29 +158,6 @@ void printformat_module_gui(const char *module, int formatnum, ...)
 	va_end(va);
 }
 
-static void print_line(TEXT_DEST_REC *dest, const char *text)
-{
-        THEME_REC *theme;
-	char *str, *tmp, *stripped;
-
-	g_return_if_fail(dest != NULL);
-	g_return_if_fail(text != NULL);
-
-        theme = window_get_theme(dest->window);
-	tmp = format_get_level_tag(theme, dest);
-	str = !theme->info_eol ? format_add_linestart(text, tmp) :
-		format_add_lineend(text, tmp);
-	g_free_not_null(tmp);
-
-	/* send both the formatted + stripped (for logging etc.) */
-	stripped = strip_codes(str);
-	signal_emit_id(signal_print_text, 3, dest, str, stripped);
-        g_free_and_null(dest->hilight_color);
-
-	g_free(str);
-        g_free(stripped);
-}
-
 /* append string to `out', expand newlines. */
 static void printtext_append_str(TEXT_DEST_REC *dest, GString *out,
 				 const char *str)
@@ -195,7 +166,7 @@ static void printtext_append_str(TEXT_DEST_REC *dest, GString *out,
 		if (*str != '\n')
 			g_string_append_c(out, *str);
 		else {
-			print_line(dest, out->str);
+			print_line(dest, out->str, 0);
 			g_string_truncate(out, 0);
 		}
 		str++;
@@ -314,9 +285,7 @@ static void printtext_dest_args(TEXT_DEST_REC *dest, const char *text, va_list v
 	}
 
 	str = printtext_get_args(dest, text, va);
-	signal_emit_id(signal_print_noformat, 2,
-		       dest, str);
-	print_line(dest, str);
+	print_line(dest, str, 0);
 	g_free(str);
 }
 
@@ -361,8 +330,8 @@ void printtext_string(void *server, const char *target, int level, const char *t
 	}
 
         str = printtext_expand_formats(text, &dest.flags);
-	print_line(&dest, str);
-        g_free(str);
+	print_line(&dest, str, 0);
+	g_free(str);
 }
 
 /* Like printtext_window(), but don't handle %s etc. */
@@ -383,8 +352,8 @@ void printtext_string_window(WINDOW_REC *window, int level, const char *text)
 	}
 
         str = printtext_expand_formats(text, &dest.flags);
-	print_line(&dest, str);
-        g_free(str);
+	print_line(&dest, str, 0);
+	g_free(str);
 }
 
 void printtext_window(WINDOW_REC *window, int level, const char *text, ...)
@@ -476,6 +445,51 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	signal_emit_id(signal_gui_print_text_finished, 1, dest->window);
 }
 
+static void sig_print_format(THEME_REC *theme, const char *module, TEXT_DEST_REC *dest,
+                             void *formatnump, char **arglist)
+{
+	int formatnum;
+	char *str;
+
+	formatnum = GPOINTER_TO_INT(formatnump);
+	str = format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
+	if (str != NULL && *str != '\0')
+		print_line(dest, str, 1);
+
+	g_free(str);
+}
+
+static void sig_print_noformat(TEXT_DEST_REC *dest, const char *text)
+{
+	THEME_REC *theme;
+	char *str, *tmp, *stripped;
+
+	theme = window_get_theme(dest->window);
+	tmp = format_get_level_tag(theme, dest);
+	str = !theme->info_eol ? format_add_linestart(text, tmp) : format_add_lineend(text, tmp);
+	g_free_not_null(tmp);
+
+	/* send both the formatted + stripped (for logging etc.) */
+	stripped = strip_codes(str);
+	signal_emit_id(signal_print_text, 3, dest, str, stripped);
+
+	g_free_and_null(dest->hilight_color);
+
+	g_free(str);
+	g_free(stripped);
+}
+
+static void print_line(TEXT_DEST_REC *dest, const char *text, int formatted)
+{
+	g_return_if_fail(dest != NULL);
+	g_return_if_fail(text != NULL);
+
+	if (!formatted)
+		signal_emit_id(signal_print_noformat, 2, dest, text);
+	else
+		sig_print_noformat(dest, text);
+}
+
 void printtext_multiline(void *server, const char *target, int level,
 			 const char *format, const char *text)
 {
@@ -522,6 +536,8 @@ void printtext_init(void)
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_print_text);
+	signal_add("print format", (SIGNAL_FUNC) sig_print_format);
+	signal_add("print noformat", (SIGNAL_FUNC) sig_print_noformat);
 	signal_add("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 }
@@ -529,6 +545,8 @@ void printtext_init(void)
 void printtext_deinit(void)
 {
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
+	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
+	signal_remove("print noformat", (SIGNAL_FUNC) sig_print_noformat);
 	signal_remove("gui dialog", (SIGNAL_FUNC) sig_gui_dialog);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 }

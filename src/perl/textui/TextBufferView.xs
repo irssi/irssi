@@ -1,5 +1,6 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
+#include "wrapper_buffer_line.h"
 
 MODULE = Irssi::TextUI::TextBufferView  PACKAGE = Irssi::TextUI::TextBuffer  PREFIX = textbuffer_
 PROTOTYPES: ENABLE
@@ -33,6 +34,10 @@ textbuffer_view_clear(view)
 Irssi::TextUI::Line
 textbuffer_view_get_lines(view)
 	Irssi::TextUI::TextBufferView view
+CODE:
+	RETVAL = perl_wrap_buffer_line(view->buffer, textbuffer_view_get_lines(view));
+OUTPUT:
+	RETVAL
 
 void
 textbuffer_view_scroll(view, lines)
@@ -43,16 +48,24 @@ void
 textbuffer_view_scroll_line(view, line)
 	Irssi::TextUI::TextBufferView view
 	Irssi::TextUI::Line line
+CODE:
+	textbuffer_view_scroll_line(view, line->line);
 
 Irssi::TextUI::LineCache
 textbuffer_view_get_line_cache(view, line)
 	Irssi::TextUI::TextBufferView view
 	Irssi::TextUI::Line line
+CODE:
+	RETVAL = textbuffer_view_get_line_cache(view, line->line);
+OUTPUT:
+	RETVAL
 
 void
 textbuffer_view_remove_line(view, line)
 	Irssi::TextUI::TextBufferView view
 	Irssi::TextUI::Line line
+CODE:
+	textbuffer_view_remove_line(view, line->line);
 
 void
 textbuffer_view_remove_all_lines(view)
@@ -68,6 +81,8 @@ textbuffer_view_set_bookmark(view, name, line)
 	Irssi::TextUI::TextBufferView view
 	char *name
 	Irssi::TextUI::Line line
+CODE:
+	textbuffer_view_set_bookmark(view, name, line->line);
 
 void
 textbuffer_view_set_bookmark_bottom(view, name)
@@ -78,6 +93,10 @@ Irssi::TextUI::Line
 textbuffer_view_get_bookmark(view, name)
 	Irssi::TextUI::TextBufferView view
 	char *name
+CODE:
+	RETVAL = perl_wrap_buffer_line(view->buffer, textbuffer_view_get_bookmark(view, name));
+OUTPUT:
+	RETVAL
 
 void
 textbuffer_view_redraw(view)

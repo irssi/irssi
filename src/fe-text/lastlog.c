@@ -199,7 +199,7 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 		}
 
                 /* get the line text */
-		textbuffer_line2text(rec, fhandle == NULL, line);
+		textbuffer_line2text(WINDOW_GUI(window)->view->buffer, rec, fhandle == NULL, line);
 		if (!settings_get_bool("timestamps")) {
 			struct tm *tm = localtime(&rec->info.time);
                         char timestamp[10];

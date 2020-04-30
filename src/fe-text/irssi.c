@@ -71,6 +71,9 @@ void gui_expandos_deinit(void);
 void textbuffer_commands_init(void);
 void textbuffer_commands_deinit(void);
 
+void textbuffer_formats_init(void);
+void textbuffer_formats_deinit(void);
+
 void lastlog_init(void);
 void lastlog_deinit(void);
 
@@ -168,6 +171,7 @@ static void textui_finish_init(void)
 	textbuffer_init();
 	textbuffer_view_init();
 	textbuffer_commands_init();
+	textbuffer_formats_init();
 	gui_expandos_init();
 	gui_printtext_init();
 	gui_readline_init();
@@ -256,6 +260,7 @@ static void textui_deinit(void)
 	mainwindow_activity_deinit();
 	mainwindows_deinit();
 	gui_expandos_deinit();
+	textbuffer_formats_deinit();
 	textbuffer_commands_deinit();
 	textbuffer_view_deinit();
 	textbuffer_deinit();

@@ -27,6 +27,7 @@ typedef struct {
 typedef struct {
 	time_t last_access;
 
+	char *line_text;
 	int count; /* number of real lines */
 
 	/* variable sized array, actually. starts from the second line,
