@@ -446,13 +446,19 @@ GHashTable *irc_parse_message_tags(const char *tags)
 static void irc_server_event_tags(IRC_SERVER_REC *server, const char *line, const char *nick,
                                   const char *address, const char *tags)
 {
-	char *timestr;
+	char *timestr, *accountstr;
 	GHashTable *tags_hash = NULL;
 
 	if (tags != NULL && *tags != '\0') {
 		tags_hash = irc_parse_message_tags(tags);
 		if ((timestr = g_hash_table_lookup(tags_hash, "time")) != NULL) {
 			server_meta_stash(SERVER(server), "time", timestr);
+		}
+
+		accountstr = g_hash_table_lookup(tags_hash, "account");
+		if (accountstr != NULL) {
+			server_meta_stash(SERVER(server), "account", accountstr);
+			g_free(accountstr);
 		}
 	}
 

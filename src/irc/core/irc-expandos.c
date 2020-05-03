@@ -141,6 +141,34 @@ static char *expando_cumode_space(SERVER_REC *server, void *item, int *free_ret)
 	return *ret == '\0' ? " " : ret;
 }
 
+static char *expando_account_tag(SERVER_REC *server, void *item, int *free_ret)
+{
+	const char *ret;
+
+	if (!IS_IRC_SERVER(server))
+		return "";
+
+	ret = server_meta_stash_find(server, "account");
+
+	return ret == NULL ? "" : (char *) ret;
+}
+
+static char *expando_has_account_tag(SERVER_REC *server, void *item, int *free_ret)
+{
+	const char *ret;
+
+	if (!IS_IRC_SERVER(server))
+		return "";
+
+	if (gslist_find_string(IRC_SERVER(server)->cap_active, CAP_ACCOUNT_TAG) == NULL)
+		return "";
+
+	ret = server_meta_stash_find(server, "account");
+
+	return (char *) settings_get_str(ret == NULL ? "format_has_no_account_tag" :
+	                                               "format_has_account_tag");
+}
+
 static void event_join(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *address)
 {
@@ -155,6 +183,8 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 void irc_expandos_init(void)
 {
 	last_join = NULL;
+	settings_add_str("lookandfeel", "format_has_no_account_tag", "~");
+	settings_add_str("lookandfeel", "format_has_account_tag", "ª");
 
 	expando_create(":", expando_lastjoin,
 		       "event join", EXPANDO_ARG_SERVER, NULL);
@@ -183,8 +213,12 @@ void irc_expandos_init(void)
 		       "window item changed", EXPANDO_ARG_WINDOW,
 		       "nick mode changed", EXPANDO_ARG_WINDOW_ITEM,
 		       "channel joined", EXPANDO_ARG_WINDOW_ITEM, NULL);
+	expando_create("account_tag", expando_account_tag, "server event", EXPANDO_ARG_SERVER,
+	               NULL);
+	expando_create("has_account_tag", expando_has_account_tag, "server event",
+	               EXPANDO_ARG_SERVER, NULL);
 
-        expando_add_signal("I", "event invite", EXPANDO_ARG_SERVER);
+	expando_add_signal("I", "event invite", EXPANDO_ARG_SERVER);
 
 	signal_add("event join", (SIGNAL_FUNC) event_join);
 }
@@ -200,6 +234,8 @@ void irc_expandos_deinit(void)
 	expando_destroy("x", expando_hostname);
 	expando_destroy("usermode", expando_usermode);
 	expando_destroy("cumode", expando_cumode);
+	expando_destroy("account_tag", expando_account_tag);
+	expando_destroy("has_account_tag", expando_has_account_tag);
 
 	signal_remove("event join", (SIGNAL_FUNC) event_join);
 }
