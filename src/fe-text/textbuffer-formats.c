@@ -249,6 +249,22 @@ static char *parse_colors(TEXT_DEST_REC *dest, const char *text)
 	return tmp;
 }
 
+static char *fallback_format(TEXT_BUFFER_FORMAT_REC *format_rec)
+{
+	int i;
+	GString *bs;
+	char *tmp;
+	bs = g_string_new(NULL);
+	g_string_printf(bs, "{%s#%s ", format_rec->module, format_rec->format);
+	for (i = 0; i < format_rec->nargs; i++) {
+		tmp = g_strescape(format_rec->args[i], "");
+		g_string_append_printf(bs, "\"%s\"%s", tmp, i + 1 < format_rec->nargs ? " " : "");
+		g_free(tmp);
+	}
+	g_string_append(bs, "}");
+	return g_string_free(bs, FALSE);
+}
+
 char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 {
 	TEXT_DEST_REC dest;
@@ -287,11 +303,14 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 			memcpy(arglist, format_rec->args, format_rec->nargs * sizeof(char *));
 			text = format_get_text_theme_charargs(theme, format_rec->module, &dest,
 			                                      formatnum, arglist);
+			if (text == NULL) {
+				text = fallback_format(format_rec);
+			}
 		} else {
 			text = g_strdup(format_rec->args[1]);
 		}
 
-		if (*text != '\0') {
+		if (text != NULL && *text != '\0') {
 			current_time = curr->info.time;
 
 			tmp = format_get_level_tag(theme, &dest);
