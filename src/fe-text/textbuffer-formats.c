@@ -255,10 +255,10 @@ static char *fallback_format(TEXT_BUFFER_FORMAT_REC *format_rec)
 	GString *bs;
 	char *tmp;
 	bs = g_string_new(NULL);
-	g_string_printf(bs, "{%s#%s ", format_rec->module, format_rec->format);
-	for (i = 0; i < format_rec->nargs; i++) {
+	g_string_printf(bs, "{%s#%s", format_rec->module, format_rec->format);
+	for (i = 0; i < format_rec->nargs && format_rec->args[i] != NULL; i++) {
 		tmp = g_strescape(format_rec->args[i], "");
-		g_string_append_printf(bs, "\"%s\"%s", tmp, i + 1 < format_rec->nargs ? " " : "");
+		g_string_append_printf(bs, " \"%s\"", tmp);
 		g_free(tmp);
 	}
 	g_string_append(bs, "}");
