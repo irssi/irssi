@@ -124,6 +124,9 @@ static void sig_print_format(THEME_REC *theme, const char *module, TEXT_DEST_REC
 	if (!scrollback_format)
 		return;
 
+	if (module == NULL)
+		return;
+
 	info = store_lineinfo_tmp(dest);
 
 	formatnum = GPOINTER_TO_INT(formatnump);

@@ -16,13 +16,14 @@ while (<>) {
 	$signal = $1;
 	$_ = $3;
 
-	s/GList \* of ([^,]*)/glistptr_\1/g;
-	s/GSList of (\w+)s/gslist_\1/g;
+	s/GList \* of ([^,]*)s/glistptr_\1/g;
+	s/GSList of ([^,]*)s/gslist_\1/g;
 
 	s/char \*[^,]*/string/g;
 	s/ulong \*[^,]*/ulongptr/g;
 	s/int \*[^,]*/intptr/g;
 	s/int [^,]*/int/g;
+
 
 	my %map = (
 		# core

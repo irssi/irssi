@@ -68,13 +68,15 @@ static void add_tuple(gpointer key_, gpointer value_, gpointer user_data)
 	(void) hv_store(hash, key, strlen(key), new_pv(value), 0);
 }
 
-static void wrap_signal_emit(void *signal, void **p) {
-	signal_emit(signal, 6, p[0], p[1], p[2], p[3], p[4], p[5]);
+static void wrap_signal_emit(void *signal, int params, void **p)
+{
+	signal_emit(signal, params, p[0], p[1], p[2], p[3], p[4], p[5]);
 }
 
-static void wrap_signal_continue(void *dummy, void **p) {
+static void wrap_signal_continue(void *dummy, int params, void **p)
+{
 	(void)dummy;
-	signal_continue(6, p[0], p[1], p[2], p[3], p[4], p[5]);
+	signal_continue(params, p[0], p[1], p[2], p[3], p[4], p[5]);
 }
 
 MODULE = Irssi::Core  PACKAGE = Irssi
@@ -85,33 +87,14 @@ signal_emit(signal, ...)
 	char *signal
 CODE:
 	int signal_id;
-	SV *args[SIGNAL_MAX_ARGUMENTS];
-	int n, used;
 
 	signal_id = signal_get_uniq_id(signal);
-	used = items - 1;
-	if (used > SIGNAL_MAX_ARGUMENTS) {
-		used = SIGNAL_MAX_ARGUMENTS;
-	}
-	for (n = 0; n < used; ++n) {
-		args[n] = ST(n + 1);
-	}
-	perl_signal_args_to_c(wrap_signal_emit, signal, signal_id, args, used);
+	perl_signal_args_to_c(wrap_signal_emit, signal, signal_id, &ST(1), items - 1);
 
 void
 signal_continue(...)
 CODE:
-	SV *args[SIGNAL_MAX_ARGUMENTS];
-	int n, used;
-
-	used = items;
-	if (used > SIGNAL_MAX_ARGUMENTS) {
-		used = SIGNAL_MAX_ARGUMENTS;
-	}
-	for (n = 0; n < used; ++n) {
-		args[n] = ST(n);
-	}
-	perl_signal_args_to_c(wrap_signal_continue, NULL, signal_get_emitted_id(), args, used);
+	perl_signal_args_to_c(wrap_signal_continue, NULL, signal_get_emitted_id(), &ST(0), items);
 
 void
 signal_add(...)
@@ -162,7 +145,7 @@ PREINIT:
 	HV *hv;
         HE *he;
 	I32 len, pos;
-	const char *arr[7];
+	const char *arr[SIGNAL_MAX_ARGUMENTS + 1];
 CODE:
 	if (items != 1 || !is_hvref(ST(0)))
 		croak("Usage: Irssi::signal_register(hash)");
@@ -179,7 +162,8 @@ CODE:
 
 		av = (AV *) SvRV(val);
 		len = av_len(av)+1;
-		if (len > 6) len = 6;
+		if (len > SIGNAL_MAX_ARGUMENTS)
+			len = SIGNAL_MAX_ARGUMENTS;
 		for (pos = 0; pos < len; pos++) {
                 	SV **val = av_fetch(av, pos, 0);
 			arr[pos] = SvPV_nolen(*val);

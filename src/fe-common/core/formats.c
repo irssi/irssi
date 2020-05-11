@@ -650,6 +650,9 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 	MODULE_THEME_REC *module_theme;
 	char *text;
 
+	if (module == NULL)
+		return NULL;
+
 	module_theme = g_hash_table_lookup(theme->modules, module);
 	if (module_theme == NULL)
 		return NULL;
