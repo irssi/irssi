@@ -104,7 +104,7 @@ PPCODE:
 	g_free_not_null(ret);
 
 #*******************************
-MODULE = Irssi::UI::Formats  PACKAGE = Irssi::Window
+MODULE = Irssi::UI::Formats  PACKAGE = Irssi::UI::Window
 #*******************************
 
 void
