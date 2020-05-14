@@ -570,10 +570,10 @@ static void sig_print_format(THEME_REC *theme, const char *module,
 
 	str = format_get_text_theme_charargs(log_theme, module, dest,
 					     GPOINTER_TO_INT(formatnum), args);
-	skip_next_printtext = TRUE;
+	if (str != NULL && *str != '\0') {
+		skip_next_printtext = TRUE;
 
-	if (*str != '\0') {
-                /* add the line start format */
+		/* add the line start format */
 		linestart = format_get_level_tag(log_theme, dest);
                 tmp = str;
 		str = format_add_linestart(tmp, linestart);

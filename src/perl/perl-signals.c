@@ -21,10 +21,11 @@
 #define NEED_PERL_H
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
-#include <irssi/src/core/modules.h>
-#include <irssi/src/core/signals.h>
 #include <irssi/src/core/commands.h>
+#include <irssi/src/core/modules.h>
 #include <irssi/src/core/servers.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 #include <irssi/src/perl/perl-core.h>
 #include <irssi/src/perl/perl-common.h>
@@ -39,7 +40,7 @@ typedef struct {
 
 typedef struct {
 	char *signal;
-	char *args[7];
+	char *args[SIGNAL_MAX_ARGUMENTS + 1];
 	int dynamic;
 } PERL_SIGNAL_ARGS_REC;
 
@@ -71,9 +72,8 @@ static PERL_SIGNAL_ARGS_REC *perl_signal_args_find(int signal_id)
 	return NULL;
 }
 
-void perl_signal_args_to_c(
-        void (*callback)(void *, void **), void *cb_arg,
-        int signal_id, SV **args, size_t n_args)
+void perl_signal_args_to_c(void (*callback)(void *, int, void **), void *cb_arg, int signal_id,
+                           SV **args, size_t n_args)
 {
         union {
                 int v_int;
@@ -83,136 +83,162 @@ void perl_signal_args_to_c(
         } saved_args[SIGNAL_MAX_ARGUMENTS];
         void *p[SIGNAL_MAX_ARGUMENTS];
         PERL_SIGNAL_ARGS_REC *rec;
-        size_t n;
+	char *arglist[MAX_FORMAT_PARAMS];
+	size_t n;
 
-        if (!(rec = perl_signal_args_find(signal_id))) {
-                const char *name = signal_get_id_str(signal_id);
-                if (!name) {
-                        croak("%d is not a known signal id", signal_id);
-                }
-                croak("\"%s\" is not a registered signal", name);
-        }
+	if (!(rec = perl_signal_args_find(signal_id))) {
+		const char *name = signal_get_id_str(signal_id);
+		if (!name) {
+			croak("%d is not a known signal id", signal_id);
+		}
+		croak("\"%s\" is not a registered signal", name);
+	}
 
-        for (n = 0; n < SIGNAL_MAX_ARGUMENTS && n < n_args && rec->args[n] != NULL; ++n) {
-                void *c_arg;
-                SV *arg = args[n];
+	for (n = 0; n < SIGNAL_MAX_ARGUMENTS && n < n_args && rec->args[n] != NULL; ++n) {
+		void *c_arg;
+		SV *arg = args[n];
 
-                if (!SvOK(arg)) {
-                        c_arg = NULL;
-                } else if (g_strcmp0(rec->args[n], "string") == 0) {
-                        c_arg = SvPV_nolen(arg);
-                } else if (g_strcmp0(rec->args[n], "int") == 0) {
-                        c_arg = (void *)SvIV(arg);
-                } else if (g_strcmp0(rec->args[n], "ulongptr") == 0) {
-                        saved_args[n].v_ulong = SvUV(arg);
-                        c_arg = &saved_args[n].v_ulong;
-                } else if (g_strcmp0(rec->args[n], "intptr") == 0) {
-                        saved_args[n].v_int = SvIV(SvRV(arg));
-                        c_arg = &saved_args[n].v_int;
-                } else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
-                        GList *gl;
-                        int is_str;
-                        AV *av;
-                        SV *t;
-                        int count;
+		if (g_strcmp0(rec->args[n], "formatnum_args") == 0 && n >= 3) {
+			const FORMAT_REC *formats;
+			const char *module;
+			int num;
+			int formatnum;
 
-                        t = SvRV(arg);
-                        if (SvTYPE(t) != SVt_PVAV) {
-                                croak("Not an ARRAY reference");
-                        }
-                        av = (AV *)t;
+			module = SvPV_nolen(args[n - 2]);
+			formatnum = format_find_tag(module, SvPV_nolen(arg));
+			if (formatnum < 0) { /* format out of bounds */
+				p[n - 2] = NULL;
+				break;
+			}
 
-                        is_str = g_strcmp0(rec->args[n]+9, "char*") == 0;
+			formats = g_hash_table_lookup(default_formats, module);
+			arglist[formats[formatnum].params] = NULL;
 
-                        gl = NULL;
-                        count = av_len(av) + 1;
-                        while (count-- > 0) {
-                                SV **px = av_fetch(av, count, 0);
-                                SV *x = px ? *px : NULL;
-                                gl = g_list_prepend(
-                                        gl,
-                                        x == NULL ? NULL :
-                                        is_str ? g_strdup(SvPV_nolen(x)) :
-                                        irssi_ref_object(x)
-                                );
-                        }
-                        saved_args[n].v_glist = gl;
-                        c_arg = &saved_args[n].v_glist;
-                } else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
-                        GSList *gsl;
-                        AV *av;
-                        SV *t;
-                        int count;
+			p[n++] = GINT_TO_POINTER(formatnum);
 
-                        t = SvRV(arg);
-                        if (SvTYPE(t) != SVt_PVAV) {
-                                croak("Not an ARRAY reference");
-                        }
-                        av = (AV *)t;
+			for (num = 0; num < formats[formatnum].params; num++) {
+				if (n + num < n_args)
+					arglist[num] = SvPV_nolen(args[n + num]);
+				else
+					arglist[num] = "";
+			}
 
-                        gsl = NULL;
-                        count = av_len(av) + 1;
-                        while (count-- > 0) {
-                                SV **x = av_fetch(av, count, 0);
-                                gsl = g_slist_prepend(
-                                        gsl,
-                                        x == NULL ? NULL :
-                                        irssi_ref_object(*x)
-                                );
-                        }
-                        c_arg = saved_args[n].v_gslist = gsl;
-                } else {
-                        c_arg = irssi_ref_object(arg);
-                }
+			p[n++] = arglist;
+			n_args = n;
 
-                p[n] = c_arg;
-        }
+			break;
+		} else if (!SvOK(arg)) {
+			c_arg = NULL;
+		} else if (g_strcmp0(rec->args[n], "string") == 0) {
+			c_arg = SvPV_nolen(arg);
+		} else if (g_strcmp0(rec->args[n], "int") == 0) {
+			c_arg = (void *) SvIV(arg);
+		} else if (g_strcmp0(rec->args[n], "ulongptr") == 0) {
+			saved_args[n].v_ulong = SvUV(arg);
+			c_arg = &saved_args[n].v_ulong;
+		} else if (g_strcmp0(rec->args[n], "intptr") == 0) {
+			saved_args[n].v_int = SvIV(SvRV(arg));
+			c_arg = &saved_args[n].v_int;
+		} else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
+			GList *gl;
+			int is_str;
+			AV *av;
+			SV *t;
+			int count;
 
-        for (; n < SIGNAL_MAX_ARGUMENTS; ++n) {
-                p[n] = NULL;
-        }
+			t = SvRV(arg);
+			if (SvTYPE(t) != SVt_PVAV) {
+				croak("Not an ARRAY reference");
+			}
+			av = (AV *) t;
 
-        callback(cb_arg, p);
+			is_str = g_strcmp0(rec->args[n] + 9, "string") == 0 ||
+			         g_strcmp0(rec->args[n] + 9, "char*") == 0; /* deprecated form */
 
-        for (n = 0; n < SIGNAL_MAX_ARGUMENTS && n < n_args && rec->args[n] != NULL; ++n) {
-                SV *arg = args[n];
+			gl = NULL;
+			count = av_len(av) + 1;
+			while (count-- > 0) {
+				SV **px = av_fetch(av, count, 0);
+				SV *x = px ? *px : NULL;
+				gl = g_list_prepend(gl, x == NULL ?
+				                            NULL :
+				                            is_str ? g_strdup(SvPV_nolen(x)) :
+				                                     irssi_ref_object(x));
+			}
+			saved_args[n].v_glist = gl;
+			c_arg = &saved_args[n].v_glist;
+		} else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
+			GSList *gsl;
+			AV *av;
+			SV *t;
+			int count;
 
-                if (!SvOK(arg)) {
-                        continue;
-                }
+			t = SvRV(arg);
+			if (SvTYPE(t) != SVt_PVAV) {
+				croak("Not an ARRAY reference");
+			}
+			av = (AV *) t;
 
-                if (g_strcmp0(rec->args[n], "intptr") == 0) {
-                        SV *t = SvRV(arg);
-                        SvIOK_only(t);
-                        SvIV_set(t, saved_args[n].v_int);
-                } else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
-                        g_slist_free(saved_args[n].v_gslist);
-                } else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
-                        int is_iobject, is_str;
-                        AV *av;
-                        GList *gl, *tmp;
+			gsl = NULL;
+			count = av_len(av) + 1;
+			while (count-- > 0) {
+				SV **x = av_fetch(av, count, 0);
+				gsl = g_slist_prepend(gsl, x == NULL ? NULL : irssi_ref_object(*x));
+			}
+			c_arg = saved_args[n].v_gslist = gsl;
+		} else {
+			c_arg = irssi_ref_object(arg);
+		}
 
-                        is_iobject = g_strcmp0(rec->args[n]+9, "iobject") == 0;
-                        is_str = g_strcmp0(rec->args[n]+9, "char*") == 0;
+		p[n] = c_arg;
+	}
 
-                        av = (AV *)SvRV(arg);
-                        av_clear(av);
+	for (; n < SIGNAL_MAX_ARGUMENTS; ++n) {
+		p[n] = NULL;
+	}
 
-                        gl = saved_args[n].v_glist;
-                        for (tmp = gl; tmp != NULL; tmp = tmp->next) {
-                                av_push(av,
-                                        is_iobject ? iobject_bless((SERVER_REC *)tmp->data) :
-                                        is_str ? new_pv(tmp->data) :
-                                        irssi_bless_plain(rec->args[n]+9, tmp->data)
-                                );
-                        }
+	callback(cb_arg, n_args, p);
 
-                        if (is_str) {
-                                g_list_foreach(gl, (GFunc)g_free, NULL);
-                        }
-                        g_list_free(gl);
-                }
-        }
+	for (n = 0; n < SIGNAL_MAX_ARGUMENTS && n < n_args && rec->args[n] != NULL; ++n) {
+		SV *arg = args[n];
+
+		if (!SvOK(arg)) {
+			continue;
+		}
+
+		if (g_strcmp0(rec->args[n], "intptr") == 0) {
+			SV *t = SvRV(arg);
+			SvIOK_only(t);
+			SvIV_set(t, saved_args[n].v_int);
+		} else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
+			g_slist_free(saved_args[n].v_gslist);
+		} else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
+			int is_iobject, is_str;
+			AV *av;
+			GList *gl, *tmp;
+
+			is_iobject = g_strcmp0(rec->args[n] + 9, "iobject") == 0;
+			is_str = g_strcmp0(rec->args[n] + 9, "string") == 0 ||
+			         g_strcmp0(rec->args[n] + 9, "char*") == 0; /* deprecated form */
+
+			av = (AV *) SvRV(arg);
+			av_clear(av);
+
+			gl = saved_args[n].v_glist;
+			for (tmp = gl; tmp != NULL; tmp = tmp->next) {
+				av_push(av, is_iobject ?
+				                iobject_bless((SERVER_REC *) tmp->data) :
+				                is_str ?
+				                new_pv(tmp->data) :
+				                irssi_bless_plain(rec->args[n] + 9, tmp->data));
+			}
+
+			if (is_str) {
+				g_list_foreach(gl, (GFunc) g_free, NULL);
+			}
+			g_list_free(gl);
+		}
+	}
 }
 
 static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
@@ -246,7 +272,8 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
                         int is_iobject, is_str;
 
                         is_iobject = g_strcmp0(rec->args[n]+9, "iobject") == 0;
-                        is_str = g_strcmp0(rec->args[n]+9, "char*") == 0;
+			is_str = g_strcmp0(rec->args[n] + 9, "string") == 0 ||
+			         g_strcmp0(rec->args[n] + 9, "char*") == 0; /* deprecated form */
 			av = newAV();
 
 			ptr = arg;
@@ -267,8 +294,37 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
                 else if (g_strcmp0(rec->args[n], "ulongptr") == 0)
                         perlarg = newSViv(*(unsigned long *) arg);
                 else if (g_strcmp0(rec->args[n], "intptr") == 0)
-                        saved_args[n] = perlarg = newRV_noinc(newSViv(*(int *) arg));
-                else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
+			saved_args[n] = perlarg = newRV_noinc(newSViv(*(int *) arg));
+		else if (g_strcmp0(rec->args[n], "formatnum_args") == 0 && n >= 3) {
+			const THEME_REC *theme;
+			const MODULE_THEME_REC *rec;
+			const FORMAT_REC *formats;
+			char *const *tmp;
+			int formatnum;
+
+			theme = args[n - 3];
+			if (theme == NULL) /* no theme */
+				continue;
+
+			rec = g_hash_table_lookup(theme->modules, args[n - 2]);
+			if (rec == NULL) /* no module in theme */
+				continue;
+
+			formats = g_hash_table_lookup(default_formats, args[n - 2]);
+			if (formats == NULL) /* no module in default_formats */
+				continue;
+
+			formatnum = GPOINTER_TO_INT(arg);
+			if (formatnum >= rec->count) /* format out of bounds */
+				continue;
+
+			XPUSHs(sv_2mortal(new_pv(formats[formatnum].tag)));
+			for (tmp = args[n + 1]; *tmp != NULL; tmp++) {
+				XPUSHs(sv_2mortal(new_pv(*tmp)));
+			}
+
+			continue;
+		} else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
 			/* linked list - push as AV */
 			GSList *tmp;
 			int is_iobject;
@@ -338,8 +394,9 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 				out = g_list_append(out, val);
 			}
 
-			if (g_strcmp0(rec->args[n]+9, "char*") == 0)
-                                g_list_foreach(*ret, (GFunc) g_free, NULL);
+			if (g_strcmp0(rec->args[n] + 9, "string") == 0 ||
+			    g_strcmp0(rec->args[n] + 9, "char*") == 0) /* deprecated form */
+				g_list_foreach(*ret, (GFunc) g_free, NULL);
 			g_list_free(*ret);
                         *ret = out;
 		}
@@ -349,12 +406,15 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 	LEAVE;
 }
 
+#if SIGNAL_MAX_ARGUMENTS != 6
+#error SIGNAL_MAX_ARGUMENTS changed - update code
+#endif
 static void sig_func(const void *p1, const void *p2,
 		     const void *p3, const void *p4,
 		     const void *p5, const void *p6)
 {
 	PERL_SIGNAL_REC *rec;
-	const void *args[6];
+	const void *args[SIGNAL_MAX_ARGUMENTS];
 
 	args[0] = p1; args[1] = p2; args[2] = p3;
 	args[3] = p4; args[4] = p5; args[5] = p6;
@@ -553,7 +613,7 @@ void perl_signal_register(const char *signal, const char **args)
 		return;
 
 	rec = g_new0(PERL_SIGNAL_ARGS_REC, 1);
-	for (i = 0; i < 6 && args[i] != NULL; i++)
+	for (i = 0; i < SIGNAL_MAX_ARGUMENTS && args[i] != NULL; i++)
 		rec->args[i] = g_strdup(args[i]);
 	rec->dynamic = TRUE;
 	rec->signal = g_strdup(signal);
@@ -579,7 +639,7 @@ static void signal_args_free(PERL_SIGNAL_ARGS_REC *rec)
 	if (!rec->dynamic)
 		return;
 
-	for (i = 0; i < 6 && rec->args[i] != NULL; i++)
+	for (i = 0; i < SIGNAL_MAX_ARGUMENTS && rec->args[i] != NULL; i++)
 		g_free(rec->args[i]);
 	g_free(rec->signal);
 	g_free(rec);
