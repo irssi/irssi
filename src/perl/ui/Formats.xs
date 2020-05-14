@@ -137,3 +137,11 @@ print(dest, str)
 	char *str
 CODE:
 	printtext_dest(dest, "%s", str);
+
+void
+set_level(dest, level)
+	Irssi::UI::TextDest dest
+	int level
+CODE:
+	dest->level = level;
+
