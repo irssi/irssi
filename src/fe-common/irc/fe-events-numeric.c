@@ -671,6 +671,7 @@ void fe_events_numeric_init(void)
 	last_away_nick = NULL;
 	last_away_msg = NULL;
 
+	/* clang-format off */
 	signal_add("event 221", (SIGNAL_FUNC) event_user_mode);
 	signal_add("event 303", (SIGNAL_FUNC) event_ison);
 	signal_add("event 353", (SIGNAL_FUNC) event_names_list);
@@ -757,6 +758,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 717", (SIGNAL_FUNC) event_target_received); /* +g notified */
 	signal_add("event 728", (SIGNAL_FUNC) event_target_received); /* quiet (or other) list */
 	signal_add("event 729", (SIGNAL_FUNC) event_target_received); /* end of quiet (or other) list */
+	/* clang-format on */
 }
 
 void fe_events_numeric_deinit(void)

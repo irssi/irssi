@@ -1,5 +1,6 @@
 #include <irssi/src/fe-common/core/formats.h>
 
+/* clang-format off */
 enum {
 	IRCTXT_MODULE_NAME,
 
@@ -144,5 +145,6 @@ enum {
         IRCTXT_ASK_OPER_PASS,
 	IRCTXT_ACCEPT_LIST
 };
+/* clang-format on */
 
 extern FORMAT_REC fecommon_irc_formats[];

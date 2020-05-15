@@ -21,6 +21,7 @@
 #include "module.h"
 #include <irssi/src/fe-common/core/formats.h>
 
+/* clang-format off */
 FORMAT_REC fecommon_irc_formats[] = {
 	{ MODULE_NAME, "IRC", 0 },
 
@@ -176,3 +177,4 @@ FORMAT_REC fecommon_irc_formats[] = {
 
 	{ NULL, NULL, 0 }
 };
+/* clang-format on */
