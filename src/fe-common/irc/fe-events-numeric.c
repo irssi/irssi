@@ -530,8 +530,7 @@ static void event_477(IRC_SERVER_REC *server, const char *data, const char *nick
 	g_free(params);
 }
 
-static void event_489(IRC_SERVER_REC *server, const char *data,
-		      const char *nick)
+static void event_489(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
 	/* Numeric 489 can mean one of two things things:
 	 * cannot join to channel (secure only), or not chanop or voice.
