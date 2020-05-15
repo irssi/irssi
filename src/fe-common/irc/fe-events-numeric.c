@@ -511,8 +511,7 @@ static void event_bad_channel_mask(IRC_SERVER_REC *server, const char *data)
 	cannot_join(server, data, IRCTXT_JOINERROR_BAD_MASK);
 }
 
-static void event_477(IRC_SERVER_REC *server, const char *data,
-		      const char *nick)
+static void event_477(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
 	/* Numeric 477 can mean many things:
 	 * modeless channel, cannot join/send to channel (+r/+R/+M).
