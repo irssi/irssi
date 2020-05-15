@@ -4,7 +4,7 @@ jobs:
   check-abi-diff:
     runs-on: ubuntu-latest
     env:
-      build_options: -Dbuildtype=debug -Denable-true-color=yes -Dwith-proxy=yes
+      build_options: -Dbuildtype=debug -Denable-true-color=yes -Dwith-proxy=yes -Dc_args=-DPERL_EUPXS_ALWAYS_EXPORT
       prefix: /usr/local
     steps:
       - name: set PATH
