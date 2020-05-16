@@ -1,5 +1,6 @@
 #include <irssi/src/fe-common/core/formats.h>
 
+/* clang-format off */
 enum {
 	IRCTXT_MODULE_NAME,
 
@@ -40,6 +41,7 @@ enum {
 	IRCTXT_JOINERROR_BANNED,
 	IRCTXT_JOINERROR_BAD_KEY,
 	IRCTXT_JOINERROR_BAD_MASK,
+	IRCTXT_JOINERROR_SECURE_ONLY,
 	IRCTXT_JOINERROR_UNAVAIL,
 	IRCTXT_JOINERROR_DUPLICATE,
 	IRCTXT_CHANNEL_REJOIN,
@@ -143,5 +145,6 @@ enum {
         IRCTXT_ASK_OPER_PASS,
 	IRCTXT_ACCEPT_LIST
 };
+/* clang-format on */
 
 extern FORMAT_REC fecommon_irc_formats[];

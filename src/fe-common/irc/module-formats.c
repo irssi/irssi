@@ -21,6 +21,7 @@
 #include "module.h"
 #include <irssi/src/fe-common/core/formats.h>
 
+/* clang-format off */
 FORMAT_REC fecommon_irc_formats[] = {
 	{ MODULE_NAME, "IRC", 0 },
 
@@ -63,6 +64,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "joinerror_banned", "Cannot join to channel {channel $0} (You are banned)", 1, { 0 } },
 	{ "joinerror_bad_key", "Cannot join to channel {channel $0} (Bad channel key)", 1, { 0 } },
 	{ "joinerror_bad_mask", "Cannot join to channel {channel $0} (Bad channel mask)", 1, { 0 } },
+	{ "joinerror_secure_only", "Cannot join to channel {channel $0} (Secure clients only)", 1, { 0 } },
 	{ "joinerror_unavail", "Cannot join to channel {channel $0} (Channel is temporarily unavailable)", 1, { 0 } },
 	{ "joinerror_duplicate", "Channel {channel $0} already exists - cannot create it", 1, { 0 } },
 	{ "channel_rejoin", "Channel {channel $0} is temporarily unavailable, this is normally because of netsplits. Irssi will now automatically try to rejoin back to this channel until the join is successful. Use /RMREJOINS command if you wish to abort this.", 1, { 0 } },
@@ -175,3 +177,4 @@ FORMAT_REC fecommon_irc_formats[] = {
 
 	{ NULL, NULL, 0 }
 };
+/* clang-format on */

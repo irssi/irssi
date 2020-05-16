@@ -511,8 +511,7 @@ static void event_bad_channel_mask(IRC_SERVER_REC *server, const char *data)
 	cannot_join(server, data, IRCTXT_JOINERROR_BAD_MASK);
 }
 
-static void event_477(IRC_SERVER_REC *server, const char *data,
-		      const char *nick)
+static void event_477(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
 	/* Numeric 477 can mean many things:
 	 * modeless channel, cannot join/send to channel (+r/+R/+M).
@@ -528,6 +527,30 @@ static void event_477(IRC_SERVER_REC *server, const char *data,
 
 	chanrec = irc_channel_find(server, channel);
 	print_event_received(server, data, nick, chanrec == NULL || chanrec->joined);
+	g_free(params);
+}
+
+static void event_489(IRC_SERVER_REC *server, const char *data, const char *nick)
+{
+	/* Numeric 489 can mean one of two things things:
+	 * cannot join to channel (secure only), or not chanop or voice.
+	 * If we tried to join this channel, display the joinerror.
+	 * Otherwise depending on the channel being joined or not
+	 * display the error in the channel or status window.
+	 */
+	IRC_CHANNEL_REC *chanrec;
+	char *params, *channel;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 2, NULL, &channel);
+
+	chanrec = irc_channel_find(server, channel);
+	if (chanrec != NULL && !chanrec->joined) {
+		cannot_join(server, data, IRCTXT_JOINERROR_SECURE_ONLY);
+	} else {
+		print_event_received(server, data, nick, chanrec == NULL || chanrec->joined);
+	}
 	g_free(params);
 }
 
@@ -647,6 +670,7 @@ void fe_events_numeric_init(void)
 	last_away_nick = NULL;
 	last_away_msg = NULL;
 
+	/* clang-format off */
 	signal_add("event 221", (SIGNAL_FUNC) event_user_mode);
 	signal_add("event 303", (SIGNAL_FUNC) event_ison);
 	signal_add("event 353", (SIGNAL_FUNC) event_names_list);
@@ -683,6 +707,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 475", (SIGNAL_FUNC) event_bad_channel_key);
 	signal_add("event 476", (SIGNAL_FUNC) event_bad_channel_mask);
 	signal_add("event 477", (SIGNAL_FUNC) event_477);
+	signal_add("event 489", (SIGNAL_FUNC) event_489); /* cannot join to channel (secure only), or not chanop or voice. */
 	signal_add("event 375", (SIGNAL_FUNC) event_motd);
 	signal_add("event 376", (SIGNAL_FUNC) event_motd);
 	signal_add("event 372", (SIGNAL_FUNC) event_motd);
@@ -726,13 +751,13 @@ void fe_events_numeric_init(void)
 	signal_add("event 478", (SIGNAL_FUNC) event_target_received); /* ban list is full */
 	signal_add("event 482", (SIGNAL_FUNC) event_target_received); /* not chanop */
 	signal_add("event 486", (SIGNAL_FUNC) event_target_received); /* cannot /msg (+R) */
-	signal_add("event 489", (SIGNAL_FUNC) event_target_received); /* not chanop or voice */
 	signal_add("event 494", (SIGNAL_FUNC) event_target_received); /* cannot /msg (own +R) */
 	signal_add("event 506", (SIGNAL_FUNC) event_target_received); /* cannot send (+R) */
 	signal_add("event 716", (SIGNAL_FUNC) event_target_received); /* cannot /msg (+g) */
 	signal_add("event 717", (SIGNAL_FUNC) event_target_received); /* +g notified */
 	signal_add("event 728", (SIGNAL_FUNC) event_target_received); /* quiet (or other) list */
 	signal_add("event 729", (SIGNAL_FUNC) event_target_received); /* end of quiet (or other) list */
+	/* clang-format on */
 }
 
 void fe_events_numeric_deinit(void)
@@ -776,6 +801,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 475", (SIGNAL_FUNC) event_bad_channel_key);
 	signal_remove("event 476", (SIGNAL_FUNC) event_bad_channel_mask);
 	signal_remove("event 477", (SIGNAL_FUNC) event_477);
+	signal_remove("event 489", (SIGNAL_FUNC) event_489);
 	signal_remove("event 375", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 376", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 372", (SIGNAL_FUNC) event_motd);
@@ -815,7 +841,6 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 478", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 482", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 486", (SIGNAL_FUNC) event_target_received);
-	signal_remove("event 489", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 494", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 506", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 716", (SIGNAL_FUNC) event_target_received);
