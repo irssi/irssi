@@ -451,28 +451,16 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 
 static void read_settings(void)
 {
-	const char *str;
-
 	if (active_entry != NULL)
 		gui_entry_set_utf8(active_entry, term_type == TERM_TYPE_UTF8);
 
-	str = settings_get_str("actlist_sort");
-	if (g_ascii_strcasecmp(str, "recent") == 0)
-		actlist_sort = 1;
-	else if (g_ascii_strcasecmp(str, "level") == 0)
-		actlist_sort = 2;
-	else if (g_ascii_strcasecmp(str, "level,recent") == 0)
-		actlist_sort = 3;
-	else {
-		settings_set_str("actlist_sort", "refnum");
-		actlist_sort = 0;
-	}
+	actlist_sort = settings_get_choice("actlist_sort");
 }
 
 void statusbar_items_init(void)
 {
 	settings_add_time("misc", "lag_min_show", "1sec");
-	settings_add_str("lookandfeel", "actlist_sort", "refnum");
+	settings_add_choice("lookandfeel", "actlist_sort", 0, "refnum;recent;level;level,recent");
 	settings_add_bool("lookandfeel", "actlist_names", FALSE);
 	settings_add_bool("lookandfeel", "actlist_prefer_window_name", FALSE);
 
