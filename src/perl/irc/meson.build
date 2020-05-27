@@ -1,4 +1,4 @@
-libperl_irc_a = shared_module('Irc',
+libperl_Irssi_Irc_a = shared_module('Irc',
   [ xsubpp.process(
     files(
       'Channel.xs',
@@ -26,6 +26,7 @@ libperl_irc_a = shared_module('Irc',
   include_directories : rootinc,
   implicit_include_directories : true,
   dependencies : dep + [ perl_dep ],
+  link_with : dl_cross_perl_core,
 )
 
 install_headers(

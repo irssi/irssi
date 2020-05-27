@@ -2,12 +2,12 @@
  Irssi installation instructions
  -------------------------------
 
-To compile irssi you need:
+To compile Irssi you need:
 
 - meson-0.49 build system with ninja-1.5 or greater
 - glib-2.28 or greater
 - openssl (for ssl support)
-- perl-5.6 or greater (for perl support)
+- perl-5.6 or greater (for Perl support)
 - terminfo or ncurses (for text frontend)
 
 For most people, this should work just fine:
@@ -35,13 +35,13 @@ configure options
 
   --prefix
 
-  Specifies the path where irssi will be installed.
-  YES, you can install irssi WITHOUT ROOT permissions
+  Specifies the path where Irssi will be installed.
+  YES, you can install Irssi WITHOUT ROOT permissions
   by using --prefix=/home/dir
 
   -Dwith-proxy=yes   /   --with-proxy
 
-  Build the irssi proxy (see startup-HOWTO).
+  Build the Irssi proxy (see startup-HOWTO).
 
   -Dwith-perl=[yes|no]   /   --with-perl=[yes|no|module]
 
@@ -70,9 +70,9 @@ configure options
   Build without text frontend
 
 If anything is in non-standard path, you can just give the paths in
-CPPFLAGS and LIBS environment variable, eg.:
+the -Dc_args and -Dc_link_args options variable, eg.:
 
-  CPPFLAGS=-I/opt/openssl/include LDFLAGS=-L/opt/openssl/lib ./configure
+  meson Build -Dc_args='-I/opt/openssl/include' -Dc_link_args='-L/opt/openssl/lib'
 
 
 
@@ -111,6 +111,24 @@ perl                 static  core fe
 
  System specific notes
  ---------------------
+
+ Android
+
+When cross compiling Irssi for Android, you can specify the path of
+the cross-perl in the cross file.
+
+You may not have a cross-perl available. In that case, you will have
+to manually supply the required Perl arguments in the cross file. See
+the commented properties in the example cross file.
+
+An example cross file can be found in the docs folder. To use it, you
+would call:
+
+  meson Build --cross-file cross-android-aarch64.txt \
+    --prefix /data/data/com.termux/files/usr \
+    --libdir lib \
+    -Dfhs-prefix=/data/data/com.termux/files/usr \
+
 
  Cygwin
 

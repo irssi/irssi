@@ -1,0 +1,47 @@
+[binaries]
+ar = 'aarch64-linux-android-ar'
+c = 'aarch64-linux-android-clang'
+cpp = 'aarch64-linux-android-clang++'
+ld = 'aarch64-linux-android-ld'
+pkgconfig = '/home/builder/.termux-build/_cache/android-r20-api-24-v3/bin/aarch64-linux-android-pkg-config'
+strip = 'aarch64-linux-android-strip'
+
+;; you have to substitute 5.30.2 with the Perl version, that can be
+;; obtained by running ` miniperl -e 'print substr $^V, 1' `
+
+perl = ['/home/builder/.termux-build/perl/src/miniperl', '-I/data/data/com.termux/files/usr/lib/perl5/5.30.2/aarch64-android', '-I/data/data/com.termux/files/usr/lib/perl5/5.30.2']
+
+[properties]
+needs_exe_wrapper = true
+c_args = ['-fstack-protector-strong', '-Oz', '-I/data/data/com.termux/files/usr/include']
+cpp_args = ['-fstack-protector-strong', '-Oz', '-I/data/data/com.termux/files/usr/include']
+c_link_args = ['-L/data/data/com.termux/files/usr/lib', '-Wl,-rpath=/data/data/com.termux/files/usr/lib', '-Wl,--enable-new-dtags', '-Wl,--as-needed', '-Wl,-z,relro,-z,now', '-landroid-glob']
+cpp_link_args = ['-L/data/data/com.termux/files/usr/lib', '-Wl,-rpath=/data/data/com.termux/files/usr/lib', '-Wl,--enable-new-dtags', '-Wl,--as-needed', '-Wl,-z,relro,-z,now', '-landroid-glob']
+
+;; if you do not have a cross-perl like miniperl available, you have
+;; to specify the required options by uncommenting the following
+;; properties
+
+;; you can get the proper values by running the commands on your
+;; Android device:
+
+;; ` perl -V::version: `
+; perl_version = '5.30.2'
+;; ` perl -MExtUtils::Embed -o ccopts `
+; perl_ccopts = ['-I/data/data/com.termux/files/usr/include', '-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64', '-I/data/data/com.termux/files/usr/lib/perl5/5.30.2/aarch64-android/CORE']
+;; ` perl -MExtUtils::Embed -o ldopts `
+; perl_ldopts = ['-Wl,-E', '-I/data/data/com.termux/files/usr/include', '-L/data/data/com.termux/files/usr/lib/perl5/5.30.2/aarch64-android/CORE', '-lperl', '-lm', '-ldl']
+;; ` perl -V::archname: `
+; perl_archname = 'aarch64-android'
+;; ` perl -V::installsitearch: `
+; perl_installsitearch = '/data/data/com.termux/files/usr/lib/perl5/site_perl/5.30.2/aarch64-android'
+;; ` perl -V::installvendorarch: `
+; perl_installvendorarch = ''
+;; ` perl -E 'say for @INC' `
+; perl_inc = ['/data/data/com.termux/files/usr/lib/perl5/site_perl/5.30.2/aarch64-android', '/data/data/com.termux/files/usr/lib/perl5/site_perl/5.30.2', '/data/data/com.termux/files/usr/lib/perl5/5.30.2/aarch64-android', '/data/data/com.termux/files/usr/lib/perl5/5.30.2']
+
+[host_machine]
+cpu_family = 'arm'
+cpu = 'aarch64'
+endian = 'little'
+system = 'android'

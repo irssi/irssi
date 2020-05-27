@@ -11,6 +11,12 @@ cc = meson.get_compiler('c')
 rootinc = include_directories('.')
 dep = []
 textui_dep = []
+need_dl_cross_link = false
+# The Android environment requires that all modules are linked to each other.
+# See https://github.com/android/ndk/issues/201
+if host_machine.system() == 'android'
+  need_dl_cross_link = true
+endif
 
 includedir          = get_option('includedir')
 incdir              = 'irssi'
@@ -66,8 +72,13 @@ def_suppress_printf_fallback = '-D' + 'SUPPRESS_PRINTF_FALLBACK'
 # Help files #
 ##############
 
-perl = find_program('perl')
-run_command(perl, files('utils/syntax.pl'))
+build_perl = find_program('perl', native : true)
+if meson.is_cross_build()
+  cross_perl = find_program('perl')
+else
+  cross_perl = build_perl
+endif
+run_command(build_perl, files('utils/syntax.pl'))
 
 ###################
 # irssi-version.h #
@@ -313,34 +324,46 @@ if want_perl
   perl_rpath = ''
 
   #### ccopts ####
-  res = run_command(perl, '-MExtUtils::Embed', '-e', 'ccopts')
-  foreach fl : res.stdout().strip().split()
-   if fl.startswith('-D') or fl.startswith('-U') or fl.startswith('-I') or fl.startswith('-i') or fl.startswith('-f') or fl.startswith('-m')
-     perl_cflags += fl
-   endif
+  perl_ccopts = meson.get_cross_property('perl_ccopts', false)
+  if perl_ccopts == false
+    res = run_command(cross_perl, '-MExtUtils::Embed', '-e', 'ccopts')
+    perl_ccopts = res.stdout().strip().split()
+  endif
+  foreach fl : perl_ccopts
+    if fl.startswith('-D') or fl.startswith('-U') or fl.startswith('-I') or fl.startswith('-i') or fl.startswith('-f') or fl.startswith('-m')
+      perl_cflags += fl
+    endif
   endforeach
 
   perl_cflags += cc.get_supported_arguments('-fPIC')
 
   #### ldopts ####
-  res = run_command(perl, '-MExtUtils::Embed', '-e', 'ldopts')
+  perl_ldopts = meson.get_cross_property('perl_ldopts', false)
+  if perl_ldopts == false
+    res = run_command(cross_perl, '-MExtUtils::Embed', '-e', 'ldopts')
+    perl_ldopts = res.stdout().strip().split()
+  endif
   skip_libs = ['-ldb', '-ldbm', '-lndbm', '-lgdbm', '-lc', '-lposix', '-rdynamic']
-  foreach fl : res.stdout().strip().split()
-   if not fl.startswith('-A') and not skip_libs.contains(fl)
-     if fl.startswith('-Wl,-rpath,')
-       perl_rpath = fl.split(',')[2]
-       perl_rpath_flags += fl
-     else
-       perl_ldflags += fl
-     endif
-   endif
+  foreach fl : perl_ldopts
+    if not fl.startswith('-A') and not skip_libs.contains(fl)
+      if fl.startswith('-Wl,-rpath,')
+        perl_rpath = fl.split(',')[2]
+        perl_rpath_flags += fl
+      else
+        perl_ldflags += fl
+      endif
+    endif
   endforeach
 
+  perl_version = meson.get_cross_property('perl_version', false)
+  if perl_version == false
+    perl_version = run_command(cross_perl, '-V::version:').stdout().split('\'')[1]
+  endif
   perl_dep = declare_dependency(compile_args : perl_cflags, link_args : perl_ldflags,
-    version : run_command(perl, '-V::version:').stdout().split('\'')[1])
+    version : perl_version)
 
   ####
-  if not cc.run('''
+  if not cc.compiles('''
 #include <EXTERN.h>
 #include <perl.h>
 int main()
@@ -349,15 +372,18 @@ int main()
   return 0;
 }
 ''', args : perl_cflags + perl_ldflags + perl_rpath_flags,
-     name : 'working Perl support').compiled()
+     name : 'working Perl support')
     if require_perl
       error('error linking with perl libraries')
     else
       warning('error linking with perl libraries')
     endif
   else
-    xsubpp_file_c = run_command(perl, '-MExtUtils::ParseXS', '-Eprint $INC{"ExtUtils/ParseXS.pm"} =~ s{ParseXS\\.pm$}{xsubpp}r').stdout()
-    xsubpp = generator(perl,
+    xsubpp_file_c = meson.get_cross_property('perl_xsubpp', false)
+    if xsubpp_file_c == false
+      xsubpp_file_c = run_command(build_perl, '-MExtUtils::ParseXS', '-Eprint $INC{"ExtUtils/ParseXS.pm"} =~ s{ParseXS\\.pm$}{xsubpp}r').stdout()
+    endif
+    xsubpp = generator(build_perl,
       output : '@BASENAME@.c',
       capture : true,
       arguments : [ xsubpp_file_c, '@EXTRA_ARGS@', '@INPUT@' ],
@@ -365,7 +391,7 @@ int main()
     xsubpp_file = files(xsubpp_file_c)
 
     if with_perl_lib == 'module'
-      perl_install_base = run_command(perl, '-MText::ParseWords=shellwords', '-e', 'grep { s/^INSTALL_BASE=// && print && exit } shellwords $ENV{PERL_MM_OPT}').stdout()
+      perl_install_base = run_command(build_perl, '-MText::ParseWords=shellwords', '-e', 'grep { s/^INSTALL_BASE=// && print && exit } shellwords $ENV{PERL_MM_OPT}').stdout()
       if perl_install_base == ''
         with_perl_lib = ''
       endif
@@ -381,9 +407,16 @@ int main()
       set_perl_use_lib = false
       perl_library_dir = with_perl_lib + ' default'
       if with_perl_lib in ['site', 'vendor']
-        perlmoddir = run_command(perl, '-V::install' + with_perl_lib + 'arch:').stdout().split('\'')[1]
+        perlmoddir = meson.get_cross_property('perl_install' + with_perl_lib + 'arch', false)
+        if perlmoddir == false
+          perlmoddir = run_command(cross_perl, '-V::install' + with_perl_lib + 'arch:').stdout().split('\'')[1]
+        endif
       elif with_perl_lib == 'module'
-        perlmoddir = perl_install_base / 'lib' / 'perl5' / run_command(perl, '-V::archname:').stdout().split('\'')[1]
+        perl_archname = meson.get_cross_property('perl_archname', false)
+        if perl_archname == false
+          perl_archname = run_command(cross_perl, '-V::archname:').stdout().split('\'')[1]
+        endif
+        perlmoddir = perl_install_base / 'lib' / 'perl5' / perl_archname
       endif
     elif with_perl_lib == ''
       set_perl_use_lib = true
@@ -399,7 +432,12 @@ int main()
 
     perl_use_lib = get_option('prefix') / perlmoddir
     if set_perl_use_lib
-      set_perl_use_lib = run_command(perl, '-e', 'exit ! grep $_ eq $ARGV[0], grep /^\\//, @INC', perl_use_lib).returncode() != 0
+      perl_inc = meson.get_cross_property('perl_inc', false)
+      if perl_inc == false
+        set_perl_use_lib = run_command(cross_perl, '-e', 'exit ! grep $_ eq $ARGV[0], grep /^\\//, @INC', perl_use_lib).returncode() != 0
+      else
+        set_perl_use_lib = not perl_inc.contains(perl_use_lib)
+      endif
       if not set_perl_use_lib
         perl_library_dir += ' - other path in @INC'
       else
@@ -460,6 +498,10 @@ dep_cflagsonly = []
 foreach d : dep
   dep_cflagsonly += d.partial_dependency(includes : true, compile_args : true)
 endforeach
+dl_cross_dep = []
+if need_dl_cross_link
+  dl_cross_dep = dep
+endif
 
 ##################
 # irssi-config.h #
@@ -473,6 +515,7 @@ conf.set('HAVE_SOCKS', false, description : 'Build with socks support')
 conf.set('TERM_TRUECOLOR', want_truecolor, description : 'true color support in terminal')
 conf.set('USE_GREGEX', want_gregex, description : 'use GRegex for regular expressions')
 conf.set10('_DARWIN_USE_64_BIT_INODE', true, description : 'Enable large inode numbers on Mac OS X 10.5.')
+conf.set_quoted('FHS_PREFIX', get_option('fhs-prefix'))
 
 headers = [
   'sys/ioctl.h',

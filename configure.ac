@@ -665,6 +665,7 @@ else
 	want_gregex=no
 fi
 
+AC_DEFINE([FHS_PREFIX], [""], [Alternate filesystem prefix for Termux])
 AH_TEMPLATE(HAVE_GMODULE)
 AH_TEMPLATE(HAVE_SOCKS_H, [misc..])
 AH_TEMPLATE(HAVE_STATIC_PERL)
