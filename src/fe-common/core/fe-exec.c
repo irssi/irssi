@@ -316,11 +316,13 @@ static void process_exec(PROCESS_REC *rec, const char *cmd)
 	/* child process, try to clean up everything */
 	setsid();
 
+#ifndef __ANDROID__
 	if (setuid(getuid()) != 0)
 		_exit(EXIT_FAILURE);
 
 	if (setgid(getgid()) != 0)
 		_exit(EXIT_FAILURE);
+#endif
 
 	signal(SIGINT, SIG_IGN);
 	signal(SIGQUIT, SIG_DFL);
