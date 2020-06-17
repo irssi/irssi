@@ -37,7 +37,7 @@
 #include <string.h>
 
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
-	char *irssi_argv[] = {*argv[0], "--home", "/tmp/irssi", NULL};
+	char *irssi_argv[] = { *argv[0], "--home", FHS_PREFIX "/tmp/irssi", NULL };
 	int irssi_argc = sizeof(irssi_argv) / sizeof(char *) - 1;
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 	g_log_set_null_logger();
@@ -57,7 +57,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 	THEME_REC *theme;
 	gchar *copy = g_strndup((const gchar *)data, size);
 
-	FILE *fp = fopen("/tmp/irssi/fuzz.theme", "wb");
+	FILE *fp = fopen(FHS_PREFIX "/tmp/irssi/fuzz.theme", "wb");
 	if (fp) {
 		fwrite(copy, strlen(copy), 1, fp);
 		fclose(fp);

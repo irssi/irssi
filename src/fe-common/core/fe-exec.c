@@ -281,8 +281,8 @@ static void exec_show_list(void)
 
 static void process_exec(PROCESS_REC *rec, const char *cmd)
 {
-	const char *shell_args[4] = { "/bin/sh", "-c", NULL, NULL };
-        char **args;
+	const char *shell_args[4] = { FHS_PREFIX "/bin/sh", "-c", NULL, NULL };
+	char **args;
 	int in[2], out[2];
         int n;
 
@@ -316,11 +316,13 @@ static void process_exec(PROCESS_REC *rec, const char *cmd)
 	/* child process, try to clean up everything */
 	setsid();
 
+#ifndef __ANDROID__
 	if (setuid(getuid()) != 0)
 		_exit(EXIT_FAILURE);
 
 	if (setgid(getgid()) != 0)
 		_exit(EXIT_FAILURE);
+#endif
 
 	signal(SIGINT, SIG_IGN);
 	signal(SIGQUIT, SIG_DFL);
@@ -339,7 +341,7 @@ static void process_exec(PROCESS_REC *rec, const char *cmd)
 	if (rec->shell) {
 		execvp(shell_args[0], (char **) shell_args);
 
-		fprintf(stderr, "Exec: /bin/sh: %s\n", g_strerror(errno));
+		fprintf(stderr, "Exec: " FHS_PREFIX "/bin/sh: %s\n", g_strerror(errno));
 	} else {
 		args = g_strsplit(cmd, " ", -1);
                 execvp(args[0], args);

@@ -4,7 +4,7 @@ perl_signals_list_h = custom_target('perl-signals-list.h',
   output : 'perl-signals-list.h',
   capture : true,
   depend_files : files('get-signals.pl'),
-  command : [perl, files('get-signals.pl'), '@INPUT@'],
+  command : [build_perl, files('get-signals.pl'), '@INPUT@'],
 )
 
 irssi_core_pl_h = custom_target('irssi-core.pl.h',
@@ -14,7 +14,7 @@ irssi_core_pl_h = custom_target('irssi-core.pl.h',
   command : [file2header, '@INPUT@', 'irssi_core_code'],
 )
 
-shared_module('perl_core',
+libperl_core_a = shared_module('perl_core',
   files(
     'perl-common.c',
     'perl-core.c',
@@ -35,11 +35,16 @@ shared_module('perl_core',
   install_dir : moduledir,
   install_rpath : perl_rpath,
   build_rpath : perl_rpath,
-  dependencies : dep_cflagsonly + [ perl_dep ],
+  dependencies : dep_cflagsonly + [ perl_dep ] + dl_cross_dep,
   override_options : ['b_asneeded=false'],
 )
 
-shared_module('fe_perl',
+dl_cross_perl_core = []
+if need_dl_cross_link
+  dl_cross_perl_core += libperl_core_a
+endif
+
+libfe_perl_a = shared_module('fe_perl',
   files(
     'module-formats.c',
     'perl-fe.c',
@@ -52,6 +57,7 @@ shared_module('fe_perl',
   install : true,
   install_dir : moduledir,
   dependencies : dep,
+  link_with : dl_cross_perl_core,
 )
 
 subdir('common')

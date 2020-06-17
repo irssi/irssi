@@ -1,4 +1,4 @@
-libperl_ui_a = shared_module('UI',
+libperl_Irssi_UI_a = shared_module('UI',
   [ xsubpp.process(
     files(
       'Formats.xs',
@@ -20,6 +20,7 @@ libperl_ui_a = shared_module('UI',
   include_directories : rootinc,
   implicit_include_directories : true,
   dependencies : dep + [ perl_dep ],
+  link_with : dl_cross_perl_core,
 )
 
 install_headers(

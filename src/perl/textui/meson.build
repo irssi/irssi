@@ -1,4 +1,4 @@
-libperl_textui_a = shared_module('TextUI',
+libperl_Irssi_TextUI_a = shared_module('TextUI',
   [ xsubpp.process(
     files(
       'Statusbar.xs',
@@ -22,6 +22,7 @@ libperl_textui_a = shared_module('TextUI',
   include_directories : rootinc,
   implicit_include_directories : true,
   dependencies : dep + [ perl_dep ],
+  link_with : dl_cross_perl_core,
 )
 
 install_headers(

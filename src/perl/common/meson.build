@@ -1,4 +1,5 @@
-libperl_common_a = shared_module('Irssi',
+
+libperl_Irssi_a = shared_module('Irssi',
   [ xsubpp.process(
     files(
       'Channel.xs',
@@ -24,6 +25,7 @@ libperl_common_a = shared_module('Irssi',
   include_directories : rootinc,
   implicit_include_directories : true,
   dependencies : dep + [ perl_dep ],
+  link_with : dl_cross_perl_core,
 )
 
 install_headers(

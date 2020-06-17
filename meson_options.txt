@@ -14,3 +14,4 @@ option('with-capsicum',     type : 'combo',  description : 'Build with Capsicum 
 option('static-dependency', type : 'combo',  description : 'Request static dependencies',                 choices : ['no', 'yes'])
 option('install-glib',      type : 'combo',  description : 'Download and install GLib for you',           choices : ['no', 'yes', 'force'])
 option('docdir',            type : 'string', description : 'Documentation directory')
+option('fhs-prefix',        type : 'string', description : 'System prefix for Termux')
