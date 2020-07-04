@@ -770,9 +770,8 @@ static void cmd_show_keys(const char *searchkey, int full)
 		for (key = rec->keys; key != NULL; key = key->next) {
 			KEY_REC *rec = key->data;
 
-			if ((len == 0 ||
-			     (full ? strncmp(rec->key, searchkey, len) == 0 :
-			             g_ascii_strncasecmp(rec->key, searchkey, len) == 0)) &&
+			if ((len == 0 || (full ? strncmp(rec->key, searchkey, len) == 0 :
+			                         strstr(rec->key, searchkey) != NULL)) &&
 			    (!full || rec->key[len] == '\0')) {
 				printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_BIND_LIST,
 					    rec->key, rec->info->id, rec->data == NULL ? "" : rec->data);
