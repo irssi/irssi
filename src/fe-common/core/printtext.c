@@ -442,7 +442,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text)
 	format_send_to_gui(dest, str);
 	g_free(str);
 
-	signal_emit_id(signal_gui_print_text_finished, 1, dest->window);
+	signal_emit_id(signal_gui_print_text_finished, 2, dest->window, dest);
 }
 
 static void sig_print_format(THEME_REC *theme, const char *module, TEXT_DEST_REC *dest,
