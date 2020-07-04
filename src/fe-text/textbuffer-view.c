@@ -189,30 +189,32 @@ static inline void unformat(const unsigned char **ptr, int *color, unsigned int 
 		break;
 	case FORMAT_STYLE_CLRTOEOL:
 		break;
+#define SET_COLOR_EXT_FG_BITS(base, pc)                                                            \
+	*color &= ~ATTR_FGCOLOR24;                                                                 \
+	*color = (*color & BGATTR) | (base + *pc - FORMAT_COLOR_NOCHANGE)
+#define SET_COLOR_EXT_BG_BITS(base, pc)                                                            \
+	*color &= ~ATTR_BGCOLOR24;                                                                 \
+	*color = (*color & FGATTR) | ((base + *pc - FORMAT_COLOR_NOCHANGE) << BG_SHIFT)
 	case FORMAT_COLOR_EXT1:
-		*color &= ~ATTR_FGCOLOR24;
-		*color = (*color & BGATTR) | (0x10 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		SET_COLOR_EXT_FG_BITS(0x10, ++*ptr);
 		break;
 	case FORMAT_COLOR_EXT1_BG:
-		*color &= ~ATTR_BGCOLOR24;
-		*color = (*color & FGATTR) | (0x10 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		SET_COLOR_EXT_BG_BITS(0x10, ++*ptr);
 		break;
 	case FORMAT_COLOR_EXT2:
-		*color &= ~ATTR_FGCOLOR24;
-		*color = (*color & BGATTR) | (0x60 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		SET_COLOR_EXT_FG_BITS(0x60, ++*ptr);
 		break;
 	case FORMAT_COLOR_EXT2_BG:
-		*color &= ~ATTR_BGCOLOR24;
-		*color = (*color & FGATTR) | (0x60 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		SET_COLOR_EXT_BG_BITS(0x60, ++*ptr);
 		break;
 	case FORMAT_COLOR_EXT3:
-		*color &= ~ATTR_FGCOLOR24;
-		*color = (*color & BGATTR) | (0xb0 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		SET_COLOR_EXT_FG_BITS(0xb0, ++*ptr);
 		break;
 	case FORMAT_COLOR_EXT3_BG:
-		*color &= ~ATTR_BGCOLOR24;
-		*color = (*color & FGATTR) | (0xb0 + *++*ptr - FORMAT_COLOR_NOCHANGE);
+		SET_COLOR_EXT_BG_BITS(0xb0, ++*ptr);
 		break;
+#undef SET_COLOR_EXT_BG_BITS
+#undef SET_COLOR_EXT_FG_BITS
 #ifdef TERM_TRUECOLOR
 	case FORMAT_COLOR_24:
 		unformat_24bit_line_color(ptr, 1, color, fg24, bg24);
