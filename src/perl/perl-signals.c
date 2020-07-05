@@ -414,16 +414,18 @@ static void sig_func(const void *p1, const void *p2,
 		     const void *p5, const void *p6)
 {
 	PERL_SIGNAL_REC *rec;
+	PERL_SCRIPT_REC *script;
 	const void *args[SIGNAL_MAX_ARGUMENTS];
 
 	args[0] = p1; args[1] = p2; args[2] = p3;
 	args[3] = p4; args[4] = p5; args[5] = p6;
 
 	rec = signal_get_user_data();
+	script = rec->script;
 	if (rec->script->unloaded) return; /* Drop signal calls into unloaded scripts. */
-	perl_script_enter(rec->script);
-	perl_call_signal(rec->script, rec->func, signal_get_emitted_id(), args);
-	perl_script_exit(rec->script);
+	perl_script_enter(script);
+	perl_call_signal(script, rec->func, signal_get_emitted_id(), args);
+	perl_script_exit(script);
 }
 
 static void perl_signal_add_full_int(const char *signal, SV *func,
