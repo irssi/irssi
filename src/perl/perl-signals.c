@@ -422,10 +422,9 @@ static void sig_func(const void *p1, const void *p2,
 
 	rec = signal_get_user_data();
 	script = rec->script;
-	if (rec->script->unloaded) return; /* Drop signal calls into unloaded scripts. */
-	perl_script_enter(script);
+	perl_script_ref(script);
 	perl_call_signal(script, rec->func, signal_get_emitted_id(), args);
-	perl_script_exit(script);
+	perl_script_unref(script);
 }
 
 static void perl_signal_add_full_int(const char *signal, SV *func,
@@ -442,7 +441,6 @@ static void perl_signal_add_full_int(const char *signal, SV *func,
 
         script = perl_script_find_package(perl_get_package());
         g_return_if_fail(script != NULL);
-	g_return_if_fail(!script->unloaded);
 
 	rec = g_new(PERL_SIGNAL_REC, 1);
         rec->script = script;

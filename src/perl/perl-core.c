@@ -65,7 +65,6 @@ static void perl_script_destroy_package(PERL_SCRIPT_REC *script)
 
 static void perl_script_destroy(PERL_SCRIPT_REC *script)
 {
-	perl_scripts = g_slist_remove(perl_scripts, script);
 
 	signal_emit("script destroyed", 1, script);
 
@@ -274,6 +273,7 @@ static PERL_SCRIPT_REC *script_load(char *name, const char *path,
 	script->package = g_strdup_printf("Irssi::Script::%s", name);
 	script->path = g_strdup(path);
         script->data = g_strdup(data);
+	script->refcount = 1;
 
 	perl_scripts = g_slist_append(perl_scripts, script);
 	signal_emit("script created", 1, script);
@@ -308,6 +308,7 @@ PERL_SCRIPT_REC *perl_script_load_data(const char *data)
 /* Unload perl script */
 void perl_script_unload(PERL_SCRIPT_REC *script)
 {
+	GSList* link;
         g_return_if_fail(script != NULL);
 
 	perl_script_destroy_package(script);
@@ -315,25 +316,31 @@ void perl_script_unload(PERL_SCRIPT_REC *script)
 	perl_signal_remove_script(script);
 	perl_source_remove_script(script);
 
-	script->unloaded = 1;
-	if (!script->active_signals)
-	        perl_script_destroy(script);
+	link = g_slist_find(perl_scripts, script);
+	if (link != NULL) {
+		perl_scripts = g_slist_remove_link(perl_scripts, link);
+		g_slist_free(link);
+		perl_script_unref(script);
+	}
+
+/*	perl_scripts = g_slist_remove(perl_scripts, script);
+	perl_script_unref(script);*/
 }
 
 /* Enter a perl script (signal or input source) */
-void perl_script_enter(PERL_SCRIPT_REC *script)
+void perl_script_ref(PERL_SCRIPT_REC *script)
 {
 	g_return_if_fail(script != NULL);
 
-	script->active_signals++;
+	script->refcount++;
 }
 
-void perl_script_exit(PERL_SCRIPT_REC *script)
+void perl_script_unref(PERL_SCRIPT_REC *script)
 {
 	g_return_if_fail(script != NULL);
 
-	script->active_signals--;
-	if (script->unloaded)
+	script->refcount--;
+	if (!script->refcount)
 		perl_script_destroy(script);
 }
 

@@ -8,8 +8,7 @@ typedef struct {
         /* Script can be loaded from a file, or from some data in memory */
 	char *path; /* FILE: full path for file */
 	char *data; /* DATA: data used for the script */
-	int unloaded; /* Indicates unloading has been done, so it should be destroyed once all signals exit */
-	int active_signals; /* active signal calls into this script - prevents full teardown when nonzero */
+	int refcount; /* 0 = destroy */
 } PERL_SCRIPT_REC;
 
 extern GSList *perl_scripts;
@@ -29,9 +28,9 @@ PERL_SCRIPT_REC *perl_script_load_data(const char *data);
 void perl_script_unload(PERL_SCRIPT_REC *script);
 
 /* Mark a script as entered */
-void perl_script_enter(PERL_SCRIPT_REC *script);
+void perl_script_ref(PERL_SCRIPT_REC *script);
 /* Mark a script as exited */
-void perl_script_exit(PERL_SCRIPT_REC *script);
+void perl_script_unref(PERL_SCRIPT_REC *script);
 
 /* Find loaded script by name */
 PERL_SCRIPT_REC *perl_script_find(const char *name);

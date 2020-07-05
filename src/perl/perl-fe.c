@@ -106,7 +106,7 @@ static void cmd_script_unload(const char *data)
 
         script_fix_name(name);
 	script = perl_script_find(name);
-	if (script == NULL || script->unloaded) {
+	if (script == NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
                             TXT_SCRIPT_NOT_LOADED, name);
 	} else {
