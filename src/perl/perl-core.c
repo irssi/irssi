@@ -67,9 +67,6 @@ static void perl_script_destroy(PERL_SCRIPT_REC *script)
 {
 	perl_scripts = g_slist_remove(perl_scripts, script);
 
-	perl_signal_remove_script(script);
-	perl_source_remove_script(script);
-
 	signal_emit("script destroyed", 1, script);
 
 	g_free(script->name);
@@ -314,7 +311,30 @@ void perl_script_unload(PERL_SCRIPT_REC *script)
         g_return_if_fail(script != NULL);
 
 	perl_script_destroy_package(script);
-        perl_script_destroy(script);
+
+	perl_signal_remove_script(script);
+	perl_source_remove_script(script);
+
+	script->unloaded = 1;
+	if (!script->active_signals)
+	        perl_script_destroy(script);
+}
+
+/* Enter a perl script (signal or input source) */
+void perl_script_enter(PERL_SCRIPT_REC *script)
+{
+	g_return_if_fail(script != NULL);
+
+	script->active_signals++;
+}
+
+void perl_script_exit(PERL_SCRIPT_REC *script)
+{
+	g_return_if_fail(script != NULL);
+
+	script->active_signals--;
+	if (script->unloaded)
+		perl_script_destroy(script);
 }
 
 /* Find loaded script by name */

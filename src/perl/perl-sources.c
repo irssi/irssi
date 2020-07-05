@@ -78,6 +78,7 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	PUTBACK;
 
         perl_source_ref(rec);
+	perl_script_enter(rec->script);
 	perl_call_sv(rec->func, G_EVAL|G_DISCARD);
 
 	if (SvTRUE(ERRSV)) {
@@ -85,6 +86,8 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 		signal_emit("script error", 2, rec->script, error);
                 g_free(error);
 	}
+
+	perl_script_exit(rec->script);
 
 	if (perl_source_unref(rec) && rec->once)
 		perl_source_destroy(rec);
@@ -104,6 +107,7 @@ int perl_timeout_add(int msecs, SV *func, SV *data, int once)
         pkg = perl_get_package();
 	script = perl_script_find_package(pkg);
         g_return_val_if_fail(script != NULL, -1);
+	g_return_val_if_fail(script->unloaded, -1);
 
 	rec = g_new0(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);
@@ -127,6 +131,7 @@ int perl_input_add(int source, int condition, SV *func, SV *data, int once)
         pkg = perl_get_package();
 	script = perl_script_find_package(pkg);
         g_return_val_if_fail(script != NULL, -1);
+	g_return_val_if_fail(script->unloaded, -1);
 
 	rec = g_new0(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);
