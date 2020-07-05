@@ -107,7 +107,7 @@ int perl_timeout_add(int msecs, SV *func, SV *data, int once)
         pkg = perl_get_package();
 	script = perl_script_find_package(pkg);
         g_return_val_if_fail(script != NULL, -1);
-	g_return_val_if_fail(script->unloaded, -1);
+	g_return_val_if_fail(!script->unloaded, -1);
 
 	rec = g_new0(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);
@@ -131,7 +131,7 @@ int perl_input_add(int source, int condition, SV *func, SV *data, int once)
         pkg = perl_get_package();
 	script = perl_script_find_package(pkg);
         g_return_val_if_fail(script != NULL, -1);
-	g_return_val_if_fail(script->unloaded, -1);
+	g_return_val_if_fail(!script->unloaded, -1);
 
 	rec = g_new0(PERL_SOURCE_REC, 1);
 	perl_source_ref(rec);

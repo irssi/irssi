@@ -440,7 +440,7 @@ static void perl_signal_add_full_int(const char *signal, SV *func,
 
         script = perl_script_find_package(perl_get_package());
         g_return_if_fail(script != NULL);
-	g_return_if_fail(script->unloaded);
+	g_return_if_fail(!script->unloaded);
 
 	rec = g_new(PERL_SIGNAL_REC, 1);
         rec->script = script;
