@@ -163,8 +163,10 @@ static void cmd_cat(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	buf = g_string_sized_new(512);
 	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
 		buf->str[tpos] = '\0';
-		printtext(target ? server : NULL, target && item != NULL ? item->name : NULL, MSGLEVEL_CLIENTCRAP |
-			  MSGLEVEL_NEVER, "%s", buf->str);
+		if (target)
+			printtext_window(active_win, MSGLEVEL_CLIENTCRAP | MSGLEVEL_NEVER, "%s", buf->str);
+		else
+			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP | MSGLEVEL_NEVER, "%s", buf->str);
 	}
 	g_string_free(buf, TRUE);
 	cmd_params_free(free_arg);
