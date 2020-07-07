@@ -164,7 +164,8 @@ static void cmd_cat(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	while (g_io_channel_read_line_string(handle, buf, &tpos, NULL) == G_IO_STATUS_NORMAL) {
 		buf->str[tpos] = '\0';
 		if (target)
-			printtext_window(active_win, MSGLEVEL_CLIENTCRAP | MSGLEVEL_NEVER, "%s", buf->str);
+			printtext_window(active_win, MSGLEVEL_CLIENTCRAP | MSGLEVEL_NEVER, "%s",
+			                 buf->str);
 		else
 			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP | MSGLEVEL_NEVER, "%s", buf->str);
 	}
