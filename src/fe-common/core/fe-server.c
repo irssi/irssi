@@ -172,11 +172,6 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		rec->use_tls = FALSE;
 		/* tls_verify implies use_tls, disable it explicitly */
 		rec->tls_verify = FALSE;
-		/* explicitly null tls_cafile and tls_capath if we don't use tls */
-		if (rec->tls_cafile != NULL)
-			g_free_and_null(rec->tls_cafile);
-		if (rec->tls_capath != NULL)
-			g_free_and_null(rec->tls_capath);
 	}
 
 	value = g_hash_table_lookup(optlist, "tls_cert");
@@ -196,11 +191,6 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		value = g_hash_table_lookup(optlist, "ssl_pass");
 	if (value != NULL && *value != '\0')
 		rec->tls_pass = g_strdup(value);
-
-	if (g_hash_table_lookup(optlist, "tls_verify") || g_hash_table_lookup(optlist, "ssl_verify"))
-		rec->tls_verify = TRUE;
-	else if (g_hash_table_lookup(optlist, "notls_verify") || g_hash_table_lookup(optlist, "nossl_verify"))
-		rec->tls_verify = FALSE;
 
 	value = g_hash_table_lookup(optlist, "tls_cafile");
 	if (value == NULL)
@@ -232,10 +222,15 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 	if (value != NULL && *value != '\0')
 		rec->tls_pinned_pubkey = g_strdup(value);
 
-	if ((rec->tls_cafile != NULL && rec->tls_cafile[0] != '\0')
-	||  (rec->tls_capath != NULL && rec->tls_capath[0] != '\0'))
+	if (rec->use_tls && ((rec->tls_cafile != NULL && rec->tls_cafile[0] != '\0')
+			 ||  (rec->tls_capath != NULL && rec->tls_capath[0] != '\0')))
 		rec->tls_verify = TRUE;
 
+	if (g_hash_table_lookup(optlist, "tls_verify") || g_hash_table_lookup(optlist, "ssl_verify"))
+		rec->tls_verify = TRUE;
+	else if (g_hash_table_lookup(optlist, "notls_verify") || g_hash_table_lookup(optlist, "nossl_verify"))
+		rec->tls_verify = FALSE;
+	
 	if ((rec->tls_cert != NULL && rec->tls_cert[0] != '\0') || rec->tls_verify == TRUE)
 		rec->use_tls = TRUE;
 
