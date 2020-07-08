@@ -42,6 +42,7 @@ void textbuffer_format_rec_free(TEXT_BUFFER_FORMAT_REC *rec)
 	i_refstr_release(rec->server_tag);
 	i_refstr_release(rec->target);
 	i_refstr_release(rec->nick);
+	i_refstr_release(rec->address);
 	if (rec->nargs >= 1) {
 		i_refstr_release(rec->args[0]);
 	}
@@ -54,17 +55,13 @@ void textbuffer_format_rec_free(TEXT_BUFFER_FORMAT_REC *rec)
 	g_slice_free(TEXT_BUFFER_FORMAT_REC, rec);
 }
 
-static TEXT_BUFFER_FORMAT_REC *format_rec_new(const char *module, const char *format_tag,
-                                              const char *server_tag, const char *target,
-                                              const char *nick, int nargs, const char **args)
+static TEXT_BUFFER_FORMAT_REC *format_rec_new(const char *module, const char *format_tag, int nargs,
+                                              const char **args)
 {
 	int n;
 	TEXT_BUFFER_FORMAT_REC *ret = g_slice_new0(TEXT_BUFFER_FORMAT_REC);
 	ret->module = i_refstr_intern(module);
 	ret->format = i_refstr_intern(format_tag);
-	ret->server_tag = i_refstr_intern(server_tag);
-	ret->target = i_refstr_intern(target);
-	ret->nick = i_refstr_intern(nick);
 	ret->nargs = nargs;
 	ret->args = g_new0(char *, nargs);
 	if (nargs >= 1) {
@@ -74,6 +71,19 @@ static TEXT_BUFFER_FORMAT_REC *format_rec_new(const char *module, const char *fo
 		ret->args[n] = g_strdup(args[n]);
 	}
 	return ret;
+}
+
+static void format_rec_set_dest(TEXT_BUFFER_FORMAT_REC *rec, const TEXT_DEST_REC *dest)
+{
+	i_refstr_release(rec->server_tag);
+	i_refstr_release(rec->target);
+	i_refstr_release(rec->nick);
+	i_refstr_release(rec->address);
+	rec->server_tag = i_refstr_intern(dest->server_tag);
+	rec->target = i_refstr_intern(dest->target);
+	rec->nick = i_refstr_intern(dest->nick);
+	rec->address = i_refstr_intern(dest->address);
+	rec->flags = dest->flags & ~PRINT_FLAG_FORMAT;
 }
 
 static LINE_INFO_REC *store_lineinfo_tmp(TEXT_DEST_REC *dest)
@@ -132,11 +142,10 @@ static void sig_print_format(THEME_REC *theme, const char *module, TEXT_DEST_REC
 	formatnum = GPOINTER_TO_INT(formatnump);
 	formats = g_hash_table_lookup(default_formats, module);
 
-	info->format = format_rec_new(module, formats[formatnum].tag, dest->server_tag,
-	                              dest->target, dest->nick, formats[formatnum].params, args);
+	info->format =
+	    format_rec_new(module, formats[formatnum].tag, formats[formatnum].params, args);
 	special_push_collector(&info->format->expando_cache);
 
-	info->format->flags = dest->flags;
 	dest->flags |= PRINT_FLAG_FORMAT;
 
 	signal_continue(5, theme, module, dest, formatnump, args);
@@ -155,11 +164,9 @@ static void sig_print_noformat(TEXT_DEST_REC *dest, const char *text)
 	special_push_collector(NULL);
 	info = store_lineinfo_tmp(dest);
 
-	info->format = format_rec_new(NULL, NULL, dest->server_tag, dest->target, dest->nick, 2,
-	                              (const char *[]){ NULL, text });
+	info->format = format_rec_new(NULL, NULL, 2, (const char *[]){ NULL, text });
 	special_push_collector(&info->format->expando_cache);
 
-	info->format->flags = dest->flags;
 	dest->flags |= PRINT_FLAG_FORMAT;
 
 	signal_continue(2, dest, text);
@@ -182,7 +189,7 @@ static GSList *reverse_collector(GSList *a1)
 	return c1;
 }
 
-static void sig_gui_print_text_finished(WINDOW_REC *window)
+static void sig_gui_print_text_finished(WINDOW_REC *window, TEXT_DEST_REC *dest)
 {
 	GUI_WINDOW_REC *gui;
 	LINE_REC *insert_after;
@@ -202,6 +209,7 @@ static void sig_gui_print_text_finished(WINDOW_REC *window)
 		return;
 
 	info->format->expando_cache = reverse_collector(info->format->expando_cache);
+	format_rec_set_dest(info->format, dest);
 
 	info->level |= MSGLEVEL_FORMAT;
 
@@ -290,12 +298,16 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 
 		curr = line;
 		line = NULL;
-		format_rec = curr->info.format;
 
-		format_create_dest(
+		format_rec = curr->info.format;
+		format_create_dest_tag(
 		    &dest,
 		    format_rec->server_tag != NULL ? server_find_tag(format_rec->server_tag) : NULL,
-		    format_rec->target, curr->info.level & ~MSGLEVEL_FORMAT, buffer->window);
+		    format_rec->server_tag, format_rec->target, curr->info.level & ~MSGLEVEL_FORMAT,
+		    buffer->window);
+		dest.nick = format_rec->nick;
+		dest.address = format_rec->address;
+		dest.flags = format_rec->flags;
 
 		theme = window_get_theme(dest.window);
 
