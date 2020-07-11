@@ -158,7 +158,8 @@ void gui_printtext_after_time(TEXT_DEST_REC *dest, LINE_REC *prev, const char *s
 	gui->insert_after_time = time;
 	format_send_to_gui(dest, str);
 	gui->use_insert_after = FALSE;
-	signal_emit("gui print text after finished", 3, dest->window, gui->insert_after, prev);
+	signal_emit("gui print text after finished", 4, dest->window, gui->insert_after, prev,
+	            dest);
 }
 
 void gui_printtext_after(TEXT_DEST_REC *dest, LINE_REC *prev, const char *str)
@@ -376,7 +377,7 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
                 gui->insert_after = insert_after;
 }
 
-static void sig_gui_printtext_finished(WINDOW_REC *window)
+static void sig_gui_printtext_finished(WINDOW_REC *window, TEXT_DEST_REC *dest)
 {
 	TEXT_BUFFER_VIEW_REC *view;
 	LINE_REC *insert_after;

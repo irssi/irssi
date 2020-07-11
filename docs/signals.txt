@@ -246,7 +246,7 @@ FE common
  "gui print text", WINDOW_REC, int fg, int bg, int flags, char *text, TEXT_DEST_REC
 
 (Can be used to determine when all "gui print text"s are sent (not required))
- "gui print text finished", WINDOW_REC
+ "gui print text finished", WINDOW_REC, TEXT_DEST_REC
 
 * Provides signals:
 
@@ -353,7 +353,7 @@ gui-readline.c:
 
 gui-printtext.c:
  "beep"
- "gui print text after finished", WINDOW_REC, LINE_REC *line, LINE_REC *prev_line
+ "gui print text after finished", WINDOW_REC, LINE_REC *line, LINE_REC *prev_line, TEXT_DEST_REC
 
 textbuffer-view.c
  "gui textbuffer line removed", TEXTBUFFER_VIEW_REC *view, LINE_REC *line, LINE_REC *prev_line

@@ -9,6 +9,7 @@ typedef struct _TEXT_BUFFER_FORMAT_REC {
 	char *server_tag;
 	char *target;
 	char *nick;
+	char *address;
 	char **args;
 	int nargs;
 	GSList *expando_cache;
