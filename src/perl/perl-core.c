@@ -308,8 +308,8 @@ PERL_SCRIPT_REC *perl_script_load_data(const char *data)
 /* Unload perl script */
 void perl_script_unload(PERL_SCRIPT_REC *script)
 {
-	GSList* link;
-        g_return_if_fail(script != NULL);
+	GSList *link;
+	g_return_if_fail(script != NULL);
 
 	perl_script_destroy_package(script);
 
@@ -322,9 +322,6 @@ void perl_script_unload(PERL_SCRIPT_REC *script)
 		g_slist_free(link);
 		perl_script_unref(script);
 	}
-
-/*	perl_scripts = g_slist_remove(perl_scripts, script);
-	perl_script_unref(script);*/
 }
 
 /* Enter a perl script (signal or input source) */
