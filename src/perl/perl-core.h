@@ -8,6 +8,7 @@ typedef struct {
         /* Script can be loaded from a file, or from some data in memory */
 	char *path; /* FILE: full path for file */
 	char *data; /* DATA: data used for the script */
+	int refcount; /* 0 = destroy */
 } PERL_SCRIPT_REC;
 
 extern GSList *perl_scripts;
@@ -25,6 +26,11 @@ PERL_SCRIPT_REC *perl_script_load_file(const char *path);
 PERL_SCRIPT_REC *perl_script_load_data(const char *data);
 /* Unload perl script */
 void perl_script_unload(PERL_SCRIPT_REC *script);
+
+/* Mark a script as entered */
+void perl_script_ref(PERL_SCRIPT_REC *script);
+/* Mark a script as exited */
+void perl_script_unref(PERL_SCRIPT_REC *script);
 
 /* Find loaded script by name */
 PERL_SCRIPT_REC *perl_script_find(const char *name);

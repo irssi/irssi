@@ -78,6 +78,7 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 	PUTBACK;
 
         perl_source_ref(rec);
+	perl_script_ref(rec->script);
 	perl_call_sv(rec->func, G_EVAL|G_DISCARD);
 
 	if (SvTRUE(ERRSV)) {
@@ -85,6 +86,8 @@ static int perl_source_event(PERL_SOURCE_REC *rec)
 		signal_emit("script error", 2, rec->script, error);
                 g_free(error);
 	}
+
+	perl_script_unref(rec->script);
 
 	if (perl_source_unref(rec) && rec->once)
 		perl_source_destroy(rec);
