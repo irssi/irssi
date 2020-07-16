@@ -679,10 +679,11 @@ static void sig_server_disconnected(SERVER_REC *server)
 	}
 }
 
-static void window_print_daychange(WINDOW_REC *window, struct tm *tm)
+static void window_print_daychange(WINDOW_REC *window, time_t t)
 {
         THEME_REC *theme;
         TEXT_DEST_REC dest;
+	struct tm *tm;
 	char *format, str[256];
 	int ret;
 
@@ -690,6 +691,7 @@ static void window_print_daychange(WINDOW_REC *window, struct tm *tm)
 	format_create_dest(&dest, NULL, NULL, MSGLEVEL_NEVER, window);
 	format = format_get_text_theme(theme, MODULE_NAME, &dest,
 				       TXT_DAYCHANGE);
+	tm = localtime(&t);
 	ret = strftime(str, sizeof(str), format, tm);
 	g_free(format);
 	if (ret <= 0) return;
@@ -770,7 +772,7 @@ static void sig_print_text(void)
 
 	/* day changed, print notice about it to every window */
 	for (tmp = windows; tmp != NULL; tmp = tmp->next)
-		window_print_daychange(tmp->data, tm);
+		window_print_daychange(tmp->data, t);
 }
 
 static int sig_check_daychange(void)
