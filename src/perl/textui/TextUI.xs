@@ -85,6 +85,16 @@ static void perl_statusbar_item_fill_hash(HV *hv, SBAR_ITEM_REC *item)
 		(void) hv_store(hv, "window", 6, plain_bless(item->bar->parent_window->active, "Irssi::UI::Window"), 0);
 }
 
+static SV *perl_line_signal_arg_conv(LINE_REC *line, TEXT_BUFFER_VIEW_REC *view, WINDOW_REC *window)
+{
+	if (view != NULL)
+		return buffer_line_bless(view->buffer, line);
+	else if (window != NULL)
+		return buffer_line_bless(WINDOW_GUI(window)->view->buffer, line);
+	else
+		return &PL_sv_undef;
+}
+
 static PLAIN_OBJECT_INIT_REC textui_plains[] = {
 	{ "Irssi::TextUI::MainWindow", (PERL_OBJECT_FUNC) perl_main_window_fill_hash },
 	{ "Irssi::TextUI::TextBuffer", (PERL_OBJECT_FUNC) perl_text_buffer_fill_hash },
@@ -109,7 +119,9 @@ CODE:
 	initialized = TRUE;
 
         irssi_add_plains(textui_plains);
-        perl_statusbar_init();
+	irssi_add_signal_arg_conv("Irssi::TextUI::Line",
+	                          (PERL_BLESS_FUNC) perl_line_signal_arg_conv);
+	perl_statusbar_init();
 
 void
 deinit()

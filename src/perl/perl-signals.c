@@ -46,9 +46,15 @@ typedef struct {
 
 #include "perl-signals-list.h"
 
-static GHashTable *signals;
+static GHashTable *signals, *signal_stashes;
 static GHashTable *perl_signal_args_hash;
 static GSList *perl_signal_args_partial;
+
+void irssi_add_signal_arg_conv(const char *stash, PERL_BLESS_FUNC func)
+{
+	if (g_hash_table_lookup(signal_stashes, stash) == NULL)
+		g_hash_table_insert(signal_stashes, g_strdup(stash), func);
+}
 
 static PERL_SIGNAL_ARGS_REC *perl_signal_args_find(int signal_id)
 {
@@ -348,8 +354,36 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 			   int type; as it's first variable (dcc) */
 			perlarg = simple_iobject_bless((SERVER_REC *) arg);
 		} else {
-			/* blessed object */
-			perlarg = plain_bless(arg, rec->args[n]);
+			PERL_BLESS_FUNC bless_func;
+
+			bless_func = g_hash_table_lookup(signal_stashes, rec->args[n]);
+			if (bless_func != NULL) {
+				void *a1 = NULL;
+				void *a2 = NULL;
+				void *a3 = NULL;
+				if (g_strcmp0(rec->args[n], "Irssi::TextUI::Line") == 0) {
+					/* need to find the corresponding buffer */
+					int j;
+
+					for (j = n - 1; j >= 0; j--) {
+						if (g_strcmp0(rec->args[j],
+						              "Irssi::TextUI::TextBufferView") ==
+						    0) {
+							a1 = (void *) args[j];
+							break;
+						} else if (g_strcmp0(rec->args[j],
+						                     "Irssi::UI::Window") == 0) {
+							a2 = (void *) args[j];
+							break;
+						}
+					}
+				}
+
+				perlarg = bless_func(rec->args[n], a1, a2, a3);
+			} else {
+				/* blessed object */
+				perlarg = plain_bless(arg, rec->args[n]);
+			}
 		}
 		XPUSHs(sv_2mortal(perlarg));
 	}
@@ -628,6 +662,7 @@ void perl_signals_init(void)
 {
 	int n;
 
+	signal_stashes = g_hash_table_new((GHashFunc) g_str_hash, (GCompareFunc) g_str_equal);
 	perl_signal_args_hash = g_hash_table_new((GHashFunc) g_direct_hash,
 						 (GCompareFunc) g_direct_equal);
         perl_signal_args_partial = NULL;
@@ -662,5 +697,9 @@ void perl_signals_deinit(void)
 
 	g_hash_table_foreach(perl_signal_args_hash,
 			     (GHFunc) signal_args_hash_free, NULL);
-        g_hash_table_destroy(perl_signal_args_hash);
+	g_hash_table_destroy(perl_signal_args_hash);
+
+	g_hash_table_foreach(signal_stashes, (GHFunc) g_free, NULL);
+	g_hash_table_destroy(signal_stashes);
+	signal_stashes = NULL;
 }
