@@ -4,7 +4,7 @@ jobs:
   install:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@main
     - name: install
       uses: irssi-import/actions-irssi/check-irssi@master
       with:

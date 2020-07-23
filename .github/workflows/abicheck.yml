@@ -17,11 +17,11 @@ jobs:
           pip3 install wheel
           pip3 install meson
       - name: checkout merge ref
-        uses: actions/checkout@master
+        uses: actions/checkout@main
         with:
           path: merge.src
       - name: checkout base ref
-        uses: actions/checkout@master
+        uses: actions/checkout@main
         with:
           path: base.src
           ref: ${{ github.base_ref }}
