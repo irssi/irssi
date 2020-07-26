@@ -13,6 +13,8 @@
 
 typedef void (*PERL_OBJECT_FUNC) (HV *hv, void *object);
 
+typedef SV *(*PERL_BLESS_FUNC)(void *object, void *arg1, void *arg2, void *arg3);
+
 typedef struct {
 	char *name;
         PERL_OBJECT_FUNC fill_func;
