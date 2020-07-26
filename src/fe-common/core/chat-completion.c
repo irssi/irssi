@@ -1195,6 +1195,9 @@ static void sig_server_disconnected(SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
         mserver = MODULE_DATA(server);
+	if (mserver == NULL)
+		return;
+
 	while (mserver->lastmsgs)
                 last_msg_destroy(&mserver->lastmsgs, mserver->lastmsgs->data);
 }
