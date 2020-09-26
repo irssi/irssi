@@ -7,7 +7,7 @@ else
 endif
 
 if have_capsicum
-  core_capsicum_source = files('fe-capsicum.c')
+  core_capsicum_source = files('capsicum.c')
 else
   core_capsicum_source = []
 endif
