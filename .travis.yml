@@ -9,6 +9,10 @@ env:
     - CC=clang UNITTESTS=false
     - CC=gcc   UNITTESTS=false
     - CC=clang UNITTESTS=true
+arch:
+  - amd64
+  - ppc64le
+
 matrix:
     exclude:
         - env: CC=clang UNITTESTS=true
@@ -23,15 +27,17 @@ addons:
             - elinks
             - libgcrypt11-dev
             - libotr5-dev
+            - ibglib2.0-dev
+            - ninja-build
 
 before_install:
     - perl -V
     - pushd ~
-    - curl -sSLf https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip | funzip > bin/ninja
-    - chmod +x bin/ninja
+      # - curl -sSLf https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip | funzip > bin/ninja
+      # - chmod +x bin/ninja
     - curl -sSLf https://github.com/mesonbuild/meson/releases/download/0.51.1/meson-0.51.1.tar.gz | tar xz
-    - ( cd bin ; ln -s ../meson-*/meson.py meson )
-    - curl -sSLf https://github.com/irssi-import/glib-travis-build/releases/download/2.58.3/travis-xenial-glib-2.58.3.tar.xz | tar xJ
+    - ( cd bin ; ln -sf ../meson-*/meson.py meson )
+      # - curl -sSLf https://github.com/irssi-import/glib-travis-build/releases/download/2.58.3/travis-xenial-glib-2.58.3.tar.xz | tar xJ
     - export PKG_CONFIG_PATH=$HOME/glib-build/lib/x86_64-linux-gnu/pkgconfig
     - export LD_LIBRARY_PATH=$HOME/glib-build/lib/x86_64-linux-gnu
     - popd
@@ -43,7 +49,7 @@ install:
 
 before_script:
     - pushd ~
-    - mkdir irssi-test
+    - mkdir -p irssi-test
     - echo echo automated irssi launch test > irssi-test/startup;
       echo ^set settings_autosave off >> irssi-test/startup;
       echo ^set -clear log_close_string >> irssi-test/startup;
