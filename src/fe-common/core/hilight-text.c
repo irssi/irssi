@@ -244,6 +244,8 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
 	GSList *tmp;
 	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
+	HILIGHT_REC *tmprec;
+	int priority = -1;
 
 	g_return_val_if_fail(str != NULL, NULL);
 
@@ -274,11 +276,14 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
 			hilight_match_channel(rec, channel) &&
 			(rec->servertag == NULL ||
 			 (server != NULL && g_ascii_strcasecmp(rec->servertag, server->tag) == 0)) &&
-			hilight_match_text(rec, str, match_beg, match_end))
-			return rec;
+			hilight_match_text(rec, str, match_beg, match_end) &&
+			rec->priority > priority) {
+				tmprec = rec;
+				priority = rec->priority;
+			}
 	}
 
-	return NULL;
+	return tmprec;
 }
 
 static char *hilight_get_act_color(HILIGHT_REC *rec)
