@@ -9,58 +9,60 @@ CLANG_FORMAT=${CLANG_FORMAT:-clang-format}
 options=()
 files=()
 lines=()
-no_options=0;inplace=0;xml=0;keep_offset=0;keep_length=0;keep=0;
+inplace=0;xml=0;
 filename=tmp.1.c
 offsets=
-karg=
 off_opts=()
-for arg in "$@"; do
-    if [[ $keep = 1 ]]; then
-	if [[ "$karg" = "-offset" ]]; then
-	    offsets="$offsets${offsets:+ }$arg"
-	    off_opts+=("$karg" "$arg")
-	elif [[ "$karg" = "-length" ]]; then
-	    offsets="$offsets:$arg"
-	    off_opts+=("$karg" "$arg")
-	elif [[ "$karg" = "-assume-filename" ]]; then
-	    filename="$arg"
-	    options+=("$karg" "$arg")
-	else
-	    options+=("$karg" "$arg")
-	fi
-	keep=0
-    elif [[ $no_options = 0 ]]; then
-	case "$arg" in
-	    -assume-filename=*)
-		filename="${arg#-assume-filename=}"
-		;;
-	    -lines=*)
-		lines+=("${arg#-lines=}")
-		;;
-	    *)
-		;;
-	esac
-	case "$arg" in
-	    --) no_options=1
-		;;
-	    -i) inplace=1
-		;;
-	    -output-replacements-xml)
-		xml=1
-		;;
-	    -offset|-length|-cursor|-assume-filename|-fallback-style|-style)
-		keep=1
-		karg="$arg"
-		;;
-	    -*) options+=("$arg")
-		;;
-	    *) files+=("$arg")
-	       ;;
-	esac
-    else
-	files+=("$arg")
-    fi
+opts=$(getopt -n clang-format-xs -s bash -a -o in -l Werror,assume-filename:,cursor:,dry-run,dump-config,fallback-style:,ferror-limit:,help,length:,lines:,offset:,output-replacement-xmls,sort-includes,style:,verbose,version -- "$@")
+if [ $? -ne 0 ]; then exit 1; fi
+eval set -- "$opts"; unset opts
+while :; do
+    case "$1" in
+	--offset)
+	    offsets="$offsets${offsets:+ }$2"
+	    off_opts+=("$1" "$2")
+	    shift 2
+	    continue
+	    ;;
+	--length)
+	    offsets="$offsets:$2"
+	    off_opts+=("$1" "$2")
+	    shift 2
+	    continue
+	    ;;
+	--assume-filename)
+	    filename="$2"
+	    options+=("$1" "$2")
+	    shift 2
+	    continue
+	    ;;
+	--lines)
+	    lines+=("$2")
+	    shift 2
+	    continue
+	    ;;
+	--output-replacements-xml)
+	    xml=1
+	    shift
+	    continue
+	    ;;
+	-i)
+	    inplace=1
+	    shift
+	    continue
+	    ;;
+	--)
+	    shift
+	    break
+	    ;;
+	*)
+	    options+=("$1")
+	    shift
+	    continue
+	    ;;
+    esac
 done
+files=("$@")
 
 export IN_LINES="${lines[*]}"
 export OFFSETS="$offsets"
