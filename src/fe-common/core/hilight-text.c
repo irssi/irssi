@@ -674,6 +674,7 @@ static void hilight_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 	HILIGHT_REC *match;
 	char *nickmask;
 	int len, best_match;
+	int priority = -1;
 
 	if (nick->host == NULL)
 		return; /* don't check until host is known */
@@ -684,11 +685,12 @@ static void hilight_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 	for (tmp = hilights; tmp != NULL; tmp = tmp->next) {
 		HILIGHT_REC *rec = tmp->data;
 
-		if (rec->nickmask &&
+		if (rec->priority > priority && rec->nickmask &&
 			hilight_match_channel(rec, channel->name) &&
 			match_wildcards(rec->text, nickmask)) {
 			len = strlen(rec->text);
 			if (best_match < len) {
+				priority = rec->priority;
 				best_match = len;
 				match = rec;
 			}
