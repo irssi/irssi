@@ -272,12 +272,11 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
 	for (tmp = hilights; tmp != NULL; tmp = tmp->next) {
 		HILIGHT_REC *rec = tmp->data;
 
-		if (!rec->nickmask && hilight_match_level(rec, level) &&
-			hilight_match_channel(rec, channel) &&
+		if (rec->priority > priority && !rec->nickmask &&
+			hilight_match_level(rec, level) && hilight_match_channel(rec, channel) &&
 			(rec->servertag == NULL ||
 			 (server != NULL && g_ascii_strcasecmp(rec->servertag, server->tag) == 0)) &&
-			hilight_match_text(rec, str, match_beg, match_end) &&
-			rec->priority > priority) {
+			hilight_match_text(rec, str, match_beg, match_end)) {
 				tmprec = rec;
 				priority = rec->priority;
 			}
