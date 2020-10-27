@@ -248,6 +248,7 @@ HILIGHT_REC *hilight_match(SERVER_REC *server, const char *channel,
 	int priority = -1;
 
 	g_return_val_if_fail(str != NULL, NULL);
+	tmprec = NULL;
 
 	if ((never_hilight_level & level) == level)
 		return NULL;
