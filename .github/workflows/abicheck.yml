@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: set PATH
         run: |
-          echo "::add-path::$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: prepare required software
         run: |
           sudo apt install abigail-tools ninja-build libutf8proc-dev libperl-dev libotr5-dev
@@ -41,15 +41,15 @@ jobs:
           base_abi=$(getabidef base$prefix)
           echo base abi : $base_abi
           ./base$prefix/bin/irssi --version
-          echo "::set-env name=base_abi::$base_abi"
+          echo "base_abi=$base_abi" >> $GITHUB_ENV
           merge_abi=$(getabidef merge$prefix)
           echo merge abi : $merge_abi
           ./merge$prefix/bin/irssi --version
-          echo "::set-env name=merge_abi::$merge_abi"
+          echo "merge_abi=$merge_abi" >> $GITHUB_ENV
       - run: |
           # abipkgdiff
           abipkgdiff -l base merge && diff_ret=0 || diff_ret=$?
-          echo "::set-env name=diff_ret::$diff_ret"
+          echo "diff_ret=$diff_ret" >> $GITHUB_ENV
       - run: |
           # Check if no changes are needed
           if [ "$diff_ret" -ne 0 ]; then
