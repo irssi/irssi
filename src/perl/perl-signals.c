@@ -87,8 +87,9 @@ void perl_signal_args_to_c(void (*callback)(void *, int, void **), void *cb_arg,
                 GSList *v_gslist;
                 GList *v_glist;
         } saved_args[SIGNAL_MAX_ARGUMENTS];
-        void *p[SIGNAL_MAX_ARGUMENTS];
-        PERL_SIGNAL_ARGS_REC *rec;
+	AV *aargs;
+	void *p[SIGNAL_MAX_ARGUMENTS];
+	PERL_SIGNAL_ARGS_REC *rec;
 	char *arglist[MAX_FORMAT_PARAMS];
 	size_t n;
 
@@ -203,10 +204,13 @@ void perl_signal_args_to_c(void (*callback)(void *, int, void **), void *cb_arg,
 		p[n] = NULL;
 	}
 
+	/* make a copy of the stack now, since the callback might change it */
+	aargs = av_make(n_args, args);
+
 	callback(cb_arg, n_args, p);
 
 	for (n = 0; n < SIGNAL_MAX_ARGUMENTS && n < n_args && rec->args[n] != NULL; ++n) {
-		SV *arg = args[n];
+		SV *arg = *av_fetch(aargs, n, 0);
 
 		if (!SvOK(arg)) {
 			continue;
@@ -245,6 +249,7 @@ void perl_signal_args_to_c(void (*callback)(void *, int, void **), void *cb_arg,
 			g_list_free(gl);
 		}
 	}
+	av_undef(aargs);
 }
 
 static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
