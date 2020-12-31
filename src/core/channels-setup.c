@@ -34,6 +34,10 @@ static int compare_channel_setup (CONFIG_NODE *node, CHANNEL_SETUP_REC *channel)
 {
 	char *name, *chatnet;
 
+	/* skip comment nodes */
+	if (node->type == NODE_TYPE_COMMENT)
+		return -1;
+
 	name = config_node_get_str(node, "name", NULL);
 	chatnet = config_node_get_str(node, "chatnet", NULL);
 

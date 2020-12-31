@@ -472,6 +472,10 @@ static int compare_server_setup (CONFIG_NODE *node, SERVER_SETUP_REC *server)
 	char *address, *chatnet;
 	int port;
 
+	/* skip comment nodes */
+	if (node->type == NODE_TYPE_COMMENT)
+		return -1;
+
 	address = config_node_get_str(node, "address", NULL);
 	chatnet = config_node_get_str(node, "chatnet", NULL);
 	port = config_node_get_int(node, "port", 0);
