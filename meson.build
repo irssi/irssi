@@ -403,6 +403,7 @@ int main()
         with_perl_lib = 'vendor'
       endif
     endif
+    perlmoddir = ''
     if with_perl_lib in ['site', 'vendor', 'module']
       set_perl_use_lib = false
       perl_library_dir = with_perl_lib + ' default'
@@ -426,7 +427,8 @@ int main()
       set_perl_use_lib = true
       perl_library_dir = 'custom'
       perlmoddir = with_perl_lib
-    else
+    endif
+    if perlmoddir == ''
       error('Unrecognised with-perl-lib value: ' + with_perl_lib)
     endif
 
