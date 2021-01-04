@@ -106,8 +106,8 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	server->connrec->sasl_password = g_strdup(config_node_get_str(node, "sasl_password", NULL));
 
 	if (server->isupport == NULL) {
-		server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
-						    (GCompareFunc) g_istr_equal);
+		server->isupport =
+		    g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 	}
 
 	node = config_node_section(NULL, node, "isupport", -1);

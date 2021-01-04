@@ -176,8 +176,7 @@ static void print_netjoins(NETJOIN_SERVER_REC *server, const char *filter_channe
 
 	/* save nicks to string, clear now_channels and remove the same
 	   channels from old_channels list */
-	channels = g_hash_table_new((GHashFunc) g_istr_hash,
-				    (GCompareFunc) g_istr_equal);
+	channels = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 	for (tmp = server->netjoins; tmp != NULL; tmp = next) {
 		NETJOIN_REC *rec = tmp->data;
 

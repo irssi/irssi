@@ -408,17 +408,17 @@ char *convert_home(const char *path)
 	}
 }
 
-int g_istr_equal(gconstpointer v, gconstpointer v2)
+int i_istr_equal(gconstpointer v, gconstpointer v2)
 {
 	return g_ascii_strcasecmp((const char *) v, (const char *) v2) == 0;
 }
 
-int g_istr_cmp(gconstpointer v, gconstpointer v2)
+int i_istr_cmp(gconstpointer v, gconstpointer v2)
 {
 	return g_ascii_strcasecmp((const char *) v, (const char *) v2);
 }
 
-guint g_istr_hash(gconstpointer v)
+guint i_istr_hash(gconstpointer v)
 {
 	const signed char *p;
 	guint32 h = 5381;

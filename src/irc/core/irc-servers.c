@@ -283,8 +283,7 @@ static void server_init(IRC_SERVER_REC *server)
 		g_free(cmd);
 	}
 
-	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
-					    (GCompareFunc) g_istr_equal);
+	server->isupport = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
 	/* set the standards */
 	g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));
@@ -417,10 +416,9 @@ static void sig_connected(IRC_SERVER_REC *server)
 		(QUERY_REC *(*)(SERVER_REC *, const char *)) irc_query_find;
 	server->nick_comp_func = irc_nickcmp_rfc1459;
 
-	server->splits = g_hash_table_new((GHashFunc) g_istr_hash,
-					  (GCompareFunc) g_istr_equal);
+	server->splits = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
-        if (!server->session_reconnect)
+	if (!server->session_reconnect)
 		server_init(server);
 }
 

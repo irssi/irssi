@@ -740,8 +740,7 @@ int cmd_get_params(const char *data, gpointer *free_me, int count, ...)
 		opthash = (GHashTable **) va_arg(args, GHashTable **);
 
 		rec->options = *opthash =
-			g_hash_table_new((GHashFunc) g_istr_hash,
-					 (GCompareFunc) g_istr_equal);
+		    g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
 		ignore_unknown = count & PARAM_FLAG_UNKNOWN_OPTIONS;
 		error = get_cmd_options(&datad, ignore_unknown,

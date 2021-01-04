@@ -120,8 +120,7 @@ static void flood_init_server(IRC_SERVER_REC *server)
 	rec = g_new0(MODULE_SERVER_REC, 1);
 	MODULE_DATA_SET(server, rec);
 
-	rec->floodlist = g_hash_table_new((GHashFunc) g_istr_hash,
-					  (GCompareFunc) g_istr_equal);
+	rec->floodlist = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 }
 
 static void flood_hash_destroy(const char *key, FLOOD_REC *flood)

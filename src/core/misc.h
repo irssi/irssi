@@ -41,11 +41,11 @@ GList *optlist_remove_known(const char *cmd, GHashTable *optlist);
 char *convert_home(const char *path);
 
 /* Case-insensitive string hash functions */
-int g_istr_equal(gconstpointer v, gconstpointer v2);
-unsigned int g_istr_hash(gconstpointer v);
+int i_istr_equal(gconstpointer v, gconstpointer v2);
+unsigned int i_istr_hash(gconstpointer v);
 
 /* Case-insensitive GCompareFunc func */
-int g_istr_cmp(gconstpointer v, gconstpointer v2);
+int i_istr_cmp(gconstpointer v, gconstpointer v2);
 
 /* Find `mask' from `data', you can use * and ? wildcards. */
 int match_wildcards(const char *mask, const char *data);

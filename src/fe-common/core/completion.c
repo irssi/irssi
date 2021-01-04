@@ -425,7 +425,8 @@ static GList *completion_get_settings(const char *key, SettingType type)
 		SETTINGS_REC *rec = tmp->data;
 
 		if ((type == SETTING_TYPE_ANY || rec->type == type) && g_ascii_strncasecmp(rec->key, key, len) == 0)
-			complist = g_list_insert_sorted(complist, g_strdup(rec->key), (GCompareFunc) g_istr_cmp);
+			complist = g_list_insert_sorted(complist, g_strdup(rec->key),
+			                                (GCompareFunc) i_istr_cmp);
 	}
 	g_slist_free(sets);
 	return complist;
@@ -460,7 +461,8 @@ static GList *completion_get_aliases(const char *alias, char cmdchar)
 			   be appended after command completions and kept in
 			   uppercase to show it's an alias */
 			if (glist_find_icase_string(complist, word) == NULL)
-				complist = g_list_insert_sorted(complist, word, (GCompareFunc) g_istr_cmp);
+				complist =
+				    g_list_insert_sorted(complist, word, (GCompareFunc) i_istr_cmp);
 			else
 				g_free(word);
 		}
@@ -489,7 +491,8 @@ static GList *completion_get_commands(const char *cmd, char cmdchar)
 			word = cmdchar == '\0' ? g_strdup(rec->cmd) :
 				g_strdup_printf("%c%s", cmdchar, rec->cmd);
 			if (glist_find_icase_string(complist, word) == NULL)
-				complist = g_list_insert_sorted(complist, word, (GCompareFunc) g_istr_cmp);
+				complist =
+				    g_list_insert_sorted(complist, word, (GCompareFunc) i_istr_cmp);
 			else
 				g_free(word);
 		}
@@ -523,7 +526,8 @@ static GList *completion_get_subcommands(const char *cmd)
 			continue;
 
 		if (g_ascii_strncasecmp(rec->cmd, cmd, len) == 0)
-			complist = g_list_insert_sorted(complist, g_strdup(rec->cmd+skip), (GCompareFunc) g_istr_cmp);
+			complist = g_list_insert_sorted(complist, g_strdup(rec->cmd + skip),
+			                                (GCompareFunc) i_istr_cmp);
 	}
 	return complist;
 }

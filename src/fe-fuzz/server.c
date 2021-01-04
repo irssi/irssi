@@ -102,8 +102,7 @@ void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 
 void irc_server_init_bare_minimum(IRC_SERVER_REC *server) {
 	server->rawlog = rawlog_create();
-	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
-					    (GCompareFunc) g_istr_equal);
+	server->isupport = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
 	/* set the standards */
 	g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));

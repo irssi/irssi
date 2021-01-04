@@ -102,8 +102,7 @@ static void server_destroy_flood_tear_down(ServerDestroyFloodData *fixture, cons
 
 static void irc_server_init_bare_minimum(IRC_SERVER_REC *server)
 {
-	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
-					    (GCompareFunc) g_istr_equal);
+	server->isupport = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
 	/* set the standards */
 	g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));
