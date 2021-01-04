@@ -38,7 +38,7 @@ while :; do
 	    ;;
 	--lines)
 	    lines+=("$2")
-	    off_opts+=("$1" "$2")
+	    options+=("$1" "$2")
 	    shift 2
 	    continue
 	    ;;
