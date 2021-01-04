@@ -363,7 +363,7 @@ if want_perl
     version : perl_version)
 
   ####
-  if not cc.compiles('''
+  if not cc.links('''
 #include <EXTERN.h>
 #include <perl.h>
 int main()
