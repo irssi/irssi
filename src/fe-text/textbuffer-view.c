@@ -1376,12 +1376,6 @@ void textbuffer_view_remove_lines_by_level(TEXT_BUFFER_VIEW_REC *view, int level
 	term_refresh_thaw();
 }
 
-static int g_free_true(void *data)
-{
-	g_free(data);
-        return TRUE;
-}
-
 /* Remove all lines from buffer. */
 void textbuffer_view_remove_all_lines(TEXT_BUFFER_VIEW_REC *view)
 {
@@ -1389,8 +1383,8 @@ void textbuffer_view_remove_all_lines(TEXT_BUFFER_VIEW_REC *view)
 
 	textbuffer_remove_all_lines(view->buffer);
 
-	g_hash_table_foreach_remove(view->bookmarks,
-				    (GHRFunc) g_free_true, NULL);
+	g_hash_table_foreach(view->bookmarks, (GHFunc) g_free, NULL);
+	g_hash_table_remove_all(view->bookmarks);
 
 	textbuffer_view_reset_cache(view);
 	textbuffer_view_clear(view);
