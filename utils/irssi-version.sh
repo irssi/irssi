@@ -22,7 +22,7 @@ echo "#define IRSSI_VERSION_TIME $VERSION_TIME"
 
 if echo "${VERSION}" | grep -q -- -head; then
   # -head version, get extra details from git if we can
-  git_version=$(GIT_DIR=$1/.git git describe --dirty --long --always --tags 2>/dev/null)
+  git_version=$(GIT_DIR=$1/.git git describe --dirty --long --tags --match '[0-9]*.[0-9]*' 2>/dev/null)
   if [ $? = 0 ]; then
     echo "#undef PACKAGE_VERSION"
     echo "#define PACKAGE_VERSION \"${git_version}\""
