@@ -74,7 +74,7 @@ static GIOChannel *net_listen_unix(const char *path)
 		goto error_unlink;
 	}
 
-	return g_io_channel_new(handle);
+	return i_io_channel_new(handle);
 
 error_unlink:
 	unlink(sa.sun_path);
@@ -99,7 +99,7 @@ static GIOChannel *net_accept_unix(GIOChannel *handle)
 		return NULL;
 
 	fcntl(ret, F_SETFL, O_NONBLOCK);
-	return g_io_channel_new(ret);
+	return i_io_channel_new(ret);
 }
 
 static void remove_client(CLIENT_REC *rec)

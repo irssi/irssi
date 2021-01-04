@@ -107,7 +107,7 @@ static void emit_event(GIOChannel *pipe, enum key_gen_status status, gcry_error_
 	event.status = status;
 	event.error = error;
 
-	g_io_channel_write_block(pipe, &event, sizeof(event));
+	i_io_channel_write_block(pipe, &event, sizeof(event));
 }
 
 /*
@@ -137,7 +137,7 @@ static void read_key_gen_status(struct key_gen_worker *worker, GIOChannel *pipe)
 
 	fcntl(g_io_channel_unix_get_fd(pipe), F_SETFL, O_NONBLOCK);
 
-	if (g_io_channel_read_block(pipe, &event, sizeof(event)) == -1) {
+	if (i_io_channel_read_block(pipe, &event, sizeof(event)) == -1) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTERROR,
 				TXT_OTR_KEYGEN_FAILED,
 				key_gen_state.account_name,
@@ -244,8 +244,8 @@ void key_gen_run(struct otr_user_state *ustate, const char *account_name)
 		return;
 	}
 
-	worker->pipes[0] = g_io_channel_new(fd[0]);
-	worker->pipes[1] = g_io_channel_new(fd[1]);
+	worker->pipes[0] = i_io_channel_new(fd[0]);
+	worker->pipes[1] = i_io_channel_new(fd[1]);
 
 	pid = fork();
 

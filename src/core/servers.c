@@ -406,8 +406,8 @@ int server_start_connect(SERVER_REC *server)
 			return FALSE;
 		}
 
-		server->connect_pipe[0] = g_io_channel_new(fd[0]);
-		server->connect_pipe[1] = g_io_channel_new(fd[1]);
+		server->connect_pipe[0] = i_io_channel_new(fd[0]);
+		server->connect_pipe[1] = i_io_channel_new(fd[1]);
 
 		connect_address = server->connrec->proxy != NULL ?
 			server->connrec->proxy : server->connrec->address;
