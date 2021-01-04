@@ -355,8 +355,7 @@ static void dcc_chat_listen(CHAT_DCC_REC *dcc)
 	memcpy(&dcc->addr, &ip, sizeof(IPADDR));
 	net_ip2host(&dcc->addr, dcc->addrstr);
 	dcc->port = port;
-	dcc->tagread = g_input_add(handle, G_INPUT_READ,
-				   (GInputFunction) dcc_chat_input, dcc);
+	dcc->tagread = i_input_add(handle, I_INPUT_READ, (GInputFunction) dcc_chat_input, dcc);
 
 	signal_emit("dcc connected", 1, dcc);
 }
@@ -379,8 +378,7 @@ static void sig_chat_connected(CHAT_DCC_REC *dcc)
 
 	dcc->starttime = time(NULL);
 	dcc->sendbuf = net_sendbuffer_create(dcc->handle, 0);
-	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
-				   (GInputFunction) dcc_chat_input, dcc);
+	dcc->tagread = i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_chat_input, dcc);
 
 	signal_emit("dcc connected", 1, dcc);
 }
@@ -397,9 +395,8 @@ static void dcc_chat_connect(CHAT_DCC_REC *dcc)
 
 	dcc->handle = dcc_connect_ip(&dcc->addr, dcc->port);
 	if (dcc->handle != NULL) {
-		dcc->tagconn = g_input_add(dcc->handle,
-					   G_INPUT_WRITE | G_INPUT_READ,
-					   (GInputFunction) sig_chat_connected, dcc);
+		dcc->tagconn = i_input_add(dcc->handle, I_INPUT_WRITE | I_INPUT_READ,
+		                           (GInputFunction) sig_chat_connected, dcc);
 	} else {
 		/* error connecting */
 		signal_emit("dcc error connect", 1, dcc);
@@ -428,8 +425,8 @@ static void dcc_chat_passive(CHAT_DCC_REC *dcc)
 		cmd_return_error(CMDERR_ERRNO);
 
 	dcc->handle = handle;
-	dcc->tagconn = g_input_add(dcc->handle, G_INPUT_READ,
-				   (GInputFunction) dcc_chat_listen, dcc);
+	dcc->tagconn =
+	    i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_chat_listen, dcc);
 
 	/* Let's send the reply to the other client! */
 	dcc_ip2str(&own_ip, host);
@@ -508,8 +505,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 
 		dcc->handle = handle;
 		dcc->tagconn =
-			g_input_add(dcc->handle, G_INPUT_READ,
-				    (GInputFunction) dcc_chat_listen, dcc);
+		    i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_chat_listen, dcc);
 
 		/* send the chat request */
 		signal_emit("dcc request send", 1, dcc);

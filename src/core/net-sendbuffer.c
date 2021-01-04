@@ -132,8 +132,7 @@ int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 	/* everything couldn't be sent. */
 	if (rec->send_tag == -1) {
 		rec->send_tag =
-			g_input_add(rec->handle, G_INPUT_WRITE,
-				    (GInputFunction) sig_sendbuffer, rec);
+		    i_input_add(rec->handle, I_INPUT_WRITE, (GInputFunction) sig_sendbuffer, rec);
 	}
 
 	return buffer_add(rec, data, size) ? 0 : -1;

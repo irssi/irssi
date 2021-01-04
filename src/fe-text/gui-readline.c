@@ -85,9 +85,8 @@ static void sig_input(void);
 
 void input_listen_init(int handle)
 {
-	readtag = g_input_add_poll(handle,
-				   G_PRIORITY_HIGH, G_INPUT_READ,
-				   (GInputFunction) sig_input, NULL);
+	readtag = i_input_add_poll(handle, G_PRIORITY_HIGH, I_INPUT_READ,
+	                           (GInputFunction) sig_input, NULL);
 }
 
 void input_listen_deinit(void)

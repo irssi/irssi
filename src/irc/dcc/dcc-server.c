@@ -183,8 +183,8 @@ static void dcc_server_listen(SERVER_DCC_REC *dcc)
 	memcpy(&newdcc->addr, &ip, sizeof(IPADDR));
 	net_ip2host(&newdcc->addr, newdcc->addrstr);
 	newdcc->port = port;
-	newdcc->tagread = g_input_add(handle, G_INPUT_READ,
-				      (GInputFunction) dcc_server_input, newdcc);
+	newdcc->tagread =
+	    i_input_add(handle, I_INPUT_READ, (GInputFunction) dcc_server_input, newdcc);
 
 	signal_emit("dcc connected", 1, newdcc);
 }
@@ -210,8 +210,8 @@ static void dcc_server_msg(SERVER_DCC_REC *dcc, const char *msg)
 			memcpy(&dccchat->addr, &dcc->addr, sizeof(IPADDR));
 			net_ip2host(&dccchat->addr, dccchat->addrstr);
 			dccchat->port = dcc->port;
-			dccchat->tagread = g_input_add(dccchat->handle, G_INPUT_READ,
-						       (GInputFunction) dcc_chat_input, dccchat);
+			dccchat->tagread = i_input_add(dccchat->handle, I_INPUT_READ,
+			                               (GInputFunction) dcc_chat_input, dccchat);
 
 			dcc->connection_established = 1;
 			signal_emit("dcc connected", 1, dccchat);
@@ -347,8 +347,8 @@ static void cmd_dcc_server(const char *data, IRC_SERVER_REC *server)
 	dcc = dcc_server_create(server, flags);
 	dcc->handle = handle;
 	dcc->port = atoi(port);
-	dcc->tagconn = g_input_add(dcc->handle, G_INPUT_READ,
-				   (GInputFunction) dcc_server_listen, dcc);
+	dcc->tagconn =
+	    i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_server_listen, dcc);
 
 	signal_emit("dcc server started", 1, dcc);
 

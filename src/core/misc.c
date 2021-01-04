@@ -37,15 +37,15 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 	if (condition & (G_IO_ERR | G_IO_HUP | G_IO_NVAL)) {
 		/* error, we have to call the function.. */
 		if (rec->condition & G_IO_IN)
-			icond |= G_INPUT_READ;
+			icond |= I_INPUT_READ;
 		else
-			icond |= G_INPUT_WRITE;
+			icond |= I_INPUT_WRITE;
 	}
 
 	if (condition & (G_IO_IN | G_IO_PRI))
-		icond |= G_INPUT_READ;
+		icond |= I_INPUT_READ;
 	if (condition & G_IO_OUT)
-		icond |= G_INPUT_WRITE;
+		icond |= I_INPUT_WRITE;
 
 	if (rec->condition & icond)
 		rec->function(rec->data, source, icond);
@@ -53,8 +53,8 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 	return TRUE;
 }
 
-int g_input_add_full(GIOChannel *source, int priority, int condition,
-		     GInputFunction function, void *data)
+int i_input_add_full(GIOChannel *source, int priority, int condition, GInputFunction function,
+                     void *data)
 {
         IRSSI_INPUT_REC *rec;
 	unsigned int result;
@@ -66,9 +66,9 @@ int g_input_add_full(GIOChannel *source, int priority, int condition,
 	rec->data = data;
 
 	cond = (GIOCondition) (G_IO_ERR|G_IO_HUP|G_IO_NVAL);
-	if (condition & G_INPUT_READ)
+	if (condition & I_INPUT_READ)
 		cond |= G_IO_IN|G_IO_PRI;
-	if (condition & G_INPUT_WRITE)
+	if (condition & I_INPUT_WRITE)
 		cond |= G_IO_OUT;
 
 	result = g_io_add_watch_full(source, priority, cond,
@@ -77,19 +77,16 @@ int g_input_add_full(GIOChannel *source, int priority, int condition,
 	return result;
 }
 
-int g_input_add(GIOChannel *source, int condition,
-		GInputFunction function, void *data)
+int i_input_add(GIOChannel *source, int condition, GInputFunction function, void *data)
 {
-	return g_input_add_full(source, G_PRIORITY_DEFAULT, condition,
-				function, data);
+	return i_input_add_full(source, G_PRIORITY_DEFAULT, condition, function, data);
 }
 
 /* easy way to bypass glib polling of io channel internal buffer */
-int g_input_add_poll(int fd, int priority, int condition,
-		     GInputFunction function, void *data)
+int i_input_add_poll(int fd, int priority, int condition, GInputFunction function, void *data)
 {
 	GIOChannel *source = g_io_channel_unix_new(fd);
-	int ret = g_input_add_full(source, priority, condition, function, data);
+	int ret = i_input_add_full(source, priority, condition, function, data);
 	g_io_channel_unref(source);
 	return ret;
 }

@@ -524,9 +524,8 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	level = g_hash_table_lookup(optlist, "level");
 	rec->level = level == NULL ? MSGLEVEL_CLIENTCRAP : level2bits(level, NULL);
 
-	rec->read_tag = g_input_add(rec->in, G_INPUT_READ,
-				    (GInputFunction) sig_exec_input_reader,
-				    rec);
+	rec->read_tag =
+	    i_input_add(rec->in, I_INPUT_READ, (GInputFunction) sig_exec_input_reader, rec);
 	processes = g_slist_append(processes, rec);
 
 	if (rec->target == NULL && interactive)

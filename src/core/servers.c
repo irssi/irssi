@@ -184,10 +184,9 @@ static void server_connect_callback_init_ssl(SERVER_REC *server, GIOChannel *han
 	if (error & 1) {
 		if (server->connect_tag != -1)
 			g_source_remove(server->connect_tag);
-		server->connect_tag = g_input_add(handle, error == 1 ? G_INPUT_READ : G_INPUT_WRITE,
-						  (GInputFunction)
-						  server_connect_callback_init_ssl,
-						  server);
+		server->connect_tag =
+		    i_input_add(handle, error == 1 ? I_INPUT_READ : I_INPUT_WRITE,
+		                (GInputFunction) server_connect_callback_init_ssl, server);
 		return;
 	}
 
@@ -253,11 +252,9 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		if (server->connrec->use_tls)
 			server_connect_callback_init_ssl(server, handle);
 		else
-		server->connect_tag =
-			g_input_add(handle, G_INPUT_WRITE | G_INPUT_READ,
-				    (GInputFunction)
-				    server_connect_callback_init,
-				    server);
+			server->connect_tag =
+			    i_input_add(handle, I_INPUT_WRITE | I_INPUT_READ,
+			                (GInputFunction) server_connect_callback_init, server);
 	}
 }
 
@@ -418,10 +415,8 @@ int server_start_connect(SERVER_REC *server)
 			net_gethostbyname_nonblock(connect_address,
 						   server->connect_pipe[1], 0);
 		server->connect_tag =
-			g_input_add(server->connect_pipe[0], G_INPUT_READ,
-				    (GInputFunction)
-				    server_connect_callback_readpipe,
-				    server);
+		    i_input_add(server->connect_pipe[0], I_INPUT_READ,
+		                (GInputFunction) server_connect_callback_readpipe, server);
 
 		server->connect_time = time(NULL);
 		lookup_servers = g_slist_append(lookup_servers, server);

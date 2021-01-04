@@ -252,7 +252,8 @@ void key_gen_run(struct otr_user_state *ustate, const char *account_name)
 	if (pid > 0) {
 		/* Parent process */
 		pidwait_add(pid);
-		worker->tag = g_input_add(worker->pipes[0], G_INPUT_READ, (GInputFunction)read_key_gen_status, worker);
+		worker->tag = i_input_add(worker->pipes[0], I_INPUT_READ,
+		                          (GInputFunction) read_key_gen_status, worker);
 		return;
 	}
 

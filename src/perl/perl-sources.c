@@ -139,8 +139,8 @@ int perl_input_add(int source, int condition, SV *func, SV *data, int once)
 	rec->func = perl_func_sv_inc(func, pkg);
 	rec->data = SvREFCNT_inc(data);
 
-	rec->tag = g_input_add_poll(source, G_PRIORITY_DEFAULT, condition,
-			       (GInputFunction) perl_source_event, rec);
+	rec->tag = i_input_add_poll(source, G_PRIORITY_DEFAULT, condition,
+	                            (GInputFunction) perl_source_event, rec);
 
 	perl_sources = g_slist_append(perl_sources, rec);
 	return rec->tag;

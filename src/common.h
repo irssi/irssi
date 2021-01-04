@@ -45,15 +45,14 @@ typedef guint64 uoff_t;
 #define PRIuUOFF_T G_GUINT64_FORMAT
 
 /* input functions */
-#define G_INPUT_READ	(1 << 0)
-#define G_INPUT_WRITE	(1 << 1)
+#define I_INPUT_READ (1 << 0)
+#define I_INPUT_WRITE (1 << 1)
 
 typedef void (*GInputFunction) (void *data, GIOChannel *source, int condition);
 
-int g_input_add(GIOChannel *source, int condition,
-		GInputFunction function, void *data);
-int g_input_add_full(GIOChannel *source, int priority, int condition,
-		     GInputFunction function, void *data);
+int i_input_add(GIOChannel *source, int condition, GInputFunction function, void *data);
+int i_input_add_full(GIOChannel *source, int priority, int condition, GInputFunction function,
+                     void *data);
 
 /* return full path for ~/.irssi */
 const char *get_irssi_dir(void);
