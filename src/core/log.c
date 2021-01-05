@@ -561,7 +561,7 @@ static void log_read_config(void)
 		if (node != NULL)
 			log_items_read_config(node, log);
 
-		if (log->autoopen || gslist_find_string(fnames, log->fname))
+		if (log->autoopen || i_slist_find_string(fnames, log->fname))
 			log_start_logging(log);
 	}
 

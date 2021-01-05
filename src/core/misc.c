@@ -167,7 +167,7 @@ int strarray_find(char **array, const char *item)
 	return -1;
 }
 
-GSList *gslist_find_string(GSList *list, const char *key)
+GSList *i_slist_find_string(GSList *list, const char *key)
 {
 	for (; list != NULL; list = list->next)
 		if (g_strcmp0(list->data, key) == 0) return list;
@@ -175,7 +175,7 @@ GSList *gslist_find_string(GSList *list, const char *key)
 	return NULL;
 }
 
-GSList *gslist_find_icase_string(GSList *list, const char *key)
+GSList *i_slist_find_icase_string(GSList *list, const char *key)
 {
 	for (; list != NULL; list = list->next)
 		if (g_ascii_strcasecmp(list->data, key) == 0) return list;
@@ -183,7 +183,7 @@ GSList *gslist_find_icase_string(GSList *list, const char *key)
 	return NULL;
 }
 
-void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data)
+void *i_slist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data)
 {
 	void *ret;
 
@@ -197,7 +197,7 @@ void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data
 	return NULL;
 }
 
-void gslist_free_full (GSList *list, GDestroyNotify free_func)
+void i_slist_free_full(GSList *list, GDestroyNotify free_func)
 {
 	GSList *tmp;
 
@@ -210,7 +210,7 @@ void gslist_free_full (GSList *list, GDestroyNotify free_func)
 	g_slist_free(list);
 }
 
-GSList *gslist_remove_string (GSList *list, const char *str)
+GSList *i_slist_remove_string(GSList *list, const char *str)
 {
 	GSList *l;
 
@@ -221,7 +221,7 @@ GSList *gslist_remove_string (GSList *list, const char *str)
 	return list;
 }
 
-GSList *gslist_delete_string (GSList *list, const char *str, GDestroyNotify free_func)
+GSList *i_slist_delete_string(GSList *list, const char *str, GDestroyNotify free_func)
 {
 	GSList *l;
 
@@ -255,7 +255,7 @@ char *gslistptr_to_string(GSList *list, int offset, const char *delimiter)
 }
 
 /* `list' contains char* */
-char *gslist_to_string(GSList *list, const char *delimiter)
+char *i_slist_to_string(GSList *list, const char *delimiter)
 {
 	GString *str;
 	char *ret;

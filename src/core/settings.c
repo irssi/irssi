@@ -613,9 +613,8 @@ void settings_check_module(const char *module)
 		}
 	}
 	if (count > 0) {
-		if (gslist_find_icase_string(last_invalid_modules,
-					     module) == NULL) {
-                        /* mark this module having invalid settings */
+		if (i_slist_find_icase_string(last_invalid_modules, module) == NULL) {
+			/* mark this module having invalid settings */
 			last_invalid_modules =
 				g_slist_append(last_invalid_modules,
 					       g_strdup(module));

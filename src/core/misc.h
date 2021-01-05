@@ -19,21 +19,21 @@ int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2) G_GNUC_DEPRECATED;
 long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2) G_GNUC_DEPRECATED;
 #pragma GCC diagnostic pop
 
-GSList *gslist_find_string(GSList *list, const char *key);
-GSList *gslist_find_icase_string(GSList *list, const char *key);
+GSList *i_slist_find_string(GSList *list, const char *key);
+GSList *i_slist_find_icase_string(GSList *list, const char *key);
 GList *glist_find_string(GList *list, const char *key);
 GList *glist_find_icase_string(GList *list, const char *key);
-GSList *gslist_remove_string (GSList *list, const char *str) G_GNUC_DEPRECATED;
-GSList *gslist_delete_string (GSList *list, const char *str, GDestroyNotify free_func);
+GSList *i_slist_remove_string(GSList *list, const char *str) G_GNUC_DEPRECATED;
+GSList *i_slist_delete_string(GSList *list, const char *str, GDestroyNotify free_func);
 
-void gslist_free_full (GSList *list, GDestroyNotify free_func);
+void i_slist_free_full(GSList *list, GDestroyNotify free_func);
 
-void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data);
+void *i_slist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data);
 
 /* `list' contains pointer to structure with a char* to string. */
 char *gslistptr_to_string(GSList *list, int offset, const char *delimiter);
 /* `list' contains char* */
-char *gslist_to_string(GSList *list, const char *delimiter);
+char *i_slist_to_string(GSList *list, const char *delimiter);
 
 GList *optlist_remove_known(const char *cmd, GHashTable *optlist);
 

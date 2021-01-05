@@ -31,19 +31,18 @@ int irc_cap_toggle (IRC_SERVER_REC *server, char *cap, int enable)
 
 	/* If the negotiation hasn't been completed yet just queue the requests */
 	if (!server->cap_complete) {
-		if (enable && !gslist_find_string(server->cap_queue, cap)) {
+		if (enable && !i_slist_find_string(server->cap_queue, cap)) {
 			server->cap_queue = g_slist_prepend(server->cap_queue, g_strdup(cap));
 			return TRUE;
-		}
-		else if (!enable && gslist_find_string(server->cap_queue, cap)) {
-			server->cap_queue = gslist_delete_string(server->cap_queue, cap, g_free);
+		} else if (!enable && i_slist_find_string(server->cap_queue, cap)) {
+			server->cap_queue = i_slist_delete_string(server->cap_queue, cap, g_free);
 			return TRUE;
 		}
 
 		return FALSE;
 	}
 
-	if (enable && !gslist_find_string(server->cap_active, cap)) {
+	if (enable && !i_slist_find_string(server->cap_active, cap)) {
 		/* Make sure the required cap is supported by the server */
 		if (!g_hash_table_lookup_extended(server->cap_supported, cap, NULL, NULL))
 			return FALSE;
@@ -51,8 +50,7 @@ int irc_cap_toggle (IRC_SERVER_REC *server, char *cap, int enable)
 		signal_emit("server cap req", 2, server, cap);
 		irc_send_cmdv(server, "CAP REQ %s", cap);
 		return TRUE;
-	}
-	else if (!enable && gslist_find_string(server->cap_active, cap)) {
+	} else if (!enable && i_slist_find_string(server->cap_active, cap)) {
 		char *negcap = g_strdup_printf("-%s", cap);
 
 		signal_emit("server cap req", 2, server, negcap);
@@ -200,7 +198,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 				}
 
 				/* Clear the queue here */
-				gslist_free_full(server->cap_queue, (GDestroyNotify) g_free);
+				i_slist_free_full(server->cap_queue, (GDestroyNotify) g_free);
 				server->cap_queue = NULL;
 
 				/* If the server doesn't support any cap we requested close the negotiation here */
@@ -223,8 +221,9 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			disable = (*caps[i] == '-');
 
 			if (disable)
-				server->cap_active = gslist_delete_string(server->cap_active, caps[i] + 1, g_free);
-			else if (!gslist_find_string(server->cap_active, caps[i]))
+				server->cap_active =
+				    i_slist_delete_string(server->cap_active, caps[i] + 1, g_free);
+			else if (!i_slist_find_string(server->cap_active, caps[i]))
 				server->cap_active = g_slist_prepend(server->cap_active, g_strdup(caps[i]));
 
 			if (!strcmp(caps[i], "sasl"))
@@ -273,7 +272,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 			cap_emit_signal(server, "delete", key);
 			/* The server removed this CAP, remove it from the list
 			 * of the active ones if we had requested it */
-			server->cap_active = gslist_delete_string(server->cap_active, key, g_free);
+			server->cap_active = i_slist_delete_string(server->cap_active, key, g_free);
 			/* We don't transfer the ownership of those two
 			 * variables this time, just free them when we're done. */
 			g_free(key);

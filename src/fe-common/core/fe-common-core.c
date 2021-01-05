@@ -357,7 +357,7 @@ static void autoconnect_servers(void)
 
 		if (rec->autoconnect &&
 		    (rec->chatnet == NULL ||
-		     gslist_find_icase_string(chatnets, rec->chatnet) == NULL)) {
+		     i_slist_find_icase_string(chatnets, rec->chatnet) == NULL)) {
 			if (rec->chatnet != NULL) {
 				chatnets = g_slist_append(chatnets, rec->chatnet);
 				str = g_strdup_printf("-network %s %s %d", rec->chatnet, rec->address, rec->port);

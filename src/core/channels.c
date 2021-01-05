@@ -126,9 +126,8 @@ CHANNEL_REC *channel_find(SERVER_REC *server, const char *name)
 		return channel_find_server(server, name);
 
 	/* find from any server */
-	return gslist_foreach_find(servers,
-				   (FOREACH_FIND_FUNC) channel_find_server,
-				   (void *) name);
+	return i_slist_foreach_find(servers, (FOREACH_FIND_FUNC) channel_find_server,
+	                            (void *) name);
 }
 
 void channel_change_name(CHANNEL_REC *channel, const char *name)
@@ -153,9 +152,8 @@ void channel_change_visible_name(CHANNEL_REC *channel, const char *name)
 
 static CHANNEL_REC *channel_find_servers(GSList *servers, const char *name)
 {
-	return gslist_foreach_find(servers,
-				   (FOREACH_FIND_FUNC) channel_find_server,
-				   (void *) name);
+	return i_slist_foreach_find(servers, (FOREACH_FIND_FUNC) channel_find_server,
+	                            (void *) name);
 }
 
 static GSList *servers_find_chatnet_except(SERVER_REC *server)

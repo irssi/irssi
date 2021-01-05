@@ -279,7 +279,7 @@ static void ison_check_parts(IRC_SERVER_REC *server)
 		NOTIFY_NICK_REC *rec = tmp->data;
 		next = tmp->next;
 
-		if (gslist_find_icase_string(mserver->ison_tempusers, rec->nick) != NULL)
+		if (i_slist_find_icase_string(mserver->ison_tempusers, rec->nick) != NULL)
 			continue;
 
                 notifylist_left(server, rec);

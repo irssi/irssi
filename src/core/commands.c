@@ -431,7 +431,7 @@ static void command_calc_options(COMMAND_REC *rec, const char *options)
 	g_strfreev(optlist);
 
 	/* linked list -> string[] */
-	str = gslist_to_string(list, " ");
+	str = i_slist_to_string(list, " ");
 	rec->options = g_strsplit(str, " ", -1);
         g_free(str);
 
@@ -831,7 +831,7 @@ void commands_remove_module(const char *module)
 		COMMAND_REC *rec = tmp->data;
 
                 next = tmp->next;
-		modlist = gslist_find_string(rec->modules, module);
+		modlist = i_slist_find_string(rec->modules, module);
 		if (modlist != NULL)
 			command_module_unbind_all(rec, modlist->data);
 	}
@@ -865,8 +865,7 @@ static int cmd_protocol_match(COMMAND_REC *cmd, SERVER_REC *server)
 #define alias_runstack_pop(alias) \
 	alias_runstack = g_slist_remove(alias_runstack, alias)
 
-#define alias_runstack_find(alias) \
-        (gslist_find_icase_string(alias_runstack, alias) != NULL)
+#define alias_runstack_find(alias) (i_slist_find_icase_string(alias_runstack, alias) != NULL)
 
 static void parse_command(const char *command, int expand_aliases,
 			  SERVER_REC *server, void *item)

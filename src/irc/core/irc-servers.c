@@ -443,7 +443,7 @@ static void sig_destroyed(IRC_SERVER_REC *server)
 	g_slist_free(server->cmdqueue);
 	server->cmdqueue = NULL;
 
-	gslist_free_full(server->cap_active, (GDestroyNotify) g_free);
+	i_slist_free_full(server->cap_active, (GDestroyNotify) g_free);
 	server->cap_active = NULL;
 
 	if (server->cap_supported) {
@@ -451,7 +451,7 @@ static void sig_destroyed(IRC_SERVER_REC *server)
 		server->cap_supported = NULL;
 	}
 
-	gslist_free_full(server->cap_queue, (GDestroyNotify) g_free);
+	i_slist_free_full(server->cap_queue, (GDestroyNotify) g_free);
 	server->cap_queue = NULL;
 
 	/* was g_free_and_null, but can't use on a GString */
