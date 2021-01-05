@@ -671,7 +671,16 @@ void servers_redirect_init(void)
 				 NULL,
 				 NULL);
 
-        /* LIST */
+	/* WHO user */
+	server_redirect_register("who user", FALSE, 0, /* */
+	                         "event 352", 5,       /* An element of the WHO */
+	                         "event 354", -1,      /* WHOX element */
+	                         NULL,                 /* */
+	                         "event 315", 1,       /* End of WHO */
+	                         NULL,                 /* */
+	                         NULL);
+
+	/* LIST */
 	server_redirect_register("list", FALSE, 0,
 				 "event 321", 1, /* Begins the LIST */
 				 NULL,

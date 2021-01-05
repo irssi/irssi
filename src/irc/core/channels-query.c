@@ -229,15 +229,19 @@ static void query_send(IRC_SERVER_REC *server, int query)
 		break;
 
 	case CHANNEL_QUERY_WHO:
-		cmd = g_strdup_printf("WHO %s", chanstr_commas);
+		if (server->isupport != NULL &&
+		    g_hash_table_lookup(server->isupport, "whox") != NULL) {
+			cmd = g_strdup_printf("WHO %s %%tcuhnfdar,743", chanstr_commas);
+		} else {
+			cmd = g_strdup_printf("WHO %s", chanstr_commas);
+		}
 
-		server_redirect_event(server, "who",
-				      server->one_endofwho ? 1 : count,
-				      chanstr, -1,
-				      "chanquery abort",
-				      "event 315", "chanquery who end",
-				      "event 352", "silent event who",
-				      "", "chanquery abort", NULL);
+		server_redirect_event(server, "who", server->one_endofwho ? 1 : count, chanstr, -1,
+		                      "chanquery abort",                /* failure signal */
+		                      "event 315", "chanquery who end", /* */
+		                      "event 352", "silent event who",  /* */
+		                      "event 354", "silent event whox", /* */
+		                      "", "chanquery abort", NULL);
 		break;
 
 	case CHANNEL_QUERY_BMODE:
@@ -395,6 +399,87 @@ static void channel_got_query(IRC_CHANNEL_REC *chanrec, int query_type)
 	query_check(chanrec->server);
 }
 
+static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char *nick,
+                           const char *address)
+{
+	char *params, *channel, *ptr, *account;
+	GSList *nicks, *tmp;
+	IRC_CHANNEL_REC *chanrec;
+	NICK_REC *nickrec;
+
+	g_return_if_fail(data != NULL);
+
+	if (i_slist_find_string(server->cap_active, CAP_EXTENDED_JOIN)) {
+		/* no need to chase accounts */
+		return;
+	}
+
+	if (g_ascii_strcasecmp(nick, server->nick) == 0) {
+		/* You joined, do nothing */
+		return;
+	}
+
+	params = event_get_params(data, 3, &channel, NULL, NULL);
+
+	ptr = strchr(channel, 7); /* ^G does something weird.. */
+	if (ptr != NULL)
+		*ptr = '\0';
+
+	/* find channel */
+	chanrec = irc_channel_find(server, channel);
+	if (chanrec == NULL) {
+		g_free(params);
+		return;
+	}
+
+	g_free(params);
+
+	if (!chanrec->wholist) {
+		return;
+	}
+
+	/* find nick */
+	nickrec = nicklist_find(CHANNEL(chanrec), nick);
+	if (nickrec == NULL) {
+		return;
+	}
+
+	if (nickrec->account != NULL) {
+		return;
+	}
+
+	account = NULL;
+
+	/* Check if user is already in some other channel, get the account from there */
+	nicks = nicklist_get_same(SERVER(server), nick);
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
+		NICK_REC *rec = tmp->next->data;
+
+		if (rec->account != NULL) {
+			account = rec->account;
+			break;
+		}
+	}
+	g_slist_free(nicks);
+
+	if (account != NULL) {
+		nicklist_set_account(CHANNEL(chanrec), nickrec, account);
+		return;
+	}
+
+	if (g_hash_table_size(chanrec->nicks) < settings_get_int("channel_max_who_sync") &&
+	    server->isupport != NULL && g_hash_table_lookup(server->isupport, "whox") != NULL) {
+		char *cmd;
+		server_redirect_event(server, "who user", 1, nick, -1, NULL, /* failure signal */
+		                      "event 354", "silent event whox useraccount", /* */
+		                      "", "event empty",                            /* */
+		                      NULL);
+		cmd = g_strdup_printf("WHO %s %%tna,745", nick);
+		irc_send_cmd(server, cmd);
+		g_free(cmd);
+	}
+}
+
 static void event_channel_mode(IRC_SERVER_REC *server, const char *data,
 			       const char *nick)
 {
@@ -493,6 +578,8 @@ void channels_query_init(void)
 	signal_add("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 	signal_add("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 
+	signal_add("event join", (SIGNAL_FUNC) sig_event_join);
+
 	signal_add("chanquery mode", (SIGNAL_FUNC) event_channel_mode);
 	signal_add("chanquery who end", (SIGNAL_FUNC) event_end_of_who);
 
@@ -506,6 +593,8 @@ void channels_query_deinit(void)
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_remove("channel joined", (SIGNAL_FUNC) sig_channel_joined);
 	signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
+
+	signal_remove("event join", (SIGNAL_FUNC) sig_event_join);
 
 	signal_remove("chanquery mode", (SIGNAL_FUNC) event_channel_mode);
 	signal_remove("chanquery who end", (SIGNAL_FUNC) event_end_of_who);

@@ -438,15 +438,18 @@ static void cmd_whois(const char *data, IRC_SERVER_REC *server,
 	query = get_redirect_nicklist(query, &free_nick);
 
 	str = g_strconcat(qserver, " ", query, NULL);
-	server_redirect_event(server, "whois", 1, str, TRUE,
-	              NULL,
-	              "event 318", "whois end",
-	              "event 402", event_402,
-	              "event 301", "whois away", /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
-	              "event 313", "whois oper",
-	              "event 401", (settings_get_bool("auto_whowas") ? "whois try whowas" : "whois event not found"),
-	              "event 311", "whois event",
-	              "", "whois default event", NULL);
+	server_redirect_event(
+	    server, "whois", 1, str, TRUE, /* */
+	    NULL,                          /* */
+	    "event 318", "whois end",      /* */
+	    "event 402", event_402,        /* */
+	    "event 301", "whois away",     /* 301 can come as a reply to /MSG, /WHOIS or /WHOWAS */
+	    "event 313", "whois oper",     /* */
+	    "event 330", "whois account",  /* */
+	    "event 401",
+	    (settings_get_bool("auto_whowas") ? "whois try whowas" : "whois event not found"),
+	    "event 311", "whois event", /* */
+	    "", "whois default event", NULL);
 	g_free(str);
 
 	server->whois_found = FALSE;

@@ -415,6 +415,7 @@ void fe_whois_init(void)
 	signal_add("event 319", (SIGNAL_FUNC) event_whois_channels);
 	signal_add("event 313", (SIGNAL_FUNC) event_whois_oper);
 	signal_add("event 330", (SIGNAL_FUNC) event_whois_auth);
+	signal_add("whois account", (SIGNAL_FUNC) event_whois_auth);
 	signal_add("event 377", (SIGNAL_FUNC) event_whois_usermode);
 	signal_add("event 378", (SIGNAL_FUNC) event_whois_realhost);
 	signal_add("event 379", (SIGNAL_FUNC) event_whois_modes);
@@ -438,6 +439,7 @@ void fe_whois_deinit(void)
 	signal_remove("event 319", (SIGNAL_FUNC) event_whois_channels);
 	signal_remove("event 313", (SIGNAL_FUNC) event_whois_oper);
 	signal_remove("event 330", (SIGNAL_FUNC) event_whois_auth);
+	signal_remove("whois account", (SIGNAL_FUNC) event_whois_auth);
 	signal_remove("event 377", (SIGNAL_FUNC) event_whois_usermode);
 	signal_remove("event 378", (SIGNAL_FUNC) event_whois_realhost);
 	signal_remove("event 379", (SIGNAL_FUNC) event_whois_modes);
