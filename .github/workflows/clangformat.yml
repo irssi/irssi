@@ -13,7 +13,7 @@ jobs:
       - name: configure clang-format
         run:
           |
-            git config clangformat.binary $PWD/.github/workflows/clangformat/clang-format-xs
+            git config clangformat.binary $PWD/utils/clang-format-xs/clang-format-xs
             git config clangformat.extensions c,h,xs
       - name: run git-clang-format and Check if no changes are needed
         run:
