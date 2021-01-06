@@ -15,6 +15,7 @@ doc_DATA = \
 	startup-HOWTO.html \
 	startup-HOWTO.txt
 
-EXTRA_DIST = $(doc_DATA) $(man_MANS)
+EXTRA_DIST = $(doc_DATA) $(man_MANS) \
+	meson.build
 
 SUBDIRS = help

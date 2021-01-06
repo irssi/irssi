@@ -68,3 +68,5 @@ pkginc_fe_common_core_HEADERS = \
 	window-items.h \
 	windows-layout.h \
 	fe-windows.h
+
+EXTRA_DIST = meson.build

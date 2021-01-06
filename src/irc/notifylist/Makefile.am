@@ -15,3 +15,5 @@ pkginc_irc_notifylist_HEADERS = \
 	notifylist.h \
 	notify-setup.h \
 	module.h
+
+EXTRA_DIST = meson.build

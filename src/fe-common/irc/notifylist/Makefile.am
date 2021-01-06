@@ -13,3 +13,5 @@ pkginc_fe_common_irc_notifylistdir=$(pkgincludedir)/src/fe-common/irc/notifylist
 pkginc_fe_common_irc_notifylist_HEADERS = \
 	module.h \
 	module-formats.h
+
+EXTRA_DIST = meson.build

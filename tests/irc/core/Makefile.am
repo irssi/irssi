@@ -26,3 +26,5 @@ test_channel_events_SOURCES = \
 
 test_irc_SOURCES = \
 	test-irc.c
+
+EXTRA_DIST += meson.build

@@ -16,3 +16,5 @@ botti_SOURCES = \
 
 noinst_HEADERS = \
 	module.h
+
+EXTRA_DIST = meson.build

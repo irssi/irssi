@@ -30,4 +30,6 @@ EXTRA_DIST = \
 	autogen.sh \
 	README.md \
 	$(conf_DATA) \
-	irssi-icon.png
+	irssi-icon.png \
+	meson.build \
+	meson_options.txt

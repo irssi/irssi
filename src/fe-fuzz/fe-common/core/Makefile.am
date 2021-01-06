@@ -28,3 +28,5 @@ theme_load_fuzz_SOURCES = \
 
 noinst_HEADERS = \
 	$(top_srcdir)/src/fe-text/module-formats.h
+
+EXTRA_DIST = meson.build

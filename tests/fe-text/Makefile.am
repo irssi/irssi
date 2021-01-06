@@ -33,3 +33,5 @@ test_paste_join_multiline_SOURCES = \
 	../../src/fe-text/gui-printtext.c \
 	mock-irssi.c \
 	test-paste-join-multiline.c
+
+EXTRA_DIST += meson.build

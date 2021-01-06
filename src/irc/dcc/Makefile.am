@@ -25,3 +25,5 @@ pkginc_irc_dcc_HEADERS = \
 	dcc-queue.h \
 	module.h \
 	dcc-server.h
+
+EXTRA_DIST = meson.build

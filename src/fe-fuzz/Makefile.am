@@ -35,3 +35,5 @@ server_fuzz_SOURCES = \
 noinst_HEADERS = \
         null-logger.h \
 	../fe-text/module-formats.h
+
+EXTRA_DIST = meson.build

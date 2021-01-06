@@ -57,3 +57,5 @@ pkginc_irc_core_HEADERS = \
         netsplit.h \
         servers-idle.h \
         servers-redirect.h
+
+EXTRA_DIST = meson.build

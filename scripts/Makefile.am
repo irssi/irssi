@@ -14,4 +14,5 @@ script_DATA = \
 	scriptassist.pl \
 	usercount.pl
 
-EXTRA_DIST = $(script_DATA)
+EXTRA_DIST = $(script_DATA) \
+	meson.build
