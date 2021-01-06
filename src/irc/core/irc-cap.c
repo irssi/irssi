@@ -224,7 +224,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 
 			if (disable)
 				server->cap_active = gslist_delete_string(server->cap_active, caps[i] + 1, g_free);
-			else
+			else if (!gslist_find_string(server->cap_active, caps[i]))
 				server->cap_active = g_slist_prepend(server->cap_active, g_strdup(caps[i]));
 
 			if (!strcmp(caps[i], "sasl"))
