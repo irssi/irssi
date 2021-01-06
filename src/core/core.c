@@ -81,7 +81,7 @@ int is_xdg_supported()
 
 const char *get_irssi_dir(void)
 {
-	return (xdg_support = 1) ? irssi_xdg_dir : irssi_dir;
+	return irssi_dir;
 }
 
 /* return full path for ~/.irssi/config */
