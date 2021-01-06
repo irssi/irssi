@@ -936,7 +936,7 @@ THEME_REC *theme_load(const char *setname)
 		fname = g_build_filename(g_get_user_data_dir(), "irssi",
 		                         g_strdup_printf("%s.theme", name), NULL);
 	else
-		fname = g_strdup_printf("%s/%s.theme", get_irssi_dir(), name);
+		fname = g_strdup_printf("%s/%s.theme", get_irssi_dir(), name, NULL);
 	if (stat(fname, &statbuf) != 0) {
 		/* check global config dir */
 		g_free(fname);
@@ -1264,7 +1264,7 @@ static void theme_save(THEME_REC *theme, int save_all)
 	if (is_xdg_supported())
 		path = g_build_filename(g_get_user_data_dir(), "irssi", basename, NULL);
 	else
-		path = g_strdup_printf("%s/%s", get_irssi_dir(), basename);
+		path = g_strdup_printf("%s/%s", get_irssi_dir(), basename, NULL);
 	ok = config_write(config, path, 0660) == 0;
 	g_free(basename);
 
@@ -1421,7 +1421,8 @@ void themes_reload(void)
 	current_theme = theme_load("default");
 	if (current_theme == NULL) {
 		if (is_xdg_supported())
-			fname = g_build_filename(g_get_user_data_dir(), "irssi", "default.theme");
+			fname =
+			    g_build_filename(g_get_user_data_dir(), "irssi", "default.theme", NULL);
 		else
 			fname = g_strdup_printf("%s/default.theme", get_irssi_dir());
 		current_theme = theme_create(fname, "default");
