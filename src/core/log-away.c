@@ -111,7 +111,10 @@ void log_away_init(void)
 	away_filepos = 0;
 	away_msgs = 0;
 
-	awaylog_file = g_strconcat(get_irssi_dir(), "/away.log", NULL);
+	if (is_xdg_supported())
+		awaylog_file = g_build_filename(g_get_user_cache_dir(), "irssi", "away.log", NULL);
+	else
+		awaylog_file = g_strconcat(get_irssi_dir(), "/away.log", NULL);
 	settings_add_str("log", "awaylog_file", awaylog_file);
 	g_free(awaylog_file);
 	settings_add_level("log", "awaylog_level", "msgs hilight");
