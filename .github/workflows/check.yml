@@ -1,4 +1,8 @@
-on: [pull_request]
+on:
+  push:
+    branches:
+     - master
+  pull_request:
 name: Check Irssi
 env:
   apt_build_deps: libutf8proc-dev libperl-dev libotr5-dev
