@@ -189,26 +189,30 @@ void core_register_options(void)
 
 void core_preinit(const char *path)
 {
-	const char *home;
 	char *str;
 	int len;
 
 	if (irssi_dir == NULL) {
-		home = g_get_home_dir();
-		if (home == NULL)
-			home = ".";
+	   irssi_dir = g_build_filename(g_get_user_config_dir(), "irssi", NULL);
+	   if (home == NULL)
+	      if (g_file_test(irssi_dir, G_FILE_TEST_IS_DIR) == FALSE) {
+		 home = ".";
+		 g_free(irssi_dir);
 
-		irssi_dir = g_strdup_printf(IRSSI_DIR_FULL, home);
+		 const char *home;
+		 home = g_get_home_dir();
+		 irssi_dir = g_build_filename(home? home: ".", ".irssi", NULL);
+	      }
 	} else {
-		str = irssi_dir;
-		irssi_dir = fix_path(str);
-		g_free(str);
-		len = strlen(irssi_dir);
-		if (irssi_dir[len-1] == G_DIR_SEPARATOR)
-			irssi_dir[len-1] = '\0';
+	   str = irssi_dir;
+	   irssi_dir = fix_path(str);
+	   g_free(str);
+	   len = strlen(irssi_dir);
+	   if (irssi_dir[len-1] == G_DIR_SEPARATOR)
+	      irssi_dir[len-1] = '\0';
 	}
 	if (irssi_config_file == NULL)
-		irssi_config_file = g_strdup_printf("%s/"IRSSI_HOME_CONFIG, irssi_dir);
+	   irssi_config_file = g_build_filename(irssi_dir, IRSSI_HOME_CONFIG, NULL)
 	else {
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);
