@@ -599,6 +599,13 @@ PPCODE:
 	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free_not_null(ret);
 
+bool
+is_xdg_supported()
+CODE:
+	RETVAL = (bool) is_xdg_supported();
+OUTPUT:
+	RETVAL
+
 char *
 get_irssi_dir()
 CODE:

@@ -390,43 +390,24 @@ char *perl_script_get_path(const char *name)
 	file = IS_PERL_SCRIPT(name) ? g_strdup(name) :
 		g_strdup_printf("%s.pl", name);
 
-	/* check from %XDG_DATA_HOME% */
-	path = g_build_filename(g_get_user_data_dir(), "irssi/scripts/", file, NULL);
-	if (stat(path, &statbuf) != 0) {
-		g_free(path);
-		path = g_strdup_printf(SCRIPTDIR"/%s", file);
+	/* check if xdg paths are being used, if so locate scripts based on that */
+	if (is_xdg_supported()) {
+		path = g_build_filename(g_get_user_data_dir(), "irssi", "scripts", file, NULL);
 		if (stat(path, &statbuf) != 0) {
 			g_free(path);
 			path = NULL;
-		} else {
-			g_free(file);
-			return path;
 		}
-	}
-
-	/* check from %XDG_CONFIG_HOME% */
-	path = g_build_filename(g_get_user_config_dir(), "irssi/scripts/", file, NULL);
-	if (stat(path, &statbuf) != 0) {
-		g_free(path);
-		path = g_strdup_printf(SCRIPTDIR"/%s", file);
+	} else {
+		/* check from ~/.irssi/scripts/ */
+		path = g_strdup_printf("%s/scripts/%s", get_irssi_dir(), file);
 		if (stat(path, &statbuf) != 0) {
+			/* check from SCRIPTDIR */
 			g_free(path);
-			path = NULL;
-		} else {
-			g_free(file);
-			return path;
-		}
-	}
-
-	/* check from ~/.irssi/scripts/ */
-	path = g_strdup_printf("%s/scripts/%s", get_irssi_dir(), file);
-	if (stat(path, &statbuf) != 0) {
-		/* check from SCRIPTDIR */
-		g_free(path);
-		path = g_strdup_printf(SCRIPTDIR"/%s", file);
-		if (stat(path, &statbuf) != 0) {
-			g_free(path);
-			path = NULL;
+			path = g_strdup_printf(SCRIPTDIR "/%s", file);
+			if (stat(path, &statbuf) != 0) {
+				g_free(path);
+				path = NULL;
+			}
 		}
 	}
 	g_free(file);
@@ -452,8 +433,10 @@ void perl_scripts_autorun(void)
 	struct stat statbuf;
 	char *path, *fname;
 
-        /* run *.pl scripts from ~/.irssi/scripts/autorun/ */
-	path = g_strdup_printf("%s/scripts/autorun", get_irssi_dir());
+	if (is_xdg_supported())
+		path = g_build_filename(g_get_user_data_dir(), "irssi", "scripts", "autorun", NULL);
+	else
+		path = g_strdup_printf("%s/scripts/autorun", get_irssi_dir());
 	dirp = opendir(path);
 	if (dirp == NULL) {
 		g_free(path);

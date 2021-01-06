@@ -1,6 +1,8 @@
 #ifndef IRSSI_COMMON_H
 #define IRSSI_COMMON_H
 
+#define IRSSI_DIR_FULL "%s/.irssi" /* %s = g_get_home_dir() */
+
 #define IRSSI_GLOBAL_CONFIG "irssi.conf" /* config file name in /etc/ */
 #define IRSSI_HOME_CONFIG "config" /* config file name in ~/.irssi/ */
 
