@@ -607,6 +607,13 @@ OUTPUT:
 	RETVAL
 
 char *
+get_runtime_dir()
+CODE:
+	RETVAL = (char *) g_build_filename(g_get_user_runtime_dir(), "irssi", NULL);
+OUTPUT:
+	RETVAL
+
+char *
 get_irssi_dir()
 CODE:
 	RETVAL = (char *) get_irssi_dir();

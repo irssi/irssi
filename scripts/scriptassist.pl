@@ -204,7 +204,13 @@ sub get_names {
     $xname =~ s/\W/_/g;
     my $pname = "${xname}::";
     if ($xname ne $sname || $sname =~ /_/) {
-	my $dir = Irssi::get_irssi_dir()."/scripts/";
+	my $dir = "";
+	if (Irssi::is_xdg_supported()) {
+	    $dir = Irssi::get_runtime_dir()."/scripts/";
+	}
+	else {
+	    $dir = Irssi::get_irssi_dir()."/scripts/";
+	}
 	if ($db && exists $db->{"$sname.pl"}) {
 	    # $found = 1;
 	} elsif (-e $dir.$plname || -e $dir."$sname.pl" || -e $dir."autorun/$sname.pl") {
