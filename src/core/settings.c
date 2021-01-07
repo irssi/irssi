@@ -778,6 +778,33 @@ static void init_configfile(void)
 			"You should remove it with command: rm %s",
 			get_irssi_dir(), get_irssi_dir());
 	}
+	/* check XDG path, if it is being used */
+	if (get_irssi_dir() != get_irssi_cache_dir()) {
+		if (stat(get_irssi_cache_dir(), &statbuf) != 0) {
+			if (g_mkdir_with_parents(get_irssi_cache_dir(), 0700) != 0) {
+				g_error("Couldn't create %s directory: %s",
+						get_irssi_cache_dir(), g_strerror(errno));
+			}
+		}
+		else if (!S_ISDIR(statbuf.st_mode)) {
+			g_error("%s is not a directory.\n"
+					"You should remove it with command: rm %s",
+					get_irssi_cache_dir(), get_irssi_cache_dir());
+		}
+	}
+	if (get_irssi_dir() != get_irssi_runtime_dir()) {
+		if (stat(get_irssi_runtime_dir(), &statbuf) != 0) {
+			if (g_mkdir_with_parents(get_irssi_runtime_dir(), 0700) != 0) {
+				g_error("Couldn't create %s directory: %s",
+						get_irssi_runtime_dir(), g_strerror(errno));
+			}
+		}
+		else if (!S_ISDIR(statbuf.st_mode)) {
+			g_error("%s is not a directory.\n"
+					"You should remove it with command: rm %s",
+					get_irssi_runtime_dir(), get_irssi_runtime_dir());
+		}
+	}
 
 	mainconfig = parse_configfile(NULL);
 	config_last_modifycounter = mainconfig->modifycounter;
