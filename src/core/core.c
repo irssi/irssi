@@ -65,18 +65,25 @@ void log_away_deinit(void);
 void wcwidth_wrapper_init(void);
 void wcwidth_wrapper_deinit(void);
 
-int xdg_support;
 int irssi_gui;
 int irssi_init_finished;
 int sighup_received;
 time_t client_start_time;
 
-static char *irssi_dir, *irssi_config_file;
+static char *irssi_dir, /* XDG_DATA_HOME or ~/.irssi */
+    *irssi_config_file, /* XDG_CONFIG_HOME/irssi/config or ~/.irssi/config */
+    *irssi_cache_dir,   /* XDG_CACHE_HOME/irssi or ~/.irssi */
+    *irssi_runtime_dir; /* XDG_RUNTIME_HOME/irssi or ~/.irssi */
 static GSList *dialog_type_queue, *dialog_text_queue;
 
-int is_xdg_supported()
+const char *get_irssi_runtime_dir(void)
 {
-	return xdg_support;
+	return irssi_runtime_dir;
+}
+
+const char *get_irssi_cache_dir(void)
+{
+	return irssi_cache_dir;
 }
 
 const char *get_irssi_dir(void)
@@ -84,7 +91,7 @@ const char *get_irssi_dir(void)
 	return irssi_dir;
 }
 
-/* return full path for ~/.irssi/config */
+/* return full path for irssi config */
 const char *get_irssi_config(void)
 {
         return irssi_config_file;
@@ -199,22 +206,27 @@ void core_preinit(const char *path)
 	const char *home;
 	char *str;
 	int len;
+	int use_xdg = 0;
 
-	xdg_support = 0;
 	if (irssi_dir == NULL) {
-		/* check if %XDG_CONFIG_HOME/irssi exists and default to it */
+		/* check if %XDG_CONFIG_HOME/irssi exists and use to it */
 		char *dirp = g_build_filename(g_get_user_config_dir(), "irssi", NULL);
 		if (stat(dirp, &statbuf) == 0) {
-			xdg_support = 1;
-			irssi_dir = dirp;
+			use_xdg = 1;
+			irssi_dir = g_build_filename(g_get_user_data_dir(), "irssi", NULL);
+			irssi_cache_dir = g_build_filename(g_get_user_cache_dir(), "irssi", NULL);
+			irssi_runtime_dir =
+			    g_build_filename(g_get_user_runtime_dir(), "irssi", NULL);
 		} else { /* fallback to non-xdg location */
 			g_free(dirp);
 			home = g_get_home_dir();
 			if (home == NULL)
 				home = ".";
-
 			irssi_dir = g_strdup_printf(IRSSI_DIR_FULL, home);
-			xdg_support = 0;
+			/* all special XDG paths are equal to irssi_dir if XDG is not
+			 * supported */
+			irssi_cache_dir = irssi_dir;
+			irssi_runtime_dir = irssi_dir;
 		}
 	} else {
 	   str = irssi_dir;
@@ -225,10 +237,9 @@ void core_preinit(const char *path)
 	      irssi_dir[len-1] = '\0';
 	}
 	if (irssi_config_file == NULL)
-		if (is_xdg_supported())
-			irssi_config_file = g_build_filename(irssi_dir, IRSSI_HOME_CONFIG, NULL);
-		else
-			irssi_config_file = g_strdup_printf("%s/" IRSSI_HOME_CONFIG, irssi_dir);
+		irssi_config_file = use_xdg ? g_build_filename(g_get_user_config_dir(), "irssi",
+		                                               IRSSI_HOME_CONFIG, NULL) :
+                                              g_strdup_printf("%s/" IRSSI_HOME_CONFIG, irssi_dir);
 	else {
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);

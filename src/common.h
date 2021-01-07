@@ -55,9 +55,11 @@ int g_input_add(GIOChannel *source, int condition,
 int g_input_add_full(GIOChannel *source, int priority, int condition,
 		     GInputFunction function, void *data);
 
-/* return if xdg is being used */
-int is_xdg_supported();
-/* return full path for irssi folder */
+/* return full path for irssi runtime directory */
+const char *get_irssi_runtime_dir(void);
+/* return full path for irssi cache directory */
+const char *get_irssi_cache_dir(void);
+/* return full path for irssi data directory */
 const char *get_irssi_dir(void);
 /* return full path for irssi config */
 const char *get_irssi_config(void);

@@ -599,17 +599,17 @@ PPCODE:
 	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free_not_null(ret);
 
-bool
-is_xdg_supported()
+char *
+get_runtime_dir()
 CODE:
-	RETVAL = (bool) is_xdg_supported();
+	RETVAL = (char *) get_irssi_runtime_dir();
 OUTPUT:
 	RETVAL
 
 char *
-get_runtime_dir()
+get_cache_dir()
 CODE:
-	RETVAL = (char *) g_build_filename(g_get_user_runtime_dir(), "irssi", NULL);
+	RETVAL = (char *) get_irssi_cache_dir();
 OUTPUT:
 	RETVAL
 
