@@ -20,7 +20,7 @@
 #define CAP_SASL "sasl"
 #define CAP_MULTI_PREFIX "multi-prefix"
 #define CAP_EXTENDED_JOIN "extended-join"
-#define CAP_SETNAME "draft/setname"
+#define CAP_SETNAME "setname"
 #define CAP_INVITE_NOTIFY "invite-notify"
 #define CAP_AWAY_NOTIFY "away-notify"
 #define CAP_CHGHOST "chghost"
