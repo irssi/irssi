@@ -162,6 +162,16 @@ static void textui_init(void)
 	signal_add_last("gui exit", (SIGNAL_FUNC) sig_exit);
 }
 
+static int critical_fatal_section_begin(void)
+{
+	return g_log_set_always_fatal(G_LOG_FATAL_MASK | G_LOG_LEVEL_CRITICAL);
+}
+
+static void critical_fatal_section_end(int loglev)
+{
+	g_log_set_always_fatal(loglev);
+}
+
 static void textui_finish_init(void)
 {
 	int loglev;
@@ -182,10 +192,9 @@ static void textui_finish_init(void)
 	mainwindows_layout_init();
 	gui_windows_init();
 	/* Temporarily raise the fatal level to abort on config errors. */
-	loglev = g_log_set_always_fatal(G_LOG_FATAL_MASK | G_LOG_LEVEL_CRITICAL);
+	loglev = critical_fatal_section_begin();
 	statusbar_init();
-	g_log_set_always_fatal(loglev);
-	term_refresh_thaw();
+	critical_fatal_section_end(loglev);
 
 	settings_check();
 
@@ -202,7 +211,12 @@ static void textui_finish_init(void)
 
 	dirty_check();
 
+	/* Temporarily raise the fatal level to abort on config errors. */
+	loglev = critical_fatal_section_begin();
 	fe_common_core_finish_init();
+	critical_fatal_section_end(loglev);
+	term_refresh_thaw();
+
 	signal_emit("irssi init finished", 0);
 	statusbar_redraw(NULL, TRUE);
 
@@ -329,7 +343,7 @@ int main(int argc, char **argv)
 	setlocale(LC_ALL, "");
 
 	/* Temporarily raise the fatal level to abort on config errors. */
-	loglev = g_log_set_always_fatal(G_LOG_FATAL_MASK | G_LOG_LEVEL_CRITICAL);
+	loglev = critical_fatal_section_begin();
 	textui_init();
 
 	if (!term_init()) {
@@ -337,7 +351,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	g_log_set_always_fatal(loglev);
+	critical_fatal_section_end(loglev);
+
 	textui_finish_init();
 	main_loop = g_main_loop_new(NULL, TRUE);
 

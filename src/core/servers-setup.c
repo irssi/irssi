@@ -625,9 +625,18 @@ static void read_servers(void)
 	/* Read servers */
 	node = iconfig_node_traverse("servers", FALSE);
 	if (node != NULL) {
+		int i = 0;
 		tmp = config_node_first(node->value);
-		for (; tmp != NULL; tmp = config_node_next(tmp))
-			server_setup_read(tmp->data);
+		for (; tmp != NULL; tmp = config_node_next(tmp), i++) {
+			node = tmp->data;
+			if (node->type != NODE_TYPE_BLOCK) {
+				g_critical("Expected block node at `servers[%d]' was of %s type. "
+				           "Corrupt config?",
+				           i, node->type == NODE_TYPE_LIST ? "list" : "scalar");
+			} else {
+				server_setup_read(node);
+			}
+		}
 	}
 }
 

@@ -207,9 +207,18 @@ static void channels_read_config(void)
 	/* Read channels */
 	node = iconfig_node_traverse("channels", FALSE);
 	if (node != NULL) {
+		int i = 0;
 		tmp = config_node_first(node->value);
-		for (; tmp != NULL; tmp = config_node_next(tmp))
-			channel_setup_read(tmp->data);
+		for (; tmp != NULL; tmp = config_node_next(tmp), i++) {
+			node = tmp->data;
+			if (node->type != NODE_TYPE_BLOCK) {
+				g_critical("Expected block node at `channels[%d]' was of %s type. "
+				           "Corrupt config?",
+				           i, node->type == NODE_TYPE_LIST ? "list" : "scalar");
+			} else {
+				channel_setup_read(node);
+			}
+		}
 	}
 }
 
