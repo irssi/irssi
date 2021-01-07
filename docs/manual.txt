@@ -261,11 +261,13 @@
 
  4.1 Configuration files
 
-	The configuration is saved to ~/.irssi/config file. You can edit
-	it with text editor if you want, you can also add comments to it
-	and they stay there even if /SAVE is used. Comments are the lines
-	starting with # character. Any errors in config file are displayed
-	at startup.
+	The configuration is saved to ~/.irssi/config file. If you want to 
+	use XDG paths, create the folder $XDG_CONFIG_HOME/irssi. This would 
+	also make irssi use $XDG_CACHE_HOME/irssi, $XDG_DATA_HOME/irssi, and
+	$XDG_RUNTIME_HOME/irssi. You can edit the config file with text editor 
+	if you want, you can also add comments to it and they stay there even 
+	if /SAVE is used. Comments are the lines starting with # character. 
+	Any errors in config file are displayed at startup.
 
 	Irssi uses it's own config library for handling the config file.
 	The format is pretty much the same as in libPropList and should be
