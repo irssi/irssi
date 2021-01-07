@@ -254,8 +254,7 @@ void fe_common_core_deinit(void)
         signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
 }
 
-void glog_func(const char *log_domain, GLogLevelFlags log_level,
-	       const char *message)
+void i_log_func(const char *log_domain, GLogLevelFlags log_level, const char *message)
 {
 	const char *reason;
 
@@ -459,7 +458,7 @@ void fe_common_core_finish_init(void)
 	signal_add_first("setup changed", (SIGNAL_FUNC) sig_setup_changed);
 
         /* _after_ windows are created.. */
-	g_log_set_default_handler((GLogFunc) glog_func, NULL);
+	g_log_set_default_handler((GLogFunc) i_log_func, NULL);
 
 	if (setup_changed)
                 signal_emit("setup changed", 0);
