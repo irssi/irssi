@@ -34,6 +34,10 @@ static int compare_channel_setup (CONFIG_NODE *node, CHANNEL_SETUP_REC *channel)
 {
 	char *name, *chatnet;
 
+	/* skip comment nodes */
+	if (node->type == NODE_TYPE_COMMENT)
+		return -1;
+
 	name = config_node_get_str(node, "name", NULL);
 	chatnet = config_node_get_str(node, "chatnet", NULL);
 
@@ -203,9 +207,18 @@ static void channels_read_config(void)
 	/* Read channels */
 	node = iconfig_node_traverse("channels", FALSE);
 	if (node != NULL) {
+		int i = 0;
 		tmp = config_node_first(node->value);
-		for (; tmp != NULL; tmp = config_node_next(tmp))
-			channel_setup_read(tmp->data);
+		for (; tmp != NULL; tmp = config_node_next(tmp), i++) {
+			node = tmp->data;
+			if (node->type != NODE_TYPE_BLOCK) {
+				g_critical("Expected block node at `channels[%d]' was of %s type. "
+				           "Corrupt config?",
+				           i, node->type == NODE_TYPE_LIST ? "list" : "scalar");
+			} else {
+				channel_setup_read(node);
+			}
+		}
 	}
 }
 
