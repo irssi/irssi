@@ -932,7 +932,7 @@ THEME_REC *theme_load(const char *setname)
 	theme = theme_find(name);
 
 	/* check home dir */
-	fname = g_strdup_printf("%s/%s.theme", get_irssi_dir(), name, NULL);
+	fname = g_build_filename(get_irssi_dir(), g_strdup_printf("%s.theme", name), NULL);
 	if (stat(fname, &statbuf) != 0) {
 		/* check global config dir */
 		g_free(fname);
@@ -1257,7 +1257,7 @@ static void theme_save(THEME_REC *theme, int save_all)
 
 	basename = g_path_get_basename(theme->path);
 	/* always save the theme */
-	path = g_strdup_printf("%s/%s", get_irssi_dir(), basename, NULL);
+	path = g_build_filename(get_irssi_dir(), basename, NULL);
 	ok = config_write(config, path, 0660) == 0;
 	g_free(basename);
 
