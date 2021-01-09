@@ -762,48 +762,31 @@ static CONFIG_REC *parse_configfile(const char *fname)
 	return config;
 }
 
-static void init_configfile(void)
+static void init_ensure_dir(const char *dname, int dmode)
 {
 	struct stat statbuf;
-	char *str;
 
-	if (stat(get_irssi_dir(), &statbuf) != 0) {
-		/* irssi folder not found, create it. */
-		if (g_mkdir_with_parents(get_irssi_dir(), 0700) != 0) {
-			g_error("Couldn't create %s directory: %s",
-			        get_irssi_dir(), g_strerror(errno));
+	if (stat(dname, &statbuf) != 0) {
+		/* directory not present */
+		if (g_mkdir_with_parents(dname, dmode) != 0) {
+			g_error("Couldn't create %s directory: %s", dname, g_strerror(errno));
 		}
 	} else if (!S_ISDIR(statbuf.st_mode)) {
-		g_error("%s is not a directory.\n"
-			"You should remove it with command: rm %s",
-			get_irssi_dir(), get_irssi_dir());
+		g_error("%s is not a directory. \n"
+		        "You should remove it with command: rm %s",
+		        dname, dname);
 	}
-	/* check XDG path, if it is being used */
-	if (get_irssi_dir() != get_irssi_cache_dir()) {
-		if (stat(get_irssi_cache_dir(), &statbuf) != 0) {
-			if (g_mkdir_with_parents(get_irssi_cache_dir(), 0700) != 0) {
-				g_error("Couldn't create %s directory: %s",
-						get_irssi_cache_dir(), g_strerror(errno));
-			}
-		}
-		else if (!S_ISDIR(statbuf.st_mode)) {
-			g_error("%s is not a directory.\n"
-					"You should remove it with command: rm %s",
-					get_irssi_cache_dir(), get_irssi_cache_dir());
-		}
-	}
-	if (get_irssi_dir() != get_irssi_runtime_dir()) {
-		if (stat(get_irssi_runtime_dir(), &statbuf) != 0) {
-			if (g_mkdir_with_parents(get_irssi_runtime_dir(), 0700) != 0) {
-				g_error("Couldn't create %s directory: %s",
-						get_irssi_runtime_dir(), g_strerror(errno));
-			}
-		}
-		else if (!S_ISDIR(statbuf.st_mode)) {
-			g_error("%s is not a directory.\n"
-					"You should remove it with command: rm %s",
-					get_irssi_runtime_dir(), get_irssi_runtime_dir());
-		}
+}
+
+static void init_configfile(void)
+{
+	char *str;
+
+	init_ensure_dir(get_irssi_dir(), 0700); /* XDG_DATA_HOME or ~/.irssi*/
+	if (get_irssi_dir() != get_irssi_cache_dir() &&
+	    get_irssi_dir() != get_irssi_runtime_dir()) {
+		init_ensure_dir(get_irssi_cache_dir(), 0700);   /* XDG_CACHE_HOME */
+		init_ensure_dir(get_irssi_runtime_dir(), 0700); /* XDG_RUNTIME_HOME */
 	}
 
 	mainconfig = parse_configfile(NULL);
