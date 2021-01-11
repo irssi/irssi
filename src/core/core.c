@@ -202,7 +202,6 @@ void core_register_options(void)
 
 void core_preinit(const char *path)
 {
-	struct stat statbuf;
 	const char *home;
 	char *str;
 	int len;
@@ -211,14 +210,13 @@ void core_preinit(const char *path)
 	if (irssi_dir == NULL) {
 		/* check if %XDG_CONFIG_HOME/irssi exists and use to it */
 		char *dirp = g_build_filename(g_get_user_config_dir(), "irssi", NULL);
-		if (stat(dirp, &statbuf) == 0) {
+		if (!g_file_test(dirp, G_FILE_TEST_EXISTS)) {
 			use_xdg = 1;
 			irssi_dir = g_build_filename(g_get_user_data_dir(), "irssi", NULL);
 			irssi_cache_dir = g_build_filename(g_get_user_cache_dir(), "irssi", NULL);
 			irssi_runtime_dir =
 			    g_build_filename(g_get_user_runtime_dir(), "irssi", NULL);
 		} else { /* fallback to non-xdg location */
-			g_free(dirp);
 			home = g_get_home_dir();
 			if (home == NULL)
 				home = ".";
@@ -228,13 +226,14 @@ void core_preinit(const char *path)
 			irssi_cache_dir = irssi_dir;
 			irssi_runtime_dir = irssi_dir;
 		}
+		g_free(dirp);
 	} else {
-	   str = irssi_dir;
-	   irssi_dir = fix_path(str);
-	   g_free(str);
-	   len = strlen(irssi_dir);
-	   if (irssi_dir[len-1] == G_DIR_SEPARATOR)
-	      irssi_dir[len-1] = '\0';
+		str = irssi_dir;
+		irssi_dir = fix_path(str);
+		g_free(str);
+		len = strlen(irssi_dir);
+		if (irssi_dir[len - 1] == G_DIR_SEPARATOR)
+			irssi_dir[len - 1] = '\0';
 	}
 	if (irssi_config_file == NULL)
 		irssi_config_file = use_xdg ? g_build_filename(g_get_user_config_dir(), "irssi",
