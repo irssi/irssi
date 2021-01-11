@@ -13,3 +13,5 @@ pkginc_lib_configdir=$(pkgincludedir)/src/lib-config
 pkginc_lib_config_HEADERS = \
 	iconfig.h \
 	module.h
+
+EXTRA_DIST = meson.build

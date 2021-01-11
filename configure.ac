@@ -735,7 +735,7 @@ if test "x$old_dir" != "x$whole_dir"; then
 	if test "x$want_perl" != "xno"; then
 		subdirfiles=""
 		for i in $whole_dir/src/perl/common $whole_dir/src/perl/irc $whole_dir/src/perl/ui $whole_dir/src/perl/textui; do
-			subdirfiles=`echo $subdirfiles $i/typemap $i/module.h $i/*.pm $i/*.xs`
+			subdirfiles=`echo $subdirfiles $i/typemap $i/*.h $i/*.pm $i/*.xs`
 		done
 		for file in $whole_dir/src/perl/module.h $subdirfiles; do
 			link=`echo $file|$sedpath "s?$whole_dir/??"`

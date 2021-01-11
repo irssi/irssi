@@ -119,7 +119,12 @@ EXTRA_DIST = \
 	$(common_sources) \
 	$(irc_sources) \
 	$(ui_sources) \
-	$(textui_sources)
+	$(textui_sources) \
+	meson.build \
+	common/meson.build \
+	irc/meson.build \
+	ui/meson.build \
+	textui/meson.build
 
 am_v_pl__show_gen = $(am__v_pl__show_gen_$(V))
 am_v_pl__hide_gen = $(am__v_pl__hide_gen_$(V))

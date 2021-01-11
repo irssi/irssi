@@ -1,21 +1,111 @@
-on: [pull_request]
+on:
+  push:
+    branches:
+     - master
+  pull_request:
 name: Check Irssi
+env:
+  apt_build_deps: libutf8proc-dev libperl-dev libotr5-dev
+  apt_build_deps_meson: ninja-build
+  apt_build_deps_autotools: autoconf automake libtool
+  get_pip_build_deps_meson: pip3 install setuptools; pip3 install wheel; pip3 install meson${meson_ver:+==${meson_ver}}
+  build_options_meson: -Dwith-proxy=yes -Dwith-bot=yes -Dwith-perl=yes -Dwith-otr=yes
+  build_options_configure: --with-proxy=module --with-bot --with-perl=module --with-otr=module
+  prefix: ~/irssi-build
 jobs:
-  install:
+  dist:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@main
-    - name: install
-      uses: irssi-import/actions-irssi/check-irssi@master
-      with:
-        args: before_install install
-    - name: unit_tests
-      uses: irssi-import/actions-irssi/check-irssi@master
-      with:
-        args: unit_tests after_unit_tests
-    - name: script
-      uses: irssi-import/actions-irssi/check-irssi@master
-      env:
-        TERM: xterm
-      with:
-        args: before_script script after_script
+      - name: prepare required software
+        run: |
+          sudo apt install $apt_build_deps $apt_build_deps_autotools
+      - uses: actions/checkout@main
+      - name: make dist
+        run: |
+          # make dist
+          ./autogen.sh $build_options_configure
+          make dist
+      - uses: actions/upload-artifact@v2
+        with:
+          path: irssi-*.tar.gz
+          retention-days: 1
+  install:
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.compiler }}
+    needs: dist
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, ubuntu-latest]
+        builder: [meson, configure]
+        compiler: [clang, gcc]
+        include:
+          - os: ubuntu-16.04
+            builder: meson
+            meson_ver: 0.49.2
+    steps:
+      - name: fetch dist
+        uses: actions/download-artifact@v2
+      - name: set PATH
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: prepare required software
+        env:
+          meson_ver: ${{ matrix.meson_ver }}
+        run: |
+          sudo apt install $apt_build_deps $apt_build_deps_${{ matrix.builder }}
+          eval "$get_pip_build_deps_${{ matrix.builder }}"
+          curl -SLf https://github.com/irssi-import/actions-irssi/raw/master/check-irssi/render.pl -o ~/render.pl && chmod +x ~/render.pl
+      - name: unpack archive
+        run: tar xaf artifact/irssi-*.tar.gz
+      - name: build and install with meson
+        run: |
+          # ninja install
+          cd irssi-*/
+          meson Build $build_options_meson --prefix=${prefix/\~/~}
+          ninja -C Build
+          ninja -C Build install
+        if: ${{ matrix.builder == 'meson' }}
+      - name: build and install with Makefile
+        run: |
+          # make install
+          cd irssi-*/
+          mkdir Build
+          cd Build
+          ../configure $build_options_configure --prefix=${prefix/\~/~} --enable-always-build-tests
+          make CFLAGS="-Wall -Werror -Werror=declaration-after-statement"
+          make install
+        if: ${{ matrix.builder == 'configure' }}
+      - name: run tests with Makefile
+        run: |
+          # make check
+          cd irssi-*/Build
+          make -C tests -sk check
+          find -name test-suite.log -exec cat {} +
+        if: ${{ matrix.builder == 'configure' }}
+      - name: run tests with Meson
+        run: |
+          # ninja test
+          cd irssi-*/
+          ninja -C Build test
+          find -name testlog.txt -exec sed -i -e '/Inherited environment:.* GITHUB/d' {} + -exec cat {} +
+        if: ${{ matrix.builder == 'meson' }}
+      - name: run launch test
+        env:
+          TERM: xterm
+        run: |
+          # automated irssi launch test
+          cd
+          mkdir irssi-test
+          echo 'echo automated irssi launch test
+          ^set settings_autosave off
+          ^set -clear log_close_string
+          ^set -clear log_day_changed
+          ^set -clear log_open_string
+          ^set log_timestamp * 
+          ^window log on' > irssi-test/startup
+          echo load perl >> irssi-test/startup
+          echo load proxy >> irssi-test/startup
+          echo ^quit >> irssi-test/startup
+          irssi-build/bin/irssi --home irssi-test | ~/render.pl
+          cat irc.log.*

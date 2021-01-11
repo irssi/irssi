@@ -32,3 +32,5 @@ test_796_LDADD = \
 
 test_796_SOURCES = \
 	test-796.c
+
+EXTRA_DIST += meson.build

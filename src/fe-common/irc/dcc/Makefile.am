@@ -19,3 +19,5 @@ pkginc_fe_common_irc_dcc_HEADERS = \
 	module.h \
 	module-formats.h \
 	fe-dcc.h
+
+EXTRA_DIST = meson.build

@@ -117,3 +117,5 @@ pkginc_core_HEADERS = \
 	tls.h \
 	write-buffer.h \
 	$(structure_headers)
+
+EXTRA_DIST = meson.build

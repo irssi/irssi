@@ -22,3 +22,5 @@ test_formats_LDADD = \
 
 test_formats_SOURCES = \
 	test-formats.c
+
+EXTRA_DIST += meson.build

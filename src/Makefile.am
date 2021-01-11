@@ -23,3 +23,5 @@ pkginc_src_HEADERS = \
 	common.h
 
 SUBDIRS = lib-config core irc fe-common $(PERLDIR) $(OTRDIR) $(TEXTUI) $(BOTUI) $(FUZZERUI)
+
+EXTRA_DIST = meson.build

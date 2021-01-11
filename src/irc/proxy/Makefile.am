@@ -23,3 +23,5 @@ noinst_HEADERS = \
 
 clean-generic:
 	rm -f libirc_proxy.a
+
+EXTRA_DIST = meson.build

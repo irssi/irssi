@@ -70,4 +70,5 @@ noinst_HEADERS = \
 	module-formats.h
 
 EXTRA_DIST = \
-	$(terminfo_sources)
+	$(terminfo_sources) \
+	meson.build

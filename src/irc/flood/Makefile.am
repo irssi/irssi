@@ -10,3 +10,5 @@ libirc_flood_a_SOURCES = \
 pkginc_irc_flooddir=$(pkgincludedir)/src/irc/flood
 pkginc_irc_flood_HEADERS = \
 	module.h
+
+EXTRA_DIST = meson.build

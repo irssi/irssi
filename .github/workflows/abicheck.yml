@@ -1,25 +1,24 @@
 on: [pull_request]
 name: abicheck
+env:
+  build_options: -Dbuildtype=debug -Denable-true-color=yes -Dwith-proxy=yes -Dc_args=-DPERL_EUPXS_ALWAYS_EXPORT
+  prefix: /usr/local
+  apt_build_deps: ninja-build libutf8proc-dev libperl-dev libotr5-dev
+  get_pip_build_deps: pip3 install setuptools; pip3 install wheel; pip3 install meson
+  getabidef_def: getabidef() { awk '$1=="#define" && $2=="IRSSI_ABI_VERSION" { print $3 }' "$1"/include/irssi/src/common.h; }
 jobs:
-  check-abi-diff:
+  build-base-ref:
     runs-on: ubuntu-latest
-    env:
-      build_options: -Dbuildtype=debug -Denable-true-color=yes -Dwith-proxy=yes -Dc_args=-DPERL_EUPXS_ALWAYS_EXPORT
-      prefix: /usr/local
+    outputs:
+      base_abi: ${{ steps.out.outputs.base_abi }}
     steps:
       - name: set PATH
         run: |
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: prepare required software
         run: |
-          sudo apt install abigail-tools ninja-build libutf8proc-dev libperl-dev libotr5-dev
-          pip3 install setuptools
-          pip3 install wheel
-          pip3 install meson
-      - name: checkout merge ref
-        uses: actions/checkout@main
-        with:
-          path: merge.src
+          sudo apt install $apt_build_deps
+          eval "$get_pip_build_deps"
       - name: checkout base ref
         uses: actions/checkout@main
         with:
@@ -30,26 +29,83 @@ jobs:
           meson Build.base base.src $build_options
           ninja -C Build.base
           DESTDIR=$PWD/base ninja -C Build.base install
+      - id: out
+        run: |
+          # print versions and abi versions
+          eval "$getabidef_def"
+          base_abi=$(getabidef base$prefix)
+          echo base abi : $base_abi
+          ./base$prefix/bin/irssi --version
+          echo "::set-output name=base_abi::$base_abi"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: base.inst
+          path: base
+          retention-days: 1
+  build-merge-ref:
+    runs-on: ubuntu-latest
+    outputs:
+      merge_abi: ${{ steps.out.outputs.merge_abi }}
+    steps:
+      - name: set PATH
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: prepare required software
+        run: |
+          sudo apt install $apt_build_deps
+          eval "$get_pip_build_deps"
+      - name: checkout merge ref
+        uses: actions/checkout@main
+        with:
+          path: merge.src
       - name: build merge ref
         run: |
           meson Build.merge merge.src $build_options
           ninja -C Build.merge
           DESTDIR=$PWD/merge ninja -C Build.merge install
-      - run: |
+      - id: out
+        run: |
           # print versions and abi versions
-          getabidef() { awk '$1=="#define" && $2=="IRSSI_ABI_VERSION" { print $3 }' "$1"/include/irssi/src/common.h; }
-          base_abi=$(getabidef base$prefix)
-          echo base abi : $base_abi
-          ./base$prefix/bin/irssi --version
-          echo "base_abi=$base_abi" >> $GITHUB_ENV
+          eval "$getabidef_def"
           merge_abi=$(getabidef merge$prefix)
           echo merge abi : $merge_abi
           ./merge$prefix/bin/irssi --version
-          echo "merge_abi=$merge_abi" >> $GITHUB_ENV
+          echo "::set-output name=merge_abi::$merge_abi"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: merge.inst
+          path: merge
+          retention-days: 1
+  check-abi-diff:
+    runs-on: ubuntu-latest
+    needs:
+      - build-merge-ref
+      - build-base-ref
+    env:
+      base_abi: ${{ needs.build-base-ref.outputs.base_abi }}
+      merge_abi: ${{ needs.build-merge-ref.outputs.merge_abi }}
+    steps:
+      - name: prepare required software
+        run: |
+          sudo apt install abigail-tools
+      - name: fetch base build
+        uses: actions/download-artifact@v2
+        with:
+          name: base.inst
+          path: base
+      - name: fetch merge build
+        uses: actions/download-artifact@v2
+        with:
+          name: merge.inst
+          path: merge
       - run: |
           # abipkgdiff
-          abipkgdiff -l base merge && diff_ret=0 || diff_ret=$?
+          abipkgdiff -l base merge >abipkgdiff.out && diff_ret=0 || diff_ret=$?
           echo "diff_ret=$diff_ret" >> $GITHUB_ENV
+          cat abipkgdiff.out
+      - uses: actions/upload-artifact@v2
+        with:
+          path: abipkgdiff.out
       - run: |
           # Check if no changes are needed
           if [ "$diff_ret" -ne 0 ]; then

@@ -1,6 +1,6 @@
 # [Irssi](https://irssi.org/)
 
-[![Build Status](https://travis-ci.org/irssi/irssi.svg?branch=master)](https://travis-ci.org/irssi/irssi)
+![Build Status](https://github.com/irssi/irssi/workflows/Check%20Irssi/badge.svg?branch=master)
 
 Irssi is a modular chat client that is most commonly known for its
 text mode user interface, but 80% of the code isn't text mode

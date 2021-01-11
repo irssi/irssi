@@ -35,3 +35,5 @@ noinst_HEADERS = \
 	otr-formats.h \
 	otr-fe.h \
 	otr.h
+
+EXTRA_DIST = meson.build

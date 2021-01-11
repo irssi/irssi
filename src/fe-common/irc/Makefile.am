@@ -37,3 +37,5 @@ pkginc_fe_common_irc_HEADERS = \
 	fe-irc-channels.h \
 	module.h \
 	module-formats.h
+
+EXTRA_DIST = meson.build
