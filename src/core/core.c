@@ -234,10 +234,15 @@ void core_preinit(const char *path)
 		len = strlen(irssi_dir);
 		if (irssi_dir[len - 1] == G_DIR_SEPARATOR)
 			irssi_dir[len - 1] = '\0';
+		/* all special XDG paths are equal to irssi_dir if XDG is not
+		 * supported */
+		irssi_cache_dir = irssi_dir;
+		irssi_runtime_dir = irssi_dir;
 	}
 	if (irssi_config_file == NULL)
-	   irssi_config_file = use_xdg ? g_build_filename(g_get_user_config_dir(), "irssi", IRSSI_HOME_CONFIG, NULL) :
-	      g_strdup_printf("%s/" IRSSI_HOME_CONFIG, irssi_dir);
+		irssi_config_file = use_xdg ? g_build_filename(g_get_user_config_dir(), "irssi",
+		                                               IRSSI_HOME_CONFIG, NULL) :
+                                              g_strdup_printf("%s/" IRSSI_HOME_CONFIG, irssi_dir);
 	else {
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);

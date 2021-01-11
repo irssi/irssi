@@ -783,8 +783,8 @@ static void init_configfile(void)
 	char *str;
 
 	init_ensure_dir(get_irssi_dir(), 0700); /* XDG_DATA_HOME or ~/.irssi*/
-	if (get_irssi_dir() != get_irssi_cache_dir() &&
-	    get_irssi_dir() != get_irssi_runtime_dir()) {
+	if (!strcmp(get_irssi_dir(), get_irssi_cache_dir()) &&
+	    !strcmp(get_irssi_dir(), get_irssi_runtime_dir())) {
 		init_ensure_dir(get_irssi_cache_dir(), 0700);   /* XDG_CACHE_HOME */
 		init_ensure_dir(get_irssi_runtime_dir(), 0700); /* XDG_RUNTIME_HOME */
 	}
