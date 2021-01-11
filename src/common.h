@@ -61,8 +61,10 @@ const char *get_irssi_runtime_dir(void);
 const char *get_irssi_cache_dir(void);
 /* return full path for irssi data directory */
 const char *get_irssi_dir(void);
-/* return full path for irssi config */
+/* return full path for irssi config file */
 const char *get_irssi_config(void);
+/* return full path for irssi config directory */
+const char *get_irssi_config_dir(void);
 
 /* max. size for %d */
 #define MAX_INT_STRLEN ((sizeof(int) * CHAR_BIT + 2) / 3 + 1)

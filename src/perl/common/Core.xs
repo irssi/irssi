@@ -628,6 +628,13 @@ OUTPUT:
 	RETVAL
 
 char *
+get_irssi_config_dir()
+CODE:
+	RETVAL = (char *) get_irssi_config_dir();
+OUTPUT:
+	RETVAL
+
+char *
 get_irssi_binary()
 CODE:
 	RETVAL = irssi_binary;

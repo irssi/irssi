@@ -409,7 +409,7 @@ static void autorun_startup(void)
 	gsize tpos;
 
 	/* open $CONFIG/startup and run all commands in it */
-	path = g_strdup_printf("%s/startup", get_irssi_dir());
+	path = g_strdup_printf("%s/startup", get_irssi_config_dir());
 	handle = g_io_channel_new_file(path, "r", NULL);
 	g_free(path);
 	if (handle == NULL) {
