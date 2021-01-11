@@ -236,9 +236,8 @@ void core_preinit(const char *path)
 			irssi_dir[len - 1] = '\0';
 	}
 	if (irssi_config_file == NULL)
-		irssi_config_file = use_xdg ? g_build_filename(g_get_user_config_dir(), "irssi",
-		                                               IRSSI_HOME_CONFIG, NULL) :
-                                              g_strdup_printf("%s/" IRSSI_HOME_CONFIG, irssi_dir);
+	   irssi_config_file = use_xdg ? g_build_filename(g_get_user_config_dir(), "irssi", IRSSI_HOME_CONFIG, NULL) :
+	      g_strdup_printf("%s/" IRSSI_HOME_CONFIG, irssi_dir);
 	else {
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);
