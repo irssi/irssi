@@ -239,11 +239,13 @@ void core_preinit(const char *path)
 		irssi_cache_dir = irssi_dir;
 		irssi_runtime_dir = irssi_dir;
 	}
-	if (irssi_config_file == NULL)
-		irssi_config_file = use_xdg ? g_build_filename(g_get_user_config_dir(), "irssi",
-		                                               IRSSI_HOME_CONFIG, NULL) :
-                                              g_strdup_printf("%s/" IRSSI_HOME_CONFIG, irssi_dir);
-	else {
+	if (irssi_config_file == NULL) {
+		if (use_xdg)
+			irssi_config_file = g_build_filename(g_get_user_config_dir(), "irssi",
+			                                     IRSSI_HOME_CONFIG, NULL);
+		else
+			irssi_config_file = g_strdup_printf("%s/" IRSSI_HOME_CONFIG, irssi_dir);
+	} else {
 		str = irssi_config_file;
 		irssi_config_file = fix_path(str);
 		g_free(str);
