@@ -280,7 +280,7 @@ static void check_files(void)
 {
 	struct stat statbuf;
 
-	if (stat(get_irssi_dir(), &statbuf) != 0) {
+	if (stat(get_irssi_config(), &statbuf) != 0) {
 		/* irssi config folder doesn't exist, first time running irssi */
 		display_firsttimer = TRUE;
 	}
