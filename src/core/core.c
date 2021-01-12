@@ -366,6 +366,11 @@ void core_deinit(void)
 	pidwait_deinit();
 	modules_deinit();
 
+	if (irssi_dir != irssi_cache_dir) {
+	    g_free(irssi_config_dir);
+	    g_free(irssi_cache_dir);
+	    g_free(irssi_runtime_dir);
+	}
 	g_free(irssi_dir);
         g_free(irssi_config_file);
 }
