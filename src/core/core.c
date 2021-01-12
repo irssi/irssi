@@ -221,8 +221,7 @@ void core_preinit(const char *path)
 			irssi_dir = g_strdup_printf("%s/irssi", g_get_user_data_dir());
 			irssi_config_dir = g_strdup_printf("%s/irssi", g_get_user_config_dir());
 			irssi_cache_dir = g_strdup_printf("%s/irssi", g_get_user_cache_dir());
-			irssi_runtime_dir =
-			    g_strdup_printf("%s/irssi", g_get_user_runtime_dir());
+			irssi_runtime_dir = g_strdup_printf("%s/irssi", g_get_user_runtime_dir());
 		} else { /* fallback to non-xdg location */
 			home = g_get_home_dir();
 			if (home == NULL)
