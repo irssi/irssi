@@ -66,6 +66,7 @@ int settings_get_int(const char *key);
 int settings_get_bool(const char *key);
 int settings_get_time(const char *key); /* as milliseconds */
 int settings_get_level(const char *key);
+int settings_get_level_negative(const char *key);
 int settings_get_size(const char *key); /* as bytes */
 int settings_get_choice(const char *key);
 char *settings_get_print(SETTINGS_REC *rec);

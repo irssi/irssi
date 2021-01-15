@@ -32,13 +32,14 @@
 #include <irssi/src/fe-common/core/fe-windows.h>
 #include <irssi/src/fe-common/core/printtext.h>
 
-static int beep_msg_level, beep_when_away, beep_when_window_active;
+static int beep_msg_level, beep_msg_level_ignore, beep_when_away, beep_when_window_active;
 
 static int signal_gui_print_text_finished;
 static int signal_print_starting;
 static int signal_print_text;
 static int signal_print_format;
 static int signal_print_noformat;
+static int signal_window_hilight_check;
 
 static int sending_print_starting;
 
@@ -404,7 +405,18 @@ static void msg_beep_check(TEXT_DEST_REC *dest)
 	    (beep_when_away || (dest->server != NULL &&
 				!dest->server->usermode_away)) &&
 	    (beep_when_window_active || dest->window != active_win)) {
-                signal_emit("beep", 0);
+		if (beep_msg_level_ignore & MSGLEVEL_HIDDEN) {
+			int cb_ignore = 0;
+			if (signal_emit_id(signal_window_hilight_check, 4, dest, NULL, NULL,
+			                   &cb_ignore),
+			    cb_ignore) {
+				return;
+			}
+		} else if (beep_msg_level_ignore & dest->level) {
+			return;
+		}
+
+		signal_emit("beep", 0);
 	}
 }
 
@@ -521,6 +533,7 @@ static void sig_gui_dialog(const char *type, const char *text)
 static void read_settings(void)
 {
 	beep_msg_level = settings_get_level("beep_msg_level");
+	beep_msg_level_ignore = settings_get_level_negative("beep_msg_level");
 	beep_when_away = settings_get_bool("beep_when_away");
         beep_when_window_active = settings_get_bool("beep_when_window_active");
 }
@@ -533,6 +546,7 @@ void printtext_init(void)
 	signal_print_text = signal_get_uniq_id("print text");
 	signal_print_format = signal_get_uniq_id("print format");
 	signal_print_noformat = signal_get_uniq_id("print noformat");
+	signal_window_hilight_check = signal_get_uniq_id("window hilight check");
 
 	read_settings();
 	signal_add("print text", (SIGNAL_FUNC) sig_print_text);
