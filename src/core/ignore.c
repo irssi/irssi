@@ -81,7 +81,7 @@ static int ignore_match_pattern(IGNORE_REC *rec, const char *text)
  * used as a flag to indicate it should only look at ignore items with NO_ACT.
  * However we also want to allow NO_ACT combined with levels, so mask it out and
  * match levels if set. */
-#define FLAG_MSGLEVELS ( MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN )
+#define FLAG_MSGLEVELS (MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN | MSGLEVEL_NOHILIGHT)
 static int ignore_match_level(IGNORE_REC *rec, int level, int flags)
 {
 	level &= ~FLAG_MSGLEVELS;
@@ -214,6 +214,9 @@ int ignore_check_plus(SERVER_REC *server, const char *nick, const char *address,
 	if (ignore_check_flags(server, nick, address, target, msg, olevel, MSGLEVEL_HIDDEN))
 		*level |= MSGLEVEL_HIDDEN;
 
+	if (ignore_check_flags(server, nick, address, target, msg, olevel, MSGLEVEL_NOHILIGHT))
+		*level |= MSGLEVEL_NOHILIGHT;
+
 	return FALSE;
 }
 
@@ -250,6 +253,12 @@ IGNORE_REC *ignore_find_full(const char *servertag, const char *mask, const char
 			continue;
 
 		if (!(flags & IGNORE_FIND_HIDDEN) && (rec->level & MSGLEVEL_HIDDEN) != 0)
+			continue;
+
+		if ((flags & IGNORE_FIND_NOHILIGHT) && (rec->level & MSGLEVEL_NOHILIGHT) == 0)
+			continue;
+
+		if (!(flags & IGNORE_FIND_NOHILIGHT) && (rec->level & MSGLEVEL_NOHILIGHT) != 0)
 			continue;
 
 		if ((rec->mask == NULL && mask != NULL) ||
@@ -297,16 +306,6 @@ IGNORE_REC *ignore_find_full(const char *servertag, const char *mask, const char
 IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels)
 {
 	return ignore_find_full(servertag, mask, NULL, channels, 0);
-}
-
-IGNORE_REC *ignore_find_noact(const char *servertag, const char *mask, char **channels, int noact)
-{
-	return ignore_find_full(servertag, mask, NULL, channels, IGNORE_FIND_NOACT);
-}
-
-IGNORE_REC *ignore_find_hidden(const char *servertag, const char *mask, char **channels, int hidden)
-{
-	return ignore_find_full(servertag, mask, NULL, channels, IGNORE_FIND_HIDDEN);
 }
 
 static void ignore_set_config(IGNORE_REC *rec)

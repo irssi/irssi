@@ -202,6 +202,11 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 		level |= MSGLEVEL_HILIGHT;
 
 	ignore_check_plus(server, nick, address, target, msg, &level, FALSE);
+	if (level & MSGLEVEL_NOHILIGHT) {
+		for_me = FALSE;
+		g_free_and_null(color);
+		level &= ~MSGLEVEL_HILIGHT;
+	}
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);

@@ -61,6 +61,9 @@ int level_get(const char *level)
 	if (g_ascii_strcasecmp(level, "NO_ACT") == 0)
 		return MSGLEVEL_NO_ACT;
 
+	if (g_ascii_strcasecmp(level, "NOHILIGHT") == 0)
+		return MSGLEVEL_NOHILIGHT;
+
 	if (g_ascii_strcasecmp(level, "HIDDEN") == 0)
 		return MSGLEVEL_HIDDEN;
 
@@ -153,6 +156,9 @@ char *bits2level(int bits)
 				g_string_append_printf(str, "%s ", levels[n]);
 		}
 	}
+
+	if (bits & MSGLEVEL_NOHILIGHT)
+		g_string_append(str, "NOHILIGHT ");
 
 	if (bits & MSGLEVEL_HIDDEN)
 		g_string_append(str, "HIDDEN ");
