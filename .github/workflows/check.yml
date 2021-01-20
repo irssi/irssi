@@ -8,7 +8,7 @@ env:
   apt_build_deps: libutf8proc-dev libperl-dev libotr5-dev
   apt_build_deps_meson: ninja-build
   apt_build_deps_autotools: autoconf automake libtool
-  get_pip_build_deps_meson: pip3 install setuptools; pip3 install wheel; pip3 install meson${meson_ver:+==${meson_ver}}
+  get_pip_build_deps_meson: pip3 install setuptools${setuptools_ver}; pip3 install wheel; pip3 install meson${meson_ver}
   build_options_meson: -Dwith-proxy=yes -Dwith-bot=yes -Dwith-perl=yes -Dwith-otr=yes
   build_options_configure: --with-proxy=module --with-bot --with-perl=module --with-otr=module
   prefix: ~/irssi-build
@@ -42,7 +42,8 @@ jobs:
         include:
           - os: ubuntu-16.04
             builder: meson
-            meson_ver: 0.49.2
+            meson_ver: ==0.49.2
+            setuptools_ver: <51
     steps:
       - name: fetch dist
         uses: actions/download-artifact@v2
@@ -52,6 +53,7 @@ jobs:
       - name: prepare required software
         env:
           meson_ver: ${{ matrix.meson_ver }}
+          setuptools_ver: ${{ matrix.setuptools_ver }}
         run: |
           sudo apt install $apt_build_deps $apt_build_deps_${{ matrix.builder }}
           eval "$get_pip_build_deps_${{ matrix.builder }}"
