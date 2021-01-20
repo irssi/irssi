@@ -216,7 +216,7 @@ void core_preinit(const char *path)
 	if (irssi_dir == NULL) {
 		/* check if %XDG_CONFIG_HOME/irssi exists and use it */
 		char *dirp = g_build_filename(g_get_user_config_dir(), "irssi", NULL);
-		if (!g_file_test(dirp, G_FILE_TEST_EXISTS)) {
+		if (g_file_test(dirp, G_FILE_TEST_EXISTS)) {
 			use_xdg = 1;
 			irssi_dir = g_strdup_printf("%s/irssi", g_get_user_data_dir());
 			irssi_config_dir = g_strdup_printf("%s/irssi", g_get_user_config_dir());
