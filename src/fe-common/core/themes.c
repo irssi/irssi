@@ -920,7 +920,7 @@ THEME_REC *theme_load(const char *setname)
 {
 	THEME_REC *theme, *oldtheme;
 	struct stat statbuf;
-	char *fname, *name, *p;
+	char *fname, *fbname, *name, *p;
 
         name = g_strdup(setname);
 	p = strrchr(name, '.');
@@ -932,7 +932,9 @@ THEME_REC *theme_load(const char *setname)
 	theme = theme_find(name);
 
 	/* check home dir */
-	fname = g_build_filename(get_irssi_dir(), g_strdup_printf("%s.theme", name), NULL);
+	fbname = g_strdup_printf("%s.theme", name); /* file base name  */
+	fname = g_build_filename(get_irssi_dir(), fbname, NULL);
+	g_free(fbname);
 	if (stat(fname, &statbuf) != 0) {
 		/* check global config dir */
 		g_free(fname);
