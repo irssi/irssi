@@ -922,7 +922,7 @@ THEME_REC *theme_load(const char *setname)
 	struct stat statbuf;
 	char *fname, *fbname, *name, *p;
 
-        name = g_strdup(setname);
+	name = g_strdup(setname);
 	p = strrchr(name, '.');
 	if (p != NULL && g_strcmp0(p, ".theme") == 0) {
 		/* remove the trailing .theme */
