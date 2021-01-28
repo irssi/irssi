@@ -442,7 +442,7 @@ static void redirect_abort(IRC_SERVER_REC *server, REDIRECT_REC *rec)
 		g_free(str);
 
 		if (rec->failure_signal != NULL)
-			signal_emit(rec->failure_signal, 1, server);
+			signal_emit(rec->failure_signal, 3, server, rec->cmd->name, rec->arg);
 	} else if (rec->last_signal != NULL) {
                 /* emit the last signal */
 		signal_emit(rec->last_signal, 1, server);

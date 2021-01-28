@@ -293,7 +293,7 @@ static void event_whox_743(SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_whox_745(SERVER_REC *server, const char *data)
+static void event_whox_745(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *id, *nick, *account;
 	GSList *nicks, *tmp;
@@ -306,6 +306,7 @@ static void event_whox_745(SERVER_REC *server, const char *data)
 		g_free(params);
 		return;
 	}
+	g_hash_table_remove(server->chanqueries->accountqueries, nick);
 
 	if (strcmp(account, "0") == 0) {
 		account = "*";
@@ -503,7 +504,9 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 		server_change_nick(SERVER(server), nick);
 	}
 
-        nicklist_rename(SERVER(server), orignick, nick);
+	/* invalidate any outstanding accountqueries for the old nick */
+	g_hash_table_remove(server->chanqueries->accountqueries, orignick);
+	nicklist_rename(SERVER(server), orignick, nick);
 	g_free(params);
 }
 

@@ -222,6 +222,9 @@ static void event_quit(IRC_SERVER_REC *server, const char *data,
 		nicklist_remove(CHANNEL(channel), nickrec);
 	}
 	g_slist_free(nicks);
+
+	/* invalidate any outstanding accountqueries for the nick */
+	g_hash_table_remove(server->chanqueries->accountqueries, nick);
 }
 
 static void event_kick(IRC_SERVER_REC *server, const char *data)

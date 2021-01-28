@@ -11,6 +11,16 @@
 #define IS_IRC_CHANNEL(channel) \
 	(IRC_CHANNEL(channel) ? TRUE : FALSE)
 
+enum {
+	CHANNEL_QUERY_MODE,
+	CHANNEL_QUERY_WHO,
+	CHANNEL_QUERY_BMODE,
+
+	CHANNEL_QUERIES
+};
+
+#define CHANNEL_IS_MODE_QUERY(a) ((a) != CHANNEL_QUERY_WHO)
+
 #define STRUCT_SERVER_REC IRC_SERVER_REC
 struct _IRC_CHANNEL_REC {
 #include <irssi/src/core/channel-rec.h>
@@ -21,6 +31,14 @@ struct _IRC_CHANNEL_REC {
 	int massjoins; /* Number of nicks waiting for massjoin signal.. */
 	int last_massjoins; /* Massjoins when last checked in timeout function */
 };
+
+typedef struct _SERVER_QUERY_REC {
+	int current_query_type;  /* query type that is currently being asked */
+	GSList *current_queries; /* All channels that are currently being queried */
+
+	GSList *queries[CHANNEL_QUERIES]; /* All queries that need to be asked from server */
+	GHashTable *accountqueries;       /* Per-nick account queries */
+} SERVER_QUERY_REC;
 
 void irc_channels_init(void);
 void irc_channels_deinit(void);

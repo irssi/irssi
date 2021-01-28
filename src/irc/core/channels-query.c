@@ -50,23 +50,6 @@ loop:
 #include <irssi/src/irc/core/irc-channels.h>
 #include <irssi/src/irc/core/servers-redirect.h>
 
-enum {
-	CHANNEL_QUERY_MODE,
-	CHANNEL_QUERY_WHO,
-	CHANNEL_QUERY_BMODE,
-
-	CHANNEL_QUERIES
-};
-
-#define CHANNEL_IS_MODE_QUERY(a) ((a) != CHANNEL_QUERY_WHO)
-
-typedef struct {
-	int current_query_type; /* query type that is currently being asked */
-        GSList *current_queries; /* All channels that are currently being queried */
-
-	GSList *queries[CHANNEL_QUERIES]; /* All queries that need to be asked from server */
-} SERVER_QUERY_REC;
-
 static void sig_connected(IRC_SERVER_REC *server)
 {
 	SERVER_QUERY_REC *rec;
@@ -76,7 +59,9 @@ static void sig_connected(IRC_SERVER_REC *server)
 		return;
 
 	rec = g_new0(SERVER_QUERY_REC, 1);
-        server->chanqueries = rec;
+	rec->accountqueries = g_hash_table_new_full(
+	    (GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal, (GDestroyNotify) g_free, NULL);
+	server->chanqueries = rec;
 }
 
 static void sig_disconnected(IRC_SERVER_REC *server)
@@ -91,6 +76,8 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	rec = server->chanqueries;
 	g_return_if_fail(rec != NULL);
 
+	g_hash_table_foreach(rec->accountqueries, (GHFunc) g_free, NULL);
+	g_hash_table_destroy(rec->accountqueries);
 	for (n = 0; n < CHANNEL_QUERIES; n++)
 		g_slist_free(rec->queries[n]);
         g_slist_free(rec->current_queries);
@@ -399,6 +386,12 @@ static void channel_got_query(IRC_CHANNEL_REC *chanrec, int query_type)
 	query_check(chanrec->server);
 }
 
+static void query_useraccount_error(IRC_SERVER_REC *server, const char *cmd, const char *arg)
+{
+	/* query failed, ignore it but remove the marker */
+	g_hash_table_remove(server->chanqueries->accountqueries, arg);
+}
+
 static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char *nick,
                            const char *address)
 {
@@ -448,6 +441,10 @@ static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char 
 		return;
 	}
 
+	if (g_hash_table_contains(server->chanqueries->accountqueries, nick)) {
+		/* query already sent */
+		return;
+	}
 	account = NULL;
 
 	/* Check if user is already in some other channel, get the account from there */
@@ -470,11 +467,13 @@ static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char 
 	if (g_hash_table_size(chanrec->nicks) < settings_get_int("channel_max_who_sync") &&
 	    server->isupport != NULL && g_hash_table_lookup(server->isupport, "whox") != NULL) {
 		char *cmd;
-		server_redirect_event(server, "who user", 1, nick, -1, NULL, /* failure signal */
+		server_redirect_event(server, "who user", 1, nick, -1,
+		                      "chanquery useraccount abort", /* failure signal */
 		                      "event 354", "silent event whox useraccount", /* */
 		                      "", "event empty",                            /* */
 		                      NULL);
 		cmd = g_strdup_printf("WHO %s %%tna,745", nick);
+		g_hash_table_add(server->chanqueries->accountqueries, g_strdup(nick));
 		irc_send_cmd(server, cmd);
 		g_free(cmd);
 	}
@@ -585,6 +584,7 @@ void channels_query_init(void)
 
 	signal_add("chanquery ban end", (SIGNAL_FUNC) event_end_of_banlist);
 	signal_add("chanquery abort", (SIGNAL_FUNC) query_current_error);
+	signal_add("chanquery useraccount abort", (SIGNAL_FUNC) query_useraccount_error);
 }
 
 void channels_query_deinit(void)
@@ -601,4 +601,5 @@ void channels_query_deinit(void)
 
 	signal_remove("chanquery ban end", (SIGNAL_FUNC) event_end_of_banlist);
 	signal_remove("chanquery abort", (SIGNAL_FUNC) query_current_error);
+	signal_remove("chanquery useraccount abort", (SIGNAL_FUNC) query_useraccount_error);
 }
