@@ -2,8 +2,10 @@ on: [pull_request]
 name: clang-format
 jobs:
   check-clang-format:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
+      - name: install clang-format
+        run: sudo apt install clang-format-11
       - uses: actions/checkout@main
       - name: fetch target ref
         run:
@@ -18,7 +20,7 @@ jobs:
       - name: run git-clang-format and Check if no changes are needed
         run:
           |
-            git-clang-format-9 --diff FETCH_HEAD HEAD | tee git-clang-format.diff
+            CLANG_FORMAT=clang-format-11 git-clang-format-11 --diff FETCH_HEAD HEAD | tee git-clang-format.diff
             cmp -s <(echo no modified files to format) git-clang-format.diff || cmp -s <(echo -n) git-clang-format.diff
       - uses: actions/upload-artifact@v1
         if: failure()
