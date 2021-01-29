@@ -50,6 +50,8 @@ loop:
 #include <irssi/src/irc/core/irc-channels.h>
 #include <irssi/src/irc/core/servers-redirect.h>
 
+#define WHO_Ps_PPtna_745 "WHO %s %%tna,745"
+
 static void sig_connected(IRC_SERVER_REC *server)
 {
 	SERVER_QUERY_REC *rec;
@@ -386,6 +388,52 @@ static void channel_got_query(IRC_CHANNEL_REC *chanrec, int query_type)
 	query_check(chanrec->server);
 }
 
+void irc_channels_query_purge_accountquery(IRC_SERVER_REC *server, const char *nick)
+{
+	GSList *tmp, *next, *prev;
+	REDIRECT_REC *redirect;
+	char *cmd, *target_cmd;
+	gboolean was_removed;
+
+	/* remove the marker */
+	was_removed = g_hash_table_remove(server->chanqueries->accountqueries, nick);
+
+	/* if it was removed we may have an outstanding query */
+	if (was_removed) {
+		target_cmd = g_strdup_printf(WHO_Ps_PPtna_745, nick);
+
+		/* remove queued WHO command */
+		prev = NULL;
+		for (tmp = server->cmdqueue; tmp != NULL; tmp = next) {
+			next = tmp->next->next;
+			cmd = tmp->data;
+			redirect = tmp->next->data;
+
+			if (g_strcmp0(cmd, target_cmd) == 0) {
+				if (prev != NULL)
+					prev->next = next;
+				else
+					server->cmdqueue = next;
+
+				/* remove the redirection */
+				g_slist_free_1(tmp->next);
+				if (redirect != NULL)
+					server_redirect_destroy(redirect);
+
+				/* remove the command */
+				g_slist_free_1(tmp);
+				g_free(cmd);
+
+				server->cmdcount--;
+			} else {
+				prev = tmp;
+			}
+		}
+
+		g_free(target_cmd);
+	}
+}
+
 static void query_useraccount_error(IRC_SERVER_REC *server, const char *cmd, const char *arg)
 {
 	/* query failed, ignore it but remove the marker */
@@ -472,7 +520,7 @@ static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char 
 		                      "event 354", "silent event whox useraccount", /* */
 		                      "", "event empty",                            /* */
 		                      NULL);
-		cmd = g_strdup_printf("WHO %s %%tna,745", nick);
+		cmd = g_strdup_printf(WHO_Ps_PPtna_745, nick);
 		g_hash_table_add(server->chanqueries->accountqueries, g_strdup(nick));
 		irc_send_cmd(server, cmd);
 		g_free(cmd);

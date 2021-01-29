@@ -505,7 +505,7 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 	}
 
 	/* invalidate any outstanding accountqueries for the old nick */
-	g_hash_table_remove(server->chanqueries->accountqueries, orignick);
+	irc_channels_query_purge_accountquery(server, orignick);
 	nicklist_rename(SERVER(server), orignick, nick);
 	g_free(params);
 }

@@ -40,6 +40,8 @@ typedef struct _SERVER_QUERY_REC {
 	GHashTable *accountqueries;       /* Per-nick account queries */
 } SERVER_QUERY_REC;
 
+void irc_channels_query_purge_accountquery(IRC_SERVER_REC *server, const char *nick);
+
 void irc_channels_init(void);
 void irc_channels_deinit(void);
 
