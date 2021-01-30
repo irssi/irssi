@@ -460,7 +460,7 @@ static GList *completion_get_aliases(const char *alias, char cmdchar)
 			/* add matching alias to completion list, aliases will
 			   be appended after command completions and kept in
 			   uppercase to show it's an alias */
-			if (glist_find_icase_string(complist, word) == NULL)
+			if (i_list_find_icase_string(complist, word) == NULL)
 				complist =
 				    g_list_insert_sorted(complist, word, (GCompareFunc) i_istr_cmp);
 			else
@@ -490,7 +490,7 @@ static GList *completion_get_commands(const char *cmd, char cmdchar)
 		if (g_ascii_strncasecmp(rec->cmd, cmd, len) == 0) {
 			word = cmdchar == '\0' ? g_strdup(rec->cmd) :
 				g_strdup_printf("%c%s", cmdchar, rec->cmd);
-			if (glist_find_icase_string(complist, word) == NULL)
+			if (i_list_find_icase_string(complist, word) == NULL)
 				complist =
 				    g_list_insert_sorted(complist, word, (GCompareFunc) i_istr_cmp);
 			else

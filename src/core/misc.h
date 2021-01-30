@@ -21,8 +21,8 @@ long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2) G_GNUC_DEPRECATE
 
 GSList *i_slist_find_string(GSList *list, const char *key);
 GSList *i_slist_find_icase_string(GSList *list, const char *key);
-GList *glist_find_string(GList *list, const char *key);
-GList *glist_find_icase_string(GList *list, const char *key);
+GList *i_list_find_string(GList *list, const char *key);
+GList *i_list_find_icase_string(GList *list, const char *key);
 GSList *i_slist_remove_string(GSList *list, const char *str) G_GNUC_DEPRECATED;
 GSList *i_slist_delete_string(GSList *list, const char *str, GDestroyNotify free_func);
 
