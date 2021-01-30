@@ -293,7 +293,7 @@ GList *optlist_remove_known(const char *cmd, GHashTable *optlist)
 	return list;
 }
 
-GList *glist_find_string(GList *list, const char *key)
+GList *i_list_find_string(GList *list, const char *key)
 {
 	for (; list != NULL; list = list->next)
 		if (g_strcmp0(list->data, key) == 0) return list;
@@ -301,7 +301,7 @@ GList *glist_find_string(GList *list, const char *key)
 	return NULL;
 }
 
-GList *glist_find_icase_string(GList *list, const char *key)
+GList *i_list_find_icase_string(GList *list, const char *key)
 {
 	for (; list != NULL; list = list->next)
 		if (g_ascii_strcasecmp(list->data, key) == 0) return list;

@@ -374,10 +374,10 @@ static void complete_from_nicklist(GList **outlist, CHANNEL_REC *channel,
 	for (tmp = mchannel->lastmsgs; tmp != NULL; tmp = tmp->next) {
 		LAST_MSG_REC *rec = tmp->data;
 
-		if ((match_case? strncmp(rec->nick, nick, len)
-		     : g_ascii_strncasecmp(rec->nick, nick, len)) == 0 &&
-		    (match_case? glist_find_string(*outlist, rec->nick)
-		     : glist_find_icase_string(*outlist, rec->nick)) == NULL) {
+		if ((match_case ? strncmp(rec->nick, nick, len) :
+		                  g_ascii_strncasecmp(rec->nick, nick, len)) == 0 &&
+		    (match_case ? i_list_find_string(*outlist, rec->nick) :
+		                  i_list_find_icase_string(*outlist, rec->nick)) == NULL) {
 			str = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase) ascii_strdown(str);
 			if (rec->own)
@@ -435,7 +435,7 @@ static GList *completion_nicks_nonstrict(CHANNEL_REC *channel,
 			if (completion_lowercase)
 				ascii_strdown(tnick);
 
-			if (glist_find_icase_string(list, tnick) == NULL)
+			if (i_list_find_icase_string(list, tnick) == NULL)
 				list = g_list_append(list, tnick);
 			else
                                 g_free(tnick);
@@ -482,7 +482,7 @@ static GList *completion_channel_nicks(CHANNEL_REC *channel, const char *nick,
 			str = g_strconcat(rec->nick, suffix, NULL);
 			if (completion_lowercase)
 				ascii_strdown(str);
-                        if (glist_find_icase_string(list, str) == NULL)
+			if (i_list_find_icase_string(list, str) == NULL)
 				list = g_list_append(list, str);
 			else
                                 g_free(str);
@@ -505,7 +505,7 @@ static GList *completion_joinlist(GList *list1, GList *list2)
 
 	old = list2;
 	while (list2 != NULL) {
-		if (!glist_find_icase_string(list1, list2->data))
+		if (!i_list_find_icase_string(list1, list2->data))
 			list1 = g_list_append(list1, list2->data);
 		else
 			g_free(list2->data);
@@ -570,7 +570,7 @@ GList *completion_get_channels(SERVER_REC *server, const char *word)
 		CHANNEL_SETUP_REC *rec = tmp->data;
 
 		if (g_ascii_strncasecmp(rec->name, word, len) == 0 &&
-		    glist_find_icase_string(list, rec->name) == NULL)
+		    i_list_find_icase_string(list, rec->name) == NULL)
 			list = g_list_append(list, g_strdup(rec->name));
 
 	}
