@@ -37,15 +37,15 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 	if (condition & (G_IO_ERR | G_IO_HUP | G_IO_NVAL)) {
 		/* error, we have to call the function.. */
 		if (rec->condition & G_IO_IN)
-			icond |= G_INPUT_READ;
+			icond |= I_INPUT_READ;
 		else
-			icond |= G_INPUT_WRITE;
+			icond |= I_INPUT_WRITE;
 	}
 
 	if (condition & (G_IO_IN | G_IO_PRI))
-		icond |= G_INPUT_READ;
+		icond |= I_INPUT_READ;
 	if (condition & G_IO_OUT)
-		icond |= G_INPUT_WRITE;
+		icond |= I_INPUT_WRITE;
 
 	if (rec->condition & icond)
 		rec->function(rec->data, source, icond);
@@ -53,8 +53,8 @@ static int irssi_io_invoke(GIOChannel *source, GIOCondition condition,
 	return TRUE;
 }
 
-int g_input_add_full(GIOChannel *source, int priority, int condition,
-		     GInputFunction function, void *data)
+int i_input_add_full(GIOChannel *source, int priority, int condition, GInputFunction function,
+                     void *data)
 {
         IRSSI_INPUT_REC *rec;
 	unsigned int result;
@@ -66,9 +66,9 @@ int g_input_add_full(GIOChannel *source, int priority, int condition,
 	rec->data = data;
 
 	cond = (GIOCondition) (G_IO_ERR|G_IO_HUP|G_IO_NVAL);
-	if (condition & G_INPUT_READ)
+	if (condition & I_INPUT_READ)
 		cond |= G_IO_IN|G_IO_PRI;
-	if (condition & G_INPUT_WRITE)
+	if (condition & I_INPUT_WRITE)
 		cond |= G_IO_OUT;
 
 	result = g_io_add_watch_full(source, priority, cond,
@@ -77,19 +77,16 @@ int g_input_add_full(GIOChannel *source, int priority, int condition,
 	return result;
 }
 
-int g_input_add(GIOChannel *source, int condition,
-		GInputFunction function, void *data)
+int i_input_add(GIOChannel *source, int condition, GInputFunction function, void *data)
 {
-	return g_input_add_full(source, G_PRIORITY_DEFAULT, condition,
-				function, data);
+	return i_input_add_full(source, G_PRIORITY_DEFAULT, condition, function, data);
 }
 
 /* easy way to bypass glib polling of io channel internal buffer */
-int g_input_add_poll(int fd, int priority, int condition,
-		     GInputFunction function, void *data)
+int i_input_add_poll(int fd, int priority, int condition, GInputFunction function, void *data)
 {
 	GIOChannel *source = g_io_channel_unix_new(fd);
-	int ret = g_input_add_full(source, priority, condition, function, data);
+	int ret = i_input_add_full(source, priority, condition, function, data);
 	g_io_channel_unref(source);
 	return ret;
 }
@@ -170,7 +167,7 @@ int strarray_find(char **array, const char *item)
 	return -1;
 }
 
-GSList *gslist_find_string(GSList *list, const char *key)
+GSList *i_slist_find_string(GSList *list, const char *key)
 {
 	for (; list != NULL; list = list->next)
 		if (g_strcmp0(list->data, key) == 0) return list;
@@ -178,7 +175,7 @@ GSList *gslist_find_string(GSList *list, const char *key)
 	return NULL;
 }
 
-GSList *gslist_find_icase_string(GSList *list, const char *key)
+GSList *i_slist_find_icase_string(GSList *list, const char *key)
 {
 	for (; list != NULL; list = list->next)
 		if (g_ascii_strcasecmp(list->data, key) == 0) return list;
@@ -186,7 +183,7 @@ GSList *gslist_find_icase_string(GSList *list, const char *key)
 	return NULL;
 }
 
-void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data)
+void *i_slist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data)
 {
 	void *ret;
 
@@ -200,7 +197,7 @@ void *gslist_foreach_find(GSList *list, FOREACH_FIND_FUNC func, const void *data
 	return NULL;
 }
 
-void gslist_free_full (GSList *list, GDestroyNotify free_func)
+void i_slist_free_full(GSList *list, GDestroyNotify free_func)
 {
 	GSList *tmp;
 
@@ -213,7 +210,7 @@ void gslist_free_full (GSList *list, GDestroyNotify free_func)
 	g_slist_free(list);
 }
 
-GSList *gslist_remove_string (GSList *list, const char *str)
+GSList *i_slist_remove_string(GSList *list, const char *str)
 {
 	GSList *l;
 
@@ -224,7 +221,7 @@ GSList *gslist_remove_string (GSList *list, const char *str)
 	return list;
 }
 
-GSList *gslist_delete_string (GSList *list, const char *str, GDestroyNotify free_func)
+GSList *i_slist_delete_string(GSList *list, const char *str, GDestroyNotify free_func)
 {
 	GSList *l;
 
@@ -258,7 +255,7 @@ char *gslistptr_to_string(GSList *list, int offset, const char *delimiter)
 }
 
 /* `list' contains char* */
-char *gslist_to_string(GSList *list, const char *delimiter)
+char *i_slist_to_string(GSList *list, const char *delimiter)
 {
 	GString *str;
 	char *ret;
@@ -411,17 +408,17 @@ char *convert_home(const char *path)
 	}
 }
 
-int g_istr_equal(gconstpointer v, gconstpointer v2)
+int i_istr_equal(gconstpointer v, gconstpointer v2)
 {
 	return g_ascii_strcasecmp((const char *) v, (const char *) v2) == 0;
 }
 
-int g_istr_cmp(gconstpointer v, gconstpointer v2)
+int i_istr_cmp(gconstpointer v, gconstpointer v2)
 {
 	return g_ascii_strcasecmp((const char *) v, (const char *) v2);
 }
 
-guint g_istr_hash(gconstpointer v)
+guint i_istr_hash(gconstpointer v)
 {
 	const signed char *p;
 	guint32 h = 5381;

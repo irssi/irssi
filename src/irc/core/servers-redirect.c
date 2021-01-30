@@ -219,7 +219,7 @@ static char *signal_list_move(GSList **signals, const char *event)
 	GSList *link;
         char *linkevent, *linksignal;
 
-	link = gslist_find_string(*signals, event);
+	link = i_slist_find_string(*signals, event);
 	if (link == NULL)
 		return NULL;
 

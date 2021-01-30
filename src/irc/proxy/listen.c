@@ -74,7 +74,7 @@ static GIOChannel *net_listen_unix(const char *path)
 		goto error_unlink;
 	}
 
-	return g_io_channel_new(handle);
+	return i_io_channel_new(handle);
 
 error_unlink:
 	unlink(sa.sun_path);
@@ -99,7 +99,7 @@ static GIOChannel *net_accept_unix(GIOChannel *handle)
 		return NULL;
 
 	fcntl(ret, F_SETFL, O_NONBLOCK);
-	return g_io_channel_new(ret);
+	return i_io_channel_new(ret);
 }
 
 static void remove_client(CLIENT_REC *rec)
@@ -470,8 +470,7 @@ static void sig_listen(LISTEN_REC *listen)
 		rec->server = servers == NULL ? NULL :
 			IRC_SERVER(server_find_chatnet(listen->ircnet));
 	}
-	rec->recv_tag = g_input_add(handle, G_INPUT_READ,
-	                            (GInputFunction) sig_listen_client, rec);
+	rec->recv_tag = i_input_add(handle, I_INPUT_READ, (GInputFunction) sig_listen_client, rec);
 
 	proxy_clients = g_slist_prepend(proxy_clients, rec);
 	listen->clients = g_slist_prepend(listen->clients, rec);
@@ -739,8 +738,7 @@ static void add_listen(const char *ircnet, int port, const char *port_or_path)
 	rec->port = port;
 	rec->port_or_path = g_strdup(port_or_path);
 
-	rec->tag = g_input_add(rec->handle, G_INPUT_READ,
-	                       (GInputFunction) sig_listen, rec);
+	rec->tag = i_input_add(rec->handle, I_INPUT_READ, (GInputFunction) sig_listen, rec);
 
 	proxy_listens = g_slist_append(proxy_listens, rec);
 }

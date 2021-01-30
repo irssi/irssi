@@ -613,9 +613,8 @@ void settings_check_module(const char *module)
 		}
 	}
 	if (count > 0) {
-		if (gslist_find_icase_string(last_invalid_modules,
-					     module) == NULL) {
-                        /* mark this module having invalid settings */
+		if (i_slist_find_icase_string(last_invalid_modules, module) == NULL) {
+			/* mark this module having invalid settings */
 			last_invalid_modules =
 				g_slist_append(last_invalid_modules,
 					       g_strdup(module));
@@ -876,8 +875,7 @@ static int sig_autosave(void)
 
 void settings_init(void)
 {
-	settings = g_hash_table_new((GHashFunc) g_istr_hash,
-				    (GCompareFunc) g_istr_equal);
+	settings = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
 	last_errors = NULL;
         last_invalid_modules = NULL;

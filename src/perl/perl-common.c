@@ -664,7 +664,7 @@ static void perl_unregister_protocol(CHAT_PROTOCOL_REC *rec)
 	GSList *item;
 	void *data;
 
-	item = gslist_find_icase_string(use_protocols, rec->name);
+	item = i_slist_find_icase_string(use_protocols, rec->name);
 	if (item != NULL) {
 		data = item->data;
 		use_protocols = g_slist_remove(use_protocols, data);

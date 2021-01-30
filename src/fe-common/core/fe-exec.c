@@ -302,9 +302,9 @@ static void process_exec(PROCESS_REC *rec, const char *cmd)
 
 	if (rec->pid != 0) {
 		/* parent process */
-                GIOChannel *outio = g_io_channel_new(in[1]);
+		GIOChannel *outio = i_io_channel_new(in[1]);
 
-		rec->in = g_io_channel_new(out[0]);
+		rec->in = i_io_channel_new(out[0]);
 		rec->out = net_sendbuffer_create(outio, 0);
 
                 close(out[1]);
@@ -524,9 +524,8 @@ static void handle_exec(const char *args, GHashTable *optlist,
 	level = g_hash_table_lookup(optlist, "level");
 	rec->level = level == NULL ? MSGLEVEL_CLIENTCRAP : level2bits(level, NULL);
 
-	rec->read_tag = g_input_add(rec->in, G_INPUT_READ,
-				    (GInputFunction) sig_exec_input_reader,
-				    rec);
+	rec->read_tag =
+	    i_input_add(rec->in, I_INPUT_READ, (GInputFunction) sig_exec_input_reader, rec);
 	processes = g_slist_append(processes, rec);
 
 	if (rec->target == NULL && interactive)

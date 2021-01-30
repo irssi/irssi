@@ -55,7 +55,7 @@ void dcc_unregister_type(const char *type)
 {
 	GSList *pos;
 
-	pos = gslist_find_string(dcc_types, type);
+	pos = i_slist_find_string(dcc_types, type);
 	if (pos != NULL) {
 		void *tmp = pos->data;
 		dcc_types = g_slist_remove(dcc_types, pos->data);
@@ -65,7 +65,7 @@ void dcc_unregister_type(const char *type)
 
 int dcc_str2type(const char *str)
 {
-	if (gslist_find_string(dcc_types, str) == NULL)
+	if (i_slist_find_string(dcc_types, str) == NULL)
 		return -1;
 
         return module_get_uniq_id_str("DCC", str);

@@ -26,7 +26,7 @@ static void perl_settings_remove(const char *key)
 	g_return_if_fail(script != NULL);
 
 	list = g_hash_table_lookup(perl_settings, script);
-	pos = gslist_find_icase_string(list, key);
+	pos = i_slist_find_icase_string(list, key);
 	if (pos != NULL) {
 		list = g_slist_remove(list, pos->data);
 		g_hash_table_insert(perl_settings, script, list);

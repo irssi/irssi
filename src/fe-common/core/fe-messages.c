@@ -774,7 +774,7 @@ static void sig_channel_joined(CHANNEL_REC *channel)
 	}
 }
 
-static void g_hash_free_value(void *key, void *value)
+static void i_hash_free_value(void *key, void *value)
 {
         g_free(value);
 }
@@ -825,7 +825,7 @@ void fe_messages_init(void)
 
 void fe_messages_deinit(void)
 {
-        g_hash_table_foreach(printnicks, (GHFunc) g_hash_free_value, NULL);
+	g_hash_table_foreach(printnicks, (GHFunc) i_hash_free_value, NULL);
 	g_hash_table_destroy(printnicks);
 
 	signal_remove("message public", (SIGNAL_FUNC) sig_message_public);

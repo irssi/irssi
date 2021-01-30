@@ -62,9 +62,9 @@ int net_gethostbyname_nonblock(const char *addr, GIOChannel *pipe, int reverse_l
 		rec.errlen = errorstr == NULL ? 0 : strlen(errorstr)+1;
 	}
 
-	g_io_channel_write_block(pipe, &rec, sizeof(rec));
+	i_io_channel_write_block(pipe, &rec, sizeof(rec));
 	if (rec.errlen != 0)
-		g_io_channel_write_block(pipe, (void *) errorstr, rec.errlen);
+		i_io_channel_write_block(pipe, (void *) errorstr, rec.errlen);
 
 	if (pid == 0)
 		_exit(99);
@@ -82,7 +82,7 @@ int net_gethostbyname_return(GIOChannel *pipe, RESOLVED_IP_REC *rec)
 	fcntl(g_io_channel_unix_get_fd(pipe), F_SETFL, O_NONBLOCK);
 
 	/* get ip+error */
-	if (g_io_channel_read_block(pipe, rec, sizeof(*rec)) == -1) {
+	if (i_io_channel_read_block(pipe, rec, sizeof(*rec)) == -1) {
 		rec->errorstr = g_strdup_printf("Host name lookup: %s",
 						g_strerror(errno));
 		return -1;
@@ -92,7 +92,7 @@ int net_gethostbyname_return(GIOChannel *pipe, RESOLVED_IP_REC *rec)
 		/* read error string, if we can't read everything for some
 		   reason, just ignore it. */
 		rec->errorstr = g_malloc0(rec->errlen+1);
-		g_io_channel_read_block(pipe, rec->errorstr, rec->errlen);
+		i_io_channel_read_block(pipe, rec->errorstr, rec->errlen);
 	}
 
 	return 0;

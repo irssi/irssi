@@ -456,8 +456,7 @@ static void sig_channel_created(CHANNEL_REC *channel)
 {
 	g_return_if_fail(IS_CHANNEL(channel));
 
-	channel->nicks = g_hash_table_new((GHashFunc) g_istr_hash,
-					  (GCompareFunc) g_istr_equal);
+	channel->nicks = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 }
 
 static void nicklist_remove_hash(gpointer key, NICK_REC *nick,

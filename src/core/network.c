@@ -39,7 +39,7 @@ union sockaddr_union {
 #define SIZEOF_SOCKADDR(so) ((so).sa.sa_family == AF_INET6 ? \
 	sizeof(so.sin6) : sizeof(so.sin))
 
-GIOChannel *g_io_channel_new(int handle)
+GIOChannel *i_io_channel_new(int handle)
 {
 	GIOChannel *chan;
 	chan = g_io_channel_unix_new(handle);
@@ -48,7 +48,7 @@ GIOChannel *g_io_channel_new(int handle)
 	return chan;
 }
 
-int g_io_channel_write_block(GIOChannel *channel, void *data, int len)
+int i_io_channel_write_block(GIOChannel *channel, void *data, int len)
 {
 	gsize ret;
 	int sent;
@@ -63,7 +63,7 @@ int g_io_channel_write_block(GIOChannel *channel, void *data, int len)
 	return sent < len ? -1 : 0;
 }
 
-int g_io_channel_read_block(GIOChannel *channel, void *data, int len)
+int i_io_channel_read_block(GIOChannel *channel, void *data, int len)
 {
 	time_t maxwait;
 	gsize ret;
@@ -211,7 +211,7 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 	if (handle == -1)
 		return (NULL);
 
-	return g_io_channel_new(handle);
+	return i_io_channel_new(handle);
 }
 
 /* Connect to named UNIX socket */
@@ -242,7 +242,7 @@ GIOChannel *net_connect_unix(const char *path)
 		return NULL;
 	}
 
-	return g_io_channel_new(handle);
+	return i_io_channel_new(handle);
 }
 
 /* Disconnect socket */
@@ -298,7 +298,7 @@ GIOChannel *net_listen(IPADDR *my_ip, int *port)
 
 			/* start listening */
 			if (listen(handle, 1) >= 0)
-                                return g_io_channel_new(handle);
+				return i_io_channel_new(handle);
 		}
 
 	}
@@ -327,7 +327,7 @@ GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port)
 	if (port != NULL) *port = sin_get_port(&so);
 
 	fcntl(ret, F_SETFL, O_NONBLOCK);
-	return g_io_channel_new(ret);
+	return i_io_channel_new(ret);
 }
 
 /* Read data from socket, return number of bytes read, -1 = error */

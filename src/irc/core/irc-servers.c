@@ -283,8 +283,7 @@ static void server_init(IRC_SERVER_REC *server)
 		g_free(cmd);
 	}
 
-	server->isupport = g_hash_table_new((GHashFunc) g_istr_hash,
-					    (GCompareFunc) g_istr_equal);
+	server->isupport = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
 	/* set the standards */
 	g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));
@@ -417,10 +416,9 @@ static void sig_connected(IRC_SERVER_REC *server)
 		(QUERY_REC *(*)(SERVER_REC *, const char *)) irc_query_find;
 	server->nick_comp_func = irc_nickcmp_rfc1459;
 
-	server->splits = g_hash_table_new((GHashFunc) g_istr_hash,
-					  (GCompareFunc) g_istr_equal);
+	server->splits = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
-        if (!server->session_reconnect)
+	if (!server->session_reconnect)
 		server_init(server);
 }
 
@@ -445,7 +443,7 @@ static void sig_destroyed(IRC_SERVER_REC *server)
 	g_slist_free(server->cmdqueue);
 	server->cmdqueue = NULL;
 
-	gslist_free_full(server->cap_active, (GDestroyNotify) g_free);
+	i_slist_free_full(server->cap_active, (GDestroyNotify) g_free);
 	server->cap_active = NULL;
 
 	if (server->cap_supported) {
@@ -453,7 +451,7 @@ static void sig_destroyed(IRC_SERVER_REC *server)
 		server->cap_supported = NULL;
 	}
 
-	gslist_free_full(server->cap_queue, (GDestroyNotify) g_free);
+	i_slist_free_full(server->cap_queue, (GDestroyNotify) g_free);
 	server->cap_queue = NULL;
 
 	/* was g_free_and_null, but can't use on a GString */

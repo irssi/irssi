@@ -84,7 +84,7 @@ static void print_mode(MODE_REC *rec)
 
 	tmp = modes; modes = NULL;
 
-	nicks = gslist_to_string(rec->nicks, ", ");
+	nicks = i_slist_to_string(rec->nicks, ", ");
 	printformat(rec->channel->server, rec->channel->visible_name, rec->level,
 	            IRCTXT_CHANMODE_CHANGE, rec->channel->visible_name, rec->mode, nicks, "");
 	g_free(nicks);

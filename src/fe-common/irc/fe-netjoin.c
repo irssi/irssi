@@ -176,8 +176,7 @@ static void print_netjoins(NETJOIN_SERVER_REC *server, const char *filter_channe
 
 	/* save nicks to string, clear now_channels and remove the same
 	   channels from old_channels list */
-	channels = g_hash_table_new((GHashFunc) g_istr_hash,
-				    (GCompareFunc) g_istr_equal);
+	channels = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 	for (tmp = server->netjoins; tmp != NULL; tmp = next) {
 		NETJOIN_REC *rec = tmp->data;
 
@@ -213,8 +212,7 @@ static void print_netjoins(NETJOIN_SERVER_REC *server, const char *filter_channe
 			}
 
 			/* remove the channel from old_channels too */
-			old = gslist_find_icase_string(rec->old_channels,
-						       realchannel);
+			old = i_slist_find_icase_string(rec->old_channels, realchannel);
 			if (old != NULL) {
 				void *data = old->data;
 				rec->old_channels =
@@ -341,7 +339,7 @@ static void msg_join(IRC_SERVER_REC *server, const char *channel,
 
 	/* if this was not a channel they split from, treat it normally */
 	if (netjoin != NULL) {
-		if (!gslist_find_icase_string(netjoin->old_channels, channel))
+		if (!i_slist_find_icase_string(netjoin->old_channels, channel))
 			return;
 	} else {
 		channels = split->channels;

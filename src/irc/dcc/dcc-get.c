@@ -112,9 +112,8 @@ void dcc_get_send_received(GET_DCC_REC *dcc)
 	   last 1-3 bytes should be sent later. these happen probably
 	   never, but I just want to do it right.. :) */
 	if (dcc->tagwrite == -1) {
-		dcc->tagwrite = g_input_add(dcc->handle, G_INPUT_WRITE,
-					    (GInputFunction) sig_dccget_send,
-					    dcc);
+		dcc->tagwrite =
+		    i_input_add(dcc->handle, I_INPUT_WRITE, (GInputFunction) sig_dccget_send, dcc);
 	}
 }
 
@@ -285,8 +284,8 @@ void sig_dccget_connected(GET_DCC_REC *dcc)
 		dcc_close(DCC(dcc));
 		return;
 	}
-	dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
-				   (GInputFunction) sig_dccget_receive, dcc);
+	dcc->tagread =
+	    i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) sig_dccget_receive, dcc);
 	signal_emit("dcc connected", 1, dcc);
 
 	if (dcc->from_dccserver) {
@@ -311,11 +310,8 @@ void dcc_get_connect(GET_DCC_REC *dcc)
 	dcc->handle = dcc_connect_ip(&dcc->addr, dcc->port);
 
 	if (dcc->handle != NULL) {
-		dcc->tagconn =
-			g_input_add(dcc->handle,
-				    G_INPUT_WRITE | G_INPUT_READ,
-				    (GInputFunction) sig_dccget_connected,
-				    dcc);
+		dcc->tagconn = i_input_add(dcc->handle, I_INPUT_WRITE | I_INPUT_READ,
+		                           (GInputFunction) sig_dccget_connected, dcc);
 	} else {
 		/* error connecting */
 		signal_emit("dcc error connect", 1, dcc);
@@ -344,8 +340,8 @@ static void dcc_get_listen(GET_DCC_REC *dcc)
 	net_ip2host(&dcc->addr, dcc->addrstr);
 	dcc->port = port;
 
-	dcc->tagconn = g_input_add(handle, G_INPUT_READ | G_INPUT_WRITE,
-				   (GInputFunction) sig_dccget_connected, dcc);
+	dcc->tagconn = i_input_add(handle, I_INPUT_READ | I_INPUT_WRITE,
+	                           (GInputFunction) sig_dccget_connected, dcc);
 }
 
 void dcc_get_passive(GET_DCC_REC *dcc)
@@ -361,8 +357,7 @@ void dcc_get_passive(GET_DCC_REC *dcc)
 		cmd_return_error(CMDERR_ERRNO);
 
 	dcc->handle = handle;
-	dcc->tagconn = g_input_add(dcc->handle, G_INPUT_READ,
-				   (GInputFunction) dcc_get_listen, dcc);
+	dcc->tagconn = i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_get_listen, dcc);
 
 	/* Let's send the reply to the other client! */
 	dcc_ip2str(&own_ip, host);

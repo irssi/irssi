@@ -20,13 +20,13 @@
 
 #include "module.h"
 
-static int g_istr_equal(gconstpointer v, gconstpointer v2)
+static int i_istr_equal(gconstpointer v, gconstpointer v2)
 {
 	return g_ascii_strcasecmp((const char *) v, (const char *) v2) == 0;
 }
 
 /* a char* hash function from ASU */
-static unsigned int g_istr_hash(gconstpointer v)
+static unsigned int i_istr_hash(gconstpointer v)
 {
 	const char *s = (const char *) v;
 	unsigned int h = 0, g;
@@ -314,7 +314,7 @@ CONFIG_REC *config_open(const char *fname, int create_mode)
 	rec->create_mode = create_mode;
 	rec->mainnode = g_new0(CONFIG_NODE, 1);
 	rec->mainnode->type = NODE_TYPE_BLOCK;
-	rec->cache = g_hash_table_new((GHashFunc) g_istr_hash, (GCompareFunc) g_istr_equal);
+	rec->cache = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 	rec->cache_nodes = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
 
 	return rec;

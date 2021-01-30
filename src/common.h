@@ -6,7 +6,7 @@
 #define IRSSI_GLOBAL_CONFIG "irssi.conf" /* config file name in /etc/ */
 #define IRSSI_HOME_CONFIG "config" /* config file name in ~/.irssi/ */
 
-#define IRSSI_ABI_VERSION 32
+#define IRSSI_ABI_VERSION 33
 
 #define DEFAULT_SERVER_ADD_PORT 6667
 #define DEFAULT_SERVER_ADD_TLS_PORT 6697
@@ -45,15 +45,14 @@ typedef guint64 uoff_t;
 #define PRIuUOFF_T G_GUINT64_FORMAT
 
 /* input functions */
-#define G_INPUT_READ	(1 << 0)
-#define G_INPUT_WRITE	(1 << 1)
+#define I_INPUT_READ (1 << 0)
+#define I_INPUT_WRITE (1 << 1)
 
 typedef void (*GInputFunction) (void *data, GIOChannel *source, int condition);
 
-int g_input_add(GIOChannel *source, int condition,
-		GInputFunction function, void *data);
-int g_input_add_full(GIOChannel *source, int priority, int condition,
-		     GInputFunction function, void *data);
+int i_input_add(GIOChannel *source, int condition, GInputFunction function, void *data);
+int i_input_add_full(GIOChannel *source, int priority, int condition, GInputFunction function,
+                     void *data);
 
 /* return full path for ~/.irssi */
 const char *get_irssi_dir(void);

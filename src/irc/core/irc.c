@@ -491,10 +491,8 @@ static void irc_init_server(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	server->readtag =
-		g_input_add(net_sendbuffer_handle(server->handle),
-			    G_INPUT_READ,
-			    (GInputFunction) irc_parse_incoming, server);
+	server->readtag = i_input_add(net_sendbuffer_handle(server->handle), I_INPUT_READ,
+	                              (GInputFunction) irc_parse_incoming, server);
 }
 
 void irc_irc_init(void)

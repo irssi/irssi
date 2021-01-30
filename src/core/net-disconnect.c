@@ -97,8 +97,7 @@ void net_disconnect_later(GIOChannel *handle)
 	rec = g_new(NET_DISCONNECT_REC, 1);
 	rec->created = time(NULL);
 	rec->handle = handle;
-	rec->tag = g_input_add(handle, G_INPUT_READ,
-			       (GInputFunction) sig_disconnect, rec);
+	rec->tag = i_input_add(handle, I_INPUT_READ, (GInputFunction) sig_disconnect, rec);
 
 	if (timeout_tag == -1) {
 		timeout_tag = g_timeout_add(10000, (GSourceFunc)

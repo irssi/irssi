@@ -56,8 +56,7 @@ THEME_REC *theme_create(const char *path, const char *name)
 	rec->name = g_strdup(name);
 	rec->abstracts = g_hash_table_new((GHashFunc) g_str_hash,
 					  (GCompareFunc) g_str_equal);
-	rec->modules = g_hash_table_new((GHashFunc) g_istr_hash,
-					(GCompareFunc) g_istr_equal);
+	rec->modules = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 	themes = g_slist_append(themes, rec);
 	signal_emit("theme created", 1, rec);
 

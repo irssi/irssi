@@ -336,10 +336,8 @@ static void dcc_send_connected(SEND_DCC_REC *dcc)
 	net_ip2host(&dcc->addr, dcc->addrstr);
 	dcc->port = port;
 
-	dcc->tagread = g_input_add(handle, G_INPUT_READ,
-				   (GInputFunction) dcc_send_read_size, dcc);
-	dcc->tagwrite = g_input_add(handle, G_INPUT_WRITE,
-				    (GInputFunction) dcc_send_data, dcc);
+	dcc->tagread = i_input_add(handle, I_INPUT_READ, (GInputFunction) dcc_send_read_size, dcc);
+	dcc->tagwrite = i_input_add(handle, I_INPUT_WRITE, (GInputFunction) dcc_send_data, dcc);
 
 	signal_emit("dcc connected", 1, dcc);
 }
@@ -352,12 +350,10 @@ static void dcc_send_connect(SEND_DCC_REC *dcc)
 	if (dcc->handle != NULL) {
 		dcc->starttime = time(NULL);
 
-		dcc->tagread = g_input_add(dcc->handle, G_INPUT_READ,
-					   (GInputFunction) dcc_send_read_size,
-					   dcc);
-		dcc->tagwrite = g_input_add(dcc->handle, G_INPUT_WRITE,
-					    (GInputFunction) dcc_send_data,
-					    dcc);
+		dcc->tagread = i_input_add(dcc->handle, I_INPUT_READ,
+		                           (GInputFunction) dcc_send_read_size, dcc);
+		dcc->tagwrite =
+		    i_input_add(dcc->handle, I_INPUT_WRITE, (GInputFunction) dcc_send_data, dcc);
 		signal_emit("dcc connected", 1, dcc);
 	} else {
 		/* error connecting */
@@ -436,9 +432,8 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 	dcc->queue = queue;
         dcc->file_quoted = strchr(fname, ' ') != NULL;
 	if (!passive) {
-		dcc->tagconn = g_input_add(handle, G_INPUT_READ,
-					   (GInputFunction) dcc_send_connected,
-					   dcc);
+		dcc->tagconn =
+		    i_input_add(handle, I_INPUT_READ, (GInputFunction) dcc_send_connected, dcc);
 	}
 
 	/* Generate an ID for this send if using passive protocol */
