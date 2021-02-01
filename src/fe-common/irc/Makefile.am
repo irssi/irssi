@@ -3,6 +3,7 @@ SUBDIRS = dcc notifylist
 noinst_LIBRARIES = libfe_common_irc.a
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS) \
 	-DHELPDIR=\""$(datadir)/irssi/help"\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"

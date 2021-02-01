@@ -3,6 +3,7 @@ include $(top_srcdir)/utils/glib-tap.mk
 PACKAGE_STRING=fe-common/core
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS)
 
 test_programs = test-formats

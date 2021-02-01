@@ -6,6 +6,7 @@ bin_PROGRAMS = irssi-fuzz server-fuzz
 CCLD=$(CXX) $(CXXFLAGS)
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS)
 
 irssi_fuzz_DEPENDENCIES = @COMMON_LIBS@

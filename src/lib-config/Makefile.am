@@ -1,6 +1,7 @@
 noinst_LIBRARIES = libirssi_config.a
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS)
 
 libirssi_config_a_SOURCES = \

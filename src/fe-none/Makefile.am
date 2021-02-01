@@ -1,6 +1,7 @@
 bin_PROGRAMS = botti
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS)
 
 botti_DEPENDENCIES = @COMMON_NOUI_LIBS@

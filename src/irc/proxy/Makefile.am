@@ -2,6 +2,7 @@ moduledir = $(libdir)/irssi/modules
 module_LTLIBRARIES = libirc_proxy.la
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS)
 
 libirc_proxy.a:

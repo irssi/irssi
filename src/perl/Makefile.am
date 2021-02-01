@@ -15,6 +15,8 @@ perl-core.lo: irssi-core.pl.h
 perl-signals.lo: perl-signals-list.h
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
+	-I$(builddir) \
 	$(GLIB_CFLAGS) \
 	-DSCRIPTDIR=\""$(datadir)/irssi/scripts"\" \
 	-DPERL_USE_LIB=\""$(PERL_USE_LIB)"\" \
