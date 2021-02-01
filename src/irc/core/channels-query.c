@@ -400,7 +400,7 @@ void irc_channels_query_purge_accountquery(IRC_SERVER_REC *server, const char *n
 
 	/* if it was removed we may have an outstanding query */
 	if (was_removed) {
-		target_cmd = g_strdup_printf(WHO_Ps_PPtna_745, nick);
+		target_cmd = g_strdup_printf(WHO_Ps_PPtna_745 "\r\n", nick);
 
 		/* remove queued WHO command */
 		prev = NULL;
