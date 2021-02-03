@@ -3,6 +3,7 @@ include $(top_srcdir)/utils/glib-tap.mk
 PACKAGE_STRING=irc/core
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \

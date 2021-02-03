@@ -4,6 +4,7 @@ bin_PROGRAMS = event-get-params-fuzz
 CCLD=$(CXX) $(CXXFLAGS)
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/irc/core/ \

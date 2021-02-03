@@ -8,6 +8,7 @@ EXTRA_LTLIBRARIES = \
 	libotr_core_static.la
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/core/ \
 	-I$(top_srcdir)/src/irc/core/ \
