@@ -8,6 +8,7 @@ EXTRA_LTLIBRARIES = \
 	libotr_core_static.la
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS) \
 	$(OTR_CFLAGS)
 

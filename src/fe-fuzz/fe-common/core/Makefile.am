@@ -4,6 +4,7 @@ bin_PROGRAMS = theme-load-fuzz
 CCLD=$(CXX) $(CXXFLAGS)
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS)
 
 LDADD = \

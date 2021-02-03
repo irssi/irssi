@@ -1,6 +1,7 @@
 bin_PROGRAMS = irssi
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS)
 
 irssi_DEPENDENCIES = \

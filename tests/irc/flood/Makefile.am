@@ -3,6 +3,7 @@ include $(top_srcdir)/utils/glib-tap.mk
 PACKAGE_STRING=irc/flood
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	$(GLIB_CFLAGS)
 

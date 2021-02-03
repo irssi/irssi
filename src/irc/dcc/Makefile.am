@@ -1,6 +1,7 @@
 noinst_LIBRARIES = libirc_dcc.a
 
 AM_CPPFLAGS = \
+	-I$(top_builddir) \
 	$(GLIB_CFLAGS)
 
 libirc_dcc_a_SOURCES = \
