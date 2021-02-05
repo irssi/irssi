@@ -835,7 +835,7 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 	}
 
 	if (entry->utf8)
-		while (entry->pos > size-w &&
+		while (entry->pos > size+w &&
 		       i_wcwidth(entry->text[entry->pos-size-w]) == 0) w++;
 
 	memmove(entry->text + entry->pos - size, entry->text + entry->pos,
