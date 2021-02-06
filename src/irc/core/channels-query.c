@@ -426,7 +426,7 @@ void irc_channels_query_purge_accountquery(IRC_SERVER_REC *server, const char *n
 
 				server->cmdcount--;
 			} else {
-				prev = tmp;
+				prev = tmp->next;
 			}
 		}
 
