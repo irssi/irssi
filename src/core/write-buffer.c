@@ -63,13 +63,13 @@ int write_buffer(int handle, const void *data, int size)
         const char *cdata = data;
 	int next_size;
 
+	if (size <= 0)
+		return size;
+
 	if (write_buffer_max_blocks <= 0) {
 		/* no write buffer */
                 return write(handle, data, size);
 	}
-
-	if (size <= 0)
-		return size;
 
 	rec = g_hash_table_lookup(buffers, GINT_TO_POINTER(handle));
 	if (rec == NULL) {
