@@ -177,6 +177,7 @@ static void sig_dccget_receive(GET_DCC_REC *dcc)
                         return;
 		}
 		dcc->transfd += ret;
+		break;
 	}
 
 	/* send number of total bytes received */
