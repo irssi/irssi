@@ -44,6 +44,9 @@ int lag; /* server lag in milliseconds */
 GSList *channels;
 GSList *queries;
 
+/* transient meta data stash */
+GHashTable *current_incoming_meta;
+
 /* -- support for multiple server types -- */
 
 /* -- must not be NULL: -- */

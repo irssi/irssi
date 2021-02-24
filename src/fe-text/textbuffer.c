@@ -54,14 +54,20 @@ void textbuffer_destroy(TEXT_BUFFER_REC *buffer)
 	g_string_free(buffer->cur_text, TRUE);
 	for (tmp = buffer->cur_info; tmp != NULL; tmp = tmp->next) {
 		LINE_INFO_REC *info = buffer->cur_info->data;
-		textbuffer_format_rec_free(info->format);
-		g_free(info->text);
+		textbuffer_line_info_free1(info);
 		g_free(info);
 	}
 	g_slist_free(buffer->cur_info);
 
 	buffer->window = NULL;
 	g_slice_free(TEXT_BUFFER_REC, buffer);
+}
+
+void textbuffer_line_info_free1(LINE_INFO_REC *info)
+{
+	textbuffer_format_rec_free(info->format);
+	textbuffer_meta_rec_free(info->meta);
+	g_free(info->text);
 }
 
 static void text_chunk_append(TEXT_BUFFER_REC *buffer,
@@ -198,8 +204,7 @@ void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line)
         line->prev = line->next = NULL;
 
 	buffer->lines_count--;
-	g_free(line->info.text);
-	textbuffer_format_rec_free(line->info.format);
+	textbuffer_line_info_free1(&line->info);
 	g_slice_free(LINE_REC, line);
 }
 
@@ -212,10 +217,9 @@ void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer)
 
 	while (buffer->first_line != NULL) {
 		line = buffer->first_line->next;
-		g_free(buffer->first_line->info.text);
-		textbuffer_format_rec_free(buffer->first_line->info.format);
+		textbuffer_line_info_free1(&buffer->first_line->info);
 		g_slice_free(LINE_REC, buffer->first_line);
-                buffer->first_line = line;
+		buffer->first_line = line;
 	}
 	buffer->lines_count = 0;
 

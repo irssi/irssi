@@ -64,6 +64,7 @@ typedef struct _TEXT_DEST_REC {
 	int hilight_priority;
 	char *hilight_color;
         int flags;
+	GHashTable *meta;
 } TEXT_DEST_REC;
 
 #define window_get_theme(window) \

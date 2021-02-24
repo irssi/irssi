@@ -17,6 +17,7 @@ typedef struct {
 	int level;
 	time_t time;
 	char *text;
+	struct _TEXT_BUFFER_META_REC *meta;
 	struct _TEXT_BUFFER_FORMAT_REC *format;
 } LINE_INFO_REC;
 
@@ -84,6 +85,7 @@ LINE_REC *textbuffer_insert(TEXT_BUFFER_REC *buffer, LINE_REC *insert_after,
 void textbuffer_remove(TEXT_BUFFER_REC *buffer, LINE_REC *line);
 /* Removes all lines from buffer, ignoring reference counters */
 void textbuffer_remove_all_lines(TEXT_BUFFER_REC *buffer);
+void textbuffer_line_info_free1(LINE_INFO_REC *info);
 
 void textbuffer_line2text(TEXT_BUFFER_REC *buffer, LINE_REC *line, int coloring, GString *str);
 GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,

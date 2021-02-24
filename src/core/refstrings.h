@@ -6,6 +6,8 @@
 #if GLIB_CHECK_VERSION(2, 58, 0)
 
 #define i_refstr_init() /* nothing */
+/* callback implementation */
+void i_refstr_release(char *str);
 #define i_refstr_release(str) ((str) == NULL ? NULL : g_ref_string_release(str))
 #define i_refstr_intern(str) ((str) == NULL ? NULL : g_ref_string_new_intern(str))
 #define i_refstr_deinit() /* nothing */

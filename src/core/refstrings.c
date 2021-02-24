@@ -3,7 +3,16 @@
 #include <irssi/src/core/refstrings.h>
 
 #if GLIB_CHECK_VERSION(2, 58, 0)
-/* nothing */
+
+/* callback implementation for GHashTable */
+#undef i_refstr_release
+void i_refstr_release(char *str)
+{
+	if (str != NULL) {
+		g_ref_string_release(str);
+	}
+}
+
 #else
 
 GHashTable *i_refstr_table;

@@ -103,3 +103,17 @@ send_message(server, target, msg, target_type)
 CODE:
 	server->send_message(server, target, msg, target_type);
 
+void
+server_meta_stash(server, meta_key, meta_value)
+	Irssi::Server server
+	char *meta_key
+	char *meta_value
+
+char *
+server_meta_stash_find(server, meta_key)
+	Irssi::Server server
+	char *meta_key
+CODE:
+	RETVAL = (char *) server_meta_stash_find(server, meta_key);
+OUTPUT:
+	RETVAL

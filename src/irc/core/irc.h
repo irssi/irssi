@@ -48,6 +48,9 @@ void irc_send_cmd_first(IRC_SERVER_REC *server, const char *cmd);
 void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 		       int send_now, int immediate, int raw);
 
+/* Extract a tag value from tags */
+GHashTable *irc_parse_message_tags(const char *tags);
+
 /* Get count parameters from data */
 #include <irssi/src/core/commands.h>
 char *event_get_param(char **data);
