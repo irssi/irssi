@@ -39,7 +39,7 @@ static int reload;
 
 static void sig_exit(void)
 {
-	g_main_quit(main_loop);
+	g_main_loop_quit(main_loop);
 }
 
 static void sig_reload(void)
