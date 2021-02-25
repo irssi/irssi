@@ -1,9 +1,44 @@
+#include <glib.h>
 #include <string.h>
 
 #include <irssi/src/core/refstrings.h>
 
 #if GLIB_CHECK_VERSION(2, 58, 0)
-/* nothing */
+
+void i_refstr_init(void)
+{
+	/* nothing */
+}
+
+char *i_refstr_intern(const char *str)
+{
+	if (str == NULL) {
+		return NULL;
+	}
+
+	return g_ref_string_new_intern(str);
+}
+
+void i_refstr_release(char *str)
+{
+	if (str == NULL) {
+		return;
+	}
+
+	g_ref_string_release(str);
+}
+
+void i_refstr_deinit(void)
+{
+	/* nothing */
+}
+
+char *i_refstr_table_size_info(void)
+{
+	/* not available */
+	return NULL;
+}
+
 #else
 
 GHashTable *i_refstr_table;

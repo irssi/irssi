@@ -348,14 +348,15 @@ static void sig_gui_print_text(WINDOW_REC *window, void *fgcolor,
 		return;
 	}
 
-	lineinfo.level = dest == NULL ? 0 : dest->level;
         gui = WINDOW_GUI(window);
-        lineinfo.time = (gui->use_insert_after && gui->insert_after_time) ?
-		gui->insert_after_time : time(NULL);
+	view = gui->view;
+
+	lineinfo.level = dest == NULL ? 0 : dest->level;
+	lineinfo.time =
+	    (gui->use_insert_after && gui->insert_after_time) ? gui->insert_after_time : time(NULL);
 	lineinfo.format =
 	    dest != NULL && dest->flags & PRINT_FLAG_FORMAT ? LINE_INFO_FORMAT_SET : NULL;
 
-	view = gui->view;
 	insert_after = gui->use_insert_after ?
 		gui->insert_after : view->buffer->cur_line;
 

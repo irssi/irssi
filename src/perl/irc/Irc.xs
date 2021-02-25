@@ -199,9 +199,28 @@ static PLAIN_OBJECT_INIT_REC irc_plains[] = {
 	{ NULL, NULL }
 };
 
-MODULE = Irssi::Irc  PACKAGE = Irssi::Irc
+MODULE = Irssi::Irc  PACKAGE = Irssi::Irc  PREFIX = irc_
 
 PROTOTYPES: ENABLE
+
+void
+irc_parse_message_tags(tags)
+	char *tags
+PREINIT:
+	HV *hv;
+	GHashTable *hash;
+	GHashTableIter iter;
+	char *key;
+	char *val;
+PPCODE:
+	hv = newHV();
+	hash = irc_parse_message_tags(tags);
+	g_hash_table_iter_init(&iter, hash);
+	while (g_hash_table_iter_next(&iter, (gpointer *) &key, (gpointer *) &val)) {
+		(void) hv_store(hv, key, strlen(key), new_pv(val), 0);
+	}
+	g_hash_table_destroy(hash);
+	XPUSHs(sv_2mortal(newRV_noinc((SV *) hv)));
 
 void
 init()

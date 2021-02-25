@@ -66,6 +66,13 @@ void server_connect_failed(SERVER_REC *server, const char *msg);
 /* Change your nick */
 void server_change_nick(SERVER_REC *server, const char *nick);
 
+/* Push meta data onto the server stash */
+void server_meta_stash(SERVER_REC *server, const char *meta_key, const char *meta_value);
+/* Get a value from the stash */
+const char *server_meta_stash_find(SERVER_REC *server, const char *meta_key);
+/* clear meta stash */
+void server_meta_clear_all(SERVER_REC *server);
+
 /* Update own IPv4 and IPv6 records */
 void server_connect_own_ip_save(SERVER_CONNECT_REC *conn,
 				IPADDR *ip4, IPADDR *ip6);

@@ -406,16 +406,10 @@ void format_read_arglist(va_list va, FORMAT_REC *format,
 		}
 	}
 }
-void format_create_dest(TEXT_DEST_REC *dest,
-			void *server, const char *target,
-			int level, WINDOW_REC *window)
-{
-	format_create_dest_tag(dest, server, NULL, target, level, window);
-}
 
-void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
-			    const char *server_tag, const char *target,
-			    int level, WINDOW_REC *window)
+void format_create_dest_tag_meta(TEXT_DEST_REC *dest, void *server, const char *server_tag,
+                                 const char *target, int level, WINDOW_REC *window,
+                                 GHashTable *meta)
 {
 	memset(dest, 0, sizeof(TEXT_DEST_REC));
 
@@ -425,6 +419,20 @@ void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
 	dest->level = level;
 	dest->window = window != NULL ? window :
 		window_find_closest(server, target, level);
+	dest->meta = meta;
+}
+
+void format_create_dest_tag(TEXT_DEST_REC *dest, void *server, const char *server_tag,
+                            const char *target, int level, WINDOW_REC *window)
+{
+	format_create_dest_tag_meta(dest, server, server_tag, target, level, window,
+	                            server != NULL ? SERVER(server)->current_incoming_meta : NULL);
+}
+
+void format_create_dest(TEXT_DEST_REC *dest, void *server, const char *target, int level,
+                        WINDOW_REC *window)
+{
+	format_create_dest_tag(dest, server, NULL, target, level, window);
 }
 
 /* Return length of text part in string (ie. without % codes) */

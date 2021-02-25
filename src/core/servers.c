@@ -19,14 +19,15 @@
 */
 
 #include "module.h"
-#include <irssi/src/core/signals.h>
 #include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
 #include <irssi/src/core/net-disconnect.h>
 #include <irssi/src/core/net-nonblock.h>
 #include <irssi/src/core/net-sendbuffer.h>
-#include <irssi/src/core/misc.h>
 #include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/refstrings.h>
 #include <irssi/src/core/settings.h>
+#include <irssi/src/core/signals.h>
 
 #include <irssi/src/core/chat-protocols.h>
 #include <irssi/src/core/servers.h>
@@ -354,6 +355,9 @@ void server_connect_init(SERVER_REC *server)
 	MODULE_DATA_INIT(server);
 	server->type = module_get_uniq_id("SERVER", 0);
 	server_ref(server);
+	server->current_incoming_meta =
+	    g_hash_table_new_full(g_str_hash, (GEqualFunc) g_strcmp0,
+	                          (GDestroyNotify) i_refstr_release, (GDestroyNotify) g_free);
 
 	server->nick = g_strdup(server->connrec->nick);
 	if (server->connrec->username == NULL || *server->connrec->username == '\0') {
@@ -535,6 +539,7 @@ int server_unref(SERVER_REC *server)
 	g_free(server->away_reason);
 	g_free(server->nick);
 	g_free(server->tag);
+	g_hash_table_destroy(server->current_incoming_meta);
 
 	server->type = 0;
 	g_free(server);
@@ -653,6 +658,22 @@ void server_change_nick(SERVER_REC *server, const char *nick)
 	server->nick = g_strdup(nick);
 
 	signal_emit("server nick changed", 1, server);
+}
+
+void server_meta_stash(SERVER_REC *server, const char *meta_key, const char *meta_value)
+{
+	g_hash_table_replace(server->current_incoming_meta, i_refstr_intern(meta_key),
+	                     g_strdup(meta_value));
+}
+
+const char *server_meta_stash_find(SERVER_REC *server, const char *meta_key)
+{
+	return g_hash_table_lookup(server->current_incoming_meta, meta_key);
+}
+
+void server_meta_clear_all(SERVER_REC *server)
+{
+	g_hash_table_remove_all(server->current_incoming_meta);
 }
 
 /* Update own IPv4 and IPv6 records */
