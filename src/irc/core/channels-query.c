@@ -250,7 +250,8 @@ static void query_send(IRC_SERVER_REC *server, int query)
                 cmd = NULL;
 	}
 
-	irc_send_cmd(server, cmd);
+	/* queue the command */
+	irc_send_cmd_full(server, cmd, FALSE, FALSE, FALSE);
 
 	g_free(chanstr);
 	g_free(chanstr_commas);
