@@ -433,6 +433,8 @@ GHashTable *irc_parse_message_tags(const char *tags)
 	                             (GDestroyNotify) i_refstr_release, (GDestroyNotify) g_free);
 	split = g_strsplit(tags, ";", -1);
 	for (tmp = split; *tmp != NULL; tmp++) {
+		if (*tmp[0] == '\0')
+			continue;
 		kv = g_strsplit(*tmp, "=", 2);
 		unescape_tag(kv[1]);
 		g_hash_table_replace(hash, i_refstr_intern(kv[0]),
