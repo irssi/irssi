@@ -395,6 +395,8 @@ static void unescape_tag(char *tag)
 	for (; *tmp != '\0'; tmp++, tag++) {
 		if (*tmp == '\\') {
 			tmp++;
+			if (*tmp == '\0')
+				break;
 			switch (*tmp) {
 			case ':':
 				*tag = ';';
