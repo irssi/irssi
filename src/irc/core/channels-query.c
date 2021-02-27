@@ -78,7 +78,6 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 	rec = server->chanqueries;
 	g_return_if_fail(rec != NULL);
 
-	g_hash_table_foreach(rec->accountqueries, (GHFunc) g_free, NULL);
 	g_hash_table_destroy(rec->accountqueries);
 	for (n = 0; n < CHANNEL_QUERIES; n++)
 		g_slist_free(rec->queries[n]);
