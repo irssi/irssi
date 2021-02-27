@@ -50,7 +50,21 @@ loop:
 #include <irssi/src/irc/core/irc-channels.h>
 #include <irssi/src/irc/core/servers-redirect.h>
 
-#define WHO_Ps_PPtna_745 "WHO %s %%tna,745"
+/* here are the WHOX commands we send. the full spec can be found on [1].
+
+   (1) WHOX_CHANNEL_FULL_CMD for getting the user list when we join a channel. we request the fields
+       c (channel), u (user), h (host), n (nick), f (flags), d (hops), a (important, account!), and
+       r (the real name goes last because it os the only that can contain spaces.) we request all
+       those fields as they are also included in the "regular" WHO reply we would get without WHOX.
+
+   (2) WHOX_USERACCOUNT_CMD for getting the account names of people that joined. this code is
+       obviously only used when we don't have extended-joins. we request n (nick) and a (account)
+       only, and we only send WHO nick with this command.
+
+   [1] https://github.com/UndernetIRC/ircu2/blob/u2_10_12_branch/doc/readme.who
+  */
+#define WHOX_CHANNEL_FULL_CMD "WHO %s %%tcuhnfdar," WHOX_CHANNEL_FULL_ID
+#define WHOX_USERACCOUNT_CMD "WHO %s %%tna," WHOX_USERACCOUNT_ID
 
 static void sig_connected(IRC_SERVER_REC *server)
 {
@@ -219,7 +233,7 @@ static void query_send(IRC_SERVER_REC *server, int query)
 	case CHANNEL_QUERY_WHO:
 		if (server->isupport != NULL &&
 		    g_hash_table_lookup(server->isupport, "whox") != NULL) {
-			cmd = g_strdup_printf("WHO %s %%tcuhnfdar,743", chanstr_commas);
+			cmd = g_strdup_printf(WHOX_CHANNEL_FULL_CMD, chanstr_commas);
 		} else {
 			cmd = g_strdup_printf("WHO %s", chanstr_commas);
 		}
@@ -399,7 +413,7 @@ void irc_channels_query_purge_accountquery(IRC_SERVER_REC *server, const char *n
 
 	/* if it was removed we may have an outstanding query */
 	if (was_removed) {
-		target_cmd = g_strdup_printf(WHO_Ps_PPtna_745 "\r\n", nick);
+		target_cmd = g_strdup_printf(WHOX_USERACCOUNT_CMD "\r\n", nick);
 
 		/* remove queued WHO command */
 		prev = NULL;
@@ -519,7 +533,7 @@ static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char 
 		                      "event 354", "silent event whox useraccount", /* */
 		                      "", "event empty",                            /* */
 		                      NULL);
-		cmd = g_strdup_printf(WHO_Ps_PPtna_745, nick);
+		cmd = g_strdup_printf(WHOX_USERACCOUNT_CMD, nick);
 		g_hash_table_add(server->chanqueries->accountqueries, g_strdup(nick));
 		/* queue the command */
 		irc_send_cmd_full(server, cmd, FALSE, FALSE, FALSE);

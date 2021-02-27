@@ -274,7 +274,7 @@ static void event_who(SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_whox_743(SERVER_REC *server, const char *data)
+static void event_whox_channel_full(SERVER_REC *server, const char *data)
 {
 	char *params, *id, *nick, *channel, *user, *host, *stat, *hops, *account, *realname;
 
@@ -283,7 +283,7 @@ static void event_whox_743(SERVER_REC *server, const char *data)
 	params = event_get_params(data, 10, NULL, &id, &channel, &user, &host, &nick, &stat, &hops,
 	                          &account, &realname);
 
-	if (g_strcmp0(id, "743") != 0) {
+	if (g_strcmp0(id, WHOX_CHANNEL_FULL_ID) != 0) {
 		g_free(params);
 		return;
 	}
@@ -293,7 +293,7 @@ static void event_whox_743(SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_whox_745(IRC_SERVER_REC *server, const char *data)
+static void event_whox_useraccount(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *id, *nick, *account;
 	GSList *nicks, *tmp;
@@ -302,7 +302,7 @@ static void event_whox_745(IRC_SERVER_REC *server, const char *data)
 
 	params = event_get_params(data, 4, NULL, &id, &nick, &account);
 
-	if (g_strcmp0(id, "745") != 0) {
+	if (g_strcmp0(id, WHOX_USERACCOUNT_ID) != 0) {
 		g_free(params);
 		return;
 	}
@@ -601,10 +601,10 @@ void irc_nicklist_init(void)
 {
 	signal_add_first("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add_first("event 352", (SIGNAL_FUNC) event_who);
-	signal_add_first("event 354", (SIGNAL_FUNC) event_whox_743);
+	signal_add_first("event 354", (SIGNAL_FUNC) event_whox_channel_full);
 	signal_add("silent event who", (SIGNAL_FUNC) event_who);
-	signal_add("silent event whox", (SIGNAL_FUNC) event_whox_743);
-	signal_add("silent event whox useraccount", (SIGNAL_FUNC) event_whox_745);
+	signal_add("silent event whox", (SIGNAL_FUNC) event_whox_channel_full);
+	signal_add("silent event whox useraccount", (SIGNAL_FUNC) event_whox_useraccount);
 	signal_add("silent event whois", (SIGNAL_FUNC) event_whois);
 	signal_add_first("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add_first("whois away", (SIGNAL_FUNC) event_whois_away);
@@ -628,10 +628,10 @@ void irc_nicklist_deinit(void)
 {
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 	signal_remove("event 352", (SIGNAL_FUNC) event_who);
-	signal_remove("event 354", (SIGNAL_FUNC) event_whox_743);
+	signal_remove("event 354", (SIGNAL_FUNC) event_whox_channel_full);
 	signal_remove("silent event who", (SIGNAL_FUNC) event_who);
-	signal_remove("silent event whox", (SIGNAL_FUNC) event_whox_743);
-	signal_remove("silent event whox useraccount", (SIGNAL_FUNC) event_whox_745);
+	signal_remove("silent event whox", (SIGNAL_FUNC) event_whox_channel_full);
+	signal_remove("silent event whox useraccount", (SIGNAL_FUNC) event_whox_useraccount);
 	signal_remove("silent event whois", (SIGNAL_FUNC) event_whois);
 	signal_remove("event 311", (SIGNAL_FUNC) event_whois);
 	signal_remove("whois away", (SIGNAL_FUNC) event_whois_away);

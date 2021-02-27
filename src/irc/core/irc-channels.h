@@ -19,6 +19,10 @@ enum {
 	CHANNEL_QUERIES
 };
 
+/* arbitrary 3-digit identifiers so we can find our WHOX responses */
+#define WHOX_CHANNEL_FULL_ID "743"
+#define WHOX_USERACCOUNT_ID "745"
+
 #define CHANNEL_IS_MODE_QUERY(a) ((a) != CHANNEL_QUERY_WHO)
 
 #define STRUCT_SERVER_REC IRC_SERVER_REC
