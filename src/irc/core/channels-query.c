@@ -521,7 +521,8 @@ static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char 
 		                      NULL);
 		cmd = g_strdup_printf(WHO_Ps_PPtna_745, nick);
 		g_hash_table_add(server->chanqueries->accountqueries, g_strdup(nick));
-		irc_send_cmd(server, cmd);
+		/* queue the command */
+		irc_send_cmd_full(server, cmd, FALSE, FALSE, FALSE);
 		g_free(cmd);
 	}
 }
