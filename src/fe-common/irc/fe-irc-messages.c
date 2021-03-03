@@ -87,11 +87,6 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 	/* and clean the rest here */
 	cleantarget = get_visible_target(IRC_SERVER(server), cleantarget);
 
-	if (ignore_check_plus(server, nick, address, cleantarget, msg, &level, TRUE)) {
-		g_free(prefix);
-		return;
-	}
-
 	chanrec = channel_find(server, cleantarget);
 
 	nickmode = channel_get_nickmode(chanrec, nick);
@@ -110,6 +105,14 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 	level = MSGLEVEL_PUBLIC;
 	if (for_me)
 		level |= MSGLEVEL_HILIGHT;
+
+	if (ignore_check_plus(server, nick, address, cleantarget, msg, &level, TRUE)) {
+		g_free(nickmode);
+		g_free(color);
+		g_free(optarget);
+		g_free(prefix);
+		return;
+	}
 
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
