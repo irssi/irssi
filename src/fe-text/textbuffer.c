@@ -238,14 +238,15 @@ void textbuffer_line2text(TEXT_BUFFER_REC *buffer, LINE_REC *line, int coloring,
 
         g_string_truncate(str, 0);
 
-	ptr = textbuffer_line_get_text(buffer, line);
-	if (coloring == 0) {
-		tmp = ptr;
-		ptr = strip_codes(tmp);
-		g_free(tmp);
+	if ((ptr = textbuffer_line_get_text(buffer, line)) != NULL) {
+		if (coloring == 0) {
+			tmp = ptr;
+			ptr = strip_codes(tmp);
+			g_free(tmp);
+		}
+		g_string_append(str, ptr);
+		g_free(ptr);
 	}
-	g_string_append(str, ptr);
-	g_free(ptr);
 }
 
 GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
