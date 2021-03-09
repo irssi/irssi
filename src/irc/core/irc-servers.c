@@ -602,7 +602,7 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
 
 	/* send command */
 	len = strlen(cmd);
-	irc_server_send_data(server, cmd, len);
+	signal_emit("server outgoing", 3, server, cmd, len);
 
 	/* add to rawlog without [CR+]LF */
         if (len > 2 && cmd[len-2] == '\r')
@@ -1059,6 +1059,7 @@ void irc_servers_init(void)
 	cmd_tag = -1;
 
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_add("server outgoing", (SIGNAL_FUNC) irc_server_send_data);
 	signal_add_last("server destroyed", (SIGNAL_FUNC) sig_destroyed);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_add("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
@@ -1087,6 +1088,7 @@ void irc_servers_deinit(void)
 		g_source_remove(cmd_tag);
 
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_remove("server outgoing", (SIGNAL_FUNC) irc_server_send_data);
 	signal_remove("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_remove("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
