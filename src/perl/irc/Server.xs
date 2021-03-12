@@ -97,10 +97,9 @@ server_redirect_register(command, remote, timeout, start, stop, opt)
 	SV *stop
 	SV *opt
 CODE:
-	server_redirect_register_list(command, remote, timeout, 
-				      register_hash2list(hvref(start)),
-				      register_hash2list(hvref(stop)),
-				      register_hash2list(hvref(opt)));
+	server_redirect_register_list(command, remote, timeout, register_hash2list(hvref(start)),
+	                              register_hash2list(hvref(stop)),
+	                              register_hash2list(hvref(opt)), 1);
 
 void
 server_redirect_event(server, command, count, arg, remote, failure_signal, signals)

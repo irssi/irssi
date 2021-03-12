@@ -39,6 +39,7 @@ typedef struct {
 
 	int remote;
 	int timeout;
+	int pos;
 	GSList *start, *stop, *opt; /* char *event, int argpos, ... */
 } REDIRECT_CMD_REC;
 
@@ -151,13 +152,11 @@ void server_redirect_register(const char *command,
 
 	va_end(va);
 
-	server_redirect_register_list(command, remote, timeout,
-				      start, stop, opt);
+	server_redirect_register_list(command, remote, timeout, start, stop, opt, 0);
 }
 
-void server_redirect_register_list(const char *command,
-				   int remote, int timeout,
-				   GSList *start, GSList *stop, GSList *opt)
+void server_redirect_register_list(const char *command, int remote, int timeout, GSList *start,
+                                   GSList *stop, GSList *opt, int pos)
 {
 	REDIRECT_CMD_REC *rec;
         gpointer key, value;
@@ -181,7 +180,8 @@ void server_redirect_register_list(const char *command,
 	rec->start = start;
         rec->stop = stop;
         rec->opt = opt;
-        g_hash_table_insert(command_redirects, rec->name, rec);
+	rec->pos = pos;
+	g_hash_table_insert(command_redirects, rec->name, rec);
 }
 
 void server_redirect_event(IRC_SERVER_REC *server, const char *command,
@@ -481,6 +481,32 @@ static REDIRECT_REC *redirect_find(IRC_SERVER_REC *server, const char *event,
                         *signal = match_signal;
 			break;
 		}
+	}
+
+	if (g_strcmp0("event 263", event) == 0) { /* RPL_TRYAGAIN */
+		char *params, *command;
+		params = event_get_params(args, 3, NULL, &command, NULL);
+
+		for (tmp = server->redirects; tmp != NULL; tmp = next) {
+			REDIRECT_REC *rec = tmp->data;
+
+			next = tmp->next;
+
+			if (rec == redirect)
+				break;
+
+			if (g_slist_find(server->redirect_active, rec) != NULL)
+				continue;
+
+			if (redirect_args_match(rec->cmd->name, command, rec->cmd->pos)) {
+				/* the server crashed our command with RPL_TRYAGAIN, send the
+				   failure */
+				rec->aborted = TRUE;
+				redirect_abort(server, rec);
+				break;
+			}
+		}
+		g_free(params);
 	}
 
 	/* remove the destroyed, non-remote and timeouted remote

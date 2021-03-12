@@ -22,9 +22,8 @@ void server_redirect_register(const char *command,
 			      int remote, int timeout, ...);
 /* start/stop/opt lists shouldn't be free'd after, and their strings
    should be dynamically allocated */
-void server_redirect_register_list(const char *command,
-				   int remote, int timeout,
-				   GSList *start, GSList *stop, GSList *opt);
+void server_redirect_register_list(const char *command, int remote, int timeout, GSList *start,
+                                   GSList *stop, GSList *opt, int pos);
 
 /* Specify that the next command sent to server will be redirected.
    NOTE: This command MUST be called before irc_send_cmd().
