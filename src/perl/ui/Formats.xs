@@ -51,6 +51,16 @@ format_real_length(str, len)
 	int len
 
 void
+format_string_expand(str)
+	char *str
+PREINIT:
+	char *ret;
+PPCODE:
+	ret = format_string_expand(str, NULL);
+	XPUSHs(sv_2mortal(new_pv(ret)));
+	g_free(ret);
+
+void
 strip_codes(input)
 	char *input
 PREINIT:
