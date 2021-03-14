@@ -7,6 +7,38 @@ MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi
 PROTOTYPES: ENABLE
 
 #*******************************
+MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi
+#*******************************
+
+int
+COLORING_STRIP()
+CODE:
+	RETVAL = COLORING_STRIP;
+OUTPUT:
+	RETVAL
+
+int
+COLORING_EXPAND()
+CODE:
+	RETVAL = COLORING_EXPAND;
+OUTPUT:
+	RETVAL
+
+int
+COLORING_UNEXPAND()
+CODE:
+	RETVAL = COLORING_UNEXPAND;
+OUTPUT:
+	RETVAL
+
+int
+COLORING_RAW()
+CODE:
+	RETVAL = COLORING_RAW;
+OUTPUT:
+	RETVAL
+
+#*******************************
 MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi::TextUI::Line  PREFIX = textbuffer_line_
 #*******************************
 

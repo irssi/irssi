@@ -238,10 +238,14 @@ void textbuffer_line2text(TEXT_BUFFER_REC *buffer, LINE_REC *line, int coloring,
 
         g_string_truncate(str, 0);
 
-	if ((ptr = textbuffer_line_get_text(buffer, line)) != NULL) {
-		if (coloring == 0) {
+	if ((ptr = textbuffer_line_get_text(buffer, line, coloring == COLORING_RAW)) != NULL) {
+		if (coloring == COLORING_STRIP) {
 			tmp = ptr;
 			ptr = strip_codes(tmp);
+			g_free(tmp);
+		} else if (coloring == COLORING_UNEXPAND) {
+			tmp = ptr;
+			ptr = format_string_unexpand(tmp, 0);
 			g_free(tmp);
 		}
 		g_string_append(str, ptr);
@@ -288,7 +292,7 @@ GList *textbuffer_find_text(TEXT_BUFFER_REC *buffer, LINE_REC *startline,
 			(line->info.level & nolevel) == 0;
 
 		if (*text != '\0') {
-			textbuffer_line2text(buffer, line, FALSE, str);
+			textbuffer_line2text(buffer, line, 0, str);
 
 			if (line_matched) {
 				line_matched = regexp ?
