@@ -102,6 +102,21 @@ static void sig_settings_userinfo_changed(gpointer changedp)
 	user_settings_changed = GPOINTER_TO_UINT(changedp);
 }
 
+static void sig_autoload_modules(void)
+{
+	char **list, **module;
+	list = g_strsplit_set(settings_get_str("autoload_modules"), " ,", -1);
+	for (module = list; *module != NULL; module++) {
+		char *tmp;
+		if ((tmp = strchr(*module, ':')) != NULL)
+			*tmp = ' ';
+		tmp = g_strdup_printf("-silent %s", *module);
+		signal_emit("command load", 1, tmp);
+		g_free(tmp);
+	}
+	g_strfreev(list);
+}
+
 /* redraw irssi's screen.. */
 void irssi_redraw(void)
 {
@@ -159,6 +174,7 @@ static void textui_init(void)
 
 	theme_register(gui_text_formats);
 	signal_add("settings userinfo changed", (SIGNAL_FUNC) sig_settings_userinfo_changed);
+	signal_add("module autoload", (SIGNAL_FUNC) sig_autoload_modules);
 	signal_add_last("gui exit", (SIGNAL_FUNC) sig_exit);
 }
 
@@ -262,6 +278,7 @@ static void textui_deinit(void)
 
 	dirty_check(); /* one last time to print any quit messages */
 	signal_remove("settings userinfo changed", (SIGNAL_FUNC) sig_settings_userinfo_changed);
+	signal_remove("module autoload", (SIGNAL_FUNC) sig_autoload_modules);
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
 
 	lastlog_deinit();
