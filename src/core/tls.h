@@ -21,8 +21,6 @@
 
 #include <openssl/ssl.h>
 
-#include <stdbool.h>
-
 typedef struct _TLS_REC TLS_REC;
 typedef struct _TLS_CERT_REC TLS_CERT_REC;
 typedef struct _TLS_CERT_ENTRY_REC TLS_CERT_ENTRY_REC;
