@@ -59,11 +59,13 @@ void otr_core_init(void);
 void otr_core_deinit(void);
 #endif
 
+#ifdef HAVE_STATIC_IRC
 void irc_init(void);
 void irc_deinit(void);
 
 void fe_common_irc_init(void);
 void fe_common_irc_deinit(void);
+#endif
 
 void gui_expandos_init(void);
 void gui_expandos_deinit(void);
@@ -168,9 +170,13 @@ static void textui_init(void)
 
 	irssi_gui = IRSSI_GUI_TEXT;
 	core_init();
+#ifdef HAVE_STATIC_IRC
 	irc_init();
+#endif
 	fe_common_core_init();
+#ifdef HAVE_STATIC_IRC
 	fe_common_irc_init();
+#endif
 
 	theme_register(gui_text_formats);
 	signal_add("settings userinfo changed", (SIGNAL_FUNC) sig_settings_userinfo_changed);
@@ -301,9 +307,13 @@ static void textui_deinit(void)
 
 	theme_unregister();
 
+#ifdef HAVE_STATIC_IRC
 	fe_common_irc_deinit();
+#endif
 	fe_common_core_deinit();
+#ifdef HAVE_STATIC_IRC
 	irc_deinit();
+#endif
 	core_deinit();
 }
 

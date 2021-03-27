@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-libirc_notifylist_a = static_library('irc_notifylist',
+libirc_notifylist_a = shared_module('irc_notifylist',
   files(
     'notify-commands.c',
     'notify-ison.c',
@@ -10,6 +10,8 @@ libirc_notifylist_a = static_library('irc_notifylist',
   ),
   include_directories : rootinc,
   implicit_include_directories : false,
+  install : true,
+  install_dir : moduledir,
   dependencies : dep)
 
 install_headers(
