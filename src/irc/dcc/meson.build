@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-libirc_dcc_a = static_library('irc_dcc',
+libirc_dcc_a = shared_module('irc_dcc',
   files(
     'dcc-autoget.c',
     'dcc-chat.c',
@@ -13,6 +13,8 @@ libirc_dcc_a = static_library('irc_dcc',
   ),
   include_directories : rootinc,
   implicit_include_directories : false,
+  install : true,
+  install_dir : moduledir,
   dependencies : dep)
 
 install_headers(

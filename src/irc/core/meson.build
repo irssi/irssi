@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-libirc_core_a = static_library('irc_core',
+libirc_core_a = shared_module('irc_core',
   files(
     'bans.c',
     'channel-events.c',
@@ -33,6 +33,8 @@ libirc_core_a = static_library('irc_core',
   ),
   include_directories : rootinc,
   implicit_include_directories : false,
+  install : true,
+  install_dir : moduledir,
   c_args : [
     def_moduledir,
     def_sysconfdir,
