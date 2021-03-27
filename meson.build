@@ -525,6 +525,7 @@ headers = [
   'sys/time.h',
   'sys/utsname.h',
   'dirent.h',
+  'term.h',
   'unistd.h',
 ]
 foreach h : headers

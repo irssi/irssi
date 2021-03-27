@@ -355,6 +355,10 @@ if test "x$want_textui" != "xno"; then
 	AC_SUBST(TEXTUI_LIBS)
 	LIBS="$TEXTUI_NO_LIBS"
 
+	AC_CHECK_HEADER([term.h], [
+		AC_DEFINE(HAVE_TERM_H, [], [Define to 1 if you have the `term.h' header.])
+	])
+
 fi
 
 dnl **
