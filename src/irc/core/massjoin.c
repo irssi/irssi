@@ -39,12 +39,15 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	IRC_CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
 	GSList *nicks, *tmp;
+	gboolean send_massjoin;
 
 	g_return_if_fail(data != NULL);
 
 	if (g_ascii_strcasecmp(nick, server->nick) == 0) {
-		/* You joined, no need to do anything here */
-		return;
+		/* You joined, do not massjoin */
+		send_massjoin = FALSE;
+	} else {
+		send_massjoin = TRUE;
 	}
 
 	params = event_get_params(data, 3, &channel, &account, &realname);
@@ -68,14 +71,14 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	}
 
 	/* add user to nicklist */
-	nickrec = irc_nicklist_insert(chanrec, nick, FALSE, FALSE, FALSE, TRUE, NULL);
+	nickrec = irc_nicklist_insert(chanrec, nick, FALSE, FALSE, FALSE, send_massjoin, NULL);
 	if (*account != '\0' && g_strcmp0(nickrec->account, account) != 0) {
 		nicklist_set_account(CHANNEL(chanrec), nickrec, account);
 	}
 
         nicklist_set_host(CHANNEL(chanrec), nickrec, address);
 
-	if (chanrec->massjoins == 0) {
+	if (send_massjoin && chanrec->massjoins == 0) {
 		/* no nicks waiting in massjoin queue */
 		chanrec->massjoin_start = time(NULL);
 		chanrec->last_massjoins = 0;
@@ -104,7 +107,9 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 		nickrec->realname = g_strdup(realname);
 	}
 
-	chanrec->massjoins++;
+	if (send_massjoin) {
+		chanrec->massjoins++;
+	}
 	g_free(params);
 }
 
@@ -217,6 +222,9 @@ static void event_quit(IRC_SERVER_REC *server, const char *data,
 		nicklist_remove(CHANNEL(channel), nickrec);
 	}
 	g_slist_free(nicks);
+
+	/* invalidate any outstanding accountqueries for the nick */
+	irc_channels_query_purge_accountquery(server, nick);
 }
 
 static void event_kick(IRC_SERVER_REC *server, const char *data)

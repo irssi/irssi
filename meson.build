@@ -166,7 +166,7 @@ message('*** Or alternatively install your distribution\'s package')
 message('*** On Debian: sudo apt-get install libglib2.0-dev')
 message('*** On Redhat: dnf install glib2-devel')
 if not require_glib_internal
-  glib_dep = dependency('glib-2.0', version : '>=2.28', required : not want_glib_internal, static : want_static_dependency)
+  glib_dep = dependency('glib-2.0', version : '>=2.32', required : not want_glib_internal, static : want_static_dependency)
 else
   glib_dep = dependency('', required : false)
 endif

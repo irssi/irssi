@@ -40,7 +40,7 @@ make && sudo make install
 
 ### Requirements
 
-- [glib-2.28](https://wiki.gnome.org/Projects/GLib) or greater
+- [glib-2.32](https://wiki.gnome.org/Projects/GLib) or greater
 - [openssl](https://www.openssl.org/)
 - [perl-5.6](https://www.perl.org/) or greater (for perl support)
 - terminfo or ncurses (for text frontend)

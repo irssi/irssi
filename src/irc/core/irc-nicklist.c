@@ -29,6 +29,34 @@
 #include <irssi/src/irc/core/modes.h>
 #include <irssi/src/core/servers.h>
 
+static void nicklist_set_modes(IRC_CHANNEL_REC *channel, NICK_REC *rec, gboolean op,
+                               gboolean halfop, gboolean voice, const char *prefixes,
+                               gboolean send_changed)
+{
+	gboolean changed = FALSE;
+	if (rec->op != op) {
+		rec->op = op;
+		changed = TRUE;
+	}
+	if (rec->halfop != halfop) {
+		rec->halfop = halfop;
+		changed = TRUE;
+	}
+	if (rec->voice != voice) {
+		rec->voice = voice;
+		changed = TRUE;
+	}
+
+	if (prefixes != NULL && g_strcmp0(rec->prefixes, prefixes) != 0) {
+		g_strlcpy(rec->prefixes, prefixes, sizeof(rec->prefixes));
+		changed = TRUE;
+	}
+
+	if (changed && send_changed) {
+		signal_emit("nicklist changed", 3, channel, rec, rec->nick);
+	}
+}
+
 /* Add new nick to list */
 NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
 			      int op, int halfop, int voice, int send_massjoin,
@@ -42,14 +70,8 @@ NICK_REC *irc_nicklist_insert(IRC_CHANNEL_REC *channel, const char *nick,
 	rec = g_new0(NICK_REC, 1);
 	rec->nick = g_strdup(nick);
 
-	if (op) rec->op = TRUE;
-	if (halfop) rec->halfop = TRUE;
-	if (voice) rec->voice = TRUE;
 	rec->send_massjoin = send_massjoin;
-
-	if (prefixes != NULL) {
-		g_strlcpy(rec->prefixes, prefixes, sizeof(rec->prefixes));
-	}
+	nicklist_set_modes(channel, rec, op, halfop, voice, prefixes, FALSE);
 
 	nicklist_insert(CHANNEL(channel), rec);
 	return rec;
@@ -154,11 +176,14 @@ static void event_names_list(IRC_SERVER_REC *server, const char *data)
 		if (host != NULL)
 			*host++ = '\0';
 
-		if (nicklist_find((CHANNEL_REC *) chanrec, ptr) == NULL) {
+		rec = nicklist_find((CHANNEL_REC *) chanrec, ptr);
+		if (rec == NULL) {
 			rec = irc_nicklist_insert(chanrec, ptr, op, halfop,
 						  voice, FALSE, prefixes);
 			if (host != NULL)
 				nicklist_set_host(CHANNEL(chanrec), rec, host);
+		} else {
+			nicklist_set_modes(chanrec, rec, op, halfop, voice, prefixes, TRUE);
 		}
 	}
 
@@ -196,22 +221,12 @@ static void event_end_of_names(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_who(SERVER_REC *server, const char *data)
+static void fill_who(SERVER_REC *server, const char *channel, const char *user, const char *host,
+                     const char *nick, const char *stat, const char *hops, const char *account,
+                     const char *realname)
 {
-	char *params, *nick, *channel, *user, *host, *stat, *realname, *hops;
 	CHANNEL_REC *chanrec;
 	NICK_REC *nickrec;
-
-	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 8, NULL, &channel, &user, &host,
-				  NULL, &nick, &stat, &realname);
-
-	/* get hop count */
-	hops = realname;
-	while (*realname != '\0' && *realname != ' ') realname++;
-	if (*realname == ' ')
-		*realname++ = '\0';
 
 	/* update host, realname, hopcount */
 	chanrec = channel_find(server, channel);
@@ -223,15 +238,89 @@ static void event_who(SERVER_REC *server, const char *data)
 			nicklist_set_host(chanrec, nickrec, str);
                         g_free(str);
 		}
-		if (nickrec->realname == NULL)
+		if (nickrec->realname == NULL) {
 			nickrec->realname = g_strdup(realname);
+		}
+		if (nickrec->account == NULL && account != NULL) {
+			nicklist_set_account(chanrec, nickrec,
+			                     strcmp(account, "0") == 0 ? "*" : account);
+		}
 		sscanf(hops, "%d", &nickrec->hops);
 	}
 
 	nicklist_update_flags(server, nick,
 			      strchr(stat, 'G') != NULL, /* gone */
 			      strchr(stat, '*') != NULL); /* ircop */
+}
 
+static void event_who(SERVER_REC *server, const char *data)
+{
+	char *params, *nick, *channel, *user, *host, *stat, *realname, *hops;
+
+	g_return_if_fail(data != NULL);
+
+	params =
+	    event_get_params(data, 8, NULL, &channel, &user, &host, NULL, &nick, &stat, &realname);
+
+	/* get hop count */
+	hops = realname;
+	while (*realname != '\0' && *realname != ' ')
+		realname++;
+	if (*realname == ' ')
+		*realname++ = '\0';
+
+	fill_who(server, channel, user, host, nick, stat, hops, NULL, realname);
+
+	g_free(params);
+}
+
+static void event_whox_channel_full(SERVER_REC *server, const char *data)
+{
+	char *params, *id, *nick, *channel, *user, *host, *stat, *hops, *account, *realname;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 10, NULL, &id, &channel, &user, &host, &nick, &stat, &hops,
+	                          &account, &realname);
+
+	if (g_strcmp0(id, WHOX_CHANNEL_FULL_ID) != 0) {
+		g_free(params);
+		return;
+	}
+
+	fill_who(server, channel, user, host, nick, stat, hops, account, realname);
+
+	g_free(params);
+}
+
+static void event_whox_useraccount(IRC_SERVER_REC *server, const char *data)
+{
+	char *params, *id, *nick, *account;
+	GSList *nicks, *tmp;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 4, NULL, &id, &nick, &account);
+
+	if (g_strcmp0(id, WHOX_USERACCOUNT_ID) != 0) {
+		g_free(params);
+		return;
+	}
+	g_hash_table_remove(server->chanqueries->accountqueries, nick);
+
+	if (strcmp(account, "0") == 0) {
+		account = "*";
+	}
+
+	nicks = nicklist_get_same(SERVER(server), nick);
+	for (tmp = nicks; tmp != NULL; tmp = tmp->next->next) {
+		NICK_REC *rec = tmp->next->data;
+
+		if (rec->account == NULL || g_strcmp0(rec->account, account) != 0) {
+			nicklist_set_account(CHANNEL(tmp->data), rec, account);
+		}
+	}
+	g_slist_free(nicks);
 	g_free(params);
 }
 
@@ -415,7 +504,9 @@ static void event_nick(IRC_SERVER_REC *server, const char *data,
 		server_change_nick(SERVER(server), nick);
 	}
 
-        nicklist_rename(SERVER(server), orignick, nick);
+	/* invalidate any outstanding accountqueries for the old nick */
+	irc_channels_query_purge_accountquery(server, orignick);
+	nicklist_rename(SERVER(server), orignick, nick);
 	g_free(params);
 }
 
@@ -510,7 +601,10 @@ void irc_nicklist_init(void)
 {
 	signal_add_first("event nick", (SIGNAL_FUNC) event_nick);
 	signal_add_first("event 352", (SIGNAL_FUNC) event_who);
+	signal_add_first("event 354", (SIGNAL_FUNC) event_whox_channel_full);
 	signal_add("silent event who", (SIGNAL_FUNC) event_who);
+	signal_add("silent event whox", (SIGNAL_FUNC) event_whox_channel_full);
+	signal_add("silent event whox useraccount", (SIGNAL_FUNC) event_whox_useraccount);
 	signal_add("silent event whois", (SIGNAL_FUNC) event_whois);
 	signal_add_first("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add_first("whois away", (SIGNAL_FUNC) event_whois_away);
@@ -534,7 +628,10 @@ void irc_nicklist_deinit(void)
 {
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
 	signal_remove("event 352", (SIGNAL_FUNC) event_who);
+	signal_remove("event 354", (SIGNAL_FUNC) event_whox_channel_full);
 	signal_remove("silent event who", (SIGNAL_FUNC) event_who);
+	signal_remove("silent event whox", (SIGNAL_FUNC) event_whox_channel_full);
+	signal_remove("silent event whox useraccount", (SIGNAL_FUNC) event_whox_useraccount);
 	signal_remove("silent event whois", (SIGNAL_FUNC) event_whois);
 	signal_remove("event 311", (SIGNAL_FUNC) event_whois);
 	signal_remove("whois away", (SIGNAL_FUNC) event_whois_away);

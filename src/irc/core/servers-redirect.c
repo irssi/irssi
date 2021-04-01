@@ -442,7 +442,7 @@ static void redirect_abort(IRC_SERVER_REC *server, REDIRECT_REC *rec)
 		g_free(str);
 
 		if (rec->failure_signal != NULL)
-			signal_emit(rec->failure_signal, 1, server);
+			signal_emit(rec->failure_signal, 3, server, rec->cmd->name, rec->arg);
 	} else if (rec->last_signal != NULL) {
                 /* emit the last signal */
 		signal_emit(rec->last_signal, 1, server);
@@ -697,7 +697,16 @@ void servers_redirect_init(void)
 				 NULL,
 				 NULL);
 
-        /* LIST */
+	/* WHO user */
+	server_redirect_register("who user", FALSE, 0, /* */
+	                         "event 352", 5,       /* An element of the WHO */
+	                         "event 354", -1,      /* WHOX element */
+	                         NULL,                 /* */
+	                         "event 315", 1,       /* End of WHO */
+	                         NULL,                 /* */
+	                         NULL);
+
+	/* LIST */
 	server_redirect_register("list", FALSE, 0,
 				 "event 321", 1, /* Begins the LIST */
 				 NULL,
