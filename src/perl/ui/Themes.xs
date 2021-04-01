@@ -1,20 +1,26 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
 
-static void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
+static void printformat_module_perl(TEXT_DEST_REC *dest, const char *module, char *format,
+                                    char **arglist)
 {
-	char *module;
 	int formatnum;
 
-	module = g_strdup(perl_get_package());
 	formatnum = format_find_tag(module, format);
 	if (formatnum < 0) {
 		die("printformat(): unregistered format '%s'", format);
-                g_free(module);
 		return;
 	}
 
 	printformat_module_dest_charargs(module, dest, formatnum, arglist);
+}
+
+static void printformat_perl(TEXT_DEST_REC *dest, char *format, char **arglist)
+{
+	char *module;
+
+	module = g_strdup(perl_get_package());
+	printformat_module_perl(dest, module, format, arglist);
 	g_free(module);
 }
 
@@ -225,6 +231,41 @@ CODE:
 	}
 
         printformat_perl(&dest, format, arglist);
+
+#*******************************
+MODULE = Irssi::UI::Formats  PACKAGE = Irssi::UI::TextDest
+#*******************************
+
+void
+printformat(dest, format, ...)
+	Irssi::UI::TextDest dest
+	char *format
+PREINIT:
+	char *arglist[MAX_FORMAT_PARAMS + 1];
+	int n;
+CODE:
+	memset(arglist, 0, sizeof(arglist));
+	for (n = 2; n < items && n < MAX_FORMAT_PARAMS + 2; n++) {
+		arglist[n - 2] = SvPV_nolen(ST(n));
+	}
+
+	printformat_perl(dest, format, arglist);
+
+void
+printformat_module(dest, module, format, ...)
+	Irssi::UI::TextDest dest
+	char *module
+	char *format
+PREINIT:
+	char *arglist[MAX_FORMAT_PARAMS + 1];
+	int n;
+CODE:
+	memset(arglist, 0, sizeof(arglist));
+	for (n = 3; n < items && n < MAX_FORMAT_PARAMS + 3; n++) {
+		arglist[n - 3] = SvPV_nolen(ST(n));
+	}
+
+	printformat_module_perl(dest, module, format, arglist);
 
 #*******************************
 MODULE = Irssi::UI::Themes  PACKAGE = Irssi::UI::Theme  PREFIX = theme_
