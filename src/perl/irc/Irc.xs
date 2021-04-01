@@ -3,6 +3,12 @@
 
 static int initialized = FALSE;
 
+static void perl_irc_chatnet_fill_hash(HV *hv, IRC_CHATNET_REC *chatnet)
+{
+	perl_chatnet_fill_hash(hv, (CHATNET_REC *) chatnet);
+	(void) hv_store(hv, "usermode", 8, new_pv(chatnet->usermode), 0);
+}
+
 static void perl_irc_connect_fill_hash(HV *hv, IRC_SERVER_CONNECT_REC *conn)
 {
 	perl_connect_fill_hash(hv, (SERVER_CONNECT_REC *) conn);
@@ -233,6 +239,8 @@ CODE:
 
 	chat_type = chat_protocol_lookup("IRC");
 
+	irssi_add_object(module_get_uniq_id("CHATNET", 0), chat_type, "Irssi::Irc::Chatnet",
+	                 (PERL_OBJECT_FUNC) perl_irc_chatnet_fill_hash);
 	irssi_add_object(module_get_uniq_id("SERVER CONNECT", 0),
 			 chat_type, "Irssi::Irc::Connect",
 			 (PERL_OBJECT_FUNC) perl_irc_connect_fill_hash);
