@@ -239,9 +239,8 @@ CODE:
 
 	chat_type = chat_protocol_lookup("IRC");
 
-	irssi_add_object(module_get_uniq_id("CHATNET", 0),
-			 chat_type, "Irssi::Irc::Chatnet",
-			 (PERL_OBJECT_FUNC) perl_irc_chatnet_fill_hash);
+	irssi_add_object(module_get_uniq_id("CHATNET", 0), chat_type, "Irssi::Irc::Chatnet",
+	                 (PERL_OBJECT_FUNC) perl_irc_chatnet_fill_hash);
 	irssi_add_object(module_get_uniq_id("SERVER CONNECT", 0),
 			 chat_type, "Irssi::Irc::Connect",
 			 (PERL_OBJECT_FUNC) perl_irc_connect_fill_hash);

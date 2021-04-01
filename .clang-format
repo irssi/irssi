@@ -27,7 +27,7 @@ Language: Cpp
 Cpp11BracedListStyle: false
 MaxEmptyLinesToKeep: 1
 PointerAlignment: Right
-SortIncludes: true
+SortIncludes: false
 SpaceAfterCStyleCast: true
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
