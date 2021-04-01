@@ -11,6 +11,13 @@ enum {
 	LINE_CMD_EOL=0x80,	/* line ends here */
 };
 
+enum {
+	COLORING_STRIP = 0,
+	COLORING_EXPAND = 1,
+	COLORING_UNEXPAND = 2,
+	COLORING_RAW = 3,
+};
+
 struct _TEXT_BUFFER_FORMAT_REC;
 
 typedef struct {

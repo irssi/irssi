@@ -344,7 +344,7 @@ static char *fallback_format(TEXT_BUFFER_FORMAT_REC *format_rec)
 	return g_string_free(bs, FALSE);
 }
 
-char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
+char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line, gboolean raw)
 {
 	TEXT_DEST_REC dest;
 	GUI_WINDOW_REC *gui;
@@ -430,6 +430,10 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line)
 		format_create_dest(&dest, NULL, NULL, line->info.level, buffer->window);
 		text = g_strdup(line->info.text);
 	}
+
+	if (raw)
+		return text;
+
 	tmp = parse_colors(&dest, text);
 	g_free(text);
 	return tmp;

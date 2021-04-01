@@ -38,6 +38,7 @@
 static const char *format_backs = "04261537";
 static const char *format_fores = "kbgcrmyw";
 static const char *format_boldfores = "KBGCRMYW";
+static const char *ext_color_al = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 static int signal_gui_print_text;
 static int hide_text_style, hide_server_tags, hide_colors;
@@ -121,8 +122,21 @@ void format_ext_color(GString *out, int bg, int color)
 					  : FORMAT_COLOR_EXT3);
 		g_string_append_c(out, FORMAT_COLOR_NOCHANGE + ((color-0x10)%0x50));
 	}
+
 	if (!bg && color < 0x10)
 		g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
+}
+
+static void format_ext_color_unexpand(GString *out, gboolean bg, int base, char color)
+{
+	unsigned char value = base + (unsigned char) color - FORMAT_COLOR_NOCHANGE - 0x10;
+
+	g_string_append_c(out, '%');
+	g_string_append_c(out, bg ? 'x' : 'X');
+	if (value > 214)
+		value += 10;
+	g_string_append_c(out, '1' + (value / 36));
+	g_string_append_c(out, ext_color_al[value % 36]);
 }
 
 #ifdef TERM_TRUECOLOR
@@ -151,6 +165,28 @@ void unformat_24bit_color(char **ptr, int off, int *fgcolor, int *bgcolor, int *
 		*fgcolor = color;
 		*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
 	}
+}
+
+static void format_24bit_color_unexpand(GString *out, int off, const char **ptr)
+{
+	unsigned int color;
+	unsigned char rgbx[4];
+	unsigned int i;
+	for (i = 0; i < 4; ++i) {
+		if ((*ptr)[i + off] == '\0')
+			return;
+		rgbx[i] = (*ptr)[i + off];
+	}
+	rgbx[3] -= 0x20;
+	*ptr += 4;
+	g_string_append_c(out, '%');
+	for (i = 0; i < 3; ++i) {
+		if (rgbx[3] & (0x10 << i))
+			rgbx[i] -= 0x20;
+	}
+	color = rgbx[0] << 16 | rgbx[1] << 8 | rgbx[2];
+	g_string_append_c(out, rgbx[3] & 0x1 ? 'z' : 'Z');
+	g_string_append_printf(out, "%06X", color);
 }
 #endif
 
@@ -307,6 +343,16 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		retval += 6;
 
 		format_24bit_color(out, fmt == 'z', tmp2);
+		break;
+	case 'o':
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
+		g_string_append_c(out, (char) -1);
+		break;
+	case 'O':
+		g_string_append_c(out, 4);
+		g_string_append_c(out, (char) -1);
+		g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 		break;
 	default:
 		/* check if it's a background color */
@@ -555,6 +601,123 @@ char *format_string_expand(const char *text, int *flags)
 	ret = out->str;
 	g_string_free(out, FALSE);
 	return ret;
+}
+
+inline static void format_flag_unexpand(GString *out, char flag)
+{
+	g_string_append_c(out, '%');
+	g_string_append_c(out, flag);
+}
+
+char *format_string_unexpand(const char *text, int flags)
+{
+	GString *out;
+
+	g_return_val_if_fail(text != NULL, NULL);
+
+	out = g_string_sized_new(strlen(text));
+	while (*text != '\0') {
+		switch (*text) {
+		case '%':
+			g_string_append(out, "%%");
+			break;
+		case 4:
+			text++;
+			if (*text == '\0')
+				break;
+			switch (*text) {
+			case FORMAT_COLOR_EXT1:
+				format_ext_color_unexpand(out, FALSE, 0x10, *++text);
+				break;
+			case FORMAT_COLOR_EXT1_BG:
+				format_ext_color_unexpand(out, TRUE, 0x10, *++text);
+				break;
+			case FORMAT_COLOR_EXT2:
+				format_ext_color_unexpand(out, FALSE, 0x60, *++text);
+				break;
+			case FORMAT_COLOR_EXT2_BG:
+				format_ext_color_unexpand(out, TRUE, 0x60, *++text);
+				break;
+			case FORMAT_COLOR_EXT3:
+				format_ext_color_unexpand(out, FALSE, 0xb0, *++text);
+				break;
+			case FORMAT_COLOR_EXT3_BG:
+				format_ext_color_unexpand(out, TRUE, 0xb0, *++text);
+				break;
+#ifdef TERM_TRUECOLOR
+			case FORMAT_COLOR_24:
+				format_24bit_color_unexpand(out, 1, &text);
+				break;
+#endif
+			case FORMAT_STYLE_BLINK:
+				format_flag_unexpand(out, 'F');
+				break;
+			case FORMAT_STYLE_UNDERLINE:
+				format_flag_unexpand(out, 'U');
+				break;
+			case FORMAT_STYLE_BOLD:
+				format_flag_unexpand(out, '9');
+				break;
+			case FORMAT_STYLE_REVERSE:
+				format_flag_unexpand(out, '8');
+				break;
+			case FORMAT_STYLE_INDENT:
+				format_flag_unexpand(out, '|');
+				break;
+			case FORMAT_STYLE_ITALIC:
+				format_flag_unexpand(out, 'I');
+				break;
+			case FORMAT_STYLE_DEFAULTS:
+				format_flag_unexpand(out, 'N');
+				break;
+			case FORMAT_STYLE_CLRTOEOL:
+				format_flag_unexpand(out, '>');
+				break;
+			case FORMAT_STYLE_MONOSPACE:
+				format_flag_unexpand(out, '#');
+				break;
+			default:
+				if (*text != FORMAT_COLOR_NOCHANGE) {
+					unsigned int value = (unsigned char) *text - '0';
+
+					g_string_append_c(out, '%');
+					if (value < 8) {
+						g_string_append_c(out, format_fores[value]);
+					} else if (value < 16) {
+						g_string_append_c(out, format_boldfores[value - 8]);
+					} else {
+						g_string_append_c(out, 'O');
+					}
+				}
+				text++;
+				if (*text == '\0')
+					break;
+
+				if (*text != FORMAT_COLOR_NOCHANGE) {
+					unsigned int value = (unsigned char) *text - '0';
+
+					g_string_append_c(out, '%');
+					if (value < 8) {
+						g_string_append_c(out, format_backs[value]);
+					} else if (value < 16) {
+						g_string_append(out, "x0");
+						g_string_append_c(out, ext_color_al[value]);
+					} else {
+						g_string_append_c(out, 'o');
+					}
+				}
+				break;
+			}
+			break;
+		default:
+			g_string_append_c(out, *text);
+			break;
+		}
+		if (*text != '\0')
+			text++;
+	}
+
+	return g_string_free(out, FALSE);
 }
 
 static char *format_get_text_args(TEXT_DEST_REC *dest,

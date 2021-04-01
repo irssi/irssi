@@ -274,7 +274,7 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
         linecount = 1;
 	lines = NULL;
 
-	line_text = textbuffer_line_get_text(view->buffer, line);
+	line_text = textbuffer_line_get_text(view->buffer, line, FALSE);
 	if (line_text != NULL) {
 		for (ptr = (unsigned char *) line_text;;) {
 			if (*ptr == '\0')

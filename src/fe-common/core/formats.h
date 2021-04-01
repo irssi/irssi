@@ -81,6 +81,7 @@ int format_get_length(const char *str);
 int format_real_length(const char *str, int len);
 
 char *format_string_expand(const char *text, int *flags);
+char *format_string_unexpand(const char *text, int flags);
 
 char *format_get_text(const char *module, WINDOW_REC *window,
 		      void *server, const char *target,
