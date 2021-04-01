@@ -72,6 +72,11 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 
 	/* add user to nicklist */
 	nickrec = irc_nicklist_insert(chanrec, nick, FALSE, FALSE, FALSE, send_massjoin, NULL);
+	if (nickrec == NULL) {
+		/* invalid nick? */
+		g_free(params);
+		return;
+	}
 	if (*account != '\0' && g_strcmp0(nickrec->account, account) != 0) {
 		nicklist_set_account(CHANNEL(chanrec), nickrec, account);
 	}
