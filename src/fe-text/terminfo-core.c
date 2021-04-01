@@ -12,6 +12,9 @@ inline static int term_putchar(int c)
         return fputc(c, current_term->out);
 }
 
+#ifdef HAVE_TERM_H
+#include <term.h>
+#else
 /* Don't bother including curses.h because of these -
    they might not even be defined there */
 char *tparm();
@@ -21,6 +24,8 @@ int setupterm();
 char *tigetstr();
 int tigetnum();
 int tigetflag();
+#endif
+
 #define term_getstr(x, buffer) tigetstr(x.ti_name)
 #define term_getnum(x) tigetnum(x.ti_name);
 #define term_getflag(x) tigetflag(x.ti_name);
