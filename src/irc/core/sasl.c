@@ -158,6 +158,7 @@ static gboolean sasl_reassemble_incoming(IRC_SERVER_REC *server, const char *fra
 	 * Fail authentication with this server. They have sent too much data.
 	 */
 	if (enc_req->len > AUTHENTICATE_MAX_SIZE) {
+		g_string_free(enc_req, TRUE);
 		return FALSE;
 	}
 
