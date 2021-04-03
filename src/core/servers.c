@@ -244,7 +244,9 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 			server->no_reconnect = TRUE;
 
 		server->connection_lost = TRUE;
-		server->connrec->last_failed_family = ip->family;
+		if (ip != NULL) {
+			server->connrec->last_failed_family = ip->family;
+		}
 		server_connect_failed(server, errmsg2 ? errmsg2 : errmsg);
 		g_free(errmsg2);
 	} else {
