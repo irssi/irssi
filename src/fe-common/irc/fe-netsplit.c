@@ -320,9 +320,9 @@ static void split_print(NETSPLIT_REC *rec, SERVER_REC *server)
         char *chanstr;
 
 	chan = rec->channels->data;
-	chanstr = chan == NULL ? "" :
-		g_strconcat(chan->op ? "@" :
-			    (chan->voice ? "+" : ""), chan->name, NULL);
+	chanstr = chan == NULL ?
+                      g_strdup("") :
+                      g_strconcat(chan->op ? "@" : (chan->voice ? "+" : ""), chan->name, NULL);
 
 	printformat(server, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_NETSPLITS_LINE,
 		    rec->nick, chanstr, rec->server->server,
