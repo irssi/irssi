@@ -209,6 +209,9 @@ static void notifylist_deinit_server(IRC_SERVER_REC *server)
 		return;
 
 	mserver = MODULE_DATA(server);
+	if (!mserver)
+		return;
+
 	while (mserver->notify_users != NULL) {
 		rec = mserver->notify_users->data;
 

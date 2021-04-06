@@ -23,6 +23,7 @@
 #include <irssi/src/core/net-sendbuffer.h>
 #include <irssi/src/lib-config/iconfig.h>
 #include <irssi/src/core/misc.h>
+#include <irssi/src/core/network.h>
 
 #include <irssi/src/irc/core/irc-servers.h>
 #include <irssi/src/irc/core/irc-channels.h>
@@ -43,6 +44,7 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
         GSList *tmp;
 	CONFIG_NODE *isupport;
 	struct _isupport_data isupport_data;
+	int tls_disconnect;
 
 	if (!IS_IRC_SERVER(server))
 		return;
@@ -58,7 +60,15 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 				break;
 		}
 	}
-        net_sendbuffer_flush(server->handle);
+	/* we cannot upgrade TLS (yet?) */
+	tls_disconnect = server->connrec->use_tls || server->connrec->starttls;
+	if (tls_disconnect) {
+		config_node_set_str(config, node, "rejoin_channels",
+		                    irc_server_get_channels(server, REJOIN_CHANNELS_MODE_ON));
+		irc_send_cmd_now(server, "QUIT :[TLS] Client upgrade");
+	}
+
+	net_sendbuffer_flush(server->handle);
 
 	config_node_set_str(config, node, "real_address", server->real_address);
 	config_node_set_str(config, node, "userhost", server->userhost);
@@ -71,18 +81,26 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "sasl_username", server->connrec->sasl_username);
 	config_node_set_str(config, node, "sasl_password", server->connrec->sasl_password);
 
+	config_node_set_int(config, node, "starttls",
+	                    server->connrec->disallow_starttls ? 0 :
+	                    server->connrec->starttls          ? 1 :
+                                                                 -1);
+
 	config_node_set_bool(config, node, "isupport_sent", server->isupport_sent);
 	isupport = config_node_section(config, node, "isupport", NODE_TYPE_BLOCK);
         isupport_data.config = config;
         isupport_data.node = isupport;
 
         g_hash_table_foreach(server->isupport, (GHFunc) session_isupport_foreach, &isupport_data);
+
+	/* we have to defer the disconnect to irc_server_connect */
 }
 
 static void sig_session_restore_server(IRC_SERVER_REC *server,
 				       CONFIG_NODE *node)
 {
 	GSList *tmp;
+	int starttls_mode;
 
 	if (!IS_IRC_SERVER(server))
 		return;
@@ -105,6 +123,14 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	g_free(server->connrec->sasl_password);
 	server->connrec->sasl_password = g_strdup(config_node_get_str(node, "sasl_password", NULL));
 
+	server->connrec->channels = g_strdup(config_node_get_str(node, "rejoin_channels", NULL));
+
+	starttls_mode = config_node_get_int(node, "starttls", -1);
+	if (starttls_mode == 0)
+		server->connrec->disallow_starttls = 1;
+	if (starttls_mode == 1)
+		server->connrec->starttls = 1;
+
 	if (server->isupport == NULL) {
 		server->isupport =
 		    g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
@@ -123,6 +149,7 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	}
 	irc_server_init_isupport(server);
 
+	/* we will reconnect in irc_server_connect if the connection was TLS */
 }
 
 static void sig_session_restore_nick(IRC_CHANNEL_REC *channel,

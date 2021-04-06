@@ -157,9 +157,15 @@ void irc_server_connect(SERVER_REC *server);
 /* Purge server output, either all or for specified target */
 void irc_server_purge_output(IRC_SERVER_REC *server, const char *target);
 
+enum {
+	REJOIN_CHANNELS_MODE_OFF = 0, /* */
+	REJOIN_CHANNELS_MODE_ON,
+	REJOIN_CHANNELS_MODE_AUTO
+};
+
 /* Return a string of all channels (and keys, if any have them) in server,
    like "#a,#b,#c,#d x,b_chan_key,x,x" or just "#e,#f,#g" */
-char *irc_server_get_channels(IRC_SERVER_REC *server);
+char *irc_server_get_channels(IRC_SERVER_REC *server, int rejoin_channels_mode);
 
 void irc_server_send_starttls(IRC_SERVER_REC *server);
 /* INTERNAL: */

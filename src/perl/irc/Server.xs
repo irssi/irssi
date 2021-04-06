@@ -1,5 +1,6 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
+#include <irssi/src/core/misc.h>
 
 static GSList *register_hash2list(HV *hv)
 {
@@ -47,12 +48,20 @@ MODULE = Irssi::Irc::Server	PACKAGE = Irssi::Irc::Server  PREFIX = irc_server_
 PROTOTYPES: ENABLE
 
 void
-irc_server_get_channels(server)
+irc_server_get_channels(server, rejoin_channels_mode = "")
 	Irssi::Irc::Server server
+	char *rejoin_channels_mode
 PREINIT:
 	char *ret;
+	int mode;
+	SETTINGS_REC *setting;
 PPCODE:
-	ret = irc_server_get_channels(server);
+	setting = settings_get_record("rejoin_channels_on_reconnect");
+	mode = strarray_find(setting->choices, rejoin_channels_mode);
+	if (mode < 0)
+		mode = setting->default_value.v_int;
+
+	ret = irc_server_get_channels(server, mode);
 	XPUSHs(sv_2mortal(new_pv(ret)));
 	g_free(ret);
 

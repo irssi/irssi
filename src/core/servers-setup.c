@@ -338,7 +338,14 @@ SERVER_CONNECT_REC *server_create_conn_opt(int chat_type, const char *dest, int 
 SERVER_CONNECT_REC *server_create_conn(int chat_type, const char *dest, int port,
                                        const char *chatnet, const char *password, const char *nick)
 {
-	return server_create_conn_opt(chat_type, dest, port, chatnet, password, nick, NULL);
+	SERVER_CONNECT_REC *ret;
+	GHashTable *opt;
+
+	opt = g_hash_table_new(NULL, NULL);
+	ret = server_create_conn_opt(chat_type, dest, port, chatnet, password, nick, opt);
+	g_hash_table_destroy(opt);
+
+	return ret;
 }
 
 /* Find matching server from setup. Try to find record with a same port,

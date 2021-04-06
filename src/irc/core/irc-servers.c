@@ -469,6 +469,26 @@ void irc_server_connect(SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
+	if (server->connrec->connect_handle != NULL) {
+		IRC_SERVER_CONNECT_REC *conn;
+		int tls_disconnect;
+
+		conn = ((IRC_SERVER_REC *) server)->connrec;
+		tls_disconnect = conn->use_tls || conn->starttls;
+
+		if (tls_disconnect) {
+			/* we cannot use it, it is encrypted. force a reconnect */
+			g_io_channel_unref(conn->connect_handle);
+			conn->connect_handle = NULL;
+			server->session_reconnect = FALSE;
+			server_connect_ref((SERVER_CONNECT_REC *) conn);
+			server_disconnect(server);
+			server_connect((SERVER_CONNECT_REC *) conn);
+			server_connect_unref((SERVER_CONNECT_REC *) conn);
+			return;
+		}
+	}
+
 	if (!server_start_connect(server)) {
                 server_connect_unref(server->connrec);
 		g_free(server);
@@ -782,20 +802,17 @@ void irc_servers_start_cmd_timeout(void)
 
 /* Return a string of all channels (and keys, if any have them) in server,
    like "#a,#b,#c,#d x,b_chan_key,x,x" or just "#e,#f,#g" */
-char *irc_server_get_channels(IRC_SERVER_REC *server)
+char *irc_server_get_channels(IRC_SERVER_REC *server, int rejoin_channels_mode)
 {
 	GSList *tmp;
 	GString *chans, *keys;
 	char *ret;
 	int use_keys;
-	int rejoin_channels_mode;
 
 	g_return_val_if_fail(server != NULL, FALSE);
 
-	rejoin_channels_mode = settings_get_choice("rejoin_channels_on_reconnect");
-
 	/* do we want to rejoin channels in the first place? */
-	if(rejoin_channels_mode == 0)
+	if (rejoin_channels_mode == REJOIN_CHANNELS_MODE_OFF)
 		return g_strdup("");
 
 	chans = g_string_new(NULL);
@@ -806,7 +823,9 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
 		CHANNEL_SETUP_REC *setup = channel_setup_find(channel->name, channel->server->connrec->chatnet);
-		if ((setup != NULL && setup->autojoin && rejoin_channels_mode == 2) || rejoin_channels_mode == 1) {
+		if ((setup != NULL && setup->autojoin &&
+		     rejoin_channels_mode == REJOIN_CHANNELS_MODE_AUTO) ||
+		    rejoin_channels_mode == REJOIN_CHANNELS_MODE_ON) {
 			g_string_append_printf(chans, "%s,", channel->name);
 			g_string_append_printf(keys, "%s,", channel->key == NULL ? "x" : channel->key);
 			if (channel->key != NULL)
@@ -819,7 +838,9 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 		REJOIN_REC *rec = tmp->data;
 		CHANNEL_SETUP_REC *setup = channel_setup_find(rec->channel, server->tag);
 
-		if ((setup != NULL && setup->autojoin && rejoin_channels_mode == 2) || rejoin_channels_mode == 1) {
+		if ((setup != NULL && setup->autojoin &&
+		     rejoin_channels_mode == REJOIN_CHANNELS_MODE_AUTO) ||
+		    rejoin_channels_mode == REJOIN_CHANNELS_MODE_ON) {
 			g_string_append_printf(chans, "%s,", rec->channel);
 			g_string_append_printf(keys, "%s,", rec->key == NULL ? "x" :
 									rec->key);

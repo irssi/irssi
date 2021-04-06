@@ -64,7 +64,8 @@ static void sig_server_reconnect_save_status(IRC_SERVER_CONNECT_REC *conn,
 		return;
 
 	g_free_not_null(conn->channels);
-	conn->channels = irc_server_get_channels(server);
+	conn->channels =
+	    irc_server_get_channels(server, settings_get_choice("rejoin_channels_on_reconnect"));
 
 	g_free_not_null(conn->usermode);
 	conn->usermode = g_strdup(server->wanted_usermode);
