@@ -244,7 +244,7 @@ static void server_init_1(IRC_SERVER_REC *server)
 	irc_cap_toggle(server, CAP_ACCOUNT_NOTIFY, TRUE);
 	irc_cap_toggle(server, CAP_SELF_MESSAGE, TRUE);
 	irc_cap_toggle(server, CAP_SERVER_TIME, TRUE);
-	if (!conn->use_tls && (conn->starttls || !conn->no_starttls)) {
+	if (!conn->use_tls && (conn->starttls || !conn->disallow_starttls)) {
 		irc_cap_toggle(server, CAP_STARTTLS, TRUE);
 	}
 
@@ -314,7 +314,7 @@ void irc_server_send_starttls(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	g_warning("Now attempting STARTTLS");
+	g_warning("[%s] Now attempting STARTTLS", server->tag);
 	irc_send_cmd_now(server, "STARTTLS");
 }
 

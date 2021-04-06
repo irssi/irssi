@@ -45,7 +45,7 @@ static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
 	if (sserver->max_query_chans > 0)
 		conn->max_query_chans = sserver->max_query_chans;
 	if (sserver->starttls == 0)
-		conn->no_starttls = 1;
+		conn->disallow_starttls = 1;
 	else if (sserver->starttls == 1)
 		conn->starttls = 1;
 }
@@ -67,8 +67,8 @@ static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn, GHashTab
 
 	if (g_hash_table_lookup(optlist, "starttls") != NULL)
 		conn->starttls = 1;
-	else if (g_hash_table_lookup(optlist, "nostarttls") != NULL)
-		conn->no_starttls = 1;
+	else if (g_hash_table_lookup(optlist, "disallow_starttls") != NULL)
+		conn->disallow_starttls = 1;
 }
 
 static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,

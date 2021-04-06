@@ -61,7 +61,7 @@ struct _IRC_SERVER_CONNECT_REC {
 	int max_query_chans;
 
 	int max_kicks, max_msgs, max_modes, max_whois;
-	int no_starttls:1;
+	int disallow_starttls:1;
 	int starttls:1;
 };
 /* clang-format on */
