@@ -239,8 +239,11 @@ static void sig_reconnect(SERVER_REC *server)
 	if (reconnect_time == -1 || !server_should_reconnect(server))
 		return;
 
-	conn = server_connect_copy_skeleton(server->connrec, FALSE);
-        g_return_if_fail(conn != NULL);
+	sserver = server_setup_find(server->connrec->address, server->connrec->port,
+	                            server->connrec->chatnet);
+
+	conn = server_connect_copy_skeleton(server->connrec, sserver == NULL);
+	g_return_if_fail(conn != NULL);
 
 	/* save the server status */
 	if (server->connected) {
@@ -248,10 +251,6 @@ static void sig_reconnect(SERVER_REC *server)
 
                 reconnect_save_status(conn, server);
 	}
-
-	sserver = server_setup_find(server->connrec->address,
-				    server->connrec->port,
-				    server->connrec->chatnet);
 
 	if (sserver != NULL) {
 		/* save the last connection time/status */
