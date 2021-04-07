@@ -64,11 +64,19 @@ static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn, GHashTab
 	value = settings_get_str("usermode");
 	conn->usermode = (value != NULL && *value != '\0') ?
 		g_strdup(value) : NULL;
+}
 
-	if (g_hash_table_lookup(optlist, "starttls") != NULL)
+static void sig_server_setup_fill_optlist(IRC_SERVER_CONNECT_REC *conn, GHashTable *optlist)
+{
+	if (!IS_IRC_SERVER_CONNECT(conn))
+		return;
+
+	if (g_hash_table_lookup(optlist, "starttls") != NULL) {
 		conn->starttls = 1;
-	else if (g_hash_table_lookup(optlist, "disallow_starttls") != NULL)
+		conn->use_tls = 0;
+	} else if (g_hash_table_lookup(optlist, "disallow_starttls") != NULL) {
 		conn->disallow_starttls = 1;
+	}
 }
 
 static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
@@ -184,6 +192,9 @@ static void sig_server_setup_read(IRC_SERVER_SETUP_REC *rec, CONFIG_NODE *node)
 	rec->cmd_queue_speed = config_node_get_int(node, "cmd_queue_speed", 0);
 	rec->max_query_chans = config_node_get_int(node, "max_query_chans", 0);
 	rec->starttls = config_node_get_bool(node, "starttls", -1);
+	if (rec->starttls == 1) {
+		rec->use_tls = 0;
+	}
 }
 
 static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
@@ -213,6 +224,7 @@ void irc_servers_setup_init(void)
 	signal_add("server setup fill reconn", (SIGNAL_FUNC) sig_server_setup_fill_reconn);
 	signal_add("server setup fill connect", (SIGNAL_FUNC) sig_server_setup_fill_connect);
 	signal_add("server setup fill chatnet", (SIGNAL_FUNC) sig_server_setup_fill_chatnet);
+	signal_add("server setup fill optlist", (SIGNAL_FUNC) sig_server_setup_fill_optlist);
 	signal_add("server setup read", (SIGNAL_FUNC) sig_server_setup_read);
 	signal_add("server setup saved", (SIGNAL_FUNC) sig_server_setup_saved);
 }
@@ -222,6 +234,7 @@ void irc_servers_setup_deinit(void)
 	signal_remove("server setup fill reconn", (SIGNAL_FUNC) sig_server_setup_fill_reconn);
 	signal_remove("server setup fill connect", (SIGNAL_FUNC) sig_server_setup_fill_connect);
 	signal_remove("server setup fill chatnet", (SIGNAL_FUNC) sig_server_setup_fill_chatnet);
+	signal_remove("server setup fill optlist", (SIGNAL_FUNC) sig_server_setup_fill_optlist);
 	signal_remove("server setup read", (SIGNAL_FUNC) sig_server_setup_read);
 	signal_remove("server setup saved", (SIGNAL_FUNC) sig_server_setup_saved);
 }

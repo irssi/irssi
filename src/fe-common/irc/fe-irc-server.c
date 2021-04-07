@@ -91,8 +91,10 @@ static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 		rec->starttls = -1;
 	if (g_hash_table_lookup(optlist, "disallow_starttls"))
 		rec->starttls = 0;
-	if (g_hash_table_lookup(optlist, "starttls"))
+	if (g_hash_table_lookup(optlist, "starttls")) {
 		rec->starttls = 1;
+		rec->use_tls = 0;
+	}
 }
 
 /* SYNTAX: SERVER LIST */
@@ -129,8 +131,8 @@ static void cmd_server_list(const char *data)
 			if (rec->tls_pass)
 				g_string_append_printf(str, "(pass), ");
 		}
-		if (rec->tls_verify)
-			g_string_append(str, "tls_verify, ");
+		if (!rec->tls_verify)
+			g_string_append(str, "notls_verify, ");
 		if (rec->tls_cafile)
 			g_string_append_printf(str, "tls_cafile: %s, ", rec->tls_cafile);
 		if (rec->tls_capath)

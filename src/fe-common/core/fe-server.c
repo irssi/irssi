@@ -101,6 +101,7 @@ static SERVER_SETUP_REC *create_server_setup(GHashTable *optlist)
 
         server = rec->create_server_setup();
         server->chat_type = rec->id;
+	server->tls_verify = TRUE;
 	return server;
 }
 
@@ -110,6 +111,7 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 	SERVER_SETUP_REC *rec;
 	char *addr, *portstr, *password, *value, *chatnet;
 	void *free_arg;
+	gboolean newrec;
 	int port;
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
@@ -135,6 +137,7 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 	rec = server_setup_find(addr, port, chatnet);
 
 	if (rec == NULL) {
+		newrec = TRUE;
 		if (add == FALSE) {
 			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 				TXT_SETUPSERVER_NOT_FOUND, addr, port);
@@ -150,6 +153,7 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		rec->address = g_strdup(addr);
 		rec->port = port;
 	} else {
+		newrec = FALSE;
 		if (*portstr != '\0' || g_hash_table_lookup(optlist, "port"))
 			rec->port = port;
 
@@ -165,16 +169,17 @@ static void cmd_server_add_modify(const char *data, gboolean add)
         else if (g_hash_table_lookup(optlist, "4"))
 		rec->family = AF_INET;
 
-	if (g_hash_table_lookup(optlist, "tls") || g_hash_table_lookup(optlist, "ssl"))
-		rec->use_tls = TRUE;
-	else if (g_hash_table_lookup(optlist, "notls") || g_hash_table_lookup(optlist, "nossl"))
-		rec->use_tls = FALSE;
-
 	value = g_hash_table_lookup(optlist, "tls_cert");
 	if (value == NULL)
 		value = g_hash_table_lookup(optlist, "ssl_cert");
-	if (value != NULL && *value != '\0')
+	if (value != NULL && *value != '\0') {
 		rec->tls_cert = g_strdup(value);
+		if (newrec) {
+			/* convenience and backward compatibility, turn on tls if tls_cert is given
+			 */
+			rec->use_tls = TRUE;
+		}
+	}
 
 	value = g_hash_table_lookup(optlist, "tls_pkey");
 	if (value == NULL)
@@ -187,11 +192,6 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		value = g_hash_table_lookup(optlist, "ssl_pass");
 	if (value != NULL && *value != '\0')
 		rec->tls_pass = g_strdup(value);
-
-	if (g_hash_table_lookup(optlist, "tls_verify") || g_hash_table_lookup(optlist, "ssl_verify"))
-		rec->tls_verify = TRUE;
-	else if (g_hash_table_lookup(optlist, "notls_verify") || g_hash_table_lookup(optlist, "nossl_verify"))
-		rec->tls_verify = FALSE;
 
 	value = g_hash_table_lookup(optlist, "tls_cafile");
 	if (value == NULL)
@@ -227,8 +227,23 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 	||  (rec->tls_capath != NULL && rec->tls_capath[0] != '\0'))
 		rec->tls_verify = TRUE;
 
-	if ((rec->tls_cert != NULL && rec->tls_cert[0] != '\0') || rec->tls_verify == TRUE)
+	if (g_hash_table_lookup(optlist, "tls_verify") ||
+	    g_hash_table_lookup(optlist, "ssl_verify")) {
+		rec->tls_verify = TRUE;
+		if (newrec) {
+			/* convenience and backward compatibility, turn on tls if tls_verify is
+			 * given */
+			rec->use_tls = TRUE;
+		}
+	} else if (g_hash_table_lookup(optlist, "notls_verify") ||
+	           g_hash_table_lookup(optlist, "nossl_verify")) {
+		rec->tls_verify = FALSE;
+	}
+
+	if (g_hash_table_lookup(optlist, "tls") || g_hash_table_lookup(optlist, "ssl"))
 		rec->use_tls = TRUE;
+	else if (g_hash_table_lookup(optlist, "notls") || g_hash_table_lookup(optlist, "nossl"))
+		rec->use_tls = FALSE;
 
 	if (g_hash_table_lookup(optlist, "auto")) rec->autoconnect = TRUE;
 	if (g_hash_table_lookup(optlist, "noauto")) rec->autoconnect = FALSE;

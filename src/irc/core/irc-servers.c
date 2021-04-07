@@ -470,6 +470,7 @@ void irc_server_connect(SERVER_REC *server)
 	g_return_if_fail(server != NULL);
 
 	if (server->connrec->connect_handle != NULL) {
+		/* an existing handle from upgrade */
 		IRC_SERVER_CONNECT_REC *conn;
 		int tls_disconnect;
 

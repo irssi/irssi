@@ -128,8 +128,10 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	starttls_mode = config_node_get_int(node, "starttls", -1);
 	if (starttls_mode == 0)
 		server->connrec->disallow_starttls = 1;
-	if (starttls_mode == 1)
+	if (starttls_mode == 1) {
 		server->connrec->starttls = 1;
+		server->connrec->use_tls = 0;
+	}
 
 	if (server->isupport == NULL) {
 		server->isupport =
