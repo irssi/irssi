@@ -303,7 +303,7 @@ static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
 		IRC_SERVER_SETUP_REC *ssetup = IRC_SERVER_SETUP(server_setup_find(
 		    server->connrec->address, server->connrec->port, server->connrec->chatnet));
 		if (ssetup != NULL) {
-			ssetup->starttls = 1;
+			ssetup->starttls = STARTTLS_ENABLED;
 			server_setup_add((SERVER_SETUP_REC *) ssetup);
 		}
 	}

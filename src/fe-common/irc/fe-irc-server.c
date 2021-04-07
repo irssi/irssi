@@ -88,11 +88,11 @@ static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 	if (value != NULL && *value != '\0') rec->max_query_chans = atoi(value);
 	if (g_hash_table_lookup(optlist, "nodisallow_starttls") ||
 	    g_hash_table_lookup(optlist, "nostarttls"))
-		rec->starttls = -1;
+		rec->starttls = STARTTLS_NOTSET;
 	if (g_hash_table_lookup(optlist, "disallow_starttls"))
-		rec->starttls = 0;
+		rec->starttls = STARTTLS_DISALLOW;
 	if (g_hash_table_lookup(optlist, "starttls")) {
-		rec->starttls = 1;
+		rec->starttls = STARTTLS_ENABLED;
 		rec->use_tls = 0;
 	}
 }
@@ -118,9 +118,9 @@ static void cmd_server_list(const char *data)
 			g_string_append(str, "autoconnect, ");
 		if (rec->no_proxy)
 			g_string_append(str, "noproxy, ");
-		if (rec->starttls == 0)
+		if (rec->starttls == STARTTLS_DISALLOW)
 			g_string_append(str, "disallow_starttls, ");
-		if (rec->starttls == 1)
+		if (rec->starttls == STARTTLS_ENABLED)
 			g_string_append(str, "starttls, ");
 		if (rec->use_tls)
 			g_string_append(str, "tls, ");

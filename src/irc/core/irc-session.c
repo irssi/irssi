@@ -26,6 +26,7 @@
 #include <irssi/src/core/network.h>
 
 #include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-servers-setup.h>
 #include <irssi/src/irc/core/irc-channels.h>
 #include <irssi/src/irc/core/irc-nicklist.h>
 
@@ -82,9 +83,9 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "sasl_password", server->connrec->sasl_password);
 
 	config_node_set_int(config, node, "starttls",
-	                    server->connrec->disallow_starttls ? 0 :
-	                    server->connrec->starttls          ? 1 :
-                                                                 -1);
+	                    server->connrec->disallow_starttls ? STARTTLS_DISALLOW :
+	                    server->connrec->starttls          ? STARTTLS_ENABLED :
+                                                                 STARTTLS_NOTSET);
 
 	config_node_set_bool(config, node, "isupport_sent", server->isupport_sent);
 	isupport = config_node_section(config, node, "isupport", NODE_TYPE_BLOCK);
@@ -125,10 +126,10 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 
 	server->connrec->channels = g_strdup(config_node_get_str(node, "rejoin_channels", NULL));
 
-	starttls_mode = config_node_get_int(node, "starttls", -1);
-	if (starttls_mode == 0)
+	starttls_mode = config_node_get_int(node, "starttls", STARTTLS_NOTSET);
+	if (starttls_mode == STARTTLS_DISALLOW)
 		server->connrec->disallow_starttls = 1;
-	if (starttls_mode == 1) {
+	if (starttls_mode == STARTTLS_ENABLED) {
 		server->connrec->starttls = 1;
 		server->connrec->use_tls = 0;
 	}
