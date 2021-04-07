@@ -232,6 +232,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		handle = net_start_ssl(server);
 		if (handle == NULL) {
 			net_sendbuffer_destroy(server->handle, TRUE);
+			server->handle = NULL;
 		} else {
 			server->handle->handle = handle;
 		}
