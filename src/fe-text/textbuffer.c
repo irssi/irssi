@@ -450,8 +450,9 @@ void textbuffer_line2text(LINE_REC *line, int coloring, GString *str)
 	g_return_if_fail(line != NULL);
 	g_return_if_fail(str != NULL);
 
-        g_string_truncate(str, 0);
+	g_string_truncate(str, 0);
 
+	g_return_if_fail(line->text != NULL);
 	for (ptr = line->text;;) {
 		if (*ptr != 0) {
 			g_string_append_c(str, (char) *ptr);
