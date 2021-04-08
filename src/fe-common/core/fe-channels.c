@@ -630,7 +630,7 @@ void fe_channels_init(void)
 {
 	settings_add_bool("lookandfeel", "autoclose_windows", TRUE);
 	settings_add_bool("lookandfeel", "show_names_on_join", TRUE);
-	settings_add_int("lookandfeel", "show_names_on_join_limit", 18);
+	settings_add_int("lookandfeel", "show_names_on_join_limit", 0);
 	settings_add_int("lookandfeel", "names_max_columns", 6);
 	settings_add_int("lookandfeel", "names_max_width", 0);
 
