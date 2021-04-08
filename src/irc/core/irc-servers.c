@@ -208,7 +208,55 @@ static char **split_message(SERVER_REC *server, const char *target,
 			  strlen(target));
 }
 
-static void server_init_2(IRC_SERVER_REC *server);
+static void server_init_2(IRC_SERVER_REC *server)
+{
+	IRC_SERVER_CONNECT_REC *conn;
+	char *address, *ptr, *username, *cmd;
+
+	g_return_if_fail(server != NULL);
+
+	conn = server->connrec;
+
+	if (conn->password != NULL && *conn->password != '\0') {
+		/* send password */
+		cmd = g_strdup_printf("PASS %s", conn->password);
+		irc_send_cmd_now(server, cmd);
+		g_free(cmd);
+	}
+
+	/* send nick */
+	cmd = g_strdup_printf("NICK %s", conn->nick);
+	irc_send_cmd_now(server, cmd);
+	g_free(cmd);
+
+	/* send user/realname */
+	address = server->connrec->address;
+	ptr = strrchr(address, ':');
+	if (ptr != NULL) {
+		/* IPv6 address .. doesn't work here, use the string after
+		   the last : char */
+		address = ptr + 1;
+		if (*address == '\0')
+			address = "x";
+	}
+
+	username = g_strdup(conn->username);
+	ptr = strchr(username, ' ');
+	if (ptr != NULL)
+		*ptr = '\0';
+
+	cmd = g_strdup_printf("USER %s %s %s :%s", username, username, address, conn->realname);
+	irc_send_cmd_now(server, cmd);
+	g_free(cmd);
+	g_free(username);
+
+	if (conn->proxy != NULL && conn->proxy_string_after != NULL) {
+		cmd = g_strdup_printf(conn->proxy_string_after, conn->address, conn->port);
+		irc_send_cmd_now(server, cmd);
+		g_free(cmd);
+	}
+}
+
 static void server_init_1(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
@@ -271,6 +319,7 @@ static void server_init_1(IRC_SERVER_REC *server)
 static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
 {
 	int error;
+	server->connrec->starttls = 1;
 
 	if (server->starttls_tag) {
 		g_source_remove(server->starttls_tag);
@@ -298,7 +347,6 @@ static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
 		signal_emit("server cap continue", 1, server);
 	}
 
-	server->connrec->starttls = 1;
 	if (settings_get_bool("starttls_sts")) {
 		IRC_SERVER_SETUP_REC *ssetup = IRC_SERVER_SETUP(server_setup_find(
 		    server->connrec->address, server->connrec->port, server->connrec->chatnet));
@@ -368,55 +416,6 @@ static void event_capend(IRC_SERVER_REC *server)
 		return;
 
 	server_init_2(server);
-}
-
-static void server_init_2(IRC_SERVER_REC *server)
-{
-	IRC_SERVER_CONNECT_REC *conn;
-	char *address, *ptr, *username, *cmd;
-
-	g_return_if_fail(server != NULL);
-
-	conn = server->connrec;
-
-	if (conn->password != NULL && *conn->password != '\0') {
-		/* send password */
-		cmd = g_strdup_printf("PASS %s", conn->password);
-		irc_send_cmd_now(server, cmd);
-		g_free(cmd);
-	}
-
-	/* send nick */
-	cmd = g_strdup_printf("NICK %s", conn->nick);
-	irc_send_cmd_now(server, cmd);
-	g_free(cmd);
-
-	/* send user/realname */
-	address = server->connrec->address;
-	ptr = strrchr(address, ':');
-	if (ptr != NULL) {
-		/* IPv6 address .. doesn't work here, use the string after
-		   the last : char */
-		address = ptr + 1;
-		if (*address == '\0')
-			address = "x";
-	}
-
-	username = g_strdup(conn->username);
-	ptr = strchr(username, ' ');
-	if (ptr != NULL)
-		*ptr = '\0';
-
-	cmd = g_strdup_printf("USER %s %s %s :%s", username, username, address, conn->realname);
-	irc_send_cmd_now(server, cmd);
-	g_free(cmd);
-	g_free(username);
-
-	if (conn->proxy != NULL && conn->proxy_string_after != NULL) {
-		cmd = g_strdup_printf(conn->proxy_string_after, conn->address, conn->port);
-		irc_send_cmd_now(server, cmd);
-		g_free(cmd);
-	}
 }
 
 SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
