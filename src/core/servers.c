@@ -208,7 +208,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 	const char *errmsg;
 	char *errmsg2;
 	char ipaddr[MAX_IP_LEN];
-        int port;
+	int port = 0;
 
 	g_return_if_fail(ip != NULL || unix_socket != NULL);
 
@@ -222,10 +222,20 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
 		port = server->connrec->proxy != NULL ?
 			server->connrec->proxy_port : server->connrec->port;
-		handle = server->connrec->use_tls ?
-			net_connect_ip_ssl(ip, port, own_ip, server) : net_connect_ip(ip, port, own_ip);
+		handle = net_connect_ip(ip, port, own_ip);
 	} else {
 		handle = net_connect_unix(unix_socket);
+	}
+
+	if (server->connrec->use_tls && handle != NULL) {
+		server->handle = net_sendbuffer_create(handle, 0);
+		handle = net_start_ssl(server);
+		if (handle == NULL) {
+			net_sendbuffer_destroy(server->handle, TRUE);
+			server->handle = NULL;
+		} else {
+			server->handle->handle = handle;
+		}
 	}
 
 	if (handle == NULL) {
@@ -244,12 +254,15 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 			server->no_reconnect = TRUE;
 
 		server->connection_lost = TRUE;
-		server->connrec->last_failed_family = ip->family;
+		if (ip != NULL) {
+			server->connrec->last_failed_family = ip->family;
+		}
 		server_connect_failed(server, errmsg2 ? errmsg2 : errmsg);
 		g_free(errmsg2);
 	} else {
 		server->connrec->last_failed_family = 0;
-		server->handle = net_sendbuffer_create(handle, 0);
+		if (!server->connrec->use_tls)
+			server->handle = net_sendbuffer_create(handle, 0);
 		if (server->connrec->use_tls)
 			server_connect_callback_init_ssl(server, handle);
 		else
