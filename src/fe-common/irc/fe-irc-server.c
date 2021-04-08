@@ -95,6 +95,19 @@ static void sig_server_add_fill(IRC_SERVER_SETUP_REC *rec,
 		rec->starttls = STARTTLS_ENABLED;
 		rec->use_tls = 0;
 	}
+	if (g_hash_table_lookup(optlist, "nocap"))
+		rec->no_cap = 1;
+	if (g_hash_table_lookup(optlist, "cap"))
+		rec->no_cap = 0;
+}
+
+static void sig_server_waiting_info(IRC_SERVER_REC *server, const char *version)
+{
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	printformat(server, NULL, MSGLEVEL_CLIENTCRAP, IRCTXT_SERVER_WAITING_CAP_LS, server,
+	            version);
 }
 
 /* SYNTAX: SERVER LIST */
@@ -118,6 +131,8 @@ static void cmd_server_list(const char *data)
 			g_string_append(str, "autoconnect, ");
 		if (rec->no_proxy)
 			g_string_append(str, "noproxy, ");
+		if (rec->no_cap)
+			g_string_append(str, "nocap, ");
 		if (rec->starttls == STARTTLS_DISALLOW)
 			g_string_append(str, "disallow_starttls, ");
 		if (rec->starttls == STARTTLS_ENABLED)
@@ -167,17 +182,20 @@ static void cmd_server_list(const char *data)
 void fe_irc_server_init(void)
 {
 	signal_add("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
+	signal_add("server waiting cap ls", (SIGNAL_FUNC) sig_server_waiting_info);
 	command_bind("server list", NULL, (SIGNAL_FUNC) cmd_server_list);
 
-	command_set_options("server add", "-ircnet -network -cmdspeed -cmdmax -querychans starttls "
-	                                  "nostarttls disallow_starttls nodisallow_starttls");
+	command_set_options("server add",
+	                    "-ircnet -network -cmdspeed -cmdmax -querychans starttls "
+	                    "nostarttls disallow_starttls nodisallow_starttls cap nocap");
 	command_set_options("server modify",
 	                    "-ircnet -network -cmdspeed -cmdmax -querychans starttls nostarttls "
-	                    "disallow_starttls nodisallow_starttls");
+	                    "disallow_starttls nodisallow_starttls cap nocap");
 }
 
 void fe_irc_server_deinit(void)
 {
 	signal_remove("server add fill", (SIGNAL_FUNC) sig_server_add_fill);
+	signal_remove("server waiting cap ls", (SIGNAL_FUNC) sig_server_waiting_info);
 	command_unbind("server list", (SIGNAL_FUNC) cmd_server_list);
 }

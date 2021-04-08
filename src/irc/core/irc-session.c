@@ -87,6 +87,7 @@ static void sig_session_save_server(IRC_SERVER_REC *server, CONFIG_REC *config,
 	                    server->connrec->starttls          ? STARTTLS_ENABLED :
                                                                  STARTTLS_NOTSET);
 
+	config_node_set_bool(config, node, "no_cap", server->connrec->no_cap);
 	config_node_set_bool(config, node, "isupport_sent", server->isupport_sent);
 	isupport = config_node_section(config, node, "isupport", NODE_TYPE_BLOCK);
         isupport_data.config = config;
@@ -115,6 +116,7 @@ static void sig_session_restore_server(IRC_SERVER_REC *server,
 	server->emode_known = config_node_get_bool(node, "emode_known", FALSE);
 	server->isupport_sent = config_node_get_bool(node, "isupport_sent", FALSE);
 
+	server->connrec->no_cap = config_node_get_bool(node, "no_cap", FALSE);
 	server->connrec->sasl_mechanism = config_node_get_int(node, "sasl_mechanism", SASL_MECHANISM_NONE);
 	/* The fields below might have been filled when loading the chatnet
 	 * description from the config and we favor the content that's been saved

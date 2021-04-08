@@ -1053,7 +1053,7 @@ void irc_commands_init(void)
 	signal_add("whois end", (SIGNAL_FUNC) event_end_of_whois);
 	signal_add("whowas event", (SIGNAL_FUNC) event_whowas);
 
-	command_set_options("connect", "+ircnet starttls disallow_starttls");
+	command_set_options("connect", "+ircnet starttls disallow_starttls nocap");
 	command_set_options("topic", "delete");
 	command_set_options("list", "yes");
 	command_set_options("away", "one all");

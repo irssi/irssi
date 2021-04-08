@@ -53,6 +53,7 @@ static void sig_server_connect_copy(SERVER_CONNECT_REC **dest,
 	rec->sasl_password = g_strdup(src->sasl_password);
 	rec->disallow_starttls = src->disallow_starttls;
 	rec->starttls = src->starttls;
+	rec->no_cap = src->no_cap;
 	*dest = (SERVER_CONNECT_REC *) rec;
 }
 

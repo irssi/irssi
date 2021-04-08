@@ -48,6 +48,8 @@ static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
 		conn->disallow_starttls = 1;
 	else if (sserver->starttls == STARTTLS_ENABLED)
 		conn->starttls = 1;
+	if (sserver->no_cap)
+		conn->no_cap = 1;
 }
 
 static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn, GHashTable *optlist)
@@ -77,6 +79,10 @@ static void sig_server_setup_fill_optlist(IRC_SERVER_CONNECT_REC *conn, GHashTab
 	} else if (g_hash_table_lookup(optlist, "disallow_starttls") != NULL) {
 		conn->disallow_starttls = 1;
 	}
+	if (g_hash_table_lookup(optlist, "nocap"))
+		conn->no_cap = 1;
+	if (g_hash_table_lookup(optlist, "cap"))
+		conn->no_cap = 0;
 }
 
 static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
@@ -195,6 +201,7 @@ static void sig_server_setup_read(IRC_SERVER_SETUP_REC *rec, CONFIG_NODE *node)
 	if (rec->starttls == STARTTLS_ENABLED) {
 		rec->use_tls = 0;
 	}
+	rec->no_cap = config_node_get_bool(node, "no_cap", FALSE);
 }
 
 static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
@@ -213,6 +220,8 @@ static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
 		iconfig_node_set_bool(node, "starttls", rec->starttls);
 	else
 		iconfig_node_set_str(node, "starttls", NULL);
+	if (rec->no_cap)
+		iconfig_node_set_bool(node, "no_cap", TRUE);
 }
 
 void irc_servers_setup_init(void)
