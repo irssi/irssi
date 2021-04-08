@@ -1,3 +1,41 @@
+v1.2.3 2021-04-11 The Irssi team <staff@irssi.org>
+	- Fix the compilation of utf8proc (#1021)
+	- Fix wrong call to free. By Zero King (#1076)
+	- Fix a colour reset in true colour themes when encountering
+          mIRC colours (#1059)
+	- Fix memory leak on malformed CAP requests (#1120)
+	- Fix an erroneous free of SASL data. Credit to Oss-Fuzz (#1128,
+	  #1130)
+	- Re-set the TLS flag when reconnecting (#1027, #1134)
+	- Fix the scrollback getting stuck after /clear (#1115, #1136)
+	- Fix the input of Ctrl+C as the first character (#1153,  #1154)
+	- Fix crash on quit during unloading of modules on certain
+          platforms (#1167)
+	- Fix Irssi freezing input after Ctrl+Space on GLib >2.62 (#1180,
+	  #1183)
+	- Fix layout of IDCHANs. By Lauri Tirkkonen (#1197)
+	- Fix crash when server got reconnected before it was properly
+          connected (#1210, #1211)
+	- Fix multiple identical active caps (#1249)
+	- Minor help corrections (#1156, #1213, #1214, #1255)
+	- Remove erroneous colour in the colorless theme. Reported and
+          fixed by Nutchanon Wetchasit (#1220, #1221)
+	- Fix invalid bounds calculation when editing the text
+          entry. Found and fixed by Sergey Valentey (#1269)
+	- Fix passing of negative size in buffer writes. Found and
+          fixed by Sergey Valentey (#1270)
+	- Fix Irssi freezing on slow hardware and fast DCC transfers (#159,
+	  #1271)
+	- Fix compilation on Solaris (#1291)
+	- Fix null pointer dereference when receiving broken JOIN
+          record. Credit to Oss-Fuzz (#1292)
+	- Fix crash on /connect to some sockets (#1239, #1298)
+	- Fix Irssi rendering on Apple ARM. By Misty De Méo (#1267,
+	  #1268, #1290)
+	- Fix crash on /lastlog with broken lines (#1281, #1299)
+	- Fix memory leak when receiving bogus SASL authentication
+          data. Found and fixed by Sergey Valentey (#1293)
+
 v1.2.2 2019-08-29 The Irssi team <staff@irssi.org>
 	- Fix a use after free issue when receiving IRCv3 CAP
           information from the server (GL#34)
