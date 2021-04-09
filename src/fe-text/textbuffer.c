@@ -236,7 +236,7 @@ void textbuffer_line2text(TEXT_BUFFER_REC *buffer, LINE_REC *line, int coloring,
 	g_return_if_fail(line != NULL);
 	g_return_if_fail(str != NULL);
 
-        g_string_truncate(str, 0);
+	g_string_truncate(str, 0);
 
 	if ((ptr = textbuffer_line_get_text(buffer, line, coloring == COLORING_RAW)) != NULL) {
 		if (coloring == COLORING_STRIP) {
