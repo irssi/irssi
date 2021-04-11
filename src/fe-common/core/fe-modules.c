@@ -170,15 +170,25 @@ static void cmd_load(const char *data)
         char *rootmodule, *submodule;
 	char **module_prefixes;
 	void *free_arg;
+	gboolean silent;
+	GHashTable *optlist;
 
 	g_return_if_fail(data != NULL);
 
-	if (!cmd_get_params(data, &free_arg, 2 , &rootmodule, &submodule))
+	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_OPTIONS, "load", &optlist, &rootmodule,
+	                    &submodule))
 		return;
+
+	silent = g_hash_table_lookup(optlist, "silent") != NULL;
 
 	if (*rootmodule == '\0')
 		cmd_load_list();
 	else {
+		if (silent) {
+			signal_add_first("module error", (SIGNAL_FUNC) signal_stop);
+			signal_add_first("module loaded", (SIGNAL_FUNC) signal_stop);
+		}
+
 		module_prefixes = module_prefixes_get();
 		if (*submodule == '\0')
 			module_load(rootmodule, module_prefixes);
@@ -187,6 +197,11 @@ static void cmd_load(const char *data)
 					module_prefixes);
 		}
                 module_prefixes_free(module_prefixes);
+
+		if (silent) {
+			signal_remove("module error", (SIGNAL_FUNC) signal_stop);
+			signal_remove("module loaded", (SIGNAL_FUNC) signal_stop);
+		}
 	}
 
 	cmd_params_free(free_arg);
@@ -244,6 +259,7 @@ void fe_modules_init(void)
 
 	command_bind("load", NULL, (SIGNAL_FUNC) cmd_load);
 	command_bind("unload", NULL, (SIGNAL_FUNC) cmd_unload);
+	command_set_options("load", "silent");
 }
 
 void fe_modules_deinit(void)

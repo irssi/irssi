@@ -269,6 +269,7 @@ void core_init(void)
 	settings_add_str("misc", "ignore_signals", "");
 	settings_add_bool("misc", "override_coredump_limit", FALSE);
 	settings_add_bool("misc", "quit_on_hup", FALSE);
+	settings_add_str("misc", "autoload_modules", "perl otr");
 
 #ifdef HAVE_SYS_RESOURCE_H
 	getrlimit(RLIMIT_CORE, &orig_core_rlimit);

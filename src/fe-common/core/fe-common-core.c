@@ -464,6 +464,7 @@ void fe_common_core_finish_init(void)
                 signal_emit("setup changed", 0);
 
 	autorun_startup();
+	signal_emit("module autoload", 0);
 	autoconnect_servers();
 }
 
