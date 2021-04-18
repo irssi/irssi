@@ -169,6 +169,8 @@ static void cmd_ignore(const char *data)
 		flags |= IGNORE_FIND_NOACT;
 	if (level & MSGLEVEL_HIDDEN)
 		flags |= IGNORE_FIND_HIDDEN;
+	if (level & MSGLEVEL_NOHILIGHT)
+		flags |= IGNORE_FIND_NOHILIGHT;
 
 	rec = ignore_find_full(servertag, mask, patternarg, channels, flags);
 	new_ignore = rec == NULL;
@@ -194,6 +196,12 @@ static void cmd_ignore(const char *data)
 
 	if (rec->level == MSGLEVEL_HIDDEN) {
 		/* If only HIDDEN was specified add all levels; it makes no
+		 * sense on its own. */
+		rec->level |= MSGLEVEL_ALL;
+	}
+
+	if (rec->level == MSGLEVEL_NOHILIGHT) {
+		/* If only NOHILIGHT was specified add all levels; it makes no
 		 * sense on its own. */
 		rec->level |= MSGLEVEL_ALL;
 	}

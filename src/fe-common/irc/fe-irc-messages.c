@@ -114,6 +114,12 @@ static void sig_message_irc_op_public(SERVER_REC *server, const char *msg,
 		return;
 	}
 
+	if (level & MSGLEVEL_NOHILIGHT) {
+		for_me = FALSE;
+		g_free_and_null(color);
+		level &= ~MSGLEVEL_HILIGHT;
+	}
+
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) chanrec, msg);
 
