@@ -138,6 +138,23 @@ int settings_get_level(const char *key)
 	return str == NULL ? 0 : level2bits(str, NULL);
 }
 
+int settings_get_level_negative(const char *key)
+{
+	const char *str, *tmp, *all_levels;
+	int levels;
+
+	str = settings_get_str_type(key, SETTING_TYPE_LEVEL);
+	if (str == NULL)
+		return 0;
+
+	all_levels = bits2level(~0);
+	tmp = g_strdup_printf("%s %s", all_levels, str);
+	levels = level2bits(tmp, NULL) ^ level2bits(all_levels, NULL);
+	g_free((char *) tmp);
+	g_free((char *) all_levels);
+	return levels;
+}
+
 int settings_get_size(const char *key)
 {
 	const char *str;

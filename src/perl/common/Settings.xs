@@ -97,6 +97,10 @@ settings_get_level(key)
        char *key
 
 int
+settings_get_level_negative(key)
+	char *key
+	
+int
 settings_get_size(key)
        char *key
 
