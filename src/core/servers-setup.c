@@ -140,8 +140,8 @@ void server_setup_fill_reconn(SERVER_CONNECT_REC *conn,
 	signal_emit("server setup fill reconn", 2, conn, sserver);
 }
 
-static void server_setup_fill(SERVER_CONNECT_REC *conn,
-			      const char *address, int port)
+static void server_setup_fill(SERVER_CONNECT_REC *conn, const char *address, int port,
+                              GHashTable *optlist)
 {
 	g_return_if_fail(conn != NULL);
 	g_return_if_fail(address != NULL);
@@ -177,7 +177,69 @@ static void server_setup_fill(SERVER_CONNECT_REC *conn,
 		memcpy(conn->own_ip6, source_host_ip6, sizeof(IPADDR));
 	}
 
-	signal_emit("server setup fill connect", 1, conn);
+	signal_emit("server setup fill connect", 2, conn, optlist);
+}
+
+static void server_setup_fill_optlist(SERVER_CONNECT_REC *conn, GHashTable *optlist)
+{
+	char *tmp;
+
+	if (g_hash_table_lookup(optlist, "6") != NULL)
+		conn->family = AF_INET6;
+	else if (g_hash_table_lookup(optlist, "4") != NULL)
+		conn->family = AF_INET;
+
+	/* ad-hoc TLS settings from command optlist */
+	if ((tmp = g_hash_table_lookup(optlist, "tls_cert")) != NULL ||
+	    (tmp = g_hash_table_lookup(optlist, "ssl_cert")) != NULL)
+		conn->tls_cert = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pkey")) != NULL ||
+	    (tmp = g_hash_table_lookup(optlist, "ssl_pkey")) != NULL)
+		conn->tls_pkey = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pass")) != NULL ||
+	    (tmp = g_hash_table_lookup(optlist, "ssl_pass")) != NULL)
+		conn->tls_pass = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_cafile")) != NULL ||
+	    (tmp = g_hash_table_lookup(optlist, "ssl_cafile")) != NULL)
+		conn->tls_cafile = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_capath")) != NULL ||
+	    (tmp = g_hash_table_lookup(optlist, "ssl_capath")) != NULL)
+		conn->tls_capath = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_ciphers")) != NULL ||
+	    (tmp = g_hash_table_lookup(optlist, "ssl_ciphers")) != NULL)
+		conn->tls_ciphers = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pinned_cert")) != NULL ||
+	    (tmp = g_hash_table_lookup(optlist, "ssl_pinned_cert")) != NULL)
+		conn->tls_pinned_cert = g_strdup(tmp);
+	if ((tmp = g_hash_table_lookup(optlist, "tls_pinned_pubkey")) != NULL ||
+	    (tmp = g_hash_table_lookup(optlist, "ssl_pinned_pubkey")) != NULL)
+		conn->tls_pinned_pubkey = g_strdup(tmp);
+	if ((conn->tls_capath != NULL && conn->tls_capath[0] != '\0') ||
+	    (conn->tls_cafile != NULL && conn->tls_cafile[0] != '\0'))
+		conn->tls_verify = TRUE;
+	if (g_hash_table_lookup(optlist, "notls_verify") != NULL)
+		conn->tls_verify = FALSE;
+	if (g_hash_table_lookup(optlist, "tls_verify") != NULL ||
+	    g_hash_table_lookup(optlist, "ssl_verify") != NULL)
+		conn->tls_verify = TRUE;
+	if ((conn->tls_cert != NULL && conn->tls_cert[0] != '\0') || conn->tls_verify)
+		conn->use_tls = TRUE;
+	if (g_hash_table_lookup(optlist, "notls") != NULL)
+		conn->use_tls = FALSE;
+	if (g_hash_table_lookup(optlist, "tls") != NULL ||
+	    g_hash_table_lookup(optlist, "ssl") != NULL)
+		conn->use_tls = TRUE;
+
+	if (g_hash_table_lookup(optlist, "!") != NULL)
+		conn->no_autojoin_channels = TRUE;
+
+	if (g_hash_table_lookup(optlist, "noautosendcmd") != NULL)
+		conn->no_autosendcmd = TRUE;
+
+	if (g_hash_table_lookup(optlist, "noproxy") != NULL)
+		g_free_and_null(conn->proxy);
+
+	signal_emit("server setup fill optlist", 2, conn, optlist);
 }
 
 static void server_setup_fill_server(SERVER_CONNECT_REC *conn,
@@ -219,10 +281,9 @@ static void server_setup_fill_chatnet(SERVER_CONNECT_REC *conn,
 	signal_emit("server setup fill chatnet", 2, conn, chatnet);
 }
 
-static SERVER_CONNECT_REC *
-create_addr_conn(int chat_type, const char *address, int port,
-		 const char *chatnet, const char *password,
-		 const char *nick)
+static SERVER_CONNECT_REC *create_addr_conn(int chat_type, const char *address, int port,
+                                            const char *chatnet, const char *password,
+                                            const char *nick, GHashTable *optlist)
 {
         CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
@@ -250,7 +311,7 @@ create_addr_conn(int chat_type, const char *address, int port,
 		conn->chatnet = g_strdup(chatnet);
 
 	/* fill in the defaults */
-	server_setup_fill(conn, address, port);
+	server_setup_fill(conn, address, port, optlist);
 
 	/* fill the rest from chat network settings */
 	chatnetrec = chatnet != NULL ? chatnet_find(chatnet) :
@@ -262,6 +323,10 @@ create_addr_conn(int chat_type, const char *address, int port,
 	/* fill the information from setup */
 	if (sserver != NULL)
 		server_setup_fill_server(conn, sserver);
+
+	/* fill the optlist overrides */
+	if (g_hash_table_size(optlist))
+		server_setup_fill_optlist(conn, optlist);
 
 	/* nick / password given in command line overrides all settings */
 	if (password && *password) {
@@ -279,9 +344,8 @@ create_addr_conn(int chat_type, const char *address, int port,
 /* Connect to server where last connect succeeded (or we haven't tried to
    connect yet). If there's no such server, connect to server where we
    haven't connected for the longest time */
-static SERVER_CONNECT_REC *
-create_chatnet_conn(const char *dest, int port,
-		    const char *password, const char *nick)
+static SERVER_CONNECT_REC *create_chatnet_conn(const char *dest, int port, const char *password,
+                                               const char *nick, GHashTable *optlist)
 {
 	SERVER_SETUP_REC *bestrec;
 	GSList *tmp;
@@ -308,16 +372,15 @@ create_chatnet_conn(const char *dest, int port,
 	}
 
 	return bestrec == NULL ? NULL :
-		create_addr_conn(bestrec->chat_type, bestrec->address, 0,
-				 dest, NULL, nick);
+                                 create_addr_conn(bestrec->chat_type, bestrec->address, 0, dest,
+	                                          NULL, nick, optlist);
 }
 
 /* Create server connection record. `dest' is required, rest can be NULL.
    `dest' is either a server address or chat network */
-SERVER_CONNECT_REC *
-server_create_conn(int chat_type, const char *dest, int port,
-		   const char *chatnet, const char *password,
-		   const char *nick)
+SERVER_CONNECT_REC *server_create_conn_opt(int chat_type, const char *dest, int port,
+                                           const char *chatnet, const char *password,
+                                           const char *nick, GHashTable *optlist)
 {
 	SERVER_CONNECT_REC *rec;
         CHATNET_REC *chatrec;
@@ -326,7 +389,7 @@ server_create_conn(int chat_type, const char *dest, int port,
 
         chatrec = chatnet_find(dest);
 	if (chatrec != NULL) {
-		rec = create_chatnet_conn(chatrec->name, port, password, nick);
+		rec = create_chatnet_conn(chatrec->name, port, password, nick, optlist);
 		/* If rec is NULL the chatnet has no url to connect to */
 		return rec;
 	}
@@ -335,8 +398,20 @@ server_create_conn(int chat_type, const char *dest, int port,
 	if (chatrec != NULL)
 		chatnet = chatrec->name;
 
-	return create_addr_conn(chat_type, dest, port,
-				chatnet, password, nick);
+	return create_addr_conn(chat_type, dest, port, chatnet, password, nick, optlist);
+}
+
+SERVER_CONNECT_REC *server_create_conn(int chat_type, const char *dest, int port,
+                                       const char *chatnet, const char *password, const char *nick)
+{
+	SERVER_CONNECT_REC *ret;
+	GHashTable *opt;
+
+	opt = g_hash_table_new(NULL, NULL);
+	ret = server_create_conn_opt(chat_type, dest, port, chatnet, password, nick, opt);
+	g_hash_table_destroy(opt);
+
+	return ret;
 }
 
 /* Find matching server from setup. Try to find record with a same port,
@@ -409,7 +484,8 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
 
 	rec->use_tls = config_node_get_bool(node, "use_tls", FALSE) || config_node_get_bool(node, "use_ssl", FALSE);
-	rec->tls_verify = config_node_get_bool(node, "tls_verify", FALSE) || config_node_get_bool(node, "ssl_verify", FALSE);
+	rec->tls_verify = config_node_get_bool(node, "tls_verify", TRUE) ||
+	                  config_node_get_bool(node, "ssl_verify", FALSE);
 
 	value = config_node_get_str(node, "tls_cert", NULL);
 	if (value == NULL)
@@ -450,11 +526,6 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	if (value == NULL)
 		value = config_node_get_str(node, "ssl_pinned_pubkey", NULL);
 	rec->tls_pinned_pubkey = g_strdup(value);
-
-	if (rec->tls_cafile || rec->tls_capath)
-		rec->tls_verify = TRUE;
-	if (rec->tls_cert != NULL || rec->tls_verify)
-		rec->use_tls = TRUE;
 
 	rec->port = port;
 	rec->autoconnect = config_node_get_bool(node, "autoconnect", FALSE);

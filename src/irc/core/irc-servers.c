@@ -20,10 +20,11 @@
 
 #include "module.h"
 
-#include <irssi/src/core/net-sendbuffer.h>
-#include <irssi/src/core/signals.h>
-#include <irssi/src/core/rawlog.h>
 #include <irssi/src/core/misc.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/signals.h>
 
 #include <irssi/src/core/channels.h>
 #include <irssi/src/core/queries.h>
@@ -207,7 +208,7 @@ static char **split_message(SERVER_REC *server, const char *target,
 			  strlen(target));
 }
 
-static void server_init(IRC_SERVER_REC *server)
+static void server_init_2(IRC_SERVER_REC *server)
 {
 	IRC_SERVER_CONNECT_REC *conn;
 	char *address, *ptr, *username, *cmd;
@@ -216,8 +217,56 @@ static void server_init(IRC_SERVER_REC *server)
 
 	conn = server->connrec;
 
-	if (conn->proxy != NULL && conn->proxy_password != NULL &&
-	    *conn->proxy_password != '\0') {
+	if (conn->password != NULL && *conn->password != '\0') {
+		/* send password */
+		cmd = g_strdup_printf("PASS %s", conn->password);
+		irc_send_cmd_now(server, cmd);
+		g_free(cmd);
+	}
+
+	/* send nick */
+	cmd = g_strdup_printf("NICK %s", conn->nick);
+	irc_send_cmd_now(server, cmd);
+	g_free(cmd);
+
+	/* send user/realname */
+	address = server->connrec->address;
+	ptr = strrchr(address, ':');
+	if (ptr != NULL) {
+		/* IPv6 address .. doesn't work here, use the string after
+		   the last : char */
+		address = ptr + 1;
+		if (*address == '\0')
+			address = "x";
+	}
+
+	username = g_strdup(conn->username);
+	ptr = strchr(username, ' ');
+	if (ptr != NULL)
+		*ptr = '\0';
+
+	cmd = g_strdup_printf("USER %s %s %s :%s", username, username, address, conn->realname);
+	irc_send_cmd_now(server, cmd);
+	g_free(cmd);
+	g_free(username);
+
+	if (conn->proxy != NULL && conn->proxy_string_after != NULL) {
+		cmd = g_strdup_printf(conn->proxy_string_after, conn->address, conn->port);
+		irc_send_cmd_now(server, cmd);
+		g_free(cmd);
+	}
+}
+
+static void server_init_1(IRC_SERVER_REC *server)
+{
+	IRC_SERVER_CONNECT_REC *conn;
+	char *cmd;
+
+	g_return_if_fail(server != NULL);
+
+	conn = server->connrec;
+
+	if (conn->proxy != NULL && conn->proxy_password != NULL && *conn->proxy_password != '\0') {
 		cmd = g_strdup_printf("PASS %s", conn->proxy_password);
 		irc_send_cmd_now(server, cmd);
 		g_free(cmd);
@@ -243,45 +292,8 @@ static void server_init(IRC_SERVER_REC *server)
 	irc_cap_toggle(server, CAP_ACCOUNT_NOTIFY, TRUE);
 	irc_cap_toggle(server, CAP_SELF_MESSAGE, TRUE);
 	irc_cap_toggle(server, CAP_SERVER_TIME, TRUE);
-
-	irc_send_cmd_now(server, "CAP LS " CAP_LS_VERSION);
-
-	if (conn->password != NULL && *conn->password != '\0') {
-                /* send password */
-		cmd = g_strdup_printf("PASS %s", conn->password);
-		irc_send_cmd_now(server, cmd);
-		g_free(cmd);
-	}
-
-        /* send nick */
-	cmd = g_strdup_printf("NICK %s", conn->nick);
-	irc_send_cmd_now(server, cmd);
-	g_free(cmd);
-
-	/* send user/realname */
-	address = server->connrec->address;
-        ptr = strrchr(address, ':');
-	if (ptr != NULL) {
-		/* IPv6 address .. doesn't work here, use the string after
-		   the last : char */
-		address = ptr+1;
-		if (*address == '\0')
-			address = "x";
-	}
-
-	username = g_strdup(conn->username);
-	ptr = strchr(username, ' ');
-	if (ptr != NULL) *ptr = '\0';
-
-	cmd = g_strdup_printf("USER %s %s %s :%s", username, username, address, conn->realname);
-	irc_send_cmd_now(server, cmd);
-	g_free(cmd);
-	g_free(username);
-
-	if (conn->proxy != NULL && conn->proxy_string_after != NULL) {
-		cmd = g_strdup_printf(conn->proxy_string_after, conn->address, conn->port);
-		irc_send_cmd_now(server, cmd);
-		g_free(cmd);
+	if (!conn->use_tls && (conn->starttls || !conn->disallow_starttls)) {
+		irc_cap_toggle(server, CAP_STARTTLS, TRUE);
 	}
 
 	server->isupport = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
@@ -296,6 +308,119 @@ static void server_init(IRC_SERVER_REC *server)
 	/* this will reset to 1 sec after we get the 001 event */
 	server->wait_cmd = g_get_real_time();
 	server->wait_cmd += 120 * G_USEC_PER_SEC;
+
+	if (!conn->no_cap) {
+		signal_emit("server waiting cap ls", 2, server, CAP_LS_VERSION);
+		irc_send_cmd_now(server, "CAP LS " CAP_LS_VERSION);
+		/* to detect non-CAP servers, send this bogus join */
+		irc_send_cmd_now(server, "JOIN ");
+	}
+	if (conn->starttls)
+		irc_server_send_starttls(server);
+	else if (conn->no_cap)
+		server_init_2(server);
+}
+
+static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
+{
+	int error;
+	server->connrec->starttls = 1;
+
+	if (server->starttls_tag) {
+		g_source_remove(server->starttls_tag);
+		server->starttls_tag = 0;
+	}
+
+	error = irssi_ssl_handshake(handle);
+	if (error == -1) {
+		server->connection_lost = TRUE;
+		server_disconnect((SERVER_REC *) server);
+		return;
+	}
+	if (error & 1) { /* wait */
+		server->starttls_tag =
+		    i_input_add(handle, error == 1 ? I_INPUT_READ : I_INPUT_WRITE,
+		                (GInputFunction) init_ssl_loop, server);
+		return;
+	}
+	/* continue */
+	rawlog_redirect(server->rawlog, "Now talking encrypted");
+	signal_emit("server connection switched", 1, server);
+	if (!server->cap_supported) {
+		server_init_2(server);
+	} else {
+		signal_emit("server cap continue", 1, server);
+	}
+
+	if (settings_get_bool("starttls_sts")) {
+		IRC_SERVER_SETUP_REC *ssetup = IRC_SERVER_SETUP(server_setup_find(
+		    server->connrec->address, server->connrec->port, server->connrec->chatnet));
+		if (ssetup != NULL) {
+			ssetup->starttls = STARTTLS_ENABLED;
+			server_setup_add((SERVER_SETUP_REC *) ssetup);
+		}
+	}
+}
+
+#include <irssi/src/core/line-split.h>
+void irc_server_send_starttls(IRC_SERVER_REC *server)
+{
+	g_return_if_fail(server != NULL);
+
+	g_warning("[%s] Now attempting STARTTLS", server->tag);
+	irc_send_cmd_now(server, "STARTTLS");
+}
+
+static void event_starttls(IRC_SERVER_REC *server, const char *data)
+{
+	GIOChannel *ssl_handle;
+
+	g_return_if_fail(server != NULL);
+
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	if (server->handle->readbuffer != NULL &&
+	    !line_split_is_empty(server->handle->readbuffer)) {
+		char *str;
+		line_split("", -1, &str, &server->handle->readbuffer);
+	}
+	ssl_handle = net_start_ssl((SERVER_REC *) server);
+	if (ssl_handle != NULL) {
+		g_source_remove(server->readtag);
+		server->readtag = -1;
+		server->handle->handle = ssl_handle;
+		init_ssl_loop(server, server->handle->handle);
+	} else {
+		g_warning("net_start_ssl failed");
+	}
+}
+
+static void event_registerfirst(IRC_SERVER_REC *server, const char *data)
+{
+	g_return_if_fail(server != NULL);
+
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	if (server->connected)
+		return;
+
+	if (!server->cap_supported && !server->connrec->starttls)
+		server_init_2(server);
+}
+
+static void event_capend(IRC_SERVER_REC *server)
+{
+	g_return_if_fail(server != NULL);
+
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	if (server->connected)
+		return;
+
+	server_init_2(server);
 }
 
 SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
@@ -347,6 +472,27 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 void irc_server_connect(SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
+
+	if (server->connrec->connect_handle != NULL) {
+		/* an existing handle from upgrade */
+		IRC_SERVER_CONNECT_REC *conn;
+		int tls_disconnect;
+
+		conn = ((IRC_SERVER_REC *) server)->connrec;
+		tls_disconnect = conn->use_tls || conn->starttls;
+
+		if (tls_disconnect) {
+			/* we cannot use it, it is encrypted. force a reconnect */
+			g_io_channel_unref(conn->connect_handle);
+			conn->connect_handle = NULL;
+			server->session_reconnect = FALSE;
+			server_connect_ref((SERVER_CONNECT_REC *) conn);
+			server_disconnect(server);
+			server_connect((SERVER_CONNECT_REC *) conn);
+			server_connect_unref((SERVER_CONNECT_REC *) conn);
+			return;
+		}
+	}
 
 	if (!server_start_connect(server)) {
                 server_connect_unref(server->connrec);
@@ -420,13 +566,24 @@ static void sig_connected(IRC_SERVER_REC *server)
 	server->splits = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
 	if (!server->session_reconnect)
-		server_init(server);
+		server_init_1(server);
 }
 
 static void isupport_destroy_hash(void *key, void *value)
 {
 	g_free(key);
 	g_free(value);
+}
+
+static void sig_disconnected(IRC_SERVER_REC *server)
+{
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	if (server->starttls_tag) {
+		g_source_remove(server->starttls_tag);
+		server->starttls_tag = 0;
+	}
 }
 
 static void sig_destroyed(IRC_SERVER_REC *server)
@@ -650,20 +807,17 @@ void irc_servers_start_cmd_timeout(void)
 
 /* Return a string of all channels (and keys, if any have them) in server,
    like "#a,#b,#c,#d x,b_chan_key,x,x" or just "#e,#f,#g" */
-char *irc_server_get_channels(IRC_SERVER_REC *server)
+char *irc_server_get_channels(IRC_SERVER_REC *server, int rejoin_channels_mode)
 {
 	GSList *tmp;
 	GString *chans, *keys;
 	char *ret;
 	int use_keys;
-	int rejoin_channels_mode;
 
 	g_return_val_if_fail(server != NULL, FALSE);
 
-	rejoin_channels_mode = settings_get_choice("rejoin_channels_on_reconnect");
-
 	/* do we want to rejoin channels in the first place? */
-	if(rejoin_channels_mode == 0)
+	if (rejoin_channels_mode == REJOIN_CHANNELS_MODE_OFF)
 		return g_strdup("");
 
 	chans = g_string_new(NULL);
@@ -674,7 +828,9 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
 		CHANNEL_SETUP_REC *setup = channel_setup_find(channel->name, channel->server->connrec->chatnet);
-		if ((setup != NULL && setup->autojoin && rejoin_channels_mode == 2) || rejoin_channels_mode == 1) {
+		if ((setup != NULL && setup->autojoin &&
+		     rejoin_channels_mode == REJOIN_CHANNELS_MODE_AUTO) ||
+		    rejoin_channels_mode == REJOIN_CHANNELS_MODE_ON) {
 			g_string_append_printf(chans, "%s,", channel->name);
 			g_string_append_printf(keys, "%s,", channel->key == NULL ? "x" : channel->key);
 			if (channel->key != NULL)
@@ -687,7 +843,9 @@ char *irc_server_get_channels(IRC_SERVER_REC *server)
 		REJOIN_REC *rec = tmp->data;
 		CHANNEL_SETUP_REC *setup = channel_setup_find(rec->channel, server->tag);
 
-		if ((setup != NULL && setup->autojoin && rejoin_channels_mode == 2) || rejoin_channels_mode == 1) {
+		if ((setup != NULL && setup->autojoin &&
+		     rejoin_channels_mode == REJOIN_CHANNELS_MODE_AUTO) ||
+		    rejoin_channels_mode == REJOIN_CHANNELS_MODE_ON) {
 			g_string_append_printf(chans, "%s,", rec->channel);
 			g_string_append_printf(keys, "%s,", rec->key == NULL ? "x" :
 									rec->key);
@@ -1048,6 +1206,7 @@ void irc_server_init_isupport(IRC_SERVER_REC *server)
 
 void irc_servers_init(void)
 {
+	settings_add_bool("servers", "starttls_sts", TRUE);
 	settings_add_choice("servers", "rejoin_channels_on_reconnect", 1, "off;on;auto");
 	settings_add_str("misc", "usermode", DEFAULT_USER_MODE);
 	settings_add_str("misc", "split_line_start", "");
@@ -1059,9 +1218,13 @@ void irc_servers_init(void)
 	cmd_tag = -1;
 
 	signal_add_first("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_add_first("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_add_last("server destroyed", (SIGNAL_FUNC) sig_destroyed);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_add("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
+	signal_add("event 670", (SIGNAL_FUNC) event_starttls);
+	signal_add("event 451", (SIGNAL_FUNC) event_registerfirst);
+	signal_add("server cap end", (SIGNAL_FUNC) event_capend);
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_add("event 005", (SIGNAL_FUNC) event_isupport);
@@ -1087,9 +1250,13 @@ void irc_servers_deinit(void)
 		g_source_remove(cmd_tag);
 
 	signal_remove("server connected", (SIGNAL_FUNC) sig_connected);
+	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_remove("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_remove("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
+	signal_remove("event 670", (SIGNAL_FUNC) event_starttls);
+	signal_remove("event 451", (SIGNAL_FUNC) event_registerfirst);
+	signal_remove("server cap end", (SIGNAL_FUNC) event_capend);
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);
 	signal_remove("event 005", (SIGNAL_FUNC) event_isupport);

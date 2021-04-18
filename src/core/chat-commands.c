@@ -40,7 +40,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
         CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
 	GHashTable *optlist;
-	char *addr, *portstr, *password, *nick, *chatnet, *host, *tmp;
+	char *addr, *portstr, *password, *nick, *chatnet, *host;
 	void *free_arg;
 
 	g_return_val_if_fail(data != NULL, NULL);
@@ -71,8 +71,8 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 	if (chatnet == NULL)
 		chatnet = g_hash_table_lookup(optlist, "network");
 
-	conn = server_create_conn(proto != NULL ? proto->id : -1, addr,
-				  atoi(portstr), chatnet, password, nick);
+	conn = server_create_conn_opt(proto != NULL ? proto->id : -1, addr, atoi(portstr), chatnet,
+	                              password, nick, optlist);
 	if (conn == NULL) {
 		signal_emit("error command", 1,
 			    GINT_TO_POINTER(CMDERR_NO_SERVER_DEFINED));
@@ -94,46 +94,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 	if (strchr(addr, '/') != NULL)
 		conn->unix_socket = TRUE;
 
-	if (g_hash_table_lookup(optlist, "6") != NULL)
-		conn->family = AF_INET6;
-	else if (g_hash_table_lookup(optlist, "4") != NULL)
-		conn->family = AF_INET;
-
-	if (g_hash_table_lookup(optlist, "tls") != NULL || g_hash_table_lookup(optlist, "ssl") != NULL)
-		conn->use_tls = TRUE;
-	if ((tmp = g_hash_table_lookup(optlist, "tls_cert")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_cert")) != NULL)
-		conn->tls_cert = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "tls_pkey")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pkey")) != NULL)
-		conn->tls_pkey = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "tls_pass")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pass")) != NULL)
-		conn->tls_pass = g_strdup(tmp);
-	if (g_hash_table_lookup(optlist, "tls_verify") != NULL || g_hash_table_lookup(optlist, "ssl_verify") != NULL)
-		conn->tls_verify = TRUE;
-	if ((tmp = g_hash_table_lookup(optlist, "tls_cafile")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_cafile")) != NULL)
-		conn->tls_cafile = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "tls_capath")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_capath")) != NULL)
-		conn->tls_capath = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "tls_ciphers")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_ciphers")) != NULL)
-		conn->tls_ciphers = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "tls_pinned_cert")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pinned_cert")) != NULL)
-		conn->tls_pinned_cert = g_strdup(tmp);
-	if ((tmp = g_hash_table_lookup(optlist, "tls_pinned_pubkey")) != NULL || (tmp = g_hash_table_lookup(optlist, "ssl_pinned_pubkey")) != NULL)
-		conn->tls_pinned_pubkey = g_strdup(tmp);
-	if ((conn->tls_capath != NULL && conn->tls_capath[0] != '\0')
-	||  (conn->tls_cafile != NULL && conn->tls_cafile[0] != '\0'))
-		conn->tls_verify = TRUE;
-	if ((conn->tls_cert != NULL && conn->tls_cert[0] != '\0') || conn->tls_verify)
-		conn->use_tls = TRUE;
-
-	if (g_hash_table_lookup(optlist, "!") != NULL)
-		conn->no_autojoin_channels = TRUE;
-
-	if (g_hash_table_lookup(optlist, "noautosendcmd") != NULL)
-		conn->no_autosendcmd = TRUE;
-
-	if (g_hash_table_lookup(optlist, "noproxy") != NULL)
-                g_free_and_null(conn->proxy);
-
+	/* TLS options are handled in server_create_conn_opt ... -> server_setup_fill_optlist */
 
 	*rawlog_file = g_strdup(g_hash_table_lookup(optlist, "rawlog"));
 
@@ -149,13 +110,13 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
         return conn;
 }
 
-/* SYNTAX: CONNECT [-4 | -6] [-tls] [-tls_cert <cert>] [-tls_pkey <pkey>] [-tls_pass <password>]
+/* SYNTAX: CONNECT [-4 | -6] [-tls_cert <cert>] [-tls_pkey <pkey>] [-tls_pass <password>]
                    [-tls_verify] [-tls_cafile <cafile>] [-tls_capath <capath>]
-                   [-tls_ciphers <list>] [-tls_pinned_cert <fingerprint>] [-tls_pinned_pubkey <fingerprint>]
-                   [-!] [-noautosendcmd]
-		   [-noproxy] [-network <network>] [-host <hostname>]
-		   [-rawlog <file>]
-		   <address>|<chatnet> [<port> [<password> [<nick>]]] */
+                   [-tls_ciphers <list>] [-tls_pinned_cert <fingerprint>]
+                   [-tls_pinned_pubkey <fingerprint>] [-!] [-noautosendcmd] [-tls | -notls]
+                   [-starttls | -disallow_starttls] [-noproxy] [-network <network>]
+                   [-host <hostname>] [-rawlog <file>]
+                   <address>|<chatnet> [<port> [<password> [<nick>]]] */
 /* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_connect(const char *data)
 {
@@ -520,9 +481,9 @@ void chat_commands_init(void)
 	command_set_options(
 	    "connect",
 	    "4 6 !! -network ~ssl ~+ssl_cert ~+ssl_pkey ~+ssl_pass ~ssl_verify ~+ssl_cafile "
-	    "~+ssl_capath ~+ssl_ciphers ~+ssl_pinned_cert ~+ssl_pinned_pubkey tls +tls_cert "
-	    "+tls_pkey +tls_pass tls_verify +tls_cafile +tls_capath +tls_ciphers +tls_pinned_cert "
-	    "+tls_pinned_pubkey +host noproxy -rawlog noautosendcmd");
+	    "~+ssl_capath ~+ssl_ciphers ~+ssl_pinned_cert ~+ssl_pinned_pubkey tls notls +tls_cert "
+	    "+tls_pkey +tls_pass tls_verify notls_verify +tls_cafile +tls_capath +tls_ciphers "
+	    "+tls_pinned_cert +tls_pinned_pubkey +host noproxy -rawlog noautosendcmd");
 	command_set_options("msg", "channel nick");
 }
 

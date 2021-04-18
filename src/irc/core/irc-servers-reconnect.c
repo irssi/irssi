@@ -51,6 +51,9 @@ static void sig_server_connect_copy(SERVER_CONNECT_REC **dest,
 	rec->sasl_mechanism = src->sasl_mechanism;
 	rec->sasl_username = g_strdup(src->sasl_username);
 	rec->sasl_password = g_strdup(src->sasl_password);
+	rec->disallow_starttls = src->disallow_starttls;
+	rec->starttls = src->starttls;
+	rec->no_cap = src->no_cap;
 	*dest = (SERVER_CONNECT_REC *) rec;
 }
 
@@ -62,7 +65,8 @@ static void sig_server_reconnect_save_status(IRC_SERVER_CONNECT_REC *conn,
 		return;
 
 	g_free_not_null(conn->channels);
-	conn->channels = irc_server_get_channels(server);
+	conn->channels =
+	    irc_server_get_channels(server, settings_get_choice("rejoin_channels_on_reconnect"));
 
 	g_free_not_null(conn->usermode);
 	conn->usermode = g_strdup(server->wanted_usermode);

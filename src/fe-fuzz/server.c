@@ -177,12 +177,23 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
 	for (; *lines != NULL; lines++) {
 		gchar *prefixedLine;
+		int disconnected;
 		if (prefixedChoice) {
 			prefixedLine = g_strdup_printf(":user %s\n", *lines);
 		} else {
 			prefixedLine = g_strdup_printf("%s\n", *lines);
 		}
+		server_ref(server);
 		signal_emit("server incoming", 2, server, prefixedLine);
+		disconnected = server->disconnected;
+		if (disconnected) {
+			server_connect_unref(server->connrec);
+		}
+		server_unref(server);
+		if (disconnected) {
+			/* reconnect */
+			test_server();
+		}
 		g_free(prefixedLine);
 	}
 

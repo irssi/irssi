@@ -254,23 +254,35 @@ static void session_restore_server(CONFIG_NODE *node)
 
 	proto = chat_protocol_find(chat_type);
 	if (proto == NULL || proto->not_initialized) {
-		if (handle < 0) close(handle);
+		if (handle >= 0)
+			close(handle);
 		return;
 	}
 
 	conn = server_create_conn(proto->id, address, port,
 				  chatnet, password, nick);
-	if (conn != NULL) {
-		conn->reconnection = TRUE;
-		conn->connect_handle = i_io_channel_new(handle);
+	if (conn == NULL)
+		return;
 
-		server = proto->server_init_connect(conn);
-		server->version = g_strdup(config_node_get_str(node, "version", NULL));
-		server->session_reconnect = TRUE;
-		signal_emit("session restore server", 2, server, node);
+	conn->use_tls = config_node_get_bool(node, "use_tls", FALSE);
+	conn->tls_cert = g_strdup(config_node_get_str(node, "tls_cert", NULL));
+	conn->tls_pkey = g_strdup(config_node_get_str(node, "tls_pkey", NULL));
+	conn->tls_verify = config_node_get_bool(node, "tls_verify", TRUE);
+	conn->tls_cafile = g_strdup(config_node_get_str(node, "tls_cafile", NULL));
+	conn->tls_capath = g_strdup(config_node_get_str(node, "tls_capath", NULL));
+	conn->tls_ciphers = g_strdup(config_node_get_str(node, "tls_ciphers", NULL));
+	conn->tls_pinned_cert = g_strdup(config_node_get_str(node, "tls_pinned_cert", NULL));
+	conn->tls_pinned_pubkey = g_strdup(config_node_get_str(node, "tls_pinned_pubkey", NULL));
 
-		proto->server_connect(server);
-	}
+	conn->reconnection = TRUE;
+	conn->connect_handle = i_io_channel_new(handle);
+
+	server = proto->server_init_connect(conn);
+	server->version = g_strdup(config_node_get_str(node, "version", NULL));
+	server->session_reconnect = TRUE;
+	signal_emit("session restore server", 2, server, node);
+
+	proto->server_connect(server);
 }
 
 static void sig_session_save(CONFIG_REC *config)

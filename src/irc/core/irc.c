@@ -579,6 +579,7 @@ void irc_irc_init(void)
 	signal_add("server event", (SIGNAL_FUNC) irc_server_event);
 	signal_add("server event tags", (SIGNAL_FUNC) irc_server_event_tags);
 	signal_add("server connected", (SIGNAL_FUNC) irc_init_server);
+	signal_add("server connection switched", (SIGNAL_FUNC) irc_init_server);
 	signal_add("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);
 
 	current_server_event = NULL;
@@ -593,5 +594,6 @@ void irc_irc_deinit(void)
 	signal_remove("server event", (SIGNAL_FUNC) irc_server_event);
 	signal_remove("server event tags", (SIGNAL_FUNC) irc_server_event_tags);
 	signal_remove("server connected", (SIGNAL_FUNC) irc_init_server);
+	signal_remove("server connection switched", (SIGNAL_FUNC) irc_init_server);
 	signal_remove("server incoming", (SIGNAL_FUNC) irc_parse_incoming_line);
 }

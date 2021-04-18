@@ -44,9 +44,15 @@ static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,
 		conn->max_cmds_at_once = sserver->max_cmds_at_once;
 	if (sserver->max_query_chans > 0)
 		conn->max_query_chans = sserver->max_query_chans;
+	if (sserver->starttls == STARTTLS_DISALLOW)
+		conn->disallow_starttls = 1;
+	else if (sserver->starttls == STARTTLS_ENABLED)
+		conn->starttls = 1;
+	if (sserver->no_cap)
+		conn->no_cap = 1;
 }
 
-static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn)
+static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn, GHashTable *optlist)
 {
 	const char *value;
 
@@ -60,6 +66,23 @@ static void sig_server_setup_fill_connect(IRC_SERVER_CONNECT_REC *conn)
 	value = settings_get_str("usermode");
 	conn->usermode = (value != NULL && *value != '\0') ?
 		g_strdup(value) : NULL;
+}
+
+static void sig_server_setup_fill_optlist(IRC_SERVER_CONNECT_REC *conn, GHashTable *optlist)
+{
+	if (!IS_IRC_SERVER_CONNECT(conn))
+		return;
+
+	if (g_hash_table_lookup(optlist, "starttls") != NULL) {
+		conn->starttls = 1;
+		conn->use_tls = 0;
+	} else if (g_hash_table_lookup(optlist, "disallow_starttls") != NULL) {
+		conn->disallow_starttls = 1;
+	}
+	if (g_hash_table_lookup(optlist, "nocap"))
+		conn->no_cap = 1;
+	if (g_hash_table_lookup(optlist, "cap"))
+		conn->no_cap = 0;
 }
 
 static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
@@ -174,6 +197,11 @@ static void sig_server_setup_read(IRC_SERVER_SETUP_REC *rec, CONFIG_NODE *node)
 	rec->max_cmds_at_once = config_node_get_int(node, "cmds_max_at_once", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmd_queue_speed", 0);
 	rec->max_query_chans = config_node_get_int(node, "max_query_chans", 0);
+	rec->starttls = config_node_get_bool(node, "starttls", STARTTLS_NOTSET);
+	if (rec->starttls == STARTTLS_ENABLED) {
+		rec->use_tls = 0;
+	}
+	rec->no_cap = config_node_get_bool(node, "no_cap", FALSE);
 }
 
 static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
@@ -188,6 +216,12 @@ static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
 		iconfig_node_set_int(node, "cmd_queue_speed", rec->cmd_queue_speed);
 	if (rec->max_query_chans > 0)
 		iconfig_node_set_int(node, "max_query_chans", rec->max_query_chans);
+	if (rec->starttls != STARTTLS_NOTSET)
+		iconfig_node_set_bool(node, "starttls", rec->starttls);
+	else
+		iconfig_node_set_str(node, "starttls", NULL);
+	if (rec->no_cap)
+		iconfig_node_set_bool(node, "no_cap", TRUE);
 }
 
 void irc_servers_setup_init(void)
@@ -199,6 +233,7 @@ void irc_servers_setup_init(void)
 	signal_add("server setup fill reconn", (SIGNAL_FUNC) sig_server_setup_fill_reconn);
 	signal_add("server setup fill connect", (SIGNAL_FUNC) sig_server_setup_fill_connect);
 	signal_add("server setup fill chatnet", (SIGNAL_FUNC) sig_server_setup_fill_chatnet);
+	signal_add("server setup fill optlist", (SIGNAL_FUNC) sig_server_setup_fill_optlist);
 	signal_add("server setup read", (SIGNAL_FUNC) sig_server_setup_read);
 	signal_add("server setup saved", (SIGNAL_FUNC) sig_server_setup_saved);
 }
@@ -208,6 +243,7 @@ void irc_servers_setup_deinit(void)
 	signal_remove("server setup fill reconn", (SIGNAL_FUNC) sig_server_setup_fill_reconn);
 	signal_remove("server setup fill connect", (SIGNAL_FUNC) sig_server_setup_fill_connect);
 	signal_remove("server setup fill chatnet", (SIGNAL_FUNC) sig_server_setup_fill_chatnet);
+	signal_remove("server setup fill optlist", (SIGNAL_FUNC) sig_server_setup_fill_optlist);
 	signal_remove("server setup read", (SIGNAL_FUNC) sig_server_setup_read);
 	signal_remove("server setup saved", (SIGNAL_FUNC) sig_server_setup_saved);
 }

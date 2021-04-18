@@ -90,6 +90,8 @@ static void sig_disconnected(IRC_SERVER_REC *server)
 		return;
 
 	rec = server->chanqueries;
+	if (rec == NULL)
+		return;
 	g_return_if_fail(rec != NULL);
 
 	g_hash_table_destroy(rec->accountqueries);
