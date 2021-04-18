@@ -50,6 +50,8 @@ src/fe-fuzz/crash-*
 src/fe-fuzz/oom-*
 
 /core
+/irssi-1.pc
+/irssi/
 /tests/fe-common/core/test-formats
 /tests/fe-common/core/test-formats.log
 /tests/fe-common/core/test-formats.trs
