@@ -8,6 +8,7 @@ on:
     - 'src/irc/**/*.c'
     - 'src/fe-common/irc/**/*.c'
     - 'src/lib-config/**/*.c'
+    - 'src/fe-fuzz/**/*.c'
     - 'tests/**/*.c'
     - '.github/workflows/cifuzz.yml'
 jobs:
