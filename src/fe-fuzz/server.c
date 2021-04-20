@@ -186,9 +186,11 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 		server_ref(server);
 		signal_emit("server incoming", 2, server, prefixedLine);
 		disconnected = server->disconnected;
+		/*
 		if (disconnected) {
-			server_connect_unref(server->connrec);
+		        server_connect_unref(server->connrec);
 		}
+		*/
 		server_unref(server);
 		if (disconnected) {
 			/* reconnect */
