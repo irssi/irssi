@@ -134,23 +134,23 @@ static void _move_relative(TERM_REC *term, int oldx, int oldy, int x, int y)
                 /* move cursor left/right */
 		if (x == oldx-1 && term->TI_cub1) {
 			tput(tparm(term->TI_cub1, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-                        return;
+			return;
 		}
 		if (x == oldx+1 && y == oldy && term->TI_cuf1) {
 			tput(tparm(term->TI_cuf1, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-                        return;
+			return;
 		}
 	}
 
         /* fallback to absolute positioning */
 	if (term->TI_cup) {
 		tput(tparm(term->TI_cup, y, x, 0, 0, 0, 0, 0, 0, 0));
-                return;
+		return;
 	}
 
 	if (oldy != y)
 		tput(tparm(term->TI_vpa, y, 0, 0, 0, 0, 0, 0, 0, 0));
-        if (oldx != x)
+	if (oldx != x)
 		tput(tparm(term->TI_hpa, x, 0, 0, 0, 0, 0, 0, 0, 0));
 }
 
@@ -160,11 +160,11 @@ static void _set_cursor_visible(TERM_REC *term, int set)
 	tput(tparm(set ? term->TI_cnorm : term->TI_civis, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 }
 
-#define scroll_region_setup(term, y1, y2) \
-	if ((term)->TI_csr != NULL) \
-		tput(tparm((term)->TI_csr, y1, y2, 0, 0, 0, 0, 0, 0, 0)); \
-	else if ((term)->TI_wind != NULL) \
-		tput(tparm((term)->TI_wind, y1, y2, 0, (term)->width-1, 0, 0, 0, 0, 0));
+#define scroll_region_setup(term, y1, y2)                                                          \
+	if ((term)->TI_csr != NULL)                                                                \
+		tput(tparm((term)->TI_csr, y1, y2, 0, 0, 0, 0, 0, 0, 0));                          \
+	else if ((term)->TI_wind != NULL)                                                          \
+		tput(tparm((term)->TI_wind, y1, y2, 0, (term)->width - 1, 0, 0, 0, 0, 0));
 
 /* Scroll (change_scroll_region+parm_rindex+parm_index / csr+rin+indn) */
 static void _scroll_region(TERM_REC *term, int y1, int y2, int count)
@@ -478,11 +478,12 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	if (term->TI_setaf) {
 		for (i = 0; i < term->TI_colors; i++) {
 			color = i < 16 ? ansitab[i] : i;
-			term->TI_fg[i] = g_strdup(tparm(term->TI_setaf, color, 0, 0, 0, 0, 0, 0, 0, 0));
+			term->TI_fg[i] =
+			    g_strdup(tparm(term->TI_setaf, color, 0, 0, 0, 0, 0, 0, 0, 0));
 		}
 	} else if (term->TI_setf) {
 		for (i = 0; i < term->TI_colors; i++)
-                        term->TI_fg[i] = g_strdup(tparm(term->TI_setf, i, 0, 0, 0, 0, 0, 0, 0, 0));
+			term->TI_fg[i] = g_strdup(tparm(term->TI_setf, i, 0, 0, 0, 0, 0, 0, 0, 0));
 	} else if (force) {
 		for (i = 0; i < 8; i++)
                         term->TI_fg[i] = g_strdup_printf("\033[%dm", 30+ansitab[i]);
@@ -491,11 +492,12 @@ void terminfo_setup_colors(TERM_REC *term, int force)
 	if (term->TI_setab) {
 		for (i = 0; i < term->TI_colors; i++) {
 			color = i < 16 ? ansitab[i] : i;
-			term->TI_bg[i] = g_strdup(tparm(term->TI_setab, color, 0, 0, 0, 0, 0, 0, 0, 0));
+			term->TI_bg[i] =
+			    g_strdup(tparm(term->TI_setab, color, 0, 0, 0, 0, 0, 0, 0, 0));
 		}
 	} else if (term->TI_setb) {
 		for (i = 0; i < term->TI_colors; i++)
-                        term->TI_bg[i] = g_strdup(tparm(term->TI_setb, i, 0, 0, 0, 0, 0, 0, 0, 0));
+			term->TI_bg[i] = g_strdup(tparm(term->TI_setb, i, 0, 0, 0, 0, 0, 0, 0, 0));
 	} else if (force) {
 		for (i = 0; i < 8; i++)
                         term->TI_bg[i] = g_strdup_printf("\033[%dm", 40+ansitab[i]);
