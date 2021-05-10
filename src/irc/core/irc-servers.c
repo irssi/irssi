@@ -313,7 +313,8 @@ static void server_init_1(IRC_SERVER_REC *server)
 		signal_emit("server waiting cap ls", 2, server, CAP_LS_VERSION);
 		irc_send_cmd_now(server, "CAP LS " CAP_LS_VERSION);
 		/* to detect non-CAP servers, send this bogus join */
-		irc_send_cmd_now(server, "JOIN ");
+		/* the : will make INSPIRCD respond with 451 instead of 461, too */
+		irc_send_cmd_now(server, "JOIN :");
 	}
 	if (conn->starttls)
 		irc_server_send_starttls(server);
