@@ -14,6 +14,9 @@ irssi_core_pl_h = custom_target('irssi-core.pl.h',
   command : [file2header, '@INPUT@', 'irssi_core_code'],
 )
 
+# required as of Meson 0.58.0
+generated_files_inc = include_directories('.')
+
 libperl_core_a = shared_module('perl_core',
   files(
     'perl-common.c',
@@ -29,7 +32,7 @@ libperl_core_a = shared_module('perl_core',
     def_perl_use_lib,
     '-D' + 'PERL_STATIC_LIBS' + '=' + 0.to_string(),
   ],
-  include_directories : rootinc,
+  include_directories : [ rootinc ] + [ generated_files_inc ],
   implicit_include_directories : false,
   install : true,
   install_dir : moduledir,

@@ -49,7 +49,7 @@ jobs:
             setuptools_ver: <51
           - os: ubuntu-latest
             builder: meson
-            meson_ver: <0.58.0
+            meson_ver: <0.59.0
           - os: ubuntu-latest
             builder: meson
             flags: meson-latest FAILURE-OK
