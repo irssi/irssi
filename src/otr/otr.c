@@ -643,7 +643,7 @@ static enum otr_msg_status enqueue_otr_fragment(const char *msg, struct otr_peer
 		 * Dup the string with enough space for the NULL byte since we are
 		 * about to free it before passing it to the caller.
 		 */
-		*full_msg = strndup(opc->full_msg, opc->msg_len + 1);
+		*full_msg = g_strndup(opc->full_msg, opc->msg_len + 1);
 		/* Reset everything. */
 		free(opc->full_msg);
 		opc->full_msg = NULL;
