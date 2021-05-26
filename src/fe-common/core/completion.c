@@ -104,7 +104,7 @@ char *auto_word_complete(const char *line, int *pos)
 
 	/* check for words in autocompletion list */
 	replace = completion_find(word, TRUE);
-	if (replace == NULL) {
+	if (replace == NULL || (!g_strcmp0(replace, word))) {
 		ret = NULL;
 		g_string_free(result, TRUE);
 	} else {
