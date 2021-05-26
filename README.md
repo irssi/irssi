@@ -72,4 +72,4 @@ Irssi is always looking for developers. Feel free to submit patches through
 GitHub pull requests.
 
 You can also contact the Irssi developers in
-[#irssi](https://irssi.org/support/irc/) on irc.libera.chat.
+[#irssi](https://irssi.org/support/irc/) on freenode.

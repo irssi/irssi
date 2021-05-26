@@ -61,15 +61,15 @@
 %9Examples:%9
 
     /SERVER
-    /SERVER CONNECT irc.libera.chat
-    /SERVER CONNECT +irc.libera.chat
-    /SERVER ADD -network liberachat -noautosendcmd irc.libera.chat
-    /SERVER ADD -! -auto -host staff.irssi.org -4 -network liberachat -noproxy irc.libera.chat 6667
-    /SERVER MODIFY -network liberachat -noauto irc.libera.chat
-    /SERVER MODIFY -network liberachat irc.libera.chat 6697 -
-    /SERVER REMOVE irc.libera.chat 6667 liberachat
+    /SERVER CONNECT chat.freenode.net
+    /SERVER CONNECT +chat.freenode.net
+    /SERVER ADD -network Freenode -noautosendcmd orwell.freenode.net
+    /SERVER ADD -! -auto -host staff.irssi.org -4 -network Freenode -noproxy orwell.freenode.net 6667
+    /SERVER MODIFY -network Freenode -noauto orwell.freenode.net
+    /SERVER MODIFY -network Freenode orwell.freenode.net 6697 -
+    /SERVER REMOVE orwell.freenode.net 6667 Freenode
     /SERVER PURGE
-    /SERVER PURGE irc.libera.chat
+    /SERVER PURGE orwell.freenode.net
 
 %9See also:%9 CHANNEL, CONNECT, DISCONNECT, NETWORK, RECONNECT, RMRECONNS
 

@@ -17,8 +17,8 @@
 %9Examples:%9
 
     /QUERY mike
-    /QUERY -liberachat bob
-    /QUERY -liberachat -window sarah
+    /QUERY -freenode bob
+    /QUERY -freenode -window sarah
 
 %9See also:%9 MSG, UNQUERY, WINDOW
 

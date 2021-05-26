@@ -34,9 +34,9 @@
 
 %9Examples:%9
 
-    /CONNECT liberachat
-    /CONNECT -6 liberachat
-    /CONNECT -4 -! -host staff.irssi.org -network liberachat irc.libera.chat
+    /CONNECT Freenode
+    /CONNECT -6 Freenode
+    /CONNECT -4 -! -host staff.irssi.org -network Freenode orwell.freenode.net
     /CONNECT irc.irssi.org 6667 WzerT8zq mike
 
 %9See also:%9 DISCONNECT, RMRECONNS, SERVER

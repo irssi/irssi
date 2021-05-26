@@ -15,7 +15,7 @@
 %9Examples:%9
 
     /NCTCP #irssi VERSION King of the Jungle v1.0
-    /NCTCP bob,#libera USERINFO I am bob :p
+    /NCTCP bob,#freenode USERINFO I am bob :p
 
 %9See also:%9 CTCP
 
