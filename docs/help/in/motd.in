@@ -15,7 +15,7 @@
 %9Examples:%9
 
     /MOTD
-    /MOTD orwel.freenode.org
+    /MOTD <url>
     /MOTD bob
 
 %9See also:%9 ADMIN, INFO, LINKS, MAP

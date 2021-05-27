@@ -14,7 +14,7 @@
 %9Examples:%9
 
     /PART #irssi
-    /PART #freenode,#irssi
+    /PART #irssi,#foobar
 
 %9See also:%9 JOIN, KICK
 

@@ -15,7 +15,7 @@
 %9Examples:%9
 
     /ADMIN
-    /ADMIN orwell.freenode.net
+    /ADMIN foo.bar.net
     /ADMIN mike
 
 %9See also:%9 INFO

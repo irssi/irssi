@@ -71,5 +71,4 @@ an issue on GitHub or send a mail to [staff@irssi.org](mailto:staff@irssi.org).
 Irssi is always looking for developers. Feel free to submit patches through
 GitHub pull requests.
 
-You can also contact the Irssi developers in
-[#irssi](https://irssi.org/support/irc/) on freenode.
+You can also contact the Irssi developers on [one of our official channels](https://irssi.org/support/irc/).

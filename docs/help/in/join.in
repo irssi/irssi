@@ -20,7 +20,7 @@
     /JOIN #irssi
     /JOIN #basementcat secret_lair
     /JOIN -invite
-    /JOIN -freenode #github,#freenode,#irssi
+    /JOIN -<network> #github,#freenode,#irssi
 
 %9See also:%9 KICK, PART
 
