@@ -33,10 +33,10 @@
 %9Examples:%9
 
     /LOG OPEN -targets mike ~/irclogs/mike.log MSGS
-    /LOG OPEN -targets #irssi-freenode ~/irclogs/freenode/irssi-%%Y-%%m-%%d
-    /LOG CLOSE ~/irclogs/freenode/irssi-%%Y-%%m-%%d
-    /LOG STOP ~/irclogs/freenode/irssi-%%Y-%%m-%%d
-    /LOG START ~/irclogs/freenode/irssi-%%Y-%%m-%%d
+    /LOG OPEN -targets #irssi ~/irclogs/ExampleNet/irssi-%%Y-%%m-%%d
+    /LOG CLOSE ~/irclogs/ExampleNet/irssi-%%Y-%%m-%%d
+    /LOG STOP ~/irclogs/ExampleNet/irssi-%%Y-%%m-%%d
+    /LOG START ~/irclogs/ExampleNet/irssi-%%Y-%%m-%%d
 
     /SET autolog ON
 

@@ -43,7 +43,7 @@ has a few predefined networks, to list them:
 
 And to connect to one of those networks and join a channel:
 
-/CONNECT Freenode
+/CONNECT LiberaChat
 /JOIN #irssi
 
 To add more networks:
@@ -67,7 +67,7 @@ wait for 2 seconds before joining channels:
 If you have irssi 0.8.18 or higher and the irc network supports it, you can use
 SASL instead of nickserv, which is more reliable:
 
-/NETWORK ADD -sasl_username yourname -sasl_password yourpassword -sasl_mechanism PLAIN Freenode
+/NETWORK ADD -sasl_username yourname -sasl_password yourpassword -sasl_mechanism PLAIN ExampleNet
 
 These commands have many more options, see their help for details:
 

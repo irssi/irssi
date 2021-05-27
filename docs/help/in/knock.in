@@ -23,7 +23,7 @@
 %9Examples:%9
 
     /KNOCK #irssi
-    /KNOCK #freenode
+    /KNOCK #example
     /KNOCK #github
 
 %9See also:%9 INVITE, JOIN

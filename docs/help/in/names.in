@@ -21,7 +21,7 @@
 %9Examples:%9
 
     /NAMES -ops
-    /NAMES -voices #irssi,#freenode
+    /NAMES -voices #irssi,#example
 
 %9See also:%9 JOIN, PART, WHO, WHOIS
 
