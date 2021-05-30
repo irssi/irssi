@@ -22,7 +22,7 @@
 %9Examples:%9
 
     /RECODE
-    /RECODE ADD Freenode/mike utf-8
+    /RECODE ADD ExampleNet/mike utf-8
     /RECODE ADD #korea euc-kr
     /RECODE REMOVE #korea
 
