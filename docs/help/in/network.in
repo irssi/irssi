@@ -18,7 +18,8 @@
     -usermode:       Specifies the user modes to set on yourself.
     -autosendcmd:    Specifies the commands, separated by the ';' character,
                      and enclosed within two "'" characters, to perform after
-                     connecting.
+                     connecting. 
+                     (Some characters need to be escaped - see /help eval)
     -querychans:     Specifies the maximum number of channels to put in one MODE
                      or WHO command when synchronizing.
     -whois:          Specifies the maximum number of nicknames in one WHOIS
