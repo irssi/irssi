@@ -51,7 +51,7 @@ GENKEY <name>
 
     This process is done in a background worker and can take an arbitrary
     amount of time. The completion is checked when another irssi event is
-    catched.
+    caught.
 
 HELP
     Print this help.
