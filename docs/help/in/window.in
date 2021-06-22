@@ -33,12 +33,12 @@
     THEME:        %|Applies or removes a per-window theme.
     GROW:         %|Increase the size of the active split window by the specified number of lines.
     SHRINK:       %|Decrease the size of the active split window by the specified number of lines.
-    SIZE:         %|Set the current split window size to the specified numer of lines.
+    SIZE:         %|Set the current split window size to the specified number of lines.
     BALANCE:      %|Balance the heights of all split windows.
     HIDE:         %|Hides the current split window, or the split window specified by number or item name.
     SHOW:         %|Show the window specified by number or item name as a new split windows. It is made sticky when autostick_split_windows is turned on.
     UP:           %|Set the split window left or above the current one active. At the top, wraps to the bottom.
-    DOWN:         %|Set the split window right or below the current one active. At the bottom, wraps teft.
+    DOWN:         %|Set the split window right or below the current one active. At the bottom, wraps left.
     LEFT:         %|Go to the previous window numerically that is part of the current sticky group (or not part of any sticky group).
     RIGHT:        %|Go to the next window numerically that is part of the current sticky group (or not part of any sticky group).
     STICK:        %|Make the currently active window sticky, or stick the window specified by number to the currently visible split window. Or turn off stickyness of the currently active window or the window specified by number.
