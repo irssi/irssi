@@ -500,8 +500,7 @@ gboolean strarray_find_dest(char **array, const TEXT_DEST_REC *dest)
 			str += server_tag_len + 1;
 		}
 
-		if (g_strcmp0(str, "") == 0 || g_strcmp0(str, "*") == 0	||
-		    g_strcmp0(str, "::all") == 0) {
+		if (g_strcmp0(str, "*") == 0 || g_strcmp0(str, "::all") == 0) {
 			return TRUE;
 		} else if (g_ascii_strcasecmp(str, dest->target) == 0) {
 			return TRUE;
