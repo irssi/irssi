@@ -10,7 +10,6 @@ executable('botti',
   link_with : [
     libconfig_a,
     libcore_a,
-    libirc_a,
   ],
   install : true,
   dependencies : dep

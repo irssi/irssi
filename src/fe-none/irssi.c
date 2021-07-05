@@ -23,6 +23,7 @@
 #include <irssi/src/core/modules-load.h>
 #include <irssi/src/core/args.h>
 #include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 #include <irssi/src/core/core.h>
 
 #ifdef HAVE_STATIC_PERL
@@ -30,8 +31,10 @@ void perl_core_init(void);
 void perl_core_deinit(void);
 #endif
 
+#ifdef HAVE_STATIC_IRC
 void irc_init(void);
 void irc_deinit(void);
+#endif
 
 static GMainLoop *main_loop;
 static char *autoload_module;
@@ -47,13 +50,32 @@ static void sig_reload(void)
 	reload = TRUE;
 }
 
+static void autoload_modules(void)
+{
+	char **list, **module;
+	list = g_strsplit_set(settings_get_str("autoload_modules"), " ,", -1);
+	for (module = list; *module != NULL; module++) {
+		char *tmp;
+		if ((tmp = strchr(*module, ':')) != NULL) {
+			*tmp = '\0';
+			tmp++;
+			module_load_sub(*module, tmp, NULL);
+		} else {
+			module_load(*module, NULL);
+		}
+	}
+	g_strfreev(list);
+}
+
 void noui_init(void)
 {
 	srand(time(NULL));
 
 	irssi_gui = IRSSI_GUI_NONE;
 	core_init();
+#ifdef HAVE_STATIC_IRC
 	irc_init();
+#endif
 
 	module_register("core", "fe-none");
 
@@ -63,6 +85,8 @@ void noui_init(void)
 #ifdef HAVE_STATIC_PERL
         perl_core_init();
 #endif
+
+	autoload_modules();
 
 	signal_emit("irssi init finished", 0);
 }
@@ -75,7 +99,9 @@ void noui_deinit(void)
 
 	signal_remove("reload", (SIGNAL_FUNC) sig_reload);
 	signal_remove("gui exit", (SIGNAL_FUNC) sig_exit);
+#ifdef HAVE_STATIC_IRC
 	irc_deinit();
+#endif
 	core_deinit();
 }
 
