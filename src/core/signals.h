@@ -40,8 +40,25 @@ void signal_remove_full(const char *signal, SIGNAL_FUNC func, void *user_data);
 void signal_remove_id(int signal_id, SIGNAL_FUNC func, void *user_data);
 
 /* emit signal */
-int signal_emit(const char *signal, int params, ...);
-int signal_emit_id(int signal_id, int params, ...);
+/* macros to check for proper argument count */
+#define signal_emit(signal, params, ...) signal_emit_##params(signal, ##__VA_ARGS__)
+#define signal_emit_0(signal) signal_emit_func(signal, 0)
+#define signal_emit_1(signal, arg1) signal_emit_func(signal, 1, arg1)
+#define signal_emit_2(signal, arg1, arg2) signal_emit_func(signal, 2, arg1, arg2)
+#define signal_emit_3(signal, arg1, arg2, arg3) signal_emit_func(signal, 3, arg1, arg2, arg3)
+#define signal_emit_4(signal, arg1, arg2, arg3, arg4) signal_emit_func(signal, 4, arg1, arg2, arg3, arg4)
+#define signal_emit_5(signal, arg1, arg2, arg3, arg4, arg5) signal_emit_func(signal, 5, arg1, arg2, arg3, arg4, arg5)
+#define signal_emit_6(signal, arg1, arg2, arg3, arg4, arg5, arg6) signal_emit_func(signal, 6, arg1, arg2, arg3, arg4, arg5, arg6)
+#define signal_emit_id(signal, params, ...) signal_emit_id_##params(signal, ##__VA_ARGS__)
+#define signal_emit_id_0(signal) signal_emit_id_func(signal, 0)
+#define signal_emit_id_1(signal, arg1) signal_emit_id_func(signal, 1, arg1)
+#define signal_emit_id_2(signal, arg1, arg2) signal_emit_id_func(signal, 2, arg1, arg2)
+#define signal_emit_id_3(signal, arg1, arg2, arg3) signal_emit_id_func(signal, 3, arg1, arg2, arg3)
+#define signal_emit_id_4(signal, arg1, arg2, arg3, arg4) signal_emit_id_func(signal, 4, arg1, arg2, arg3, arg4)
+#define signal_emit_id_5(signal, arg1, arg2, arg3, arg4, arg5) signal_emit_id_func(signal, 5, arg1, arg2, arg3, arg4, arg5)
+#define signal_emit_id_6(signal, arg1, arg2, arg3, arg4, arg5, arg6) signal_emit_id_func(signal, 6, arg1, arg2, arg3, arg4, arg5, arg6)
+int signal_emit_func(const char *signal, int params, ...);
+int signal_emit_id_func(int signal_id, int params, ...);
 
 /* continue currently emitted signal with different parameters */
 void signal_continue(int params, ...);
