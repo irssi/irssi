@@ -91,7 +91,9 @@ static SERVER_SETUP_REC *create_server_setup(GHashTable *optlist)
 	if (rec == NULL)
                 rec = chat_protocol_get_default();
 	else {
-		chatnet = g_hash_table_lookup(optlist, rec->chatnet);
+		chatnet = g_hash_table_lookup(optlist, "network");
+		if (chatnet == NULL && g_hash_table_lookup(optlist, rec->chatnet) != NULL)
+			chatnet = rec->chatnet;
 		if (chatnet_find(chatnet) == NULL) {
 			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 				    TXT_UNKNOWN_CHATNET, chatnet);
