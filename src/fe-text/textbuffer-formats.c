@@ -102,7 +102,7 @@ static void format_rec_set_dest(TEXT_BUFFER_FORMAT_REC *rec, const TEXT_DEST_REC
 	rec->flags = dest->flags & ~PRINT_FLAG_FORMAT;
 }
 
-void textbuffer_meta_rec_free(TEXT_BUFFER_META_REC *rec)
+void textbuffer_meta_rec_free(LINE_INFO_META_REC *rec)
 {
 	if (rec == NULL)
 		return;
@@ -113,7 +113,7 @@ void textbuffer_meta_rec_free(TEXT_BUFFER_META_REC *rec)
 	g_free(rec);
 }
 
-static void meta_hash_create(struct _TEXT_BUFFER_META_REC *meta)
+static void meta_hash_create(struct _LINE_INFO_META_REC *meta)
 {
 	if (meta->hash == NULL) {
 		meta->hash = g_hash_table_new_full(g_str_hash, (GEqualFunc) g_str_equal,
@@ -122,9 +122,9 @@ static void meta_hash_create(struct _TEXT_BUFFER_META_REC *meta)
 	}
 }
 
-static TEXT_BUFFER_META_REC *line_meta_create(GHashTable *meta_hash)
+static LINE_INFO_META_REC *line_meta_create(GHashTable *meta_hash)
 {
-	struct _TEXT_BUFFER_META_REC *meta;
+	struct _LINE_INFO_META_REC *meta;
 	GHashTableIter iter;
 	const char *key;
 	const char *val;
@@ -132,7 +132,7 @@ static TEXT_BUFFER_META_REC *line_meta_create(GHashTable *meta_hash)
 	if (meta_hash == NULL || g_hash_table_size(meta_hash) == 0)
 		return NULL;
 
-	meta = g_new0(struct _TEXT_BUFFER_META_REC, 1);
+	meta = g_new0(struct _LINE_INFO_META_REC, 1);
 
 	g_hash_table_iter_init(&iter, meta_hash);
 	while (g_hash_table_iter_next(&iter, (gpointer *) &key, (gpointer *) &val)) {
@@ -362,7 +362,7 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line, gboolean
 		THEME_REC *theme;
 		int formatnum;
 		TEXT_BUFFER_FORMAT_REC *format_rec;
-		TEXT_BUFFER_META_REC *meta;
+		LINE_INFO_META_REC *meta;
 		char *str;
 
 		curr = line;

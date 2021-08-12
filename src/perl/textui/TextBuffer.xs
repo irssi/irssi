@@ -107,7 +107,7 @@ textbuffer_line_get_meta(line)
 PREINIT:
 	HV *hv;
 	LINE_REC *l;
-	TEXT_BUFFER_META_REC *m;
+	LINE_INFO_META_REC *m;
 	GHashTableIter iter;
 	char *key;
 	char *val;

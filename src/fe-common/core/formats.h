@@ -67,6 +67,11 @@ typedef struct _TEXT_DEST_REC {
 	GHashTable *meta;
 } TEXT_DEST_REC;
 
+typedef struct _LINE_INFO_META_REC {
+	gint64 server_time;
+	GHashTable *hash;
+} LINE_INFO_META_REC;
+
 #define window_get_theme(window) \
 	(window != NULL && (window)->theme != NULL ? \
 	(window)->theme : current_theme)
