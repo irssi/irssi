@@ -16,6 +16,7 @@
 TEXT_BUFFER_REC *color_buf;
 gboolean scrollback_format;
 gboolean show_server_time;
+int signal_gui_render_line_text;
 
 #if GLIB_CHECK_VERSION(2, 56, 0)
 /* nothing */
@@ -363,7 +364,7 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line, gboolean
 		int formatnum;
 		TEXT_BUFFER_FORMAT_REC *format_rec;
 		LINE_INFO_META_REC *meta;
-		char *str;
+		char *tmp2;
 
 		curr = line;
 		line = NULL;
@@ -396,6 +397,8 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line, gboolean
 		}
 
 		if (text != NULL && *text != '\0') {
+			GString *str;
+
 			reference_time = curr->info.time;
 			if (show_server_time && meta != NULL && meta->server_time != 0) {
 				current_time = meta->server_time;
@@ -403,18 +406,27 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line, gboolean
 				current_time = curr->info.time;
 			}
 
+			str = g_string_new(text);
+			signal_emit_id(signal_gui_render_line_text, 3, &dest, str, meta);
+			if (g_strcmp0(text, str->str) == 0) {
+				g_string_free(str, TRUE);
+			} else {
+				g_free(text);
+				text = g_string_free(str, FALSE);
+			}
+
 			tmp = format_get_level_tag(theme, &dest);
-			str = !theme->info_eol ? format_add_linestart(text, tmp) :
-			                         format_add_lineend(text, tmp);
+			tmp2 = !theme->info_eol ? format_add_linestart(text, tmp) :
+                                                  format_add_lineend(text, tmp);
 			g_free_not_null(tmp);
 			g_free_not_null(text);
-			text = str;
+			text = tmp2;
 			tmp = format_get_line_start(theme, &dest, current_time);
-			str = !theme->info_eol ? format_add_linestart(text, tmp) :
-			                         format_add_lineend(text, tmp);
+			tmp2 = !theme->info_eol ? format_add_linestart(text, tmp) :
+                                                  format_add_lineend(text, tmp);
 			g_free_not_null(tmp);
 			g_free_not_null(text);
-			text = str;
+			text = tmp2;
 			/* str = g_strconcat(text, "\n", NULL); */
 			/* g_free(text); */
 
@@ -447,6 +459,8 @@ static void read_settings(void)
 
 void textbuffer_formats_init(void)
 {
+	signal_gui_render_line_text = signal_get_uniq_id("gui render line text");
+
 	settings_add_bool("lookandfeel", "scrollback_format", TRUE);
 	settings_add_bool("lookandfeel", "show_server_time", FALSE);
 
