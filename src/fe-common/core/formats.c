@@ -34,6 +34,7 @@
 #include <irssi/src/core/recode.h>
 #include <irssi/src/core/utf8.h>
 #include <irssi/src/core/misc.h>
+#include <irssi/src/core/refstrings.h>
 
 static const char *format_backs = "04261537";
 static const char *format_fores = "kbgcrmyw";
@@ -45,6 +46,8 @@ static int hide_text_style, hide_server_tags, hide_colors;
 
 static int timestamp_level;
 static int timestamp_timeout;
+
+static GHashTable *global_meta;
 
 int format_find_tag(const char *module, const char *tag)
 {
@@ -453,6 +456,27 @@ void format_read_arglist(va_list va, FORMAT_REC *format,
 	}
 }
 
+void format_dest_meta_stash(TEXT_DEST_REC *dest, const char *meta_key, const char *meta_value)
+{
+	g_hash_table_replace(dest->meta, i_refstr_intern(meta_key), g_strdup(meta_value));
+}
+
+const char *format_dest_meta_stash_find(TEXT_DEST_REC *dest, const char *meta_key)
+{
+	return g_hash_table_lookup(dest->meta, meta_key);
+}
+
+void format_dest_meta_clear_all(TEXT_DEST_REC *dest)
+{
+	g_hash_table_remove_all(dest->meta);
+}
+
+static void clear_global_meta(WINDOW_REC *window, TEXT_DEST_REC *dest)
+{
+	if (dest != NULL && dest->meta == global_meta)
+		g_hash_table_remove_all(global_meta);
+}
+
 void format_create_dest_tag_meta(TEXT_DEST_REC *dest, void *server, const char *server_tag,
                                  const char *target, int level, WINDOW_REC *window,
                                  GHashTable *meta)
@@ -465,7 +489,7 @@ void format_create_dest_tag_meta(TEXT_DEST_REC *dest, void *server, const char *
 	dest->level = level;
 	dest->window = window != NULL ? window :
 		window_find_closest(server, target, level);
-	dest->meta = meta;
+	dest->meta = meta != NULL ? meta : global_meta;
 }
 
 void format_create_dest_tag(TEXT_DEST_REC *dest, void *server, const char *server_tag,
@@ -1705,12 +1729,18 @@ static void read_settings(void)
 void formats_init(void)
 {
 	signal_gui_print_text = signal_get_uniq_id("gui print text");
+	global_meta =
+	    g_hash_table_new_full(g_str_hash, (GEqualFunc) g_str_equal,
+	                          (GDestroyNotify) i_refstr_release, (GDestroyNotify) g_free);
 
 	read_settings();
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add_last("gui print text finished", (SIGNAL_FUNC) clear_global_meta);
 }
 
 void formats_deinit(void)
 {
+	g_hash_table_destroy(global_meta);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("gui print text finished", (SIGNAL_FUNC) clear_global_meta);
 }

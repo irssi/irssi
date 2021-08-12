@@ -63,7 +63,7 @@ typedef struct _TEXT_DEST_REC {
 
 	int hilight_priority;
 	char *hilight_color;
-        int flags;
+	int flags; /* PRINT_FLAG */
 	GHashTable *meta;
 } TEXT_DEST_REC;
 
@@ -116,11 +116,15 @@ char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t);
 void format_create_dest(TEXT_DEST_REC *dest,
 			void *server, const char *target,
 			int level, WINDOW_REC *window);
-void format_create_dest_tag(TEXT_DEST_REC *dest, void *server,
-			    const char *server_tag, const char *target,
-			    int level, WINDOW_REC *window);
+void format_create_dest_tag(TEXT_DEST_REC *dest, void *server, const char *server_tag,
+                            const char *target, int level, WINDOW_REC *window);
 
 void format_newline(TEXT_DEST_REC *dest);
+
+/* manipulate the meta table of a dest */
+void format_dest_meta_stash(TEXT_DEST_REC *dest, const char *meta_key, const char *meta_value);
+const char *format_dest_meta_stash_find(TEXT_DEST_REC *dest, const char *meta_key);
+void format_dest_meta_clear_all(TEXT_DEST_REC *dest);
 
 /* Return how many characters in `str' must be skipped before `len'
    characters of text is skipped. */
