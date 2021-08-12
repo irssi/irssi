@@ -116,7 +116,7 @@ void textbuffer_meta_rec_free(TEXT_BUFFER_META_REC *rec)
 static void meta_hash_create(struct _TEXT_BUFFER_META_REC *meta)
 {
 	if (meta->hash == NULL) {
-		meta->hash = g_hash_table_new_full(g_str_hash, (GEqualFunc) g_strcmp0,
+		meta->hash = g_hash_table_new_full(g_str_hash, (GEqualFunc) g_str_equal,
 		                                   (GDestroyNotify) i_refstr_release,
 		                                   (GDestroyNotify) g_free);
 	}
