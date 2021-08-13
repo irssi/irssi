@@ -54,10 +54,11 @@ log_close(log)
 	Irssi::Log log
 
 void
-log_write_rec(log, str, level)
+log_write_rec(log, str, level, now = -1)
 	Irssi::Log log
 	char *str
 	int level
+	time_t now
 
 void
 log_start_logging(log)
