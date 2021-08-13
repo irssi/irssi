@@ -19,6 +19,8 @@ while (<>) {
 	s/GList \* of ([^,]*)s/glistptr_\1/g;
 	s/GSList of ([^,]*)s/gslist_\1/g;
 
+	s/GString \*[^,]*/gstring/g;
+
 	s/char \*[^,]*/string/g;
 	s/ulong \*[^,]*/ulongptr/g;
 	s/int \*[^,]*/intptr/g;
