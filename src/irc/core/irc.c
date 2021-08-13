@@ -113,20 +113,25 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd, int irc_send_whe
 		g_string_append(str, cmd);
 	}
 
-	if (irc_send_when == IRC_SEND_NOW) {
-		rawlog_output(server->rawlog, str->str);
-		server_redirect_command(server, str->str, server->redirect_next);
-                server->redirect_next = NULL;
-	}
-
 	if (!raw) {
-                /* Add CR+LF to command */
+		/* Add CR+LF to command */
 		g_string_append_c(str, 13);
 		g_string_append_c(str, 10);
 	}
 
 	if (irc_send_when == IRC_SEND_NOW) {
-		irc_server_send_data(server, str->str, str->len);
+		signal_emit("server outgoing modify", 2, server, str);
+		if (str->len) {
+			irc_server_send_data(server, str->str, str->len);
+
+			/* add to rawlog without [CR+]LF */
+			if (str->len > 2 && str->str[str->len - 2] == '\r')
+				str->str[str->len - 2] = '\0';
+			else if (str->str[str->len - 1] == '\n')
+				str->str[str->len - 1] = '\0';
+			rawlog_output(server->rawlog, str->str);
+			server_redirect_command(server, str->str, server->redirect_next);
+		}
 		g_string_free(str, TRUE);
 	} else if (irc_send_when == IRC_SEND_NEXT) {
 		/* add to queue */
