@@ -64,6 +64,26 @@ static void perl_text_dest_fill_hash(HV *hv, TEXT_DEST_REC *dest)
 	(void) hv_store(hv, "hilight_color", 13, new_pv(dest->hilight_color), 0);
 }
 
+static void perl_line_info_meta_fill_hash(HV *hv, LINE_INFO_META_REC *meta)
+{
+	GHashTableIter iter;
+	char *key;
+	char *val;
+
+	if (meta != NULL) {
+		if (meta->hash != NULL) {
+			g_hash_table_iter_init(&iter, meta->hash);
+			while (
+			    g_hash_table_iter_next(&iter, (gpointer *) &key, (gpointer *) &val)) {
+				(void) hv_store(hv, key, strlen(key), new_pv(val), 0);
+			}
+		}
+		if (meta->server_time) {
+			(void) hv_store(hv, "server_time", 11, newSViv(meta->server_time), 0);
+		}
+	}
+}
+
 static void perl_exec_fill_hash(HV *hv, EXEC_WI_REC *item)
 {
 	g_return_if_fail(hv != NULL);
@@ -81,6 +101,7 @@ static PLAIN_OBJECT_INIT_REC fe_plains[] = {
 	{ "Irssi::UI::Process", (PERL_OBJECT_FUNC) perl_process_fill_hash },
 	{ "Irssi::UI::Window", (PERL_OBJECT_FUNC) perl_window_fill_hash },
 	{ "Irssi::UI::TextDest", (PERL_OBJECT_FUNC) perl_text_dest_fill_hash },
+	{ "Irssi::UI::LineInfoMeta", (PERL_OBJECT_FUNC) perl_line_info_meta_fill_hash },
 
 	{ NULL, NULL }
 };

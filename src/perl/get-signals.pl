@@ -52,12 +52,13 @@ while (<>) {
 		CLIENT_REC     => 'Irssi::Irc::Client',
 
 		# fe-common
-		THEME_REC     => 'Irssi::UI::Theme',
-		KEYINFO_REC   => 'Irssi::UI::Keyinfo',
-		PROCESS_REC   => 'Irssi::UI::Process',
-		TEXT_DEST_REC => 'Irssi::UI::TextDest',
-		WINDOW_REC    => 'Irssi::UI::Window',
-		WI_ITEM_REC   => 'iobject',
+		THEME_REC	   => 'Irssi::UI::Theme',
+		KEYINFO_REC	   => 'Irssi::UI::Keyinfo',
+		PROCESS_REC	   => 'Irssi::UI::Process',
+		TEXT_DEST_REC	   => 'Irssi::UI::TextDest',
+		LINE_INFO_META_REC => 'Irssi::UI::LineInfoMeta',
+		WINDOW_REC	   => 'Irssi::UI::Window',
+		WI_ITEM_REC	   => 'iobject',
 
 		# fe-text
 		TEXTBUFFER_VIEW_REC => 'Irssi::TextUI::TextBufferView',
