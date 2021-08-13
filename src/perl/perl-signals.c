@@ -419,6 +419,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 
 	if (SvTRUE(ERRSV)) {
 		char *error = g_strdup(SvPV_nolen(ERRSV));
+		perl_signal_remove_script(script);
 		signal_emit("script error", 2, script, error);
                 g_free(error);
                 rec = NULL;
