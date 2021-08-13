@@ -16,6 +16,7 @@
 TEXT_BUFFER_REC *color_buf;
 gboolean scrollback_format;
 gboolean show_server_time;
+int signal_gui_render_line_text;
 
 #if GLIB_CHECK_VERSION(2, 56, 0)
 /* nothing */
@@ -102,7 +103,7 @@ static void format_rec_set_dest(TEXT_BUFFER_FORMAT_REC *rec, const TEXT_DEST_REC
 	rec->flags = dest->flags & ~PRINT_FLAG_FORMAT;
 }
 
-void textbuffer_meta_rec_free(TEXT_BUFFER_META_REC *rec)
+void textbuffer_meta_rec_free(LINE_INFO_META_REC *rec)
 {
 	if (rec == NULL)
 		return;
@@ -113,18 +114,18 @@ void textbuffer_meta_rec_free(TEXT_BUFFER_META_REC *rec)
 	g_free(rec);
 }
 
-static void meta_hash_create(struct _TEXT_BUFFER_META_REC *meta)
+static void meta_hash_create(struct _LINE_INFO_META_REC *meta)
 {
 	if (meta->hash == NULL) {
-		meta->hash = g_hash_table_new_full(g_str_hash, (GEqualFunc) g_strcmp0,
+		meta->hash = g_hash_table_new_full(g_str_hash, (GEqualFunc) g_str_equal,
 		                                   (GDestroyNotify) i_refstr_release,
 		                                   (GDestroyNotify) g_free);
 	}
 }
 
-static TEXT_BUFFER_META_REC *line_meta_create(GHashTable *meta_hash)
+static LINE_INFO_META_REC *line_meta_create(GHashTable *meta_hash)
 {
-	struct _TEXT_BUFFER_META_REC *meta;
+	struct _LINE_INFO_META_REC *meta;
 	GHashTableIter iter;
 	const char *key;
 	const char *val;
@@ -132,7 +133,7 @@ static TEXT_BUFFER_META_REC *line_meta_create(GHashTable *meta_hash)
 	if (meta_hash == NULL || g_hash_table_size(meta_hash) == 0)
 		return NULL;
 
-	meta = g_new0(struct _TEXT_BUFFER_META_REC, 1);
+	meta = g_new0(struct _LINE_INFO_META_REC, 1);
 
 	g_hash_table_iter_init(&iter, meta_hash);
 	while (g_hash_table_iter_next(&iter, (gpointer *) &key, (gpointer *) &val)) {
@@ -362,8 +363,8 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line, gboolean
 		THEME_REC *theme;
 		int formatnum;
 		TEXT_BUFFER_FORMAT_REC *format_rec;
-		TEXT_BUFFER_META_REC *meta;
-		char *str;
+		LINE_INFO_META_REC *meta;
+		char *tmp2;
 
 		curr = line;
 		line = NULL;
@@ -396,6 +397,8 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line, gboolean
 		}
 
 		if (text != NULL && *text != '\0') {
+			GString *str;
+
 			reference_time = curr->info.time;
 			if (show_server_time && meta != NULL && meta->server_time != 0) {
 				current_time = meta->server_time;
@@ -403,18 +406,27 @@ char *textbuffer_line_get_text(TEXT_BUFFER_REC *buffer, LINE_REC *line, gboolean
 				current_time = curr->info.time;
 			}
 
+			str = g_string_new(text);
+			signal_emit_id(signal_gui_render_line_text, 3, &dest, str, meta);
+			if (g_strcmp0(text, str->str) == 0) {
+				g_string_free(str, TRUE);
+			} else {
+				g_free(text);
+				text = g_string_free(str, FALSE);
+			}
+
 			tmp = format_get_level_tag(theme, &dest);
-			str = !theme->info_eol ? format_add_linestart(text, tmp) :
-			                         format_add_lineend(text, tmp);
+			tmp2 = !theme->info_eol ? format_add_linestart(text, tmp) :
+                                                  format_add_lineend(text, tmp);
 			g_free_not_null(tmp);
 			g_free_not_null(text);
-			text = str;
+			text = tmp2;
 			tmp = format_get_line_start(theme, &dest, current_time);
-			str = !theme->info_eol ? format_add_linestart(text, tmp) :
-			                         format_add_lineend(text, tmp);
+			tmp2 = !theme->info_eol ? format_add_linestart(text, tmp) :
+                                                  format_add_lineend(text, tmp);
 			g_free_not_null(tmp);
 			g_free_not_null(text);
-			text = str;
+			text = tmp2;
 			/* str = g_strconcat(text, "\n", NULL); */
 			/* g_free(text); */
 
@@ -447,6 +459,8 @@ static void read_settings(void)
 
 void textbuffer_formats_init(void)
 {
+	signal_gui_render_line_text = signal_get_uniq_id("gui render line text");
+
 	settings_add_bool("lookandfeel", "scrollback_format", TRUE);
 	settings_add_bool("lookandfeel", "show_server_time", FALSE);
 

@@ -107,7 +107,7 @@ textbuffer_line_get_meta(line)
 PREINIT:
 	HV *hv;
 	LINE_REC *l;
-	TEXT_BUFFER_META_REC *m;
+	LINE_INFO_META_REC *m;
 	GHashTableIter iter;
 	char *key;
 	char *val;
@@ -123,6 +123,8 @@ PPCODE:
 				(void) hv_store(hv, key, strlen(key), new_pv(val), 0);
 			}
 		}
-		(void) hv_store(hv, "server_time", 11, newSViv(m->server_time), 0);
+		if (m->server_time) {
+			(void) hv_store(hv, "server_time", 11, newSViv(m->server_time), 0);
+		}
 	}
 	XPUSHs(sv_2mortal(newRV_noinc((SV *) hv)));
