@@ -51,9 +51,9 @@ void log_item_destroy(LOG_REC *log, LOG_ITEM_REC *item);
 LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
 			    const char *servertag);
 
-void log_file_write(const char *server_tag, const char *item, int level,
-		    const char *str, int no_fallbacks);
-void log_write_rec(LOG_REC *log, const char *str, int level);
+void log_file_write(const char *server_tag, const char *item, int level, time_t t, const char *str,
+                    int no_fallbacks);
+void log_write_rec(LOG_REC *log, const char *str, int level, time_t now);
 
 int log_start_logging(LOG_REC *log);
 void log_stop_logging(LOG_REC *log);

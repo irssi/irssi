@@ -204,11 +204,10 @@ static void log_rotate_check(LOG_REC *log)
 	g_free(new_fname);
 }
 
-void log_write_rec(LOG_REC *log, const char *str, int level)
+void log_write_rec(LOG_REC *log, const char *str, int level, time_t now)
 {
         char *colorstr;
 	struct tm *tm;
-	time_t now;
 	int hour, day;
 
 	g_return_if_fail(log != NULL);
@@ -217,7 +216,8 @@ void log_write_rec(LOG_REC *log, const char *str, int level)
 	if (log->handle == -1)
 		return;
 
-	now = time(NULL);
+	if (now == (time_t) -1)
+		now = time(NULL);
 	tm = localtime(&now);
 	hour = tm->tm_hour;
 	day = tm->tm_mday;
@@ -282,8 +282,8 @@ LOG_ITEM_REC *log_item_find(LOG_REC *log, int type, const char *item,
 	return NULL;
 }
 
-void log_file_write(const char *server_tag, const char *item, int level,
-		    const char *str, int no_fallbacks)
+void log_file_write(const char *server_tag, const char *item, int level, time_t t, const char *str,
+                    int no_fallbacks)
 {
 	GSList *tmp, *fallbacks;
 	char *tmpstr;
@@ -309,7 +309,7 @@ void log_file_write(const char *server_tag, const char *item, int level,
 			fallbacks = g_slist_append(fallbacks, rec);
 		else if (log_item_find(rec, LOG_ITEM_TARGET, item,
 				       server_tag) != NULL)
-			log_write_rec(rec, str, level);
+			log_write_rec(rec, str, level, t);
 	}
 
 	if (!found && !no_fallbacks && fallbacks != NULL) {
@@ -319,7 +319,7 @@ void log_file_write(const char *server_tag, const char *item, int level,
 			g_strdup(str);
 
 		for (tmp = fallbacks; tmp != NULL; tmp = tmp->next)
-                        log_write_rec(tmp->data, tmpstr, level);
+			log_write_rec(tmp->data, tmpstr, level, t);
 
 		g_free(tmpstr);
 	}

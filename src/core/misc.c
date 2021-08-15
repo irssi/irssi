@@ -95,7 +95,6 @@ int i_input_add_poll(int fd, int priority, int condition, GInputFunction functio
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2)
 {
-#pragma GCC diagnostic pop
 	if (tv1->tv_sec < tv2->tv_sec)
 		return -1;
 	if (tv1->tv_sec > tv2->tv_sec)
@@ -105,11 +104,8 @@ int g_timeval_cmp(const GTimeVal *tv1, const GTimeVal *tv2)
 		tv1->tv_usec > tv2->tv_usec ? 1 : 0;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2)
 {
-#pragma GCC diagnostic pop
 	long secs, usecs;
 
 	secs = tv1->tv_sec - tv2->tv_sec;
@@ -122,6 +118,22 @@ long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2)
 
 	return usecs;
 }
+#pragma GCC diagnostic pop
+
+#if GLIB_CHECK_VERSION(2, 56, 0)
+/* nothing */
+#else
+/* compatibility code for old GLib */
+GDateTime *g_date_time_new_from_iso8601(const gchar *iso_date, GTimeZone *default_tz)
+{
+	GTimeVal time;
+	if (g_time_val_from_iso8601(iso_date, &time)) {
+		return g_date_time_new_from_timeval_utc(&time);
+	} else {
+		return NULL;
+	}
+}
+#endif
 
 int find_substr(const char *list, const char *item)
 {
