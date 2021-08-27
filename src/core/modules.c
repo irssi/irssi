@@ -28,7 +28,7 @@ static GHashTable *uniqids, *uniqstrids;
 static GHashTable *idlookup, *stridlookup;
 static int next_uniq_id;
 
-void *module_check_cast(void *object, int type_pos, const char *id)
+const void *module_check_cast(const void *object, int type_pos, const char *id)
 {
 	return object == NULL || module_find_id(id,
 		G_STRUCT_MEMBER(int, object, type_pos)) == -1 ? NULL : object;

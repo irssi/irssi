@@ -74,7 +74,7 @@ MODULE_FILE_REC *module_file_find(MODULE_REC *module, const char *name);
 #define MODULE_CHECK_CAST_MODULE(object, cast, type_field, module, id) \
 	((cast *) module_check_cast_module(object, \
 				offsetof(cast, type_field), module, id))
-void *module_check_cast(void *object, int type_pos, const char *id);
+const void *module_check_cast(const void *object, int type_pos, const char *id);
 void *module_check_cast_module(void *object, int type_pos,
 			       const char *module, const char *id);
 
