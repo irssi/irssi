@@ -41,6 +41,7 @@ SERVER_SETUP_REC *server_setup_find(const char *address, int port,
 				    const char *chatnet);
 
 void server_setup_add(SERVER_SETUP_REC *rec);
+void server_setup_modify(SERVER_SETUP_REC *rec, int old_port, const char *old_chatnet);
 void server_setup_remove(SERVER_SETUP_REC *rec);
 
 /* Remove servers attached to chatne */
