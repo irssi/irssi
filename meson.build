@@ -273,7 +273,12 @@ endif
 dep += glib_dep
 dep += gmodule_dep
 
-openssl_dep = dependency('openssl', static : want_static_dependency)
+if glib_internal and want_static_dependency and want_fuzzer
+  openssl_proj = subproject('openssl', default_options : ['default_library=static', 'asm=disabled'])
+  openssl_dep = openssl_proj.get_variable('openssl_dep')
+else
+  openssl_dep = dependency('openssl', static : want_static_dependency)
+endif
 dep += openssl_dep
 
 ############
