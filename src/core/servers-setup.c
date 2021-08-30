@@ -457,7 +457,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	port = config_node_get_int(node, "port", 0);
 	chatnet = config_node_get_str(node, "chatnet", NULL);
 
-	if (server_setup_find(server, port, chatnet) != NULL) {
+	if ((rec = server_setup_find(server, port, chatnet)) != NULL && rec->port == port) {
 		return NULL;
 	}
 
@@ -548,7 +548,7 @@ static int compare_server_setup (CONFIG_NODE *node, SERVER_SETUP_REC *server)
 		return -1;
 
 	address = config_node_get_str(node, "address", NULL);
-	chatnet = config_node_get_str(node, "chatnet", NULL);
+	chatnet = config_node_get_str(node, "chatnet", "");
 	port = config_node_get_int(node, "port", 0);
 
 	if (address == NULL || chatnet == NULL) {
@@ -556,7 +556,7 @@ static int compare_server_setup (CONFIG_NODE *node, SERVER_SETUP_REC *server)
 	}
 
 	if (g_ascii_strcasecmp(address, server->address) != 0 ||
-	    g_ascii_strcasecmp(chatnet, server->chatnet) != 0 ||
+	    g_ascii_strcasecmp(chatnet, server->chatnet != NULL ? server->chatnet : "") != 0 ||
 	    port != server->port) {
 		return 1;
 	}
@@ -564,16 +564,20 @@ static int compare_server_setup (CONFIG_NODE *node, SERVER_SETUP_REC *server)
 	return 0;
 }
 
-static void server_setup_save(SERVER_SETUP_REC *rec)
+static void server_setup_save(SERVER_SETUP_REC *rec, int old_port, const char *old_chatnet)
 {
 	CONFIG_NODE *parent_node, *node;
+	SERVER_SETUP_REC search_rec = { 0 };
 	GSList *config_node;
 
 	parent_node = iconfig_node_traverse("(servers", TRUE);
 
 	/* Try to find this channel in the configuration */
-	config_node = g_slist_find_custom(parent_node->value, rec,
-					  (GCompareFunc)compare_server_setup);
+	search_rec.address = rec->address;
+	search_rec.chatnet = old_chatnet != NULL ? (char *) old_chatnet : rec->chatnet;
+	search_rec.port = old_port;
+	config_node = g_slist_find_custom(parent_node->value, &search_rec,
+	                                  (GCompareFunc) compare_server_setup);
 	if (config_node != NULL)
 		/* Let's update this server record */
 		node = config_node->data;
@@ -654,14 +658,21 @@ static void server_setup_destroy(SERVER_SETUP_REC *rec)
 	g_free(rec);
 }
 
-void server_setup_add(SERVER_SETUP_REC *rec)
+void server_setup_modify(SERVER_SETUP_REC *rec, int old_port, const char *old_chatnet)
 {
+	g_return_if_fail(g_slist_find(setupservers, rec) != NULL);
+
 	rec->type = module_get_uniq_id("SERVER SETUP", 0);
-	if (g_slist_find(setupservers, rec) == NULL)
-		setupservers = g_slist_append(setupservers, rec);
-	server_setup_save(rec);
+	server_setup_save(rec, old_port, old_chatnet);
 
 	signal_emit("server setup updated", 1, rec);
+}
+
+void server_setup_add(SERVER_SETUP_REC *rec)
+{
+	if (g_slist_find(setupservers, rec) == NULL)
+		setupservers = g_slist_append(setupservers, rec);
+	server_setup_modify(rec, -1, NULL);
 }
 
 void server_setup_remove_chatnet(const char *chatnet)
