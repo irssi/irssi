@@ -121,9 +121,9 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 	if (ircnet->sasl_mechanism != NULL) {
 		if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "plain")) {
 			/* The PLAIN method needs both the username and the password */
-			conn->sasl_mechanism = SASL_MECHANISM_PLAIN;
 			if (ircnet->sasl_username != NULL && *ircnet->sasl_username &&
 			    ircnet->sasl_password != NULL && *ircnet->sasl_password) {
+				conn->sasl_mechanism = SASL_MECHANISM_PLAIN;
 				conn->sasl_username = g_strdup(ircnet->sasl_username);
 				conn->sasl_password = g_strdup(ircnet->sasl_password);
 			} else
