@@ -191,8 +191,10 @@ static void server_setup_fill_optlist(SERVER_CONNECT_REC *conn, GHashTable *optl
 
 	/* ad-hoc TLS settings from command optlist */
 	if ((tmp = g_hash_table_lookup(optlist, "tls_cert")) != NULL ||
-	    (tmp = g_hash_table_lookup(optlist, "ssl_cert")) != NULL)
+	    (tmp = g_hash_table_lookup(optlist, "ssl_cert")) != NULL) {
 		conn->tls_cert = g_strdup(tmp);
+		conn->use_tls = TRUE;
+	}
 	if ((tmp = g_hash_table_lookup(optlist, "tls_pkey")) != NULL ||
 	    (tmp = g_hash_table_lookup(optlist, "ssl_pkey")) != NULL)
 		conn->tls_pkey = g_strdup(tmp);
@@ -220,10 +222,10 @@ static void server_setup_fill_optlist(SERVER_CONNECT_REC *conn, GHashTable *optl
 	if (g_hash_table_lookup(optlist, "notls_verify") != NULL)
 		conn->tls_verify = FALSE;
 	if (g_hash_table_lookup(optlist, "tls_verify") != NULL ||
-	    g_hash_table_lookup(optlist, "ssl_verify") != NULL)
+	    g_hash_table_lookup(optlist, "ssl_verify") != NULL) {
 		conn->tls_verify = TRUE;
-	if ((conn->tls_cert != NULL && conn->tls_cert[0] != '\0') || conn->tls_verify)
 		conn->use_tls = TRUE;
+	}
 	if (g_hash_table_lookup(optlist, "notls") != NULL)
 		conn->use_tls = FALSE;
 	if (g_hash_table_lookup(optlist, "tls") != NULL ||
