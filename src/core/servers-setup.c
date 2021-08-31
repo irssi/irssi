@@ -458,7 +458,8 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	chatnet = config_node_get_str(node, "chatnet", NULL);
 
 	if ((rec = server_setup_find(server, port, chatnet)) != NULL && rec->port == port) {
-		return NULL;
+		/* duplicate server setup */
+		server_setup_remove(rec);
 	}
 
 	rec = NULL;
