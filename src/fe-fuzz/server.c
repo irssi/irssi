@@ -152,6 +152,7 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 	args_execute(0, NULL);
 	core_preinit((*argv)[0]);
 	core_init();
+	irssi_ssl_init();
 	irc_init();
 	fe_common_core_init();
 	fe_common_irc_init();

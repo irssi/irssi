@@ -484,8 +484,9 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
 
 	rec->use_tls = config_node_get_bool(node, "use_tls", FALSE) || config_node_get_bool(node, "use_ssl", FALSE);
-	rec->tls_verify = config_node_get_bool(node, "tls_verify", TRUE) ||
-	                  config_node_get_bool(node, "ssl_verify", FALSE);
+	rec->tls_verify = config_node_find(node, "tls_verify") != NULL ?
+                              config_node_get_bool(node, "tls_verify", TRUE) :
+                              config_node_get_bool(node, "ssl_verify", TRUE);
 
 	value = config_node_get_str(node, "tls_cert", NULL);
 	if (value == NULL)
