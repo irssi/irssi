@@ -27,6 +27,13 @@ typedef struct _REDIRECT_REC REDIRECT_REC;
 
 extern char *current_server_event; /* current server event being processed */
 
+enum {
+	IRC_SEND_NOW, /* */
+	IRC_SEND_NEXT,
+	IRC_SEND_NORMAL,
+	IRC_SEND_LATER
+};
+
 /* Send command to IRC server */
 void irc_send_cmd(IRC_SERVER_REC *server, const char *cmd);
 void irc_send_cmdv(IRC_SERVER_REC *server, const char *cmd, ...) G_GNUC_PRINTF (2, 3);
@@ -42,11 +49,12 @@ void irc_send_cmd_now(IRC_SERVER_REC *server, const char *cmd);
     commands to send -- it will go out as soon as possible in accordance
     to the flood protection settings. */
 void irc_send_cmd_first(IRC_SERVER_REC *server, const char *cmd);
+/* Send command to server putting it at the end of the queue. */
+void irc_send_cmd_later(IRC_SERVER_REC *server, const char *cmd);
 /* The core of the irc_send_cmd* functions. If `raw' is TRUE, the `cmd'
    won't be checked at all if it's 512 bytes or not, or if it contains
    line feeds or not. Use with extreme caution! */
-void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
-		       int send_now, int immediate, int raw);
+void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd, int irc_send_when, int raw);
 
 /* Extract a tag value from tags */
 GHashTable *irc_parse_message_tags(const char *tags);
