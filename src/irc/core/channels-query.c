@@ -530,6 +530,7 @@ static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char 
 
 	if (g_hash_table_size(chanrec->nicks) < settings_get_int("channel_max_who_sync") &&
 	    server->isupport != NULL && g_hash_table_lookup(server->isupport, "whox") != NULL &&
+	    server->split_servers == NULL &&
 	    g_hash_table_size(server->chanqueries->accountqueries) <
 	        settings_get_int("account_max_chase")) {
 		char *cmd;
