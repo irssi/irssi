@@ -213,12 +213,16 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		value = g_hash_table_lookup(optlist, "ssl_cafile");
 	if (value != NULL && *value != '\0')
 		rec->tls_cafile = g_strdup(value);
+	else if (value != NULL && *value == '\0')
+		g_free_and_null(rec->tls_cafile);
 
 	value = g_hash_table_lookup(optlist, "tls_capath");
 	if (value == NULL)
 		value = g_hash_table_lookup(optlist, "ssl_capath");
 	if (value != NULL && *value != '\0')
 		rec->tls_capath = g_strdup(value);
+	else if (value != NULL && *value == '\0')
+		g_free_and_null(rec->tls_capath);
 
 	value = g_hash_table_lookup(optlist, "tls_ciphers");
 	if (value == NULL)
