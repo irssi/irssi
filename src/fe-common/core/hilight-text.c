@@ -479,6 +479,8 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 		                       tmp = g_strdup_printf("%d", hilight_end));
 		g_free(tmp);
 	}
+	if (hilight->color != NULL)
+		format_dest_meta_stash(dest, "hilight-color", hilight->color);
 
 	signal_emit("print text", 3, dest, newstr, stripped);
 
