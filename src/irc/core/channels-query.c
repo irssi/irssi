@@ -53,9 +53,9 @@ loop:
 /* here are the WHOX commands we send. the full spec can be found on [1].
 
    (1) WHOX_CHANNEL_FULL_CMD for getting the user list when we join a channel. we request the fields
-       c (channel), u (user), h (host), n (nick), f (flags), d (hops), a (important, account!), and
-       r (the real name goes last because it os the only that can contain spaces.) we request all
-       those fields as they are also included in the "regular" WHO reply we would get without WHOX.
+       c (channel), u (user), h (host), n (nick), f (flags), d (hops), a (account), and r (the real
+       name goes last because it is the only that can contain spaces.) we request all those fields
+       as they are also included in the "regular" WHO reply we would get without WHOX.
 
    (2) WHOX_USERACCOUNT_CMD for getting the account names of people that joined. this code is
        obviously only used when we don't have extended-joins. we request n (nick) and a (account)
@@ -265,7 +265,7 @@ static void query_send(IRC_SERVER_REC *server, int query)
                 cmd = NULL;
 	}
 
-	irc_send_cmd(server, cmd);
+	irc_send_cmd_later(server, cmd);
 
 	g_free(chanstr);
 	g_free(chanstr_commas);
@@ -440,6 +440,7 @@ void irc_channels_query_purge_accountquery(IRC_SERVER_REC *server, const char *n
 				g_free(cmd);
 
 				server->cmdcount--;
+				server->cmdlater--;
 			} else {
 				prev = tmp->next;
 			}
@@ -528,7 +529,10 @@ static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char 
 	}
 
 	if (g_hash_table_size(chanrec->nicks) < settings_get_int("channel_max_who_sync") &&
-	    server->isupport != NULL && g_hash_table_lookup(server->isupport, "whox") != NULL) {
+	    server->isupport != NULL && g_hash_table_lookup(server->isupport, "whox") != NULL &&
+	    server->split_servers == NULL &&
+	    g_hash_table_size(server->chanqueries->accountqueries) <
+	        settings_get_int("account_max_chase")) {
 		char *cmd;
 		server_redirect_event(server, "who user", 1, nick, -1,
 		                      "chanquery useraccount abort", /* failure signal */
@@ -538,7 +542,7 @@ static void sig_event_join(IRC_SERVER_REC *server, const char *data, const char 
 		cmd = g_strdup_printf(WHOX_USERACCOUNT_CMD, nick);
 		g_hash_table_add(server->chanqueries->accountqueries, g_strdup(nick));
 		/* queue the command */
-		irc_send_cmd_full(server, cmd, FALSE, FALSE, FALSE);
+		irc_send_cmd_later(server, cmd);
 		g_free(cmd);
 	}
 }
@@ -635,6 +639,7 @@ void channels_query_init(void)
 {
 	settings_add_bool("misc", "channel_sync", TRUE);
 	settings_add_int("misc", "channel_max_who_sync", 1000);
+	settings_add_int("misc", "account_max_chase", 10);
 
 	signal_add("server connected", (SIGNAL_FUNC) sig_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_disconnected);

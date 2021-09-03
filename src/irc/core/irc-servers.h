@@ -119,6 +119,7 @@ struct _IRC_SERVER_REC {
 	                 there actually is, to make flood control remember
 			 how many messages can be sent before starting the
 			 flood control */
+	int cmdlater; /* number of commands in queue to be sent later */
 	GSList *cmdqueue; /* command, redirection, ... */
 	gint64 wait_cmd; /* don't send anything to server before this */
 	gint64 last_cmd; /* last time command was sent to server */
