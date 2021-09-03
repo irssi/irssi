@@ -151,6 +151,7 @@ irc.c:
  "whois default event", SERVER_REC, char *args, char *sender_nick, char *sender_address
 
  "server incoming", SERVER_REC, char *data
+ "server outgoing modify", SERVER_REC, GString *data
 
 (for perl parser..)
  "redir "<cmd>, SERVER_REC, char *args, char *sender_nick, char *sender_address

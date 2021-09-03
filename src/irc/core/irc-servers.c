@@ -734,9 +734,9 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
 {
 	REDIRECT_REC *redirect;
         GSList *link;
+	GString *str;
 	long usecs;
 	char *cmd;
-	int len;
 
 	if (!IS_IRC_SERVER(server))
 		return 0;
@@ -759,16 +759,20 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
         redirect = server->cmdqueue->next->data;
 
 	/* send command */
-	len = strlen(cmd);
-	irc_server_send_data(server, cmd, len);
+	str = g_string_new(cmd);
+	signal_emit("server outgoing modify", 2, server, str);
+	if (str->len) {
+		irc_server_send_data(server, str->str, str->len);
 
-	/* add to rawlog without [CR+]LF */
-        if (len > 2 && cmd[len-2] == '\r')
-		cmd[len-2] = '\0';
-        else if (cmd[len-1] == '\n')
-		cmd[len-1] = '\0';
-	rawlog_output(server->rawlog, cmd);
-	server_redirect_command(server, cmd, redirect);
+		/* add to rawlog without [CR+]LF */
+		if (str->len > 2 && str->str[str->len - 2] == '\r')
+			str->str[str->len - 2] = '\0';
+		else if (str->str[str->len - 1] == '\n')
+			str->str[str->len - 1] = '\0';
+		rawlog_output(server->rawlog, str->str);
+		server_redirect_command(server, str->str, redirect);
+	}
+	g_string_free(str, TRUE);
 
 	/* remove from queue */
 	server->cmdqueue = g_slist_remove(server->cmdqueue, cmd);
