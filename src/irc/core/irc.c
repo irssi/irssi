@@ -51,6 +51,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd, int irc_send_whe
 {
 	GString *str;
 	int len;
+	guint pos;
 	gboolean server_supports_tag;
 
 	g_return_if_fail(server != NULL);
@@ -64,9 +65,15 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd, int irc_send_whe
 
 	if (server->cmdcount == 0)
 		irc_servers_start_cmd_timeout();
-	if (server->cmdlater > server->cmdcount)
-		server->cmdlater = server->cmdcount;
 	server->cmdcount++;
+
+	pos = g_slist_length(server->cmdqueue);
+	if (server->cmdlater > pos / 2) {
+		server->cmdlater = pos / 2;
+		pos = 0;
+	} else {
+		pos -= 2 * server->cmdlater;
+	}
 
 	if (!raw) {
 		const char *tmp = cmd;
@@ -126,12 +133,6 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd, int irc_send_whe
 		server->cmdqueue = g_slist_prepend(server->cmdqueue, server->redirect_next);
 		server->cmdqueue = g_slist_prepend(server->cmdqueue, g_string_free(str, FALSE));
 	} else if (irc_send_when == IRC_SEND_NORMAL) {
-		guint pos = g_slist_length(server->cmdqueue);
-		if (pos > 2 * server->cmdlater)
-			pos -= 2 * server->cmdlater;
-		else
-			pos = 0;
-
 		server->cmdqueue = g_slist_insert(server->cmdqueue, server->redirect_next, pos);
 		server->cmdqueue = g_slist_insert(server->cmdqueue, g_string_free(str, FALSE), pos);
 	} else if (irc_send_when == IRC_SEND_LATER) {
