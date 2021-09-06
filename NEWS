@@ -1,3 +1,5 @@
+v1.4-head-an 2022-xx-xx  Ailin Nemui <Nei>
+
 v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
 	* /SET resolve_reverse_lookup setting was removed (#1135)
 	* Irssi will try to connect on IPv4 if IPv6 connection failed
