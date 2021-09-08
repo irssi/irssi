@@ -129,8 +129,7 @@ v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
 	  join_extended_account, that theme writers need to take into
 	  account if desired.
 
-	+ Add support for IRCv3 setname (#1093, #1104, #1254, GL#33,
-	  #1104, #1254)
+	+ Add support for IRCv3 setname (#1093, #1104, #1254, GL#33)
 	+ Add support for IRCv3 account-notify (#1100, #1098, GL#33,
 	  #1105, #1131). Credit to oss-fuzz
 	  /SET show_account_notify to enable
