@@ -282,7 +282,6 @@ static void server_init_1(IRC_SERVER_REC *server)
 		irc_cap_toggle(server, CAP_SASL, TRUE);
 	}
 
-	irc_cap_toggle(server, CAP_MAXLINE, TRUE);
 	irc_cap_toggle(server, CAP_MULTI_PREFIX, TRUE);
 	irc_cap_toggle(server, CAP_EXTENDED_JOIN, TRUE);
 	irc_cap_toggle(server, CAP_SETNAME, TRUE);
@@ -645,24 +644,6 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 	irc_send_cmd_now(server, str);
 	g_free(str);
 	g_free(recoded);
-}
-
-static void cap_maxline(IRC_SERVER_REC *server)
-{
-	unsigned int maxline = 0;
-	gboolean parse_successful = FALSE;
-	const char *maxline_str;
-
-	maxline_str = g_hash_table_lookup(server->cap_supported, CAP_MAXLINE);
-	if (maxline_str != NULL) {
-		parse_successful = parse_uint(maxline_str, NULL, 10, &maxline);
-
-	}
-
-	if (parse_successful &&
-	    maxline >= MAX_IRC_MESSAGE_LEN + 2 /* 2 bytes for CR+LF */) {
-		server->max_message_len = maxline - 2;
-	}
 }
 
 void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const char *data)
@@ -1226,7 +1207,6 @@ void irc_servers_init(void)
 	signal_add_first("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_add_last("server destroyed", (SIGNAL_FUNC) sig_destroyed);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
-	signal_add("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
 	signal_add("event 670", (SIGNAL_FUNC) event_starttls);
 	signal_add("event 451", (SIGNAL_FUNC) event_registerfirst);
 	signal_add("server cap end", (SIGNAL_FUNC) event_capend);
@@ -1258,7 +1238,6 @@ void irc_servers_deinit(void)
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_remove("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
-	signal_remove("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
 	signal_remove("event 670", (SIGNAL_FUNC) event_starttls);
 	signal_remove("event 451", (SIGNAL_FUNC) event_registerfirst);
 	signal_remove("server cap end", (SIGNAL_FUNC) event_capend);
