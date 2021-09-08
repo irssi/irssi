@@ -134,9 +134,7 @@ v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
 	  /SET show_account_notify to enable
 	+ Add support for IRCv3 invite-notify (#1094)
 	+ Add support for receiving IRCv3 message-tags (#576, #1090)
-	+ Add support for sending IRCv3 message-tags (#1092)
-	+ Add support for the oragono.io/maxline-2 CAP to increase IRC
-	  protocol line length (#1092)
+	+ Add support for sending IRCv3 message-tags (#1092, an#34)
 	+ Enable the znc.in/self-message CAP by default (#1123)
 	+ Add support for IRCv3 away-notify. /SET away_notify_public
 	  to enable (#1099, GL#33, #1105)
