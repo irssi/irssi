@@ -205,6 +205,12 @@ Window::command(cmd)
 Windowitem::command(cmd)
   Send a command `cmd' (in current channel). The '/' char isn't needed.
 
+version() - return client release date and time (format YYYYMMDD.hhmm)
+
+parse_special(cmd, data="", flags=0)
+Server::parse_special(cmd, data="", flags=0)
+Windowitem::parse_special(cmd, data="", flags=0)
+  evaluate a string with special vars
 
  *** Themes
 

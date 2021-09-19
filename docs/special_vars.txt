@@ -94,6 +94,8 @@ $A .. $Z is important.
    $winname             window name
    $itemname            like $T, but use item's visible_name which may be
                         different (eg. $T = !12345chan, $itemname = !chan)
+   $abiversion          IRSSI_ABI_VERSION
+                         https://github.com/irssi/irssi/wiki/irssi_abi_version
 
 For example, assume you have the following alias:
 
