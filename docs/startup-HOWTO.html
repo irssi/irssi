@@ -226,7 +226,7 @@ Ctrl-P, Ctrl-N            - Jump to previous / next window
 
 <p>And finally channels:</p>
 
-<div><div><pre><code>/CHANNEL ADD -auto -bots *!*user@host -botcmd "/^msg $0 op pass" #irssi efnet
+<div><div><pre><code>/CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass" #irssi efnet
 /CHANNEL ADD -auto #secret IRCnet password
 </code></pre></div></div>
 
@@ -395,7 +395,7 @@ Ctrl-X                - set the next server in list active
 
 <p><code>/HELP bind</code> tells pretty much everything there is to know about keyboard bindings. However, there’s the problem of how to bind some non-standard keys. They might differ a bit with each terminal, so you’ll need to find out what exactly the keypress produces. Easiest way to check that would be to see what it prints in <code>cat</code>. Here’s an example for pressing F1 key:</p>
 
-<div><div><pre><code> [user@host] ~% cat
+<div><div><pre><code> [cras@hurina] ~% cat
  ^[OP
 </code></pre></div></div>
 
