@@ -218,7 +218,7 @@ IRC network, other servers are automatically connected in same network if the
 
 And finally channels:
 
-/CHANNEL ADD -auto -bots *!*user@host -botcmd "/^msg $0 op pass" #irssi efnet
+/CHANNEL ADD -auto -bots *!*bot@host.org -botcmd "/^msg $0 op pass" #irssi efnet
 /CHANNEL ADD -auto #secret IRCnet password
 
 -bots and -botcmd should be the only ones needing a bit of explaining. They’re
@@ -442,7 +442,7 @@ They might differ a bit with each terminal, so you’ll need to find out what
 exactly the keypress produces. Easiest way to check that would be to see what
 it prints in cat. Here’s an example for pressing F1 key:
 
- [user@host] ~% cat
+ [cras@hurina] ~% cat
  ^[OP
 
 So in irssi you would use /BIND ^[OP /ECHO F1 pressed. If you use multiple
