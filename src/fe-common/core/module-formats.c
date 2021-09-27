@@ -22,6 +22,7 @@
 #include <irssi/src/fe-common/core/formats.h>
 
 FORMAT_REC fecommon_core_formats[] = {
+	/* clang-format off */
 	{ MODULE_NAME, "Core", 0 },
 
 	/* ---- */
@@ -88,7 +89,7 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "server_reconnect_not_found", "Reconnection tag {server $0} not found", 1, { 0 } },
 	{ "setupserver_added", "Server {server $0} saved", 2, { 0, 1 } },
 	{ "setupserver_removed", "Server {server $0} removed", 2, { 0, 1 } },
-	{ "setupserver_not_found", "Server {server $0} not found", 2, { 0, 1 } },
+	{ "setupserver_not_found", "Server {server $0} {hilight $1} not found", 2, { 0, 1 } },
 	{ "your_nick", "Your nickname is {nick $0}", 1, { 0 } },
 
 	/* ---- */
@@ -316,4 +317,5 @@ FORMAT_REC fecommon_core_formats[] = {
 	{ "tls_protocol_version", "Protocol: {hilight $0} ({hilight $1} bit, {hilight $2})", 3, { 0, 1, 0 } },
 
 	{ NULL, NULL, 0 }
+	/* clang-format on */
 };

@@ -124,17 +124,17 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 
 	port = old_port = -1;
 
-	if (*portstr != '\0')
-		port = add_port = atoi(portstr);
+	value = g_hash_table_lookup(optlist, "port");
+	if (value != NULL && *value != '\0')
+		port = add_port = atoi(value);
 	else if (g_hash_table_lookup(optlist, "tls") ||
 		 g_hash_table_lookup(optlist, "ssl"))
 		add_port = DEFAULT_SERVER_ADD_TLS_PORT;
 	else
 		add_port = DEFAULT_SERVER_ADD_PORT;
 
-	value = g_hash_table_lookup(optlist, "port");
-	if (value != NULL && *value != '\0')
-		old_port = atoi(value);
+	if (*portstr != '\0')
+		old_port = atoi(portstr);
 
 	chatnet = g_hash_table_lookup(optlist, "network");
 
