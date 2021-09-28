@@ -307,12 +307,14 @@ static void cmd_server_remove(const char *data)
 	SERVER_SETUP_REC *rec;
 	char *addr, *port, *chatnet;
 	void *free_arg;
+	int portnum;
 
 	if (!cmd_get_params(data, &free_arg, 3, &addr, &port, &chatnet))
 		return;
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
 	if (*port == '\0') {
+		portnum = DEFAULT_SERVER_ADD_PORT;
 		if (*chatnet == '\0')
 			rec = server_setup_find(addr, -1, NULL);
 		else
@@ -320,17 +322,21 @@ static void cmd_server_remove(const char *data)
 	}
 	else
 	{
+		portnum = atoi(port);
 		if (*chatnet == '\0')
-			rec = server_setup_find(addr, atoi(port), NULL);
+			rec = server_setup_find(addr, portnum, NULL);
 		else
-			rec = server_setup_find(addr, atoi(port), chatnet);
+			rec = server_setup_find(addr, portnum, chatnet);
 	}
 
 	if (rec == NULL)
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_NOT_FOUND, addr, port);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_NOT_FOUND, addr,
+		            portnum);
 	else {
+		portnum = rec->port;
 		server_setup_remove(rec);
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_REMOVED, addr, port);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_REMOVED, addr,
+		            portnum);
 	}
 
 	cmd_params_free(free_arg);
