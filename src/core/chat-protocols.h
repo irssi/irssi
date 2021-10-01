@@ -35,6 +35,8 @@ void *chat_protocol_check_cast(void *object, int type_pos, const char *id);
 	((object) == NULL ? chat_protocol_get_default() : \
 	chat_protocol_find_id((object)->chat_type))
 
+#define CHAT_PROTOCOL_NOT_INITIALIZED -2
+
 /* Register new chat protocol. */
 CHAT_PROTOCOL_REC *chat_protocol_register(CHAT_PROTOCOL_REC *rec);
 

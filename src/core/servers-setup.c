@@ -305,6 +305,8 @@ static SERVER_CONNECT_REC *create_addr_conn(int chat_type, const char *address, 
 	proto = chat_type >= 0 ? chat_protocol_find_id(chat_type) :
                 chat_protocol_get_default();
 
+	g_return_val_if_fail(proto != NULL, NULL);
+
 	conn = proto->create_server_connect();
 	server_connect_ref(conn);
 
@@ -469,6 +471,10 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	chatnetrec = chatnet == NULL ? NULL : chatnet_find(chatnet);
 	if (chatnetrec == NULL && chatnet != NULL) {
                 /* chat network not found, create it. */
+		if (chatnet_find_unavailable(chatnet)) {
+			/* no protocols loaded, skip loading servers */
+			return NULL;
+		}
 		chatnetrec = chat_protocol_get_default()->create_chatnet();
 		chatnetrec->chat_type = chat_protocol_get_default()->id;
 		chatnetrec->name = g_strdup(chatnet);
