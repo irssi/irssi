@@ -765,8 +765,7 @@ void servers_setup_init(void)
 	read_settings();
 
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-	signal_add("setup reread", (SIGNAL_FUNC) read_servers);
-        signal_add("irssi init read settings", (SIGNAL_FUNC) read_servers);
+	signal_add("setup reread servers", (SIGNAL_FUNC) read_servers);
 }
 
 void servers_setup_deinit(void)
@@ -779,8 +778,7 @@ void servers_setup_deinit(void)
 		server_setup_destroy(setupservers->data);
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-	signal_remove("setup reread", (SIGNAL_FUNC) read_servers);
-        signal_remove("irssi init read settings", (SIGNAL_FUNC) read_servers);
+	signal_remove("setup reread servers", (SIGNAL_FUNC) read_servers);
 
 	module_uniq_destroy("SERVER SETUP");
 }
