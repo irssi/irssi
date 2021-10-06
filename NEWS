@@ -139,6 +139,13 @@ v1.3.0-an 2021-09-29  Ailin Nemui <Nei>
 	+ Add support for IRCv3 away-notify. /SET away_notify_public
 	  to enable (#1099, GL#33, #1105)
 	+ Add support for IRCv3 chghost (#1096, GL#33, #1105)
+
+	  For servers with broken chghost implementation that fill the
+	  status window with host changed messages, one may add "quote
+	  cap req -chghost" to the -autosendcmd or, if the host change
+	  messages are entirely undesired, "/format -delete
+	  host_changed"
+
 	+ Add support for IRCv3 server-time. /SET show_server_time to
 	  enable (#1108)
 	+ Add support for logging IRCv3 server-time.
