@@ -718,6 +718,7 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
 	GString *str;
 	long usecs;
 	char *cmd;
+	int crlf;
 
 	if (!IS_IRC_SERVER(server))
 		return 0;
@@ -741,15 +742,29 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
 
 	/* send command */
 	str = g_string_new(cmd);
-	signal_emit("server outgoing modify", 2, server, str);
+
+	if (str->len > 2 && str->str[str->len - 2] == '\r')
+		crlf = 2;
+	else if (str->len > 1 && str->str[str->len - 1] == '\n')
+		crlf = 1;
+	else
+		crlf = 0;
+
+	if (crlf)
+		g_string_truncate(str, str->len - crlf);
+
+	signal_emit("server outgoing modify", 3, server, str, crlf);
 	if (str->len) {
+		if (crlf == 2)
+			g_string_append(str, "\r\n");
+		else if (crlf == 1)
+			g_string_append(str, "\n");
+
 		irc_server_send_data(server, str->str, str->len);
 
 		/* add to rawlog without [CR+]LF */
-		if (str->len > 2 && str->str[str->len - 2] == '\r')
-			str->str[str->len - 2] = '\0';
-		else if (str->str[str->len - 1] == '\n')
-			str->str[str->len - 1] = '\0';
+		if (crlf)
+			g_string_truncate(str, str->len - crlf);
 		rawlog_output(server->rawlog, str->str);
 		server_redirect_command(server, str->str, redirect);
 	}
