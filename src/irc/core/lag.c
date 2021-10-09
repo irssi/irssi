@@ -104,7 +104,7 @@ static int sig_check_lag(void)
 
 		if (rec->lag_sent != 0) {
 			/* waiting for lag reply */
-			if (max_lag > 1 && now - rec->lag_sent > max_lag * G_TIME_SPAN_SECOND) {
+			if (max_lag > 1 && now - (rec->lag_sent / G_TIME_SPAN_SECOND) > max_lag) {
 				/* too much lag, disconnect */
 				signal_emit("server lag disconnect", 1, rec);
 				rec->connection_lost = TRUE;
