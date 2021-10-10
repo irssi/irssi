@@ -176,6 +176,7 @@ char **irc_server_split_action(IRC_SERVER_REC *server, const char *target,
 			       const char *data);
 void irc_server_send_away(IRC_SERVER_REC *server, const char *reason);
 void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len);
+void irc_server_send_and_redirect(IRC_SERVER_REC *server, GString *str, REDIRECT_REC *redirect);
 void irc_server_init_isupport(IRC_SERVER_REC *server);
 
 void irc_servers_start_cmd_timeout(void);
