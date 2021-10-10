@@ -119,33 +119,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd, int irc_send_whe
 	}
 
 	if (irc_send_when == IRC_SEND_NOW) {
-		int crlf;
-
-		if (str->len > 2 && str->str[str->len - 2] == '\r')
-			crlf = 2;
-		else if (str->len > 1 && str->str[str->len - 1] == '\n')
-			crlf = 1;
-		else
-			crlf = 0;
-
-		if (crlf)
-			g_string_truncate(str, str->len - crlf);
-
-		signal_emit("server outgoing modify", 3, server, str, crlf);
-		if (str->len) {
-			if (crlf == 2)
-				g_string_append(str, "\r\n");
-			else if (crlf == 1)
-				g_string_append(str, "\n");
-
-			irc_server_send_data(server, str->str, str->len);
-
-			/* add to rawlog without [CR+]LF */
-			if (crlf)
-				g_string_truncate(str, str->len - crlf);
-			rawlog_output(server->rawlog, str->str);
-			server_redirect_command(server, str->str, server->redirect_next);
-		}
+		irc_server_send_and_redirect(server, str, server->redirect_next);
 		g_string_free(str, TRUE);
 	} else if (irc_send_when == IRC_SEND_NEXT) {
 		/* add to queue */
