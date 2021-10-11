@@ -1,4 +1,4 @@
-v1.3.0-an 2021-09-29  Ailin Nemui <Nei>
+v1.3.0-an 2021-10-11  Ailin Nemui <Nei>
 	* /SET resolve_reverse_lookup setting was removed (#1135)
 	* Irssi will try to connect on IPv4 if IPv6 connection failed
 	  (#1146). By Shivaram Lingamneni
@@ -187,7 +187,7 @@ v1.3.0-an 2021-09-29  Ailin Nemui <Nei>
 	+ Allow -tls_ca{file,path} '' to unset an argument (#730,
 	  #1060, an#30)
 	+ Add a "server outgoing modify" signal to intercept outgoing
-	  messages (#1148, #1151, an#15). Original by
+	  messages (#1148, #1151, an#15, an#43). Original by
 	  JustAnotherArchivist
 	- remove some hard-coded 510 byte assumptions (#1086)
 	- Several fixes for error checks in SSL (#944, #1037, #943,
@@ -211,7 +211,7 @@ v1.3.0-an 2021-09-29  Ailin Nemui <Nei>
           #891, #1129). By Dan Collins
 	- Fix /IGNORE not setting the right level in irc_op_public
           messages (#1280). Credit to oss-fuzz
-	- Fix GTimeVal deprecation (#1141, #1144, #1145)
+	- Fix GTimeVal deprecation (#1141, #1144, #1145, #1350, an#44)
 
 	  If multi-version compatibility is desired, module authors
 	  can find an example of backwards compatible code in
