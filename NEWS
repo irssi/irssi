@@ -41,7 +41,7 @@ v1.3.0-an 2021-10-11  Ailin Nemui <Nei>
 	      /SET show_names_on_join_limit -1
 
 	* -tls_verify is now enabled by default (#1170, an#18, #1309,
-           an#23)
+           an#23, #1343, #1351)
 
 	  This may cause an ugly display of notls_verify in the output
 	  of /SERVER LIST, even on plain-text connection, on old
