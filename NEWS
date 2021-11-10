@@ -1,13 +1,13 @@
 v1.4-head-an 2022-xx-xx  Ailin Nemui <Nei>
 
-v1.3.0-an 2021-10-11  Ailin Nemui <Nei>
+v1.3.0-an 2021-11-11  Ailin Nemui <Nei>
 	* /SET resolve_reverse_lookup setting was removed (#1135)
 	* Irssi will try to connect on IPv4 if IPv6 connection failed
 	  (#1146). By Shivaram Lingamneni
 
 	* The display system now renders formats on the fly (#1079,
-	  #1188, #1191, #1192, #1204, #1205, #1209, #1349, an#13,
-	  an#14, an#28, an#29, an#36, an#37)
+	  #1188, #1191, #1192, #1204, #1205, #1209, #1349, #1355,
+	  an#13, an#14, an#28, an#29, an#36, an#37, an#49)
 
 	  This major change will break scripts that try to modify
 	  printed text during "print text" signal (#1189). They need
