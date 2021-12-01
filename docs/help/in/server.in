@@ -5,7 +5,7 @@
 
 %9Parameters:%9
 
-    LIST:               Displays the list of servers you are connected to.
+    LIST:               Displays the list of servers you have configured.
     CONNECT:            Connects to the given server.
     ADD:                Adds a server to your configuration.
     MODIFY:             Modifies a server in your configuration.
