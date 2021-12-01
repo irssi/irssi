@@ -322,7 +322,7 @@ static char *expando_last_invite(SERVER_REC *server, void *item, int *free_ret)
 /* client version text string */
 static char *expando_version(SERVER_REC *server, void *item, int *free_ret)
 {
-	return PACKAGE_VERSION;
+	return PACKAGE_VERSION "-an";
 }
 
 /* current value of CMDCHARS */

@@ -323,6 +323,71 @@ void hilight_update_text_dest(TEXT_DEST_REC *dest, HILIGHT_REC *rec)
 
 static void hilight_print(int index, HILIGHT_REC *rec);
 
+static void sig_render_line_text(TEXT_DEST_REC *dest, GString *str, LINE_INFO_META_REC *meta)
+{
+	char *color, *tmp, *tmp2;
+
+	if (meta == NULL || meta->hash == NULL)
+		return;
+
+	color = g_hash_table_lookup(meta->hash, "hilight-color");
+
+	if ((tmp = g_hash_table_lookup(meta->hash, "hilight-line")) != NULL) {
+		/* hilight whole line */
+
+		tmp = strip_codes(str->str);
+
+		color = format_string_expand(
+		    color != NULL ? color : settings_get_str("hilight_color"), NULL);
+
+		g_string_truncate(str, 0);
+		g_string_append(str, color);
+		g_string_append(str, tmp);
+
+		g_free(color);
+		g_free(tmp);
+	} else if ((tmp = g_hash_table_lookup(meta->hash, "hilight-start")) != NULL &&
+	           (tmp2 = g_hash_table_lookup(meta->hash, "hilight-end")) != NULL) {
+		/* hilight part of the line */
+		int hilight_start, hilight_end;
+		int pos, color_pos, color_len;
+		char *middle;
+		GString *str2;
+
+		hilight_start = atoi(tmp);
+		hilight_end = atoi(tmp2);
+
+		/* start of the line */
+		pos = strip_real_length(str->str, hilight_start, NULL, NULL);
+
+		str2 = g_string_new_len(str->str, pos);
+
+		/* color */
+		color = format_string_expand(
+		    color != NULL ? color : settings_get_str("hilight_color"), NULL);
+		g_string_append(str2, color);
+		g_free(color);
+
+		/* middle of the line, stripped */
+		middle = strip_codes(str->str + pos);
+		g_string_append_len(str2, middle, hilight_end - hilight_start);
+		g_free(middle);
+
+		/* end of the line */
+		pos = strip_real_length(str->str, hilight_end, &color_pos, &color_len);
+		if (color_pos > 0) {
+			g_string_append_len(str2, str->str + color_pos, color_len);
+		} else {
+			/* no colors in line, change back to default */
+			g_string_append_c(str2, 4);
+			g_string_append_c(str2, FORMAT_STYLE_DEFAULTS);
+		}
+		g_string_append(str2, str->str + pos);
+
+		g_string_assign(str, g_string_free(str2, FALSE));
+	}
+}
+
 static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 			   const char *stripped)
 {
@@ -372,39 +437,50 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 		char *tmp = strip_codes(text);
 		newstr = g_strconcat(color, tmp, NULL);
 		g_free(tmp);
+
+		format_dest_meta_stash(dest, "hilight-line", "\001");
 	} else {
 		/* hilight part of the line */
-		GString *tmp;
-		char *middle;
+		GString *str;
+		char *middle, *tmp;
 		int pos, color_pos, color_len;
 
 		/* start of the line */
 		pos = strip_real_length(text, hilight_start, NULL, NULL);
-		tmp = g_string_new_len(text, pos);
+		str = g_string_new_len(text, pos);
 
 		/* color */
-		g_string_append(tmp, color);
+		g_string_append(str, color);
 
 		/* middle of the line, stripped */
 		middle = strip_codes(text + pos);
-		g_string_append_len(tmp, middle, hilight_len);
+		g_string_append_len(str, middle, hilight_len);
 		g_free(middle);
 
 		/* end of the line */
 		pos = strip_real_length(text, hilight_end,
 					&color_pos, &color_len);
 		if (color_pos > 0) {
-			g_string_append_len(tmp, text + color_pos, color_len);
+			g_string_append_len(str, text + color_pos, color_len);
 		} else {
 			/* no colors in line, change back to default */
-			g_string_append_c(tmp, 4);
-			g_string_append_c(tmp, FORMAT_STYLE_DEFAULTS);
+			g_string_append_c(str, 4);
+			g_string_append_c(str, FORMAT_STYLE_DEFAULTS);
 		}
-		g_string_append(tmp, text + pos);
+		g_string_append(str, text + pos);
 
-		newstr = tmp->str;
-		g_string_free(tmp, FALSE);
+		newstr = str->str;
+		g_string_free(str, FALSE);
+
+		format_dest_meta_stash(dest, "hilight-start",
+		                       tmp = g_strdup_printf("%d", hilight_start));
+		g_free(tmp);
+		format_dest_meta_stash(dest, "hilight-end",
+		                       tmp = g_strdup_printf("%d", hilight_end));
+		g_free(tmp);
 	}
+	if (hilight->color != NULL)
+		format_dest_meta_stash(dest, "hilight-color", hilight->color);
 
 	signal_emit("print text", 3, dest, newstr, stripped);
 
@@ -721,6 +797,7 @@ void hilight_text_init(void)
 	read_hilight_config();
 
 	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
+	signal_add("gui render line text", (SIGNAL_FUNC) sig_render_line_text);
 	signal_add("setup reread", (SIGNAL_FUNC) read_hilight_config);
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
 
@@ -735,6 +812,7 @@ void hilight_text_deinit(void)
 	nickmatch_deinit(nickmatch);
 
 	signal_remove("print text", (SIGNAL_FUNC) sig_print_text);
+	signal_remove("gui render line text", (SIGNAL_FUNC) sig_render_line_text);
 	signal_remove("setup reread", (SIGNAL_FUNC) read_hilight_config);
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
 

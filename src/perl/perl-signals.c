@@ -86,7 +86,8 @@ void perl_signal_args_to_c(void (*callback)(void *, int, void **), void *cb_arg,
                 unsigned long v_ulong;
                 GSList *v_gslist;
                 GList *v_glist;
-        } saved_args[SIGNAL_MAX_ARGUMENTS];
+		GString *v_gstring;
+	} saved_args[SIGNAL_MAX_ARGUMENTS];
 	AV *aargs;
 	void *p[SIGNAL_MAX_ARGUMENTS];
 	PERL_SIGNAL_ARGS_REC *rec;
@@ -146,6 +147,12 @@ void perl_signal_args_to_c(void (*callback)(void *, int, void **), void *cb_arg,
 		} else if (g_strcmp0(rec->args[n], "intptr") == 0) {
 			saved_args[n].v_int = SvIV(SvRV(arg));
 			c_arg = &saved_args[n].v_int;
+		} else if (g_strcmp0(rec->args[n], "gstring") == 0) {
+			char *pv;
+			size_t len;
+
+			pv = SvPV(SvRV(arg), len);
+			c_arg = saved_args[n].v_gstring = g_string_new_len(pv, len);
 		} else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
 			GList *gl;
 			int is_str;
@@ -220,6 +227,16 @@ void perl_signal_args_to_c(void (*callback)(void *, int, void **), void *cb_arg,
 			SV *t = SvRV(arg);
 			SvIOK_only(t);
 			SvIV_set(t, saved_args[n].v_int);
+		} else if (g_strcmp0(rec->args[n], "gstring") == 0) {
+			GString *str;
+			SV *t;
+
+			str = saved_args[n].v_gstring;
+			t = SvRV(arg);
+			SvPOK_only(t);
+			sv_setpvn(t, str->str, str->len);
+
+			g_string_free(str, TRUE);
 		} else if (strncmp(rec->args[n], "gslist_", 7) == 0) {
 			g_slist_free(saved_args[n].v_gslist);
 		} else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
@@ -306,7 +323,10 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
                         perlarg = newSViv(*(unsigned long *) arg);
                 else if (g_strcmp0(rec->args[n], "intptr") == 0)
 			saved_args[n] = perlarg = newRV_noinc(newSViv(*(int *) arg));
-		else if (g_strcmp0(rec->args[n], "formatnum_args") == 0 && n >= 3) {
+		else if (g_strcmp0(rec->args[n], "gstring") == 0) {
+			GString *str = arg;
+			saved_args[n] = perlarg = newRV_noinc(newSVpvn(str->str, str->len));
+		} else if (g_strcmp0(rec->args[n], "formatnum_args") == 0 && n >= 3) {
 			const THEME_REC *theme;
 			const MODULE_THEME_REC *rec;
 			const FORMAT_REC *formats;
@@ -399,6 +419,7 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 
 	if (SvTRUE(ERRSV)) {
 		char *error = g_strdup(SvPV_nolen(ERRSV));
+		perl_signal_remove_script(script);
 		signal_emit("script error", 2, script, error);
                 g_free(error);
                 rec = NULL;
@@ -415,8 +436,21 @@ static void perl_call_signal(PERL_SCRIPT_REC *script, SV *func,
 		if (g_strcmp0(rec->args[n], "intptr") == 0) {
 			int *val = arg;
 			*val = SvIV(SvRV(saved_args[n]));
+		} else if (g_strcmp0(rec->args[n], "gstring") == 0) {
+			SV *os, *ns;
+			GString *str = arg;
+
+			os = sv_2mortal(newSVpvn(str->str, str->len));
+			ns = SvRV(saved_args[n]);
+			if (sv_cmp(os, ns) != 0) {
+				size_t len;
+				char *pv = SvPV(ns, len);
+
+				g_string_truncate(str, 0);
+				g_string_append_len(str, pv, len);
+			}
 		} else if (strncmp(rec->args[n], "glistptr_", 9) == 0) {
-                        GList **ret = arg;
+			GList **ret = arg;
 			GList *out = NULL;
                         void *val;
                         int count;

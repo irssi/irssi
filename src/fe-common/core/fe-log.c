@@ -48,6 +48,7 @@
 #define AUTOLOG_INACTIVITY_CLOSE (60*5)
 
 static int autolog_level;
+static int log_server_time;
 static int autoremove_tag;
 static char *autolog_path;
 
@@ -502,8 +503,8 @@ static void autolog_open_check(TEXT_DEST_REC *dest)
 		autolog_open(server, server_tag, g_strcmp0(target, "*") ? target : deftarget);
 }
 
-static void log_single_line(WINDOW_REC *window, const char *server_tag,
-			    const char *target, int level, const char *text)
+static void log_single_line(WINDOW_REC *window, const char *server_tag, const char *target,
+                            int level, time_t t, const char *text)
 {
 	char windownum[MAX_INT_STRLEN];
 	LOG_REC *log;
@@ -514,15 +515,16 @@ static void log_single_line(WINDOW_REC *window, const char *server_tag,
 		log = logs_find_item(LOG_ITEM_WINDOW_REFNUM,
 				     windownum, NULL, NULL);
 		if (log != NULL)
-			log_write_rec(log, text, level);
+			log_write_rec(log, text, level, t);
 	}
 
-	log_file_write(server_tag, target, level, text, FALSE);
+	log_file_write(server_tag, target, level, t, text, FALSE);
 }
 
 static void log_line(TEXT_DEST_REC *dest, const char *text)
 {
 	char **lines, **tmp;
+	time_t t = (time_t) -1;
 
 	if (dest->level == MSGLEVEL_NEVER)
 		return;
@@ -536,9 +538,18 @@ static void log_line(TEXT_DEST_REC *dest, const char *text)
 	/* text may contain one or more lines, log wants to eat them one
 	   line at a time */
 	lines = g_strsplit(text, "\n", -1);
+	if (log_server_time && dest->meta != NULL) {
+		char *val;
+		if ((val = g_hash_table_lookup(dest->meta, "time")) != NULL) {
+			GDateTime *time;
+			if ((time = g_date_time_new_from_iso8601(val, NULL)) != NULL) {
+				t = g_date_time_to_unix(time);
+				g_date_time_unref(time);
+			}
+		}
+	}
 	for (tmp = lines; *tmp != NULL; tmp++)
-		log_single_line(dest->window, dest->server_tag,
-				dest->target, dest->level, *tmp);
+		log_single_line(dest->window, dest->server_tag, dest->target, dest->level, t, *tmp);
 	g_strfreev(lines);
 }
 
@@ -720,6 +731,13 @@ static void read_settings(void)
 		g_strfreev(autolog_ignore_targets);
 
 	autolog_ignore_targets = g_strsplit(settings_get_str("autolog_ignore_targets"), " ", -1);
+
+	log_server_time = settings_get_choice("log_server_time");
+	if (log_server_time == 2) {
+		SETTINGS_REC *rec = settings_get_record("show_server_time");
+		if (rec != NULL)
+			log_server_time = settings_get_bool("show_server_time");
+	}
 }
 
 void fe_log_init(void)
@@ -731,7 +749,8 @@ void fe_log_init(void)
         settings_add_bool("log", "autolog", FALSE);
 	settings_add_bool("log", "autolog_colors", FALSE);
 	settings_add_bool("log", "autolog_only_saved_channels", FALSE);
-        settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
+	settings_add_choice("log", "log_server_time", 2, "off;on;auto");
+	settings_add_str("log", "autolog_path", "~/irclogs/$tag/$0.log");
 	settings_add_level("log", "autolog_level", "all -crap -clientcrap -ctcps");
         settings_add_str("log", "log_theme", "");
 	settings_add_str("log", "autolog_ignore_targets", "");

@@ -91,7 +91,9 @@ static SERVER_SETUP_REC *create_server_setup(GHashTable *optlist)
 	if (rec == NULL)
                 rec = chat_protocol_get_default();
 	else {
-		chatnet = g_hash_table_lookup(optlist, rec->chatnet);
+		chatnet = g_hash_table_lookup(optlist, "network");
+		if (chatnet == NULL && g_hash_table_lookup(optlist, rec->chatnet) != NULL)
+			chatnet = rec->chatnet;
 		if (chatnet_find(chatnet) == NULL) {
 			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 				    TXT_UNKNOWN_CHATNET, chatnet);
@@ -108,11 +110,11 @@ static SERVER_SETUP_REC *create_server_setup(GHashTable *optlist)
 static void cmd_server_add_modify(const char *data, gboolean add)
 {
         GHashTable *optlist;
-	SERVER_SETUP_REC *rec;
-	char *addr, *portstr, *password, *value, *chatnet;
+	SERVER_SETUP_REC *rec, *tmp;
+	char *addr, *portstr, *password, *value, *chatnet, *old_chatnet;
 	void *free_arg;
 	gboolean newrec;
-	int port;
+	int port, old_port, add_port;
 
 	if (!cmd_get_params(data, &free_arg, 3 | PARAM_FLAG_OPTIONS,
 		"server add", &optlist, &addr, &portstr, &password))
@@ -120,27 +122,39 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 
 	if (*addr == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
-	value = g_hash_table_lookup(optlist, "port");
+	port = old_port = -1;
 
 	if (*portstr != '\0')
-		port = atoi(portstr);
-	else if (value != NULL && *value != '\0')
-		port = atoi(value);
+		port = add_port = atoi(portstr);
 	else if (g_hash_table_lookup(optlist, "tls") ||
 		 g_hash_table_lookup(optlist, "ssl"))
-		port = DEFAULT_SERVER_ADD_TLS_PORT;
+		add_port = DEFAULT_SERVER_ADD_TLS_PORT;
 	else
-		port = DEFAULT_SERVER_ADD_PORT;
+		add_port = DEFAULT_SERVER_ADD_PORT;
+
+	value = g_hash_table_lookup(optlist, "port");
+	if (value != NULL && *value != '\0')
+		old_port = atoi(value);
 
 	chatnet = g_hash_table_lookup(optlist, "network");
 
-	rec = server_setup_find(addr, port, chatnet);
+	rec = server_setup_find(addr, old_port != -1 ? old_port : add_port, chatnet);
+	if (old_port == -1 && rec != NULL)
+		old_port = rec->port;
 
-	if (rec == NULL) {
+	if (port == -1)
+		port = old_port != -1 ? old_port : add_port;
+
+	/* make sure the new port doesn't exist */
+	tmp = server_setup_find(addr, port, chatnet);
+	if (tmp != NULL && tmp->port == port)
+		rec = tmp;
+
+	if (rec == NULL || (rec->port != old_port && rec->port != port)) {
 		newrec = TRUE;
 		if (add == FALSE) {
-			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-				TXT_SETUPSERVER_NOT_FOUND, addr, port);
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_SETUPSERVER_NOT_FOUND,
+			            addr, old_port == -1 ? port : old_port);
 			cmd_params_free(free_arg);
 			return;
 		}
@@ -154,8 +168,9 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		rec->port = port;
 	} else {
 		newrec = FALSE;
-		if (*portstr != '\0' || g_hash_table_lookup(optlist, "port"))
-			rec->port = port;
+		old_chatnet = g_strdup(rec->chatnet);
+		old_port = rec->port;
+		rec->port = port;
 
 		if (*password != '\0') g_free_and_null(rec->password);
 		if (g_hash_table_lookup(optlist, "host")) {
@@ -198,12 +213,16 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 		value = g_hash_table_lookup(optlist, "ssl_cafile");
 	if (value != NULL && *value != '\0')
 		rec->tls_cafile = g_strdup(value);
+	else if (value != NULL && *value == '\0')
+		g_free_and_null(rec->tls_cafile);
 
 	value = g_hash_table_lookup(optlist, "tls_capath");
 	if (value == NULL)
 		value = g_hash_table_lookup(optlist, "ssl_capath");
 	if (value != NULL && *value != '\0')
 		rec->tls_capath = g_strdup(value);
+	else if (value != NULL && *value == '\0')
+		g_free_and_null(rec->tls_capath);
 
 	value = g_hash_table_lookup(optlist, "tls_ciphers");
 	if (value == NULL)
@@ -259,7 +278,13 @@ static void cmd_server_add_modify(const char *data, gboolean add)
 
 	signal_emit("server add fill", 3, rec, optlist, GINT_TO_POINTER(add));
 
-	server_setup_add(rec);
+	if (newrec) {
+		server_setup_add(rec);
+	} else {
+		server_setup_modify(rec, old_port, old_chatnet);
+		g_free(old_chatnet);
+	}
+
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
 		    TXT_SETUPSERVER_ADDED, addr, port);
 

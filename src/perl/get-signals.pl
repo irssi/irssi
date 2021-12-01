@@ -19,6 +19,8 @@ while (<>) {
 	s/GList \* of ([^,]*)s/glistptr_\1/g;
 	s/GSList of ([^,]*)s/gslist_\1/g;
 
+	s/GString \*[^,]*/gstring/g;
+
 	s/char \*[^,]*/string/g;
 	s/ulong \*[^,]*/ulongptr/g;
 	s/int \*[^,]*/intptr/g;
@@ -52,12 +54,13 @@ while (<>) {
 		CLIENT_REC     => 'Irssi::Irc::Client',
 
 		# fe-common
-		THEME_REC     => 'Irssi::UI::Theme',
-		KEYINFO_REC   => 'Irssi::UI::Keyinfo',
-		PROCESS_REC   => 'Irssi::UI::Process',
-		TEXT_DEST_REC => 'Irssi::UI::TextDest',
-		WINDOW_REC    => 'Irssi::UI::Window',
-		WI_ITEM_REC   => 'iobject',
+		THEME_REC	   => 'Irssi::UI::Theme',
+		KEYINFO_REC	   => 'Irssi::UI::Keyinfo',
+		PROCESS_REC	   => 'Irssi::UI::Process',
+		TEXT_DEST_REC	   => 'Irssi::UI::TextDest',
+		LINE_INFO_META_REC => 'Irssi::UI::LineInfoMeta',
+		WINDOW_REC	   => 'Irssi::UI::Window',
+		WI_ITEM_REC	   => 'iobject',
 
 		# fe-text
 		TEXTBUFFER_VIEW_REC => 'Irssi::TextUI::TextBufferView',
