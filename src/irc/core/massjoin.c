@@ -43,13 +43,6 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 
 	g_return_if_fail(data != NULL);
 
-	if (g_ascii_strcasecmp(nick, server->nick) == 0) {
-		/* You joined, do not massjoin */
-		send_massjoin = FALSE;
-	} else {
-		send_massjoin = TRUE;
-	}
-
 	params = event_get_params(data, 3, &channel, &account, &realname);
 
 	ptr = strchr(channel, 7); /* ^G does something weird.. */
@@ -60,6 +53,19 @@ static void event_join(IRC_SERVER_REC *server, const char *data,
 	if (chanrec == NULL) {
 		g_free(params);
 		return;
+	}
+
+	if (g_ascii_strcasecmp(nick, server->nick) == 0) {
+		/* do not overwrite our /UPGRADEd ownnick */
+		if (chanrec->session_rejoin) {
+			g_free(params);
+			return;
+		} else {
+			/* You joined, do not massjoin */
+			send_massjoin = FALSE;
+		}
+	} else {
+		send_massjoin = TRUE;
 	}
 
 	/* check that the nick isn't already in nicklist. seems to happen
