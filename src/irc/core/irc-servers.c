@@ -84,10 +84,11 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 		chantypes = "#&!+"; /* normal, local, secure, modeless */
 
 	statusmsg = g_hash_table_lookup(irc_server->isupport, "statusmsg");
-	if (statusmsg == NULL)
+	if (statusmsg == NULL && strchr(chantypes, '@') == NULL)
 		statusmsg = "@";
 
-	data += strspn(data, statusmsg);
+	if (statusmsg != NULL)
+		data += strspn(data, statusmsg);
 
 	/* strchr(3) considers the trailing NUL as part of the string, make sure
 	 * we didn't advance too much. */
