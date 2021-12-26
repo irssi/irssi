@@ -63,6 +63,20 @@ IRC_CHANNEL_REC *irc_channel_create(IRC_SERVER_REC *server, const char *name,
 #define get_join_key(key) \
 	(((key) == NULL || *(key) == '\0') ? "x" : (key))
 
+static char *force_channel_name(IRC_SERVER_REC *server, const char *name)
+{
+	char *chantypes;
+
+	if (server_ischannel(SERVER(server), name))
+		return g_strdup(name);
+
+	chantypes = g_hash_table_lookup(server->isupport, "chantypes");
+	if (chantypes == NULL || *chantypes == '\0')
+		chantypes = "#";
+
+	return g_strdup_printf("%c%s", *chantypes, name);
+}
+
 static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 			      int automatic)
 {
@@ -99,8 +113,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 	tmp = chanlist;
 	for (;; tmp++) {
 		if (*tmp !=  NULL) {
-			channel = server_ischannel(SERVER(server), *tmp) ? g_strdup(*tmp) :
-			g_strdup_printf("#%s", *tmp);
+			channel = force_channel_name(server, *tmp);
 
 			chanrec = irc_channel_find(server, channel);
 			if (chanrec == NULL) {
@@ -170,17 +183,14 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 }
 
 /* function for finding IRC channels - adds support for !channels */
-static CHANNEL_REC *irc_channel_find_server(SERVER_REC *server,
-					    const char *channel)
+static CHANNEL_REC *irc_channel_find_server(IRC_SERVER_REC *server, const char *channel)
 {
 	GSList *tmp;
 	char *fmt_channel;
 
 	/* if 'channel' has no leading # this lookup is going to fail, add a
 	 * octothorpe in front of it to handle this case. */
-	fmt_channel = server_ischannel(SERVER(server), channel) ?
-	    g_strdup(channel) :
-	    g_strdup_printf("#%s", channel);
+	fmt_channel = force_channel_name(server, channel);
 
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec = tmp->data;
@@ -189,12 +199,12 @@ static CHANNEL_REC *irc_channel_find_server(SERVER_REC *server,
                         continue;
 
 		/* check both !ABCDEchannel and !channel */
-		if (IRC_SERVER(server)->nick_comp_func(fmt_channel, rec->name) == 0) {
+		if (server->nick_comp_func(fmt_channel, rec->name) == 0) {
 			g_free(fmt_channel);
 			return rec;
 		}
 
-		if (IRC_SERVER(server)->nick_comp_func(fmt_channel, rec->visible_name) == 0) {
+		if (server->nick_comp_func(fmt_channel, rec->visible_name) == 0) {
 			g_free(fmt_channel);
 			return rec;
 		}
@@ -210,7 +220,8 @@ static void sig_server_connected(SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	server->channel_find_func = irc_channel_find_server;
+	server->channel_find_func =
+	    (CHANNEL_REC * (*) (SERVER_REC *, const char *) ) irc_channel_find_server;
 	server->channels_join = (void (*) (SERVER_REC *, const char *, int))
 		irc_channels_join;
 }
