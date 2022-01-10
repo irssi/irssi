@@ -118,5 +118,5 @@ jobs:
           echo load perl >> irssi-test/startup
           echo load proxy >> irssi-test/startup
           echo ^quit >> irssi-test/startup
-          irssi-build/bin/irssi --home irssi-test | ~/render.pl
+          irssi-build/bin/irssi --home irssi-test | perl -Mutf8 -C ~/render.pl
           cat irc.log.*
