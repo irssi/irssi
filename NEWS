@@ -1,3 +1,9 @@
+v1.3.2-an 2022-01-14  Ailin Nemui <Nei>
+	- CHANTYPES take precedence over (missing) STATUSMSG in /join
+          (#1358, an#54)
+	- Fix crash in Perl's $view->set_bookmark (freebsd#254237,
+          an#56)
+
 v1.3.1-an 2021-12-17  Ailin Nemui <Nei>
 	- Minor help fixes (an#51, an#52)
 	- Fix regression where own channel status was forgotten after
