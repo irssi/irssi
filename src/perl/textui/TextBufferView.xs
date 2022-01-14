@@ -49,14 +49,14 @@ textbuffer_view_scroll_line(view, line)
 	Irssi::TextUI::TextBufferView view
 	Irssi::TextUI::Line line
 CODE:
-	textbuffer_view_scroll_line(view, line->line);
+	textbuffer_view_scroll_line(view, Line(line));
 
 Irssi::TextUI::LineCache
 textbuffer_view_get_line_cache(view, line)
 	Irssi::TextUI::TextBufferView view
 	Irssi::TextUI::Line line
 CODE:
-	RETVAL = textbuffer_view_get_line_cache(view, line->line);
+	RETVAL = textbuffer_view_get_line_cache(view, Line(line));
 OUTPUT:
 	RETVAL
 
@@ -65,7 +65,7 @@ textbuffer_view_remove_line(view, line)
 	Irssi::TextUI::TextBufferView view
 	Irssi::TextUI::Line line
 CODE:
-	textbuffer_view_remove_line(view, line->line);
+	textbuffer_view_remove_line(view, Line(line));
 
 void
 textbuffer_view_remove_all_lines(view)
@@ -82,7 +82,7 @@ textbuffer_view_set_bookmark(view, name, line)
 	char *name
 	Irssi::TextUI::Line line
 CODE:
-	textbuffer_view_set_bookmark(view, name, line->line);
+	textbuffer_view_set_bookmark(view, name, Line(line));
 
 void
 textbuffer_view_set_bookmark_bottom(view, name)
