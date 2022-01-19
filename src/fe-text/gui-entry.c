@@ -20,6 +20,7 @@
 
 #include "module.h"
 #include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 #include <irssi/src/core/utf8.h>
 #include <irssi/src/fe-common/core/formats.h>
 
@@ -772,11 +773,13 @@ static GUI_ENTRY_CUTBUFFER_REC *get_cutbuffer_rec(GUI_ENTRY_REC *entry, CUTBUFFE
 
 void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_cutbuffer)
 {
+	gboolean clear_enabled;
 	size_t i, w = 0;
 
         g_return_if_fail(entry != NULL);
+	clear_enabled = settings_get_bool("empty_kill_clears_cutbuffer");
 
-	if (size == 0 || entry->pos < size)
+	if (entry->pos < size || (size == 0 && !clear_enabled))
 		return;
 
 	if (update_cutbuffer != CUTBUFFER_UPDATE_NOOP) {
@@ -818,7 +821,7 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 
 			case CUTBUFFER_UPDATE_REPLACE:
 				/* put erased text to cutbuffer */
-				if (tmp->cutbuffer_len < size) {
+				if (tmp->cutbuffer_len < size || tmp->cutbuffer == NULL) {
 					g_free(tmp->cutbuffer);
 					tmp->cutbuffer = g_new(unichar, size+1);
 				}
@@ -832,6 +835,11 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 				/* cannot happen, handled in "if" */
 				break;
 		}
+	}
+
+	if (size == 0 && clear_enabled) {
+		/* we just wanted to clear the cutbuffer */
+		return;
 	}
 
 	if (entry->utf8)
@@ -1498,6 +1506,7 @@ void gui_entry_set_text_and_extents(GUI_ENTRY_REC *entry, GSList *list)
 
 void gui_entry_init(void)
 {
+	settings_add_bool("lookandfeel", "empty_kill_clears_cutbuffer", FALSE);
 }
 
 void gui_entry_deinit(void)
