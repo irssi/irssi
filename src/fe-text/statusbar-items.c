@@ -75,13 +75,14 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 	GString *str;
 	GString *format;
 	GList *tmp;
-        char *ret, *name, *value;
+        char *ret, *name, *value, *separator;
         int is_det;
 	int add_name = settings_get_bool("actlist_names");
 	int pref_name = settings_get_bool("actlist_prefer_window_name");
 
 	str = g_string_new(NULL);
 	format = g_string_new(NULL);
+	separator = settings_get_str("actlist_separator");
 
 	theme = window != NULL && window->active != NULL &&
 		window->active->theme != NULL ?
@@ -96,7 +97,8 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 
                 /* comma separator */
 		if (str->len > 0) {
-			value = theme_format_expand(theme, "{sb_act_sep ,}");
+                        g_string_printf(format, "{sb_act_sep %s}", strlen(separator) > 0 ? separator : ",");
+			value = theme_format_expand(theme, format->str);
 			g_string_append(str, value);
 			g_free(value);
 		}
@@ -462,6 +464,7 @@ void statusbar_items_init(void)
 	settings_add_time("misc", "lag_min_show", "1sec");
 	settings_add_choice("lookandfeel", "actlist_sort", 0, "refnum;recent;level;level,recent");
 	settings_add_bool("lookandfeel", "actlist_names", FALSE);
+	settings_add_str("lookandfeel", "actlist_separator", ",");
 	settings_add_bool("lookandfeel", "actlist_prefer_window_name", FALSE);
 
 	statusbar_item_register("window", NULL, item_window_active);
