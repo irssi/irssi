@@ -33,6 +33,7 @@
 
 static GList *activity_list;
 static guint8 actlist_sort;
+static char *actlist_separator;
 static GSList *more_visible; /* list of MAIN_WINDOW_RECs which have --more-- */
 static GHashTable *input_entries;
 static int last_lag, last_lag_unknown, lag_timeout_tag;
@@ -75,14 +76,13 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 	GString *str;
 	GString *format;
 	GList *tmp;
-        char *ret, *name, *value, *separator;
+        char *ret, *name, *value;
         int is_det;
 	int add_name = settings_get_bool("actlist_names");
 	int pref_name = settings_get_bool("actlist_prefer_window_name");
 
 	str = g_string_new(NULL);
 	format = g_string_new(NULL);
-	separator = settings_get_str("actlist_separator");
 
 	theme = window != NULL && window->active != NULL &&
 		window->active->theme != NULL ?
@@ -97,7 +97,7 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 
                 /* comma separator */
 		if (str->len > 0) {
-                        g_string_printf(format, "{sb_act_sep %s}", strlen(separator) > 0 ? separator : ",");
+                        g_string_printf(format, "{sb_act_sep %s}", strlen(actlist_separator) > 0 ? actlist_separator : ",");
 			value = theme_format_expand(theme, format->str);
 			g_string_append(str, value);
 			g_free(value);
@@ -457,6 +457,11 @@ static void read_settings(void)
 		gui_entry_set_utf8(active_entry, term_type == TERM_TYPE_UTF8);
 
 	actlist_sort = settings_get_choice("actlist_sort");
+
+	if(g_strcmp0(actlist_separator, settings_get_str("actlist_separator")) != 0) {
+		actlist_separator = settings_get_str("actlist_separator");
+		statusbar_items_redraw("act");
+	}
 }
 
 void statusbar_items_init(void)
