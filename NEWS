@@ -1,10 +1,23 @@
-v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
-	* /SET resolve_reverse_lookup setting was removed (#1135)
+v1.3.2-an 2022-01-14  Ailin Nemui <Nei>
+	- CHANTYPES take precedence over (missing) STATUSMSG in /join
+          (#1358, an#54)
+	- Fix crash in Perl's $view->set_bookmark (freebsd#254237,
+          an#56)
+
+v1.3.1-an 2021-12-17  Ailin Nemui <Nei>
+	- Minor help fixes (an#51, an#52)
+	- Fix regression where own channel status was forgotten after
+          /UPGRADE (#1357, an#53)
+
+v1.3.0-an 2021-11-11  Ailin Nemui <Nei>
+	* /SET resolve_reverse_lookup setting was removed (#1034,
+          #1135)
 	* Irssi will try to connect on IPv4 if IPv6 connection failed
 	  (#1146). By Shivaram Lingamneni
+
 	* The display system now renders formats on the fly (#1079,
-	  #1188, #1191, #1192, #1204, #1205, #1209, an#13, an#14, an#28,
-	  an#29)
+	  #1188, #1191, #1192, #1204, #1205, #1209, #1349, #1355,
+	  an#13, an#14, an#28, an#29, an#36, an#37, an#49)
 
 	  This major change will break scripts that try to modify
 	  printed text during "print text" signal (#1189). They need
@@ -38,7 +51,7 @@ v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
 	      /SET show_names_on_join_limit -1
 
 	* -tls_verify is now enabled by default (#1170, an#18, #1309,
-           an#23)
+           an#23, #1343, #1351)
 
 	  This may cause an ugly display of notls_verify in the output
 	  of /SERVER LIST, even on plain-text connection, on old
@@ -127,21 +140,24 @@ v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
 	  join_extended_account, that theme writers need to take into
 	  account if desired.
 
-	+ Add support for IRCv3 setname (#1093, #1104, #1254, GL#33,
-	  #1104, #1254)
+	+ Add support for IRCv3 setname (#1093, #1104, #1254, GL#33)
 	+ Add support for IRCv3 account-notify (#1100, #1098, GL#33,
 	  #1105, #1131). Credit to oss-fuzz
 	  /SET show_account_notify to enable
 	+ Add support for IRCv3 invite-notify (#1094)
 	+ Add support for receiving IRCv3 message-tags (#576, #1090)
-	+ Add support for sending IRCv3 message-tags (#1092)
-	+ Add support for the oragono.io/maxline-2 CAP to increase IRC
-	  protocol line length (#1092)
+	+ Add support for sending IRCv3 message-tags (#1092, an#34)
 	+ Enable the znc.in/self-message CAP by default (#1123)
 	+ Add support for IRCv3 away-notify. /SET away_notify_public
 	  to enable (#1099, GL#33, #1105)
 	+ Add support for IRCv3 chghost (#1096, GL#33, #1105)
-	+ Add support for IRCv3 account-notify.
+
+	  For servers with broken chghost implementation that fill the
+	  status window with host changed messages, one may add "quote
+	  cap req -chghost" to the -autosendcmd or, if the host change
+	  messages are entirely undesired, "/format -delete
+	  host_changed"
+
 	+ Add support for IRCv3 server-time. /SET show_server_time to
 	  enable (#1108)
 	+ Add support for logging IRCv3 server-time.
@@ -183,7 +199,7 @@ v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
 	+ Allow -tls_ca{file,path} '' to unset an argument (#730,
 	  #1060, an#30)
 	+ Add a "server outgoing modify" signal to intercept outgoing
-	  messages (#1148, #1151, an#15). Original by
+	  messages (#1148, #1151, an#15, an#43). Original by
 	  JustAnotherArchivist
 	- remove some hard-coded 510 byte assumptions (#1086)
 	- Several fixes for error checks in SSL (#944, #1037, #943,
@@ -207,7 +223,7 @@ v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
           #891, #1129). By Dan Collins
 	- Fix /IGNORE not setting the right level in irc_op_public
           messages (#1280). Credit to oss-fuzz
-	- Fix GTimeVal deprecation (#1141, #1144, #1145)
+	- Fix GTimeVal deprecation (#1141, #1144, #1145, #1350, an#44)
 
 	  If multi-version compatibility is desired, module authors
 	  can find an example of backwards compatible code in
@@ -241,12 +257,13 @@ v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
 	- Fix /SERVER ADD -matrix -network my_matrix_network
           (an#12). By Andrej Kacian
 	- Fix /SERVER ADD creating duplicated entries in the config
-          file (#1317, an#22)
+          file (#1317, an#22, an#41)
 	- Fix critical when SASL user is set and SASL password is
           empty (#1325, an#21)
-	- Misc fixes (#1106, #1141, #1272, #1297)
+	- Misc fixes (#1106, #1141, #1272, #1297, an#35)
 	- Fuzz fixes (#1116, #1117, #1119, #1125, #1126, an#20)
 	- Build system fixes (#1101, #1102, #1069, #1140, #1181, #1253)
+	- Sync docs and scripts (an#39)
 	- Text and Help updates
 	  - add -tls_* options to manual (#1029, #1030). By Jacob
             V. Rasmussen
@@ -262,9 +279,10 @@ v1.3.0-an 2021-09-05  Ailin Nemui <Nei>
 	  - Add documentation for escaping some characters (#1329,
             #1330, an#9). By Guntbert Reiter
 	  - Fix some typos (#1336, an#10). By Francis Mteo
+	  - Document $abiversion and parse_special (an#38). By bw1
 	- Infrastructure updates:
 	  - Support for Github Actions (#1039, #1103, #1160, #1212,
-            #1231, #1252, #1261)
+            #1231, #1252, #1261, an#40)
 	  - Run clang-format on pull requests (#1172, #1173, #1184,
             #1230, #1247, #1287)
 	  - Run abidiff on pull requests (#1179, #1195)

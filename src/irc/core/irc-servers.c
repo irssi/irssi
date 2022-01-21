@@ -84,10 +84,11 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 		chantypes = "#&!+"; /* normal, local, secure, modeless */
 
 	statusmsg = g_hash_table_lookup(irc_server->isupport, "statusmsg");
-	if (statusmsg == NULL)
+	if (statusmsg == NULL && strchr(chantypes, '@') == NULL)
 		statusmsg = "@";
 
-	data += strspn(data, statusmsg);
+	if (statusmsg != NULL)
+		data += strspn(data, statusmsg);
 
 	/* strchr(3) considers the trailing NUL as part of the string, make sure
 	 * we didn't advance too much. */
@@ -282,7 +283,6 @@ static void server_init_1(IRC_SERVER_REC *server)
 		irc_cap_toggle(server, CAP_SASL, TRUE);
 	}
 
-	irc_cap_toggle(server, CAP_MAXLINE, TRUE);
 	irc_cap_toggle(server, CAP_MULTI_PREFIX, TRUE);
 	irc_cap_toggle(server, CAP_EXTENDED_JOIN, TRUE);
 	irc_cap_toggle(server, CAP_SETNAME, TRUE);
@@ -647,24 +647,6 @@ static void sig_server_quit(IRC_SERVER_REC *server, const char *msg)
 	g_free(recoded);
 }
 
-static void cap_maxline(IRC_SERVER_REC *server)
-{
-	unsigned int maxline = 0;
-	gboolean parse_successful = FALSE;
-	const char *maxline_str;
-
-	maxline_str = g_hash_table_lookup(server->cap_supported, CAP_MAXLINE);
-	if (maxline_str != NULL) {
-		parse_successful = parse_uint(maxline_str, NULL, 10, &maxline);
-
-	}
-
-	if (parse_successful &&
-	    maxline >= MAX_IRC_MESSAGE_LEN + 2 /* 2 bytes for CR+LF */) {
-		server->max_message_len = maxline - 2;
-	}
-}
-
 void irc_server_send_action(IRC_SERVER_REC *server, const char *target, const char *data)
 {
 	char *recoded;
@@ -737,6 +719,7 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
 	GString *str;
 	long usecs;
 	char *cmd;
+	int crlf;
 
 	if (!IS_IRC_SERVER(server))
 		return 0;
@@ -760,15 +743,29 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
 
 	/* send command */
 	str = g_string_new(cmd);
-	signal_emit("server outgoing modify", 2, server, str);
+
+	if (str->len > 2 && str->str[str->len - 2] == '\r')
+		crlf = 2;
+	else if (str->len > 1 && str->str[str->len - 1] == '\n')
+		crlf = 1;
+	else
+		crlf = 0;
+
+	if (crlf)
+		g_string_truncate(str, str->len - crlf);
+
+	signal_emit("server outgoing modify", 3, server, str, crlf);
 	if (str->len) {
+		if (crlf == 2)
+			g_string_append(str, "\r\n");
+		else if (crlf == 1)
+			g_string_append(str, "\n");
+
 		irc_server_send_data(server, str->str, str->len);
 
 		/* add to rawlog without [CR+]LF */
-		if (str->len > 2 && str->str[str->len - 2] == '\r')
-			str->str[str->len - 2] = '\0';
-		else if (str->str[str->len - 1] == '\n')
-			str->str[str->len - 1] = '\0';
+		if (crlf)
+			g_string_truncate(str, str->len - crlf);
 		rawlog_output(server->rawlog, str->str);
 		server_redirect_command(server, str->str, redirect);
 	}
@@ -1226,7 +1223,6 @@ void irc_servers_init(void)
 	signal_add_first("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_add_last("server destroyed", (SIGNAL_FUNC) sig_destroyed);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
-	signal_add("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
 	signal_add("event 670", (SIGNAL_FUNC) event_starttls);
 	signal_add("event 451", (SIGNAL_FUNC) event_registerfirst);
 	signal_add("server cap end", (SIGNAL_FUNC) event_capend);
@@ -1258,7 +1254,6 @@ void irc_servers_deinit(void)
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_disconnected);
 	signal_remove("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
-	signal_remove("server cap ack " CAP_MAXLINE, (SIGNAL_FUNC) cap_maxline);
 	signal_remove("event 670", (SIGNAL_FUNC) event_starttls);
 	signal_remove("event 451", (SIGNAL_FUNC) event_registerfirst);
 	signal_remove("server cap end", (SIGNAL_FUNC) event_capend);

@@ -2,7 +2,7 @@
 <h1>Frequently Asked Questions</h1>
     <h3 id="q-why-doesnt-irssi-display-colors-even-when-ircii-etc-displays-them">Q: Why doesn’t irssi display colors even when ircii etc. displays them?</h3>
 
-<p>A: They force ANSI colors even if terminal doesn’t support them. By default, irssi uses colors only if terminfo/termcap so says. The correct way to fix this would be to change your TERM environment to a value where colors work, like xterm-color or color_xterm (eg. <code>TERM=xterm-color irssi</code>). If this doesn’t help, then use the evil way of <code>/SET term_force_colors ON</code>.</p>
+<p>A: They force ANSI colors even if terminal doesn’t support them. By default, irssi uses colors only if terminfo/termcap so says. The correct way to fix this would be to change your TERM environment to a value where colors work, like xterm-256color or color_xterm (eg. <code>TERM=xterm-256color irssi</code>). If this doesn’t help, then use the evil way of <code>/SET term_force_colors ON</code>.</p>
 
 <h3 id="q-how-do-i-easily-write-text-to-channel-that-starts-with--character">Q: How do I easily write text to channel that starts with ‘/’ character?</h3>
 
@@ -54,7 +54,7 @@
 
 <h3 id="q-will-there-be-detach-like-feature">Q: Will there be /DETACH-like feature?</h3>
 
-<p>A: <a href="https://tmux.github.io/">tmux</a>, <a href="https://www.gnu.org/software/screen/screen.html">screen</a> and <a href="http://dtach.sf.net/">dtach</a> can be used to do it just fine.</p>
+<p>A: <a href="https://tmux.github.io/">tmux</a>, <a href="https://www.gnu.org/software/screen/screen.html">screen</a> and <a href="https://sourceforge.net/projects/dtach/">dtach</a> can be used to do it just fine.</p>
 
 <h3 id="q-how-do-i-run-scripts-automatically-at-startup">Q: How do I run scripts automatically at startup?</h3>
 

@@ -15,7 +15,6 @@
 #define MAX_IRC_USER_TAGS_LEN 4094
 
 #define CAP_LS_VERSION "302"
-#define CAP_MAXLINE "oragono.io/maxline-2"
 #define CAP_MESSAGE_TAGS "message-tags"
 #define CAP_SASL "sasl"
 #define CAP_MULTI_PREFIX "multi-prefix"

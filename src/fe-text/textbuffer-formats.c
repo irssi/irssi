@@ -265,7 +265,7 @@ static void sig_gui_print_text_finished(WINDOW_REC *window, TEXT_DEST_REC *dest)
 
 	info->meta = line_meta_create(dest->meta);
 
-	info->level |= MSGLEVEL_FORMAT;
+	info->level = dest->level | MSGLEVEL_FORMAT;
 
 	/* the line will be inserted into the view with textbuffer_view_insert_line by
 	   gui-printtext.c:view_add_eol */

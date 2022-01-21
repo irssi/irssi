@@ -318,13 +318,17 @@ void dcc_chat_input(CHAT_DCC_REC *dcc)
 		}
 
 		if (ret > 0) {
+			SERVER_REC *server;
 			char *recoded;
 
 			dcc->transfd += ret;
 
-			recoded = recode_in(SERVER(dcc->server), str, dcc->nick);
+			server = SERVER(dcc->server);
+			recoded = recode_in(server, str, dcc->nick);
 			signal_emit("dcc chat message", 2, dcc, recoded);
 			g_free(recoded);
+			if (server != NULL)
+				server_meta_clear_all(server);
 		}
 	} while (ret > 0);
 }
