@@ -453,13 +453,16 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 
 static void read_settings(void)
 {
+	const char *sep;
 	if (active_entry != NULL)
 		gui_entry_set_utf8(active_entry, term_type == TERM_TYPE_UTF8);
 
 	actlist_sort = settings_get_choice("actlist_sort");
 
-	if(g_strcmp0(actlist_separator, settings_get_str("actlist_separator")) != 0) {
-		actlist_separator = settings_get_str("actlist_separator");
+	sep = settings_get_str("actlist_separator");
+	if(g_strcmp0(actlist_separator, sep) != 0) {
+		g_free(actlist_separator);
+		actlist_separator = g_strdup(sep);
 		statusbar_items_redraw("act");
 	}
 }
