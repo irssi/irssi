@@ -84,6 +84,23 @@ static const unichar bp_end[]   = { 0x1b, '[', '2', '0', '1', '~' };
 
 #define BRACKETED_PASTE_TIMEOUT (5 * 1000) // ms
 
+#if GLIB_CHECK_VERSION(2, 62, 0)
+/* nothing */
+#else
+/* compatibility code for old GLib */
+GArray *g_array_copy(GArray *array)
+{
+	GArray *out;
+	guint elt_size;
+
+	elt_size = g_array_get_element_size(array);
+	out = g_array_sized_new(FALSE, FALSE, elt_size, array->len);
+	memcpy(out->data, array->data, array->len * elt_size);
+
+	return out;
+}
+#endif
+
 static void sig_input(void);
 
 void input_listen_init(int handle)
