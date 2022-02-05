@@ -69,6 +69,7 @@ static GArray *paste_buffer_rest;
 static char *paste_old_prompt;
 static int paste_prompt, paste_line_count;
 static int paste_join_multiline;
+static int paste_ignore_first_nl;
 static int paste_timeout_id;
 static int paste_use_bracketed_mode;
 static int paste_bracketed_mode;
@@ -853,6 +854,17 @@ static gboolean paste_timeout(gpointer data)
 	int split_lines;
 	paste_was_bracketed_mode = paste_bracketed_mode;
 
+	if (paste_ignore_first_nl && paste_line_count == 1) {
+		unichar last_char;
+
+		last_char = g_array_index(paste_buffer, unichar, paste_buffer->len - 1);
+
+		if (isnewline(last_char)) {
+			g_array_set_size(paste_buffer, paste_buffer->len - 1);
+			paste_line_count--;
+		}
+	}
+
 	/* number of lines after splitting extra-long messages */
 	split_lines = paste_buffer->len / LINE_SPLIT_LIMIT;
 
@@ -1289,6 +1301,7 @@ static void setup_changed(void)
 
 	paste_verify_line_count = settings_get_int("paste_verify_line_count");
 	paste_join_multiline = settings_get_bool("paste_join_multiline");
+	paste_ignore_first_nl = settings_get_bool("paste_ignore_first_nl");
 	paste_use_bracketed_mode = settings_get_bool("paste_use_bracketed_mode");
 
 	term_set_appkey_mode(settings_get_bool("term_appkey_mode"));
@@ -1324,7 +1337,8 @@ void gui_readline_init(void)
 	   keycodes. this must be larger to allow them to work. */
 	settings_add_int("misc", "paste_verify_line_count", 5);
 	settings_add_bool("misc", "paste_join_multiline", TRUE);
-        setup_changed();
+	settings_add_bool("misc", "paste_ignore_first_nl", FALSE);
+	setup_changed();
 
 	keyboard = keyboard_create(NULL);
         key_configure_freeze();
