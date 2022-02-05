@@ -1036,27 +1036,37 @@ static void key_paste_start(void)
 
 static void key_paste_cancel(void)
 {
-	paste_flush(NULL);
+	if (paste_prompt) {
+		paste_flush(NULL);
+	}
 }
 
 static void key_paste_print(void)
 {
-	paste_print();
+	if (paste_prompt) {
+		paste_print();
+	}
 }
 
 static void key_paste_send(void)
 {
-	paste_flush(paste_send);
+	if (paste_prompt) {
+		paste_flush(paste_send);
+	}
 }
 
 static void key_paste_edit(void)
 {
-	paste_flush(paste_insert_edit);
+	if (paste_prompt) {
+		paste_flush(paste_insert_edit);
+	}
 }
 
 static void key_paste_event(void)
 {
-	paste_event();
+	if (paste_prompt) {
+		paste_event();
+	}
 }
 
 time_t get_idle_time(void)
