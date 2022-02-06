@@ -428,7 +428,7 @@ static void paste_print(void)
 		g_array_free(garr, TRUE);
 }
 
-static void paste_event(void)
+static void paste_event(const char *arg)
 {
 	GArray *garr;
 	unichar *arr;
@@ -463,7 +463,7 @@ static void paste_event(void)
 		}
 	}
 
-	if (signal_emit("paste event", 1, str->str)) {
+	if (signal_emit("paste event", 2, str->str, arg)) {
 		paste_flush(NULL);
 	}
 
@@ -1062,10 +1062,10 @@ static void key_paste_edit(void)
 	}
 }
 
-static void key_paste_event(void)
+static void key_paste_event(const char *arg)
 {
 	if (paste_prompt) {
-		paste_event();
+		paste_event(arg);
 	}
 }
 
