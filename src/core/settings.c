@@ -928,6 +928,7 @@ void settings_deinit(void)
 
 	g_hash_table_foreach(settings, (GHFunc) settings_hash_free, NULL);
 	g_hash_table_destroy(settings);
+	settings = NULL;
 
 	if (mainconfig != NULL) config_close(mainconfig);
 }

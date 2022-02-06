@@ -57,6 +57,7 @@ static int autocon_port;
 static int no_autoconnect;
 static char *cmdline_nick;
 static char *cmdline_hostname;
+GLogFunc logger_old;
 
 void fe_core_log_init(void);
 void fe_core_log_deinit(void);
@@ -252,6 +253,8 @@ void fe_common_core_deinit(void)
         signal_remove("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_remove("channel created", (SIGNAL_FUNC) sig_channel_created);
         signal_remove("channel destroyed", (SIGNAL_FUNC) sig_channel_destroyed);
+
+	g_log_set_default_handler(logger_old, NULL);
 }
 
 void i_log_func(const char *log_domain, GLogLevelFlags log_level, const char *message)
@@ -458,7 +461,7 @@ void fe_common_core_finish_init(void)
 	signal_add_first("setup changed", (SIGNAL_FUNC) sig_setup_changed);
 
         /* _after_ windows are created.. */
-	g_log_set_default_handler((GLogFunc) i_log_func, NULL);
+	logger_old = g_log_set_default_handler((GLogFunc) i_log_func, NULL);
 
 	if (setup_changed)
                 signal_emit("setup changed", 0);
