@@ -97,8 +97,7 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 
                 /* comma separator */
 		if (str->len > 0) {
-			g_string_printf(format, "{sb_act_sep %s}",
-			                strlen(actlist_separator) > 0 ? actlist_separator : ",");
+			g_string_printf(format, "{sb_act_sep %s}", actlist_separator);
 			value = theme_format_expand(theme, format->str);
 			g_string_append(str, value);
 			g_free(value);
