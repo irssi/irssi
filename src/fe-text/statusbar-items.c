@@ -97,7 +97,8 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 
                 /* comma separator */
 		if (str->len > 0) {
-                        g_string_printf(format, "{sb_act_sep %s}", strlen(actlist_separator) > 0 ? actlist_separator : ",");
+			g_string_printf(format, "{sb_act_sep %s}",
+			                strlen(actlist_separator) > 0 ? actlist_separator : ",");
 			value = theme_format_expand(theme, format->str);
 			g_string_append(str, value);
 			g_free(value);
@@ -460,7 +461,7 @@ static void read_settings(void)
 	actlist_sort = settings_get_choice("actlist_sort");
 
 	sep = settings_get_str("actlist_separator");
-	if(g_strcmp0(actlist_separator, sep) != 0) {
+	if (g_strcmp0(actlist_separator, sep) != 0) {
 		g_free(actlist_separator);
 		actlist_separator = g_strdup(sep);
 		statusbar_items_redraw("act");
