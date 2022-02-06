@@ -837,7 +837,7 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 		}
 	}
 
-	if (size == 0 && clear_enabled) {
+	if (size == 0) {
 		/* we just wanted to clear the cutbuffer */
 		return;
 	}
