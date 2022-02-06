@@ -33,6 +33,7 @@
 
 static GList *activity_list;
 static guint8 actlist_sort;
+static char *actlist_separator;
 static GSList *more_visible; /* list of MAIN_WINDOW_RECs which have --more-- */
 static GHashTable *input_entries;
 static int last_lag, last_lag_unknown, lag_timeout_tag;
@@ -96,7 +97,8 @@ static char *get_activity_list(MAIN_WINDOW_REC *window, int normal, int hilight)
 
                 /* comma separator */
 		if (str->len > 0) {
-			value = theme_format_expand(theme, "{sb_act_sep ,}");
+			g_string_printf(format, "{sb_act_sep %s}", actlist_separator);
+			value = theme_format_expand(theme, format->str);
 			g_string_append(str, value);
 			g_free(value);
 		}
@@ -451,10 +453,18 @@ static void item_input(SBAR_ITEM_REC *item, int get_size_only)
 
 static void read_settings(void)
 {
+	const char *sep;
 	if (active_entry != NULL)
 		gui_entry_set_utf8(active_entry, term_type == TERM_TYPE_UTF8);
 
 	actlist_sort = settings_get_choice("actlist_sort");
+
+	sep = settings_get_str("actlist_separator");
+	if (g_strcmp0(actlist_separator, sep) != 0) {
+		g_free(actlist_separator);
+		actlist_separator = g_strdup(sep);
+		statusbar_items_redraw("act");
+	}
 }
 
 void statusbar_items_init(void)
@@ -462,6 +472,7 @@ void statusbar_items_init(void)
 	settings_add_time("misc", "lag_min_show", "1sec");
 	settings_add_choice("lookandfeel", "actlist_sort", 0, "refnum;recent;level;level,recent");
 	settings_add_bool("lookandfeel", "actlist_names", FALSE);
+	settings_add_str("lookandfeel", "actlist_separator", ",");
 	settings_add_bool("lookandfeel", "actlist_prefer_window_name", FALSE);
 
 	statusbar_item_register("window", NULL, item_window_active);
