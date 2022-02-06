@@ -795,45 +795,45 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 		tmpcutbuffer = tmp->cutbuffer;
 		entry->append_next_kill = TRUE;
 		switch (update_cutbuffer) {
-			case CUTBUFFER_UPDATE_APPEND:
-				tmp->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
-				memcpy(tmp->cutbuffer, tmpcutbuffer,
-				       tmp->cutbuffer_len * sizeof(unichar));
-				memcpy(tmp->cutbuffer + tmp->cutbuffer_len,
-				       entry->text + entry->pos - size, size * sizeof(unichar));
+		case CUTBUFFER_UPDATE_APPEND:
+			tmp->cutbuffer = g_new(unichar, cutbuffer_new_size + 1);
+			memcpy(tmp->cutbuffer, tmpcutbuffer, tmp->cutbuffer_len * sizeof(unichar));
+			memcpy(tmp->cutbuffer + tmp->cutbuffer_len, entry->text + entry->pos - size,
+			       size * sizeof(unichar));
 
-				tmp->cutbuffer_len = cutbuffer_new_size;
-				tmp->cutbuffer[cutbuffer_new_size] = '\0';
-				g_free(tmpcutbuffer);
-				break;
+			tmp->cutbuffer_len = cutbuffer_new_size;
+			tmp->cutbuffer[cutbuffer_new_size] = '\0';
+			g_free(tmpcutbuffer);
+			break;
 
-			case CUTBUFFER_UPDATE_PREPEND:
-				tmp->cutbuffer = g_new(unichar, cutbuffer_new_size+1);
-				memcpy(tmp->cutbuffer, entry->text + entry->pos - size,
-				       size * sizeof(unichar));
-				memcpy(tmp->cutbuffer + size, tmpcutbuffer,
-				       tmp->cutbuffer_len * sizeof(unichar));
+		case CUTBUFFER_UPDATE_PREPEND:
+			tmp->cutbuffer = g_new(unichar, cutbuffer_new_size + 1);
+			memcpy(tmp->cutbuffer, entry->text + entry->pos - size,
+			       size * sizeof(unichar));
+			memcpy(tmp->cutbuffer + size, tmpcutbuffer,
+			       tmp->cutbuffer_len * sizeof(unichar));
 
-				tmp->cutbuffer_len = cutbuffer_new_size;
-				tmp->cutbuffer[cutbuffer_new_size] = '\0';
-				g_free(tmpcutbuffer);
-				break;
+			tmp->cutbuffer_len = cutbuffer_new_size;
+			tmp->cutbuffer[cutbuffer_new_size] = '\0';
+			g_free(tmpcutbuffer);
+			break;
 
-			case CUTBUFFER_UPDATE_REPLACE:
-				/* put erased text to cutbuffer */
-				if (tmp->cutbuffer_len < size || tmp->cutbuffer == NULL) {
-					g_free(tmp->cutbuffer);
-					tmp->cutbuffer = g_new(unichar, size+1);
-				}
+		case CUTBUFFER_UPDATE_REPLACE:
+			/* put erased text to cutbuffer */
+			if (tmp->cutbuffer_len < size || tmp->cutbuffer == NULL) {
+				g_free(tmp->cutbuffer);
+				tmp->cutbuffer = g_new(unichar, size + 1);
+			}
 
-				tmp->cutbuffer_len = size;
-				tmp->cutbuffer[size] = '\0';
-				memcpy(tmp->cutbuffer, entry->text + entry->pos - size, size * sizeof(unichar));
-				break;
+			tmp->cutbuffer_len = size;
+			tmp->cutbuffer[size] = '\0';
+			memcpy(tmp->cutbuffer, entry->text + entry->pos - size,
+			       size * sizeof(unichar));
+			break;
 
-			case CUTBUFFER_UPDATE_NOOP:
-				/* cannot happen, handled in "if" */
-				break;
+		case CUTBUFFER_UPDATE_NOOP:
+			/* cannot happen, handled in "if" */
+			break;
 		}
 	}
 
