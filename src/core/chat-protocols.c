@@ -194,15 +194,6 @@ static CHANNEL_SETUP_REC *create_channel_setup(void)
         return g_new0(CHANNEL_SETUP_REC, 1);
 }
 
-static SERVER_CONNECT_REC *create_server_connect(void)
-{
-        return g_new0(SERVER_CONNECT_REC, 1);
-}
-
-static void destroy_server_connect(SERVER_CONNECT_REC *conn)
-{
-}
-
 /* Return "unknown chat protocol" record. Used when protocol name is
    specified but it isn't registered yet. */
 CHAT_PROTOCOL_REC *chat_protocol_get_unknown(const char *name)
