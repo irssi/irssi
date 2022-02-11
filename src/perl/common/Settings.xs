@@ -104,6 +104,10 @@ int
 settings_get_size(key)
        char *key
 
+int
+settings_get_choice(key)
+	char *key
+
 void
 settings_set_str(key, value)
 	char *key
@@ -131,6 +135,11 @@ settings_set_level(key, value)
 
 int
 settings_set_size(key, value)
+	char *key
+	char *value
+
+int
+settings_set_choice(key, value)
 	char *key
 	char *value
 
@@ -187,6 +196,16 @@ settings_add_size(section, key, def)
 CODE:
         perl_settings_add(key);
 	settings_add_size_module(MODULE_NAME"/scripts", section, key, def);
+
+void
+settings_add_choice(section, key, def, choices)
+	char *section
+	char *key
+	int def
+	char *choices
+CODE:
+	perl_settings_add(key);
+	settings_add_choice_module(MODULE_NAME "/scripts", section, key, def, choices);
 
 void
 settings_remove(key)

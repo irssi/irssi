@@ -351,6 +351,7 @@ Text FE
 
 gui-readline.c:
  "gui key pressed", int key
+ "paste event", char *paste, char *arg
 
 gui-printtext.c:
  "beep"
