@@ -21,8 +21,8 @@
 #include "module.h"
 #include <irssi/src/fe-common/core/formats.h>
 
-FORMAT_REC gui_text_formats[] =
-{
+FORMAT_REC gui_text_formats[] = {
+	/* clang-format off */
 	{ MODULE_NAME, "Text user interface", 0 },
 
 	/* ---- */
@@ -77,8 +77,9 @@ FORMAT_REC gui_text_formats[] =
 	/* ---- */
 	{ NULL, "Pasting", 0 },
 
-	{ "paste_warning", "Pasting $0 lines to $1. Press Ctrl-K if you wish to do this or Ctrl-C to cancel.", 2, { 1, 0 } },
+	{ "paste_warning", "Pasting $0 lines to $1. Press Ctrl-K if you wish to do this or Ctrl-C to cancel. Ctrl-P to print the paste content, Ctrl-E to insert the paste in the input line, Ctrl-U to pass the paste to a signal handler.", 2, { 1, 0 } },
 	{ "paste_prompt", "Hit Ctrl-K to paste, Ctrl-C to abort?", 0 },
+	{ "paste_content", "%_>%_ $0", 1, { 0 } },
 
 	/* ---- */
 	{ NULL, "Welcome", 0 },
@@ -98,4 +99,5 @@ FORMAT_REC gui_text_formats[] =
 	{ "welcome_init_settings", "The following settings were initialized", 0 },
 
 	{ NULL, NULL, 0 }
+	/* clang-format on */
 };
