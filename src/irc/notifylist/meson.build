@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-libirc_notifylist_a = shared_module('irc_notifylist',
+shared_module('irc_notifylist',
   files(
     'notify-commands.c',
     'notify-ison.c',

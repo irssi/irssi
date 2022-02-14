@@ -17,7 +17,7 @@ irssi_core_pl_h = custom_target('irssi-core.pl.h',
 # required as of Meson 0.58.0
 generated_files_inc = include_directories('.')
 
-libperl_core_a = shared_module('perl_core',
+libperl_core_sm = shared_module('perl_core',
   files(
     'perl-common.c',
     'perl-core.c',
@@ -44,10 +44,10 @@ libperl_core_a = shared_module('perl_core',
 
 dl_cross_perl_core = []
 if need_dl_cross_link
-  dl_cross_perl_core += libperl_core_a
+  dl_cross_perl_core += libperl_core_sm
 endif
 
-libfe_perl_a = shared_module('fe_perl',
+shared_module('fe_perl',
   files(
     'module-formats.c',
     'perl-fe.c',

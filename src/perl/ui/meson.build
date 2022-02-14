@@ -1,4 +1,4 @@
-libperl_Irssi_UI_a = shared_module('UI',
+shared_module('UI',
   [ xsubpp.process(
     files(
       'Formats.xs',

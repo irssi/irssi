@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-libfe_irc_dcc_a = shared_module('fe_irc_dcc',
+libfe_irc_dcc_a = static_library('fe_irc_dcc',
   files(
     'fe-dcc-chat-messages.c',
     'fe-dcc-chat.c',
@@ -12,13 +12,15 @@ libfe_irc_dcc_a = shared_module('fe_irc_dcc',
   ),
   include_directories : rootinc,
   implicit_include_directories : false,
-  install : true,
-  install_dir : moduledir,
   c_args : [
     def_helpdir,
     def_sysconfdir,
   ],
   dependencies : dep)
+shared_module('fe_irc_dcc',
+  install : true,
+  install_dir : moduledir,
+  link_whole : libfe_irc_dcc_a)
 
 install_headers(
   files(

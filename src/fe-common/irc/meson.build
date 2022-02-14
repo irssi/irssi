@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-libfe_common_irc_a = shared_module('fe_common_irc',
+libfe_common_irc_a = static_library('fe_common_irc',
   files(
     'fe-cap.c',
     'fe-common-irc.c',
@@ -25,13 +25,15 @@ libfe_common_irc_a = shared_module('fe_common_irc',
   ),
   include_directories : rootinc,
   implicit_include_directories : false,
-  install : true,
-  install_dir : moduledir,
   c_args : [
     def_helpdir,
     def_themesdir,
   ],
   dependencies : dep)
+shared_module('fe_common_irc',
+  install : true,
+  install_dir : moduledir,
+  link_whole : libfe_common_irc_a)
 
 install_headers(
   files(

@@ -1,5 +1,5 @@
 
-libperl_Irssi_a = shared_module('Irssi',
+shared_module('Irssi',
   [ xsubpp.process(
     files(
       'Channel.xs',

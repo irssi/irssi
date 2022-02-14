@@ -1,4 +1,4 @@
-libperl_Irssi_Irc_a = shared_module('Irc',
+shared_module('Irc',
   [ xsubpp.process(
     files(
       'Channel.xs',

@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-libirc_dcc_a = shared_module('irc_dcc',
+shared_module('irc_dcc',
   files(
     'dcc-autoget.c',
     'dcc-chat.c',
