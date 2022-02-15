@@ -9,7 +9,7 @@ executable('event-get-params-fuzz',
   link_with : [
     libconfig_a,
     libcore_a,
-    libirc_a,
+    libirc_core_a,
     libfuzzer_fe_common_core_a,
   ],
   link_args : [fuzzer_lib],

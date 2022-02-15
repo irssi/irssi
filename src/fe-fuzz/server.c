@@ -43,9 +43,9 @@
 #include <irssi/src/irc/core/irc-channels.h>
 #include <irssi/src/fe-fuzz/null-logger.h>
 
-/* irc.c */
-void irc_init(void);
-void irc_deinit(void);
+/* irc-core.c */
+void irc_core_init(void);
+void irc_core_deinit(void);
 
 /* irc-session.c */
 void irc_session_init(void);
@@ -153,7 +153,7 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 	core_preinit((*argv)[0]);
 	core_init();
 	irssi_ssl_init();
-	irc_init();
+	irc_core_init();
 	fe_common_core_init();
 	fe_common_irc_init();
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
