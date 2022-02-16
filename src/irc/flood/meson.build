@@ -11,6 +11,7 @@ libirc_flood_a = static_library('irc_flood',
 shared_module('irc_flood',
   install : true,
   install_dir : moduledir,
+  link_with : dl_cross_irc_core,
   link_whole : libirc_flood_a)
 
 install_headers(

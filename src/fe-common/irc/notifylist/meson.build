@@ -15,6 +15,7 @@ libfe_irc_notifylist_a = static_library('fe_irc_notifylist',
 shared_module('fe_irc_notifylist',
   install : true,
   install_dir : moduledir,
+  link_with : dl_cross_irc_notifylist,
   link_whole : libfe_irc_notifylist_a)
 
 install_headers(

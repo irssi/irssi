@@ -33,6 +33,7 @@ libfe_common_irc_a = static_library('fe_common_irc',
 shared_module('fe_common_irc',
   install : true,
   install_dir : moduledir,
+  link_with : dl_cross_irc_core,
   link_whole : libfe_common_irc_a)
 
 install_headers(

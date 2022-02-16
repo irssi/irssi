@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-shared_module('irc_notifylist',
+libirc_notifylist_sm = shared_module('irc_notifylist',
   files(
     'notify-commands.c',
     'notify-ison.c',
@@ -12,7 +12,13 @@ shared_module('irc_notifylist',
   implicit_include_directories : false,
   install : true,
   install_dir : moduledir,
+  link_with : dl_cross_irc_core,
   dependencies : dep)
+
+dl_cross_irc_notifylist = []
+if need_dl_cross_link
+  dl_cross_irc_notifylist += libirc_notifylist_sm
+endif
 
 install_headers(
   files(
