@@ -106,9 +106,6 @@ void irc_core_init(void)
 		(QUERY_REC *(*) (const char *, const char *, int))
                 irc_query_create;
 
-	chat_protocol_register(rec);
-        g_free(rec);
-
         irc_session_init();
 	irc_chatnets_init();
 	irc_servers_init();
@@ -125,6 +122,10 @@ void irc_core_init(void)
 	sasl_init();
 
 	settings_check();
+
+	chat_protocol_register(rec);
+	g_free(rec);
+
 	module_register("irc", "core");
 }
 

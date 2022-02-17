@@ -1,4 +1,4 @@
-libperl_Irssi_TextUI_a = shared_module('TextUI',
+shared_module('TextUI',
   [ xsubpp.process(
     files(
       'Statusbar.xs',

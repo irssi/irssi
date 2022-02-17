@@ -25,6 +25,8 @@ void chatnet_destroy(CHATNET_REC *chatnet);
 
 /* Find the chat network by name */
 CHATNET_REC *chatnet_find(const char *name);
+/* Check if this chatnet is unavailable because the protocol is not loaded */
+gboolean chatnet_find_unavailable(const char *name);
 
 void chatnets_init(void);
 void chatnets_deinit(void);

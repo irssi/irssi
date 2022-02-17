@@ -223,6 +223,13 @@ static void sig_irssi_init_finished(void)
         irssi_init_finished = TRUE;
 }
 
+static void reread_setup(void)
+{
+	signal_emit("setup reread chatnets", 0);
+	signal_emit("setup reread servers", 0);
+	signal_emit("setup reread channels", 0);
+}
+
 void core_init(void)
 {
 	dialog_type_queue = NULL;
@@ -269,13 +276,16 @@ void core_init(void)
 	settings_add_str("misc", "ignore_signals", "");
 	settings_add_bool("misc", "override_coredump_limit", FALSE);
 	settings_add_bool("misc", "quit_on_hup", FALSE);
-	settings_add_str("misc", "autoload_modules", "perl otr");
+	settings_add_str("misc", "autoload_modules", "irc dcc flood notifylist perl otr");
 
 #ifdef HAVE_SYS_RESOURCE_H
 	getrlimit(RLIMIT_CORE, &orig_core_rlimit);
 #endif
 	read_settings();
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_add("setup reread", (SIGNAL_FUNC) reread_setup);
+	signal_add("irssi init read settings", (SIGNAL_FUNC) reread_setup);
+	signal_add_last("chat protocol created", (SIGNAL_FUNC) reread_setup);
 	signal_add("irssi init finished", (SIGNAL_FUNC) sig_irssi_init_finished);
 
 	settings_check();
@@ -288,6 +298,9 @@ void core_deinit(void)
 	module_uniq_destroy("WINDOW ITEM TYPE");
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
+	signal_remove("setup reread", (SIGNAL_FUNC) reread_setup);
+	signal_remove("irssi init read settings", (SIGNAL_FUNC) reread_setup);
+	signal_remove("chat protocol created", (SIGNAL_FUNC) reread_setup);
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_irssi_init_finished);
 
 	wcwidth_wrapper_deinit();

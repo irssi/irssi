@@ -24,12 +24,13 @@
 #include <irssi/src/core/special-vars.h>
 #include <irssi/src/lib-config/iconfig.h>
 #include <irssi/src/core/settings.h>
+#include <irssi/src/core/misc.h>
 
 #include <irssi/src/core/chat-protocols.h>
 #include <irssi/src/core/chatnets.h>
 #include <irssi/src/core/servers.h>
 
-GSList *chatnets; /* list of available chat networks */
+GSList *chatnets, *chatnets_unavailable; /* list of available chat networks */
 
 static void chatnet_config_save(CHATNET_REC *chatnet)
 {
@@ -60,8 +61,9 @@ static void chatnet_config_remove(CHATNET_REC *chatnet)
 void chatnet_create(CHATNET_REC *chatnet)
 {
 	g_return_if_fail(chatnet != NULL);
+	g_return_if_fail(!CHAT_PROTOCOL(chatnet)->not_initialized);
 
-        chatnet->type = module_get_uniq_id("CHATNET", 0);
+	chatnet->type = module_get_uniq_id("CHATNET", 0);
 	if (g_slist_find(chatnets, chatnet) == NULL)
 		chatnets = g_slist_append(chatnets, chatnet);
 
@@ -112,6 +114,21 @@ CHATNET_REC *chatnet_find(const char *name)
 	return NULL;
 }
 
+gboolean chatnet_find_unavailable(const char *name)
+{
+	CHAT_PROTOCOL_REC *proto;
+
+	if (i_slist_find_icase_string(chatnets_unavailable, name) != NULL)
+		return TRUE;
+
+	proto = CHAT_PROTOCOL(chatnet_find(name));
+
+	if (proto == NULL || proto->not_initialized)
+		return TRUE;
+
+	return FALSE;
+}
+
 static void sig_connected(SERVER_REC *server)
 {
 	CHATNET_REC *rec;
@@ -136,14 +153,22 @@ static void chatnet_read(CONFIG_NODE *node)
 		return;
 
 	type = config_node_get_str(node, "type", NULL);
-	proto = type == NULL ? NULL : chat_protocol_find(type);
-	if (proto == NULL) {
-		proto = type == NULL ? chat_protocol_get_default() :
-			chat_protocol_get_unknown(type);
+	if (type == NULL) {
+		proto = chat_protocol_get_default();
+	} else {
+		proto = chat_protocol_find(type);
 	}
 
-	if (type == NULL)
+	if (proto == NULL) {
+		/* protocol not loaded */
+		if (i_slist_find_icase_string(chatnets_unavailable, node->key) == NULL)
+			chatnets_unavailable =
+			    g_slist_append(chatnets_unavailable, g_strdup(node->key));
+
+		return;
+	} else if (type == NULL) {
 		iconfig_node_set_str(node, "type", proto->name);
+	}
 
 	rec = proto->create_chatnet();
 	rec->type = module_get_uniq_id("CHATNET", 0);
@@ -167,6 +192,12 @@ static void read_chatnets(void)
 	while (chatnets != NULL)
                 chatnet_destroy(chatnets->data);
 
+	while (chatnets_unavailable != NULL) {
+		char *name = chatnets_unavailable->data;
+		chatnets_unavailable = g_slist_remove(chatnets_unavailable, name);
+		g_free(name);
+	}
+
 	node = iconfig_node_traverse("chatnets", FALSE);
 	if (node != NULL) {
 		tmp = config_node_first(node->value);
@@ -180,8 +211,7 @@ void chatnets_init(void)
 	chatnets = NULL;
 
 	signal_add_first("event connected", (SIGNAL_FUNC) sig_connected);
-	signal_add("setup reread", (SIGNAL_FUNC) read_chatnets);
-        signal_add_first("irssi init read settings", (SIGNAL_FUNC) read_chatnets);
+	signal_add("setup reread chatnets", (SIGNAL_FUNC) read_chatnets);
 }
 
 void chatnets_deinit(void)
@@ -189,6 +219,5 @@ void chatnets_deinit(void)
 	module_uniq_destroy("CHATNET");
 
 	signal_remove("event connected", (SIGNAL_FUNC) sig_connected);
-	signal_remove("setup reread", (SIGNAL_FUNC) read_chatnets);
-        signal_remove("irssi init read settings", (SIGNAL_FUNC) read_chatnets);
+	signal_remove("setup reread chatnets", (SIGNAL_FUNC) read_chatnets);
 }

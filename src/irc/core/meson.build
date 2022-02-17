@@ -38,6 +38,15 @@ libirc_core_a = static_library('irc_core',
     def_sysconfdir,
   ],
   dependencies : dep)
+libirc_core_sm = shared_module('irc_core',
+  install : true,
+  install_dir : moduledir,
+  link_whole : libirc_core_a)
+
+dl_cross_irc_core = []
+if need_dl_cross_link
+  dl_cross_irc_core += libirc_core_sm
+endif
 
 install_headers(
   files(

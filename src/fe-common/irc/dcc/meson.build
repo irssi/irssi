@@ -17,6 +17,11 @@ libfe_irc_dcc_a = static_library('fe_irc_dcc',
     def_sysconfdir,
   ],
   dependencies : dep)
+shared_module('fe_irc_dcc',
+  install : true,
+  install_dir : moduledir,
+  link_with : dl_cross_irc_dcc,
+  link_whole : libfe_irc_dcc_a)
 
 install_headers(
   files(

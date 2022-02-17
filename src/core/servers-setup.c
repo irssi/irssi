@@ -305,6 +305,8 @@ static SERVER_CONNECT_REC *create_addr_conn(int chat_type, const char *address, 
 	proto = chat_type >= 0 ? chat_protocol_find_id(chat_type) :
                 chat_protocol_get_default();
 
+	g_return_val_if_fail(proto != NULL, NULL);
+
 	conn = proto->create_server_connect();
 	server_connect_ref(conn);
 
@@ -469,6 +471,10 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 	chatnetrec = chatnet == NULL ? NULL : chatnet_find(chatnet);
 	if (chatnetrec == NULL && chatnet != NULL) {
                 /* chat network not found, create it. */
+		if (chatnet_find_unavailable(chatnet)) {
+			/* no protocols loaded, skip loading servers */
+			return NULL;
+		}
 		chatnetrec = chat_protocol_get_default()->create_chatnet();
 		chatnetrec->chat_type = chat_protocol_get_default()->id;
 		chatnetrec->name = g_strdup(chatnet);
@@ -759,8 +765,7 @@ void servers_setup_init(void)
 	read_settings();
 
 	signal_add("setup changed", (SIGNAL_FUNC) read_settings);
-	signal_add("setup reread", (SIGNAL_FUNC) read_servers);
-        signal_add("irssi init read settings", (SIGNAL_FUNC) read_servers);
+	signal_add("setup reread servers", (SIGNAL_FUNC) read_servers);
 }
 
 void servers_setup_deinit(void)
@@ -773,8 +778,7 @@ void servers_setup_deinit(void)
 		server_setup_destroy(setupservers->data);
 
 	signal_remove("setup changed", (SIGNAL_FUNC) read_settings);
-	signal_remove("setup reread", (SIGNAL_FUNC) read_servers);
-        signal_remove("irssi init read settings", (SIGNAL_FUNC) read_servers);
+	signal_remove("setup reread servers", (SIGNAL_FUNC) read_servers);
 
 	module_uniq_destroy("SERVER SETUP");
 }
