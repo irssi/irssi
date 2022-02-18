@@ -1,0 +1,25 @@
+global-include meson.build
+
+recursive-include src *.c *.h meson.build
+recursive-include src/perl *.c *.h *.xs *.pm *.pl typemap meson.build
+recursive-include tests *.c meson.build
+
+include meson_options.txt
+
+include subprojects/*.wrap
+prune subprojects/*/
+
+include utils/*.pl utils/*.sh
+exclude utils/make-dist.sh
+
+include irssi.conf
+include themes/*.theme
+include docs/*.1 docs/*.txt docs/*.html
+include docs/help/in/[a-z]*.in
+include scripts/*.pl scripts/examples/*.pl
+
+include NEWS
+
+prune Build
+prune dist
+prune *.egg-info

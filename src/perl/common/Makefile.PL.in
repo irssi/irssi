@@ -1,7 +1,0 @@
-use ExtUtils::MakeMaker;our $AM_DEFAULT_VERBOSITY='@AM_DEFAULT_VERBOSITY@';require "@top_srcdir@/src/perl/Makefile_silent.pm";
-
-WriteMakefile('NAME' => 'Irssi',
-              'LIBS' => '',
-	      'OBJECT' => '$(O_FILES)',
-              'INC' => '-I../../.. @GLIB_CFLAGS@',
-	      'VERSION_FROM' => '@srcdir@/Irssi.pm');

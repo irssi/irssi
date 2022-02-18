@@ -7,10 +7,8 @@ name: Check Irssi
 env:
   apt_build_deps: libutf8proc-dev libperl-dev libotr5-dev
   apt_build_deps_meson: ninja-build
-  apt_build_deps_autotools: autoconf automake libtool
   get_pip_build_deps_meson: pip3 install setuptools${setuptools_ver}; pip3 install wheel; pip3 install meson${meson_ver}
   build_options_meson: -Dwith-proxy=yes -Dwith-bot=yes -Dwith-perl=yes -Dwith-otr=yes
-  build_options_configure: --with-proxy=module --with-bot --with-perl=module --with-otr=module
   prefix: ~/irssi-build
 jobs:
   dist:
@@ -18,13 +16,11 @@ jobs:
     steps:
       - name: prepare required software
         run: |
-          sudo apt update && sudo apt install $apt_build_deps $apt_build_deps_autotools
+          sudo apt update && sudo apt install $apt_build_deps
       - uses: actions/checkout@main
       - name: make dist
         run: |
-          # make dist
-          ./autogen.sh $build_options_configure
-          make dist
+          ./utils/make-dist.sh
       - uses: actions/upload-artifact@v2
         with:
           path: irssi-*.tar.gz
@@ -39,7 +35,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, ubuntu-latest]
-        builder: [meson, configure]
+        builder: [meson]
         compiler: [clang, gcc]
         flags: [regular]
         include:
@@ -49,7 +45,7 @@ jobs:
             setuptools_ver: <51
           - os: ubuntu-latest
             builder: meson
-            meson_ver: <0.60.0
+            meson_ver: <0.61.2
           - os: ubuntu-latest
             builder: meson
             flags: meson-latest FAILURE-OK
@@ -77,23 +73,6 @@ jobs:
           ninja -C Build
           ninja -C Build install
         if: ${{ matrix.builder == 'meson' }}
-      - name: build and install with Makefile
-        run: |
-          # make install
-          cd irssi-*/
-          mkdir Build
-          cd Build
-          ../configure $build_options_configure --prefix=${prefix/\~/~} --enable-always-build-tests
-          make CFLAGS="-Wall -Werror -Werror=declaration-after-statement"
-          make install
-        if: ${{ matrix.builder == 'configure' }}
-      - name: run tests with Makefile
-        run: |
-          # make check
-          cd irssi-*/Build
-          make -C tests -sk check
-          find -name test-suite.log -exec cat {} +
-        if: ${{ matrix.builder == 'configure' }}
       - name: run tests with Meson
         run: |
           # ninja test
