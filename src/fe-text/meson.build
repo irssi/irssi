@@ -37,7 +37,6 @@ executable('irssi',
     libfe_common_core_a,
     ],
   install : true,
-  install_rpath : get_option('prefix') / get_option('libdir'),
   dependencies : dep
   + textui_dep
 )
