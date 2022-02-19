@@ -23,6 +23,7 @@
 #include <irssi/src/otr/otr-formats.h>
 
 FORMAT_REC fe_otr_formats[] = {
+	/* clang-format off */
 	{ MODULE_NAME, "Core", 0 },
 
 	/* Status bar format. */
@@ -73,7 +74,7 @@ FORMAT_REC fe_otr_formats[] = {
 	{ "otr_keys_unavailable", "{error No OTR keys available}", 0},
 
 	{ "otr_msg_encryption_ended", "{hilight $0} has closed the connection to you", 1, { 0 }},
-	{ "otr_msg_encryption_error", "{error An error occured when encrypting your message}", 0},
+	{ "otr_msg_encryption_error", "{error An error occurred when encrypting your message}", 0},
 	{ "otr_msg_encryption_required", "Encryptioned is required", 0},
 	{ "otr_msg_error", "Error in private conversation: {error $0}", 1, { 0 }},
 	{ "otr_msg_general_error", "General Error: {error $0}", 1, { 0 }},
@@ -101,8 +102,9 @@ FORMAT_REC fe_otr_formats[] = {
 	{ "otr_smp_failure", "Authentication with {hilight $0} failed", 1, { 0 }},
 	{ "otr_smp_in_progress", "{hilight $0} replied to your auth request", 1, { 0 }},
 	{ "otr_smp_secret_question", "{hilight $0} wants to authenticate. Use /otr auth <secret> to complete", 1, { 0 }},
-	{ "otr_smp_success", "Authentication with {hilight $0} succesful", 1, { 0 }},
+	{ "otr_smp_success", "Authentication with {hilight $0} successful", 1, { 0 }},
 
 	/* Last element. */
 	{ NULL, NULL, 0 }
+	/* clang-format on */
 };
