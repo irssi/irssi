@@ -118,7 +118,6 @@ static void textbuffer_cache_unref(TEXT_BUFFER_CACHE_REC *cache)
 #define FGATTR (ATTR_NOCOLORS | ATTR_RESETFG | FG_MASK | ATTR_FGCOLOR24)
 #define BGATTR (ATTR_NOCOLORS | ATTR_RESETBG | BG_MASK | ATTR_BGCOLOR24)
 
-#ifdef TERM_TRUECOLOR
 static void unformat_24bit_line_color(const unsigned char **ptr, int off, int *flags, unsigned int *fg, unsigned int *bg)
 {
 	unsigned int color;
@@ -145,7 +144,6 @@ static void unformat_24bit_line_color(const unsigned char **ptr, int off, int *f
 		*fg = color;
 	}
 }
-#endif
 
 static inline unichar read_unichar(const unsigned char *data, const unsigned char **next, int *width)
 {
@@ -215,11 +213,9 @@ static inline void unformat(const unsigned char **ptr, int *color, unsigned int 
 		break;
 #undef SET_COLOR_EXT_BG_BITS
 #undef SET_COLOR_EXT_FG_BITS
-#ifdef TERM_TRUECOLOR
 	case FORMAT_COLOR_24:
 		unformat_24bit_line_color(ptr, 1, color, fg24, bg24);
 		break;
-#endif
 	default:
 		if (**ptr != FORMAT_COLOR_NOCHANGE) {
 			if (**ptr == (unsigned char) 0xff) {
@@ -289,10 +285,8 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 				sub->start = ++ptr;
 				sub->color = color;
-#ifdef TERM_TRUECOLOR
 				sub->fg24 = fg24;
 				sub->bg24 = bg24;
-#endif
 
 				lines = g_slist_append(lines, sub);
 				linecount++;
@@ -360,10 +354,8 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 				sub->indent = xpos;
 				sub->indent_func = indent_func;
 				sub->color = color;
-#ifdef TERM_TRUECOLOR
 				sub->fg24 = fg24;
 				sub->bg24 = bg24;
-#endif
 
 				lines = g_slist_append(lines, sub);
 				linecount++;
@@ -502,10 +494,8 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 				if (indent_func == NULL || cache->lines[subline-1].continues)
 					xpos = cache->lines[subline-1].indent;
 				color = cache->lines[subline-1].color;
-#ifdef TERM_TRUECOLOR
 				fg24 = cache->lines[subline-1].fg24;
 				bg24 = cache->lines[subline-1].bg24;
-#endif
 			} else {
 				indent_func = NULL;
 			}

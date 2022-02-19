@@ -245,9 +245,7 @@ void gui_printtext_get_colors(int *flags, int *fg, int *bg, int *attr)
 	if (*flags & GUI_PRINT_FLAG_MIRC_COLOR) {
 		/* mirc colors - extended colours proposal */
 		gboolean use_24_map = FALSE;
-#ifdef TERM_TRUECOLOR
 		use_24_map = settings_get_bool("colors_ansi_24bit");
-#endif
 		if (*bg >= 0) {
 			if (use_24_map && mirc_colors24[*bg % 100] != -1) {
 				*bg = mirc_colors24[*bg % 100];

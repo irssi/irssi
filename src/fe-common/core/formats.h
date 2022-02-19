@@ -158,9 +158,7 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 #define FORMAT_COLOR_EXT1_BG	('0'-5)
 #define FORMAT_COLOR_EXT2_BG	('0'-9)
 #define FORMAT_COLOR_EXT3_BG	('0'-10)
-#ifdef TERM_TRUECOLOR
 #define FORMAT_COLOR_24	('0'-13)
-#endif
 
 #define FORMAT_STYLE_SPECIAL	0x60
 #define FORMAT_STYLE_BLINK	(0x01 + FORMAT_STYLE_SPECIAL)
