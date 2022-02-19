@@ -86,3 +86,6 @@ src/fe-fuzz/oom-*
 Build
 subprojects/*
 !subprojects/*.wrap
+Irssi-Dist
+setup.cfg
+*.egg-info

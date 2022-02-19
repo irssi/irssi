@@ -17,21 +17,12 @@ For most people, this should work just fine:
  su
  ninja -C Build install
  
-For the moment, autotools is also supported:
+meson options
 
- ./autogen.sh     (for people who just cloned the repository)
- ./configure      (if this script already exists, skip ./autogen.sh)
- make
- su
- make install     (not _really_ required except for perl support)
-
-configure options
-
-  These options can be given to meson or ./configure.
-  The first syntax is for meson, the 2nd for ./configure
+  These options can be given to meson.
   
   For a complete list of options, run
-   meson configure   /   ./configure --help
+   meson configure
 
   --prefix
 
@@ -39,33 +30,28 @@ configure options
   YES, you can install Irssi WITHOUT ROOT permissions
   by using --prefix=/home/dir
 
-  -Dwith-proxy=yes   /   --with-proxy
+  -Dwith-proxy=yes
 
   Build the Irssi proxy (see startup-HOWTO).
 
-  -Dwith-perl=[yes|no]   /   --with-perl=[yes|no|module]
+  -Dwith-perl=[yes|no]
 
   Enable Perl support
   yes    enable builtin (default)
   no     disable
-  module enable as module
 
-  -Dwith-perl-lib=[site|vendor|DIR]   /   --with-perl-lib=[site|vendor|DIR]
+  -Dwith-perl-lib=[site|vendor|DIR]
 
   Specify installation dir for Perl libraries
   site   install in dir for site-specific modules (default)
   vendor install in dir for vendor-specific modules
   DIR    install in DIR
 
-  [N/A]   /   --with-socks
-
-  Build with socks library
-
-  -Dwith-bot=yes   /   --with-bot
+  -Dwith-bot=yes
 
   Build irssi-bot
 
-  -Dwithout-textui=yes   /   --without-textui
+  -Dwithout-textui=yes
 
   Build without text frontend
 
@@ -82,31 +68,18 @@ the -Dc_args and -Dc_link_args options variable, eg.:
 Perl support generates most of the problems. There's quite a many
 things that can go wrong:
 
- - Compiling fails if you compile irssi with GCC in a system that has
-   perl compiled with some other C compiler. Very common problem with
-   non-Linux/BSD systems. You'll need to edit src/perl/*/Makefile files
-   and remove the parameters that gcc doesn't like. Mostly you'll just
-   need to keep the -I and -D parameters and add -fPIC.
  - If there's any weird crashing at startup, you might have older irssi's
    perl libraries installed somewhere, and you should remove those.
- - Dynamic libraries don't want to work with some systems, so if your
-   system complains about some missing symbol in Irssi.so file, configure
-   irssi with --with-perl-staticlib option (NOT same as --with-perl=static).
- - If configure complains that it doesn't find some perl stuff, you're
+ - If meson complains that it doesn't find some perl stuff, you're
    probably missing libperl.so or libperl.a. In debian, you'll need to do
    apt-get install libperl-dev
- - For unprivileged home directory installations, you probably do not want 
-   to specify --with-perl-lib=(site|vendor). Instead, you can use the 
-   default perl installation target (below the irssi prefix). If you are
-   using local::lib you can also choose to install there by specifying
-   --with-perl-lib=$PERL_LOCAL_LIB_ROOT/lib/perl5
 
 You can verify that the perl module is loaded and working with "/LOAD"
 command. It should print something like:
 
 Module               Type    Submodules
 ...
-perl                 static  core fe
+perl                 dynamic fe core
 
 
  System specific notes
@@ -134,13 +107,4 @@ would call:
 
 Getting perl scripting to work needs a few things:
 
- - configure with --with-perl-staticlib
-
- - libperl.dll is required in linking and running irssi, it's normally
-   located somewhere around /usr/lib/perl5/5.6.1/cygwin/CORE/libperl5_6_1.dll
-   copy it to eg. /usr/bin/libperl.dll
-
- - -DUSEIMPORTLIB is needed to be defined while compiling src/perl directory.
-   It doesn't hurt to be defined everywhere, so configure irssi with:
-
-     CFLAGS='-DUSEIMPORTLIB' ./configure --with-perl-staticlib
+ - TODO
