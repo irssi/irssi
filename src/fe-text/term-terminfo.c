@@ -339,33 +339,25 @@ static int termctl_set_color_24bit(int bg, unsigned int lc)
 #define COLOR_BLACK24 COLOR_RESET - 1
 
 /* Change active color */
-#ifdef TERM_TRUECOLOR
 void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigned int bgcol24)
-#else
-void term_set_color(TERM_WINDOW *window, int col)
-#endif
 {
 	int set_normal;
 
 	unsigned int fg, bg;
-#ifdef TERM_TRUECOLOR
 	if (col & ATTR_FGCOLOR24) {
 		if (fgcol24)
 			fg = fgcol24 << 8;
 		else
 			fg = COLOR_BLACK24;
 	} else
-#endif
 		fg = (col & FG_MASK);
 
-#ifdef TERM_TRUECOLOR
 	if (col & ATTR_BGCOLOR24) {
 		if (bgcol24)
 			bg = bgcol24 << 8;
 		else
 			bg = COLOR_BLACK24;
 	} else
-#endif
 		bg = ((col & BG_MASK) >> BG_SHIFT);
 
 	if (!term_use_colors && bg > 0)

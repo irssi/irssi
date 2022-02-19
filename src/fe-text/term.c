@@ -150,12 +150,8 @@ static void read_settings(void)
 	term_use_colors = settings_get_bool("colors") &&
 		(force_colors || term_has_colors());
 
-#ifdef TERM_TRUECOLOR
 	term_use_colors24 = settings_get_bool("colors_ansi_24bit") &&
 		(force_colors || term_has_colors());
-#else
-	term_use_colors24 = FALSE;
-#endif
 
 	if (term_use_colors != old_colors || term_use_colors24 != old_colors24)
 		irssi_redraw();
@@ -173,12 +169,8 @@ void term_common_init(void)
 
 	force_colors = FALSE;
 	term_use_colors = term_has_colors() && settings_get_bool("colors");
-#ifdef TERM_TRUECOLOR
 	settings_add_bool("lookandfeel", "colors_ansi_24bit", FALSE);
 	term_use_colors24 = term_has_colors() && settings_get_bool("colors_ansi_24bit");
-#else
-	term_use_colors24 = FALSE;
-#endif
         read_settings();
 
 	if (g_get_charset(&dummy)) {

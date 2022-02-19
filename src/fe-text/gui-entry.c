@@ -300,7 +300,6 @@ static char *text_effects_only(const char *p)
 
 			/* irssi color */
 			if (p[2] != '\0') {
-#ifdef TERM_TRUECOLOR
 				if (p[1] == FORMAT_COLOR_24) {
 					if (p[3] == '\0') p += 2;
 					else if (p[4] == '\0') p += 3;
@@ -310,12 +309,9 @@ static char *text_effects_only(const char *p)
 						p += 5;
 					}
 				} else {
-#endif /* TERM_TRUECOLOR */
 					g_string_append_len(str, p, 3);
 					p += 2;
-#ifdef TERM_TRUECOLOR
 				}
-#endif /* TERM_TRUECOLOR */
 				continue;
 			}
 		}

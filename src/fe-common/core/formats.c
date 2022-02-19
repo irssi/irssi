@@ -142,7 +142,6 @@ static void format_ext_color_unexpand(GString *out, gboolean bg, int base, char 
 	g_string_append_c(out, ext_color_al[value % 36]);
 }
 
-#ifdef TERM_TRUECOLOR
 void unformat_24bit_color(char **ptr, int off, int *fgcolor, int *bgcolor, int *flags)
 {
 	unsigned int color;
@@ -191,12 +190,10 @@ static void format_24bit_color_unexpand(GString *out, int off, const char **ptr)
 	g_string_append_c(out, rgbx[3] & 0x1 ? 'z' : 'Z');
 	g_string_append_printf(out, "%06X", color);
 }
-#endif
 
 void format_24bit_color(GString *out, int bg, unsigned int color)
 {
 	unsigned char rgb[] = { color >> 16, color >> 8, color };
-#ifdef TERM_TRUECOLOR
 	unsigned char x = bg ? 0x1 : 0;
 	unsigned int i;
 	g_string_append_c(out, 4);
@@ -210,9 +207,6 @@ void format_24bit_color(GString *out, int bg, unsigned int color)
 		}
 	}
 	g_string_append_c(out, 0x20 + x);
-#else /* !TERM_TRUECOLOR */
-	format_ext_color(out, bg, color_24bit_256(rgb));
-#endif /* TERM_TRUECOLOR */
 }
 
 int format_expand_styles(GString *out, const char **format, int *flags)
@@ -668,11 +662,9 @@ char *format_string_unexpand(const char *text, int flags)
 			case FORMAT_COLOR_EXT3_BG:
 				format_ext_color_unexpand(out, TRUE, 0xb0, *++text);
 				break;
-#ifdef TERM_TRUECOLOR
 			case FORMAT_COLOR_24:
 				format_24bit_color_unexpand(out, 1, &text);
 				break;
-#endif
 			case FORMAT_STYLE_BLINK:
 				format_flag_unexpand(out, 'F');
 				break;
@@ -1057,13 +1049,6 @@ void format_newline(TEXT_DEST_REC *dest)
 	               GINT_TO_POINTER(-1), GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE), "", dest);
 }
 
-#ifndef TERM_TRUECOLOR
-inline static int color_24bit_256_int(unsigned int color)
-{
-	unsigned char rgb[] = { color >> 16, color >> 8, color };
-	return color_24bit_256(rgb);
-}
-#endif /* !TERM_TRUECOLOR */
 
 /* parse ANSI color string */
 static const char *get_ansi_color(THEME_REC *theme, const char *str,
@@ -1191,7 +1176,7 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 				}
 
 				if (i == -1) break;
-#ifdef TERM_TRUECOLOR
+
 				if (num == 38) {
 					flags |= GUI_PRINT_FLAG_COLOR_24_FG;
 					fg = num2;
@@ -1199,15 +1184,6 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 					flags |= GUI_PRINT_FLAG_COLOR_24_BG;
 					bg = num2;
 				}
-#else /* !TERM_TRUECOLOR */
-				if (num == 38) {
-					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
-					fg = color_24bit_256_int(num2);
-				} else if (num == 48) {
-					flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-					bg = color_24bit_256_int(num2);
-				}
-#endif
 
 				break;
 			case 5:
@@ -1332,7 +1308,6 @@ int strip_real_length(const char *str, int len,
 			/* We expect 4 to indicate an internal Irssi color code. However 4
 			 * also means hex color, an alternative to mIRC color codes. We
 			 * don't support those. */
-#ifdef TERM_TRUECOLOR
 			if (str[1] == FORMAT_COLOR_24 && str[2] != '\0') {
 				if (str[3] == '\0') str++;
 				else if (str[4] == '\0') str += 2;
@@ -1344,9 +1319,7 @@ int strip_real_length(const char *str, int len,
 						*last_color_len = 6;
 					str+=4;
 				}
-			} else
-#endif
-			if (str[1] < FORMAT_STYLE_SPECIAL && str[2] != '\0') {
+			} else if (str[1] < FORMAT_STYLE_SPECIAL && str[2] != '\0') {
 				if (last_color_pos != NULL)
 					*last_color_pos = (int) (str-start);
 				if (last_color_len != NULL)
@@ -1395,14 +1368,12 @@ char *strip_codes(const char *input)
 
 			/* irssi color */
 			if (p[2] != '\0') {
-#ifdef TERM_TRUECOLOR
 				if (p[1] == FORMAT_COLOR_24) {
 					if (p[3] == '\0') p += 2;
 					else if (p[4] == '\0') p += 3;
 					else if (p[5] == '\0') p += 4;
 					else p += 5;
 				} else
-#endif /* TERM_TRUECOLOR */
 				p += 2;
 				continue;
 			}
@@ -1550,11 +1521,9 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 				bgcolor = 0xb0 + *++ptr - FORMAT_COLOR_NOCHANGE;
 				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
 				break;
-#ifdef TERM_TRUECOLOR
 			case FORMAT_COLOR_24:
 				unformat_24bit_color(&ptr, 1, &fgcolor, &bgcolor, &flags);
 				break;
-#endif
 			default:
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
 					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
@@ -1637,13 +1606,11 @@ void format_gui_flags(GString *out, int *last_fg, int *last_bg, int *last_flags,
 	    (flags & GUI_PRINT_FLAG_COLOR_24_FG) != (*last_flags & GUI_PRINT_FLAG_COLOR_24_FG)) {
 		*last_fg = fg;
 
-#ifdef TERM_TRUECOLOR
 		if (flags & GUI_PRINT_FLAG_COLOR_24_FG) {
 			*last_flags |= GUI_PRINT_FLAG_COLOR_24_FG;
 			format_24bit_color(out, 0, fg);
 		} else {
 			*last_flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
-#endif
 			if (fg < 0) {
 				g_string_append_c(out, 4);
 				g_string_append_c(out, (char) -1);
@@ -1651,20 +1618,16 @@ void format_gui_flags(GString *out, int *last_fg, int *last_bg, int *last_flags,
 			} else {
 				format_ext_color(out, 0, fg);
 			}
-#ifdef TERM_TRUECOLOR
 		}
-#endif
 	}
 	if (bg != *last_bg ||
 	    (flags & GUI_PRINT_FLAG_COLOR_24_BG) != (*last_flags & GUI_PRINT_FLAG_COLOR_24_BG)) {
 		*last_bg = bg;
-#ifdef TERM_TRUECOLOR
 		if (flags & GUI_PRINT_FLAG_COLOR_24_BG) {
 			*last_flags |= GUI_PRINT_FLAG_COLOR_24_BG;
 			format_24bit_color(out, 1, bg);
 		} else {
 			*last_flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-#endif
 			if (bg < 0) {
 				g_string_append_c(out, 4);
 				g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
@@ -1672,9 +1635,7 @@ void format_gui_flags(GString *out, int *last_fg, int *last_bg, int *last_flags,
 			} else {
 				format_ext_color(out, 1, bg);
 			}
-#ifdef TERM_TRUECOLOR
 		}
-#endif
 	}
 
 	if ((flags & GUI_PRINT_FLAG_UNDERLINE) != (*last_flags & GUI_PRINT_FLAG_UNDERLINE)) {

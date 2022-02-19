@@ -32,7 +32,6 @@ want_fuzzer         = get_option('with-fuzzer') == 'yes'
 fuzzer_lib          = get_option('with-fuzzer-lib')
 fuzzer_link_language = get_option('fuzzer-link-language')
 want_proxy          = get_option('with-proxy') == 'yes'
-want_truecolor      = get_option('enable-true-color') == 'yes'
 want_gregex         = get_option('disable-gregex') != 'yes'
 
 require_capsicum    = get_option('with-capsicum') == 'yes'
@@ -521,7 +520,7 @@ conf = configuration_data()
 conf.set('HAVE_CAPSICUM', have_capsicum, description : 'Build with Capsicum support')
 conf.set('HAVE_GMODULE', true)
 conf.set('HAVE_SOCKS', false, description : 'Build with socks support')
-conf.set('TERM_TRUECOLOR', want_truecolor, description : 'true color support in terminal')
+conf.set('TERM_TRUECOLOR', true)
 conf.set('USE_GREGEX', want_gregex, description : 'use GRegex for regular expressions')
 conf.set10('_DARWIN_USE_64_BIT_INODE', true, description : 'Enable large inode numbers on Mac OS X 10.5.')
 conf.set_quoted('FHS_PREFIX', get_option('fhs-prefix'))
@@ -627,7 +626,6 @@ if have_perl
 endif
 message('Install prefix ................... : ' + get_option('prefix'))
 message('')
-message('Building with true color support.. : ' + want_truecolor.to_string('yes', 'no'))
 message('Building with GRegex ............. : ' + want_gregex.to_string('yes', 'no'))
 message('Building with Capsicum ........... : ' + have_capsicum.to_string('yes', 'no'))
 message('Building with utf8proc ........... : ' + have_libutf8proc.to_string('yes', 'no'))

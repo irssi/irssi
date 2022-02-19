@@ -15,9 +15,7 @@ typedef struct {
 	int indent;
         INDENT_FUNC indent_func;
 	int color;
-#ifdef TERM_TRUECOLOR
 	unsigned int fg24, bg24;
-#endif
 
 	/* first word in line belong to the end of the last word in
 	   previous line */
