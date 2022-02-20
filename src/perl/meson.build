@@ -30,7 +30,6 @@ libperl_core_sm = shared_module('perl_core',
   c_args : [
     def_scriptdir,
     def_perl_use_lib,
-    '-D' + 'PERL_STATIC_LIBS' + '=' + 0.to_string(),
   ],
   include_directories : [ rootinc ] + [ generated_files_inc ],
   implicit_include_directories : false,

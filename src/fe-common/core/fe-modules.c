@@ -29,8 +29,6 @@
 
 #include <irssi/src/fe-common/core/printtext.h>
 
-#ifdef HAVE_GMODULE
-
 static void sig_module_error(void *number, const char *data,
 			     const char *rootmodule, const char *submodule)
 {
@@ -271,22 +269,3 @@ void fe_modules_deinit(void)
 	command_unbind("load", (SIGNAL_FUNC) cmd_load);
 	command_unbind("unload", (SIGNAL_FUNC) cmd_unload);
 }
-
-#else /* !HAVE_GMODULE */
-
-static void cmd_load(const char *data)
-{
-	printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
-		  "Dynamic modules loading not supported");
-}
-
-void fe_modules_init(void)
-{
-	command_bind("load", NULL, (SIGNAL_FUNC) cmd_load);
-}
-
-void fe_modules_deinit(void)
-{
-	command_unbind("load", (SIGNAL_FUNC) cmd_load);
-}
-#endif

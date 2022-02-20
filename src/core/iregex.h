@@ -3,19 +3,9 @@
 
 #include <irssi/src/common.h>
 
-#ifdef USE_GREGEX
-
 #include <glib.h>
 typedef	GRegex Regex;
 typedef	struct _MatchInfo MatchInfo;
-
-#else
-
-#include <regex.h>
-typedef	regex_t Regex;
-typedef regmatch_t MatchInfo;
-
-#endif
 
 gboolean
 i_match_info_matches (const MatchInfo *match_info);

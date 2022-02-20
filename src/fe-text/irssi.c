@@ -46,27 +46,6 @@
 #include <signal.h>
 #include <locale.h>
 
-#ifdef HAVE_STATIC_PERL
-void perl_core_init(void);
-void perl_core_deinit(void);
-
-void fe_perl_init(void);
-void fe_perl_deinit(void);
-#endif
-
-#ifdef HAVE_STATIC_OTR
-void otr_core_init(void);
-void otr_core_deinit(void);
-#endif
-
-#ifdef HAVE_STATIC_IRC
-void irc_init(void);
-void irc_deinit(void);
-
-void fe_common_irc_init(void);
-void fe_common_irc_deinit(void);
-#endif
-
 void gui_expandos_init(void);
 void gui_expandos_deinit(void);
 
@@ -170,13 +149,7 @@ static void textui_init(void)
 
 	irssi_gui = IRSSI_GUI_TEXT;
 	core_init();
-#ifdef HAVE_STATIC_IRC
-	irc_init();
-#endif
 	fe_common_core_init();
-#ifdef HAVE_STATIC_IRC
-	fe_common_irc_init();
-#endif
 
 	theme_register(gui_text_formats);
 	signal_add("settings userinfo changed", (SIGNAL_FUNC) sig_settings_userinfo_changed);
@@ -222,15 +195,6 @@ static void textui_finish_init(void)
 
 	module_register("core", "fe-text");
 
-#ifdef HAVE_STATIC_PERL
-	perl_core_init();
-	fe_perl_init();
-#endif
-
-#ifdef HAVE_STATIC_OTR
-	otr_core_init();
-#endif
-
 	dirty_check();
 
 	/* Temporarily raise the fatal level to abort on config errors. */
@@ -273,15 +237,6 @@ static void textui_deinit(void)
 	while (modules != NULL)
 		module_unload(modules->data);
 
-#ifdef HAVE_STATIC_PERL
-	perl_core_deinit();
-	fe_perl_deinit();
-#endif
-
-#ifdef HAVE_STATIC_OTR
-	otr_core_deinit();
-#endif
-
 	dirty_check(); /* one last time to print any quit messages */
 	signal_remove("settings userinfo changed", (SIGNAL_FUNC) sig_settings_userinfo_changed);
 	signal_remove("module autoload", (SIGNAL_FUNC) sig_autoload_modules);
@@ -307,13 +262,7 @@ static void textui_deinit(void)
 
 	theme_unregister();
 
-#ifdef HAVE_STATIC_IRC
-	fe_common_irc_deinit();
-#endif
 	fe_common_core_deinit();
-#ifdef HAVE_STATIC_IRC
-	irc_deinit();
-#endif
 	core_deinit();
 }
 
@@ -353,10 +302,6 @@ int main(int argc, char **argv)
 	core_preinit(argv[0]);
 
 	check_files();
-
-#ifdef HAVE_SOCKS
-	SOCKSinit(argv[0]);
-#endif
 
 	/* setlocale() must be called at the beginning before any calls that
 	   affect it, especially regexps seem to break if they're generated

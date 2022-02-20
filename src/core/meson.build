@@ -1,11 +1,5 @@
 # this file is part of irssi
 
-if want_gregex
-  regex_impl = files('iregex-gregex.c')
-else
-  regex_impl = files('iregex-regexh.c')
-endif
-
 if have_capsicum
   core_capsicum_source = files('capsicum.c')
 else
@@ -24,6 +18,7 @@ libcore_a = static_library('core',
     'core.c',
     'expandos.c',
     'ignore.c',
+    'iregex-gregex.c',
     'levels.c',
     'line-split.c',
     'log-away.c',
@@ -58,7 +53,6 @@ libcore_a = static_library('core',
     'write-buffer.c',
   )
   + core_capsicum_source
-  + regex_impl
   + [
     default_config_h,
     irssi_version_h,
