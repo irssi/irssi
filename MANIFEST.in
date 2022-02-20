@@ -2,12 +2,13 @@ global-include meson.build
 
 recursive-include src *.c *.h meson.build
 recursive-include src/perl *.c *.h *.xs *.pm *.pl typemap meson.build
+recursive-include src/fe-fuzz *.c *.h *.txt meson.build
 recursive-include tests *.c meson.build
 
 include meson_options.txt
 
 include subprojects/*.wrap
-prune subprojects/*/
+# prune subprojects/*
 
 include utils/*.pl utils/*.sh
 exclude utils/make-dist.sh
@@ -17,9 +18,18 @@ include themes/*.theme
 include docs/*.1 docs/*.txt docs/*.html
 include docs/help/in/[a-z]*.in
 include scripts/*.pl scripts/examples/*.pl
+include irssi-icon.png
 
 include NEWS
+include INSTALL
+include TODO
+include ChangeLog
 
-prune Build
-prune dist
+include .clang-format
+
+# prune Build
+# prune dist
 prune *.egg-info
+
+# ignore fuzz-support/fuzz.diff
+# ignore utils/clang-format-xs/*

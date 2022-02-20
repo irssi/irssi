@@ -22,8 +22,15 @@ fi
 cd "$repo_root"
 ./utils/check-perl-hash.sh
 
+if [ -f pyproject.toml ] || [ -f setup.cfg ]; then
+    echo "**Error**: ${PKG_NAME} make-dist.sh cannot be run in Dist directory, cannot proceed."
+    exit 1
+fi
+
+
 rm -fr "$dist_tmp"
-git clone --no-local "$repo_root" "$dist_tmp"
+echo "Cloning to \`$dist_tmp'..."
+git clone --quiet --no-local "$repo_root" "$dist_tmp"
 cd "$dist_tmp"
 if [ ! -f meson.build ]; then
     echo "**Error**: ${PKG_NAME} make-dist.sh could not find meson.build, cannot proceed."
@@ -37,22 +44,48 @@ if [ -z "$name" ] || [ -z "$version" ]; then
     exit 1
 fi
 
+git log > ChangeLog
+
+cat <<PYPROJECT_TOML >pyproject.toml
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+PYPROJECT_TOML
+
 cat <<SETUP_CFG >setup.cfg
 [metadata]
 name = $name
 version = $version
 url = https://ailin-nemui.github.io/irssi/
 maintainer = Ailin Nemui
+maintainer_email = @
 license = GNU General Public License v2 or later (GPLv2+)
 
+[check-manifest]
+ignore =
+    pyproject.toml
+$(perl -a -l -n -e '$F[0] eq "#" and $F[1] eq "ignore" and print "    @F[2..$#F]"' MANIFEST.in)
+
 SETUP_CFG
-python3 -c 'from setuptools import *;setup()' sdist --formats=tar
+
+if command -v check-manifest >/dev/null; then
+    echo "Checking MANIFEST.in..."
+    check-manifest --ignore ChangeLog
+else
+    echo "**Warning**: check-manifest not found, did not check MANIFEST.in"
+fi
+
+echo "Creating sdist..."
+python3 -W ignore -c 'from setuptools import *;setup()' --quiet sdist --formats=tar
 
 tar --delete --file "dist/$name-$version.tar" \
     "$name-$version/setup.cfg" \
+    "$name-$version/pyproject.toml" \
     "$name-$version/$name.egg-info" \
     "$name-$version/PKG-INFO"
 
+echo "Zipping..."
 xz -k "dist/$name-$version.tar"
 gzip -k "dist/$name-$version.tar"
 
