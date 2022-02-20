@@ -164,7 +164,7 @@ static void module_prefixes_free(char **list)
         g_free(list);
 }
 
-/* SYNTAX: LOAD <module> [<submodule>] */
+/* SYNTAX: LOAD [-silent] <module> [<submodule>] */
 static void cmd_load(const char *data)
 {
         char *rootmodule, *submodule;
@@ -181,9 +181,11 @@ static void cmd_load(const char *data)
 
 	silent = g_hash_table_lookup(optlist, "silent") != NULL;
 
-	if (*rootmodule == '\0')
-		cmd_load_list();
-	else {
+	if (*rootmodule == '\0') {
+		if (!silent) {
+			cmd_load_list();
+		}
+	} else {
 		if (silent) {
 			signal_add_first("module error", (SIGNAL_FUNC) signal_stop);
 			signal_add_first("module loaded", (SIGNAL_FUNC) signal_stop);
