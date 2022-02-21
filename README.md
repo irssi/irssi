@@ -1,10 +1,10 @@
-# Neırssi
+# [Irssi](https://irssi.org)
 
-![Build Status](https://github.com/ailin-nemui/irssi/workflows/Check%20Irssi/badge.svg?branch=master)
+![Build Status](https://github.com/irssi/irssi/workflows/Check%20Irssi/badge.svg?branch=master)
 
-Neırssi is a modular text mode chat client mostly compatible with
-[Irssi](https://irssi.org). It comes with IRC support built in, and
-there are third party [ICB](https://github.com/jperkin/irssi-icb),
+Irssi is a modular text mode chat client. It comes with IRC support
+built in, and there are third party
+[ICB](https://github.com/jperkin/irssi-icb),
 [SILC](http://www.silcnet.org/),
 [XMPP](http://cybione.org/~irssi-xmpp/) (Jabber),
 [PSYC](http://about.psyc.eu/Irssyc) and
@@ -13,14 +13,14 @@ available.
 
 ![irssi](https://user-images.githubusercontent.com/5665186/32180643-cf127f60-bd92-11e7-8aa2-882313ce1d8e.png)
 
-## [Download information](https://ailin-nemui.github.io/irssi/Getting.html)
+## [Download information](https://irssi.org/download/)
 
 #### Development source installation
 
 [Ninja](https://ninja-build.org/) 1.5 and [Meson](https://mesonbuild.com/) 0.49
 
 ```
-git clone https://github.com/ailin-nemui/irssi
+git clone https://github.com/irssi/irssi
 cd irssi
 meson Build
 ninja -C Build && sudo ninja -C Build install
@@ -28,7 +28,7 @@ ninja -C Build && sudo ninja -C Build install
 
 #### Release source installation
 
-* Download [release](https://github.com/ailin-nemui/irssi/releases)
+* Download [release](https://github.com/irssi/irssi/releases)
 * Verify signature
 ```
 tar xJf irssi-*.tar.xz
@@ -46,17 +46,17 @@ ninja -C Build && sudo ninja -C Build install
 
 #### See the [INSTALL](INSTALL) file for details
 
-## Documentation
+## [Documentation](https://irssi.org/documentation/)
 
-* [New users guide](https://ailin-nemui.github.io/irssi/New-users.html)
+* [Frequently Asked Questions](https://irssi.org/documentation/faq)
+* [Startup How-To](https://irssi.org/documentation/startup)
 * Check the built-in `/HELP`, it has all the details on command syntax
-* Other random Irssi documentation on https://irssi.org/documentation/
 
 ## [Themes](https://irssi-import.github.io/themes/)
 
 ## [Scripts](https://scripts.irssi.org/)
 
-## [Modules](https://ailin-nemui.github.io/irssi/Modules.html)
+## [Modules](https://irssi.org/modules/)
 
 ## [Security information](https://irssi.org/security/)
 

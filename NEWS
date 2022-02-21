@@ -1,4 +1,4 @@
-v1.3.2-an 2022-01-14  Ailin Nemui <Nei>
+v1.3.2 2022-xx-xx The Irssi team <staff@irssi.org>
 	- CHANTYPES take precedence over (missing) STATUSMSG in /join
           (#1358, an#54)
 	- Fix crash in Perl's $view->set_bookmark (freebsd#254237,
