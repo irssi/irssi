@@ -20,8 +20,6 @@ libfe_common_irc_a = static_library('fe_common_irc',
     'fe-whois.c',
     'irc-completion.c',
     'module-formats.c',
-
-    'irc-modules.c',
   ),
   include_directories : rootinc,
   implicit_include_directories : false,

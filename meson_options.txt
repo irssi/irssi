@@ -7,7 +7,6 @@ option('with-proxy',        type : 'combo',  description : 'Build irssi-proxy', 
 option('with-perl-lib',     type : 'string', description : 'Specify where to install the Perl libraries for Irssi')
 option('with-perl',         type : 'combo',  description : 'Build with Perl support',                     choices : ['auto', 'yes', 'no'])
 option('with-otr',          type : 'combo',  description : 'Build with OTR support',                      choices : ['auto', 'yes', 'no'])
-option('disable-gregex',    type : 'combo',  description : 'Build without GRegex (fall back to regex.h)', choices : ['no', 'yes'])
 option('disable-utf8proc',  type : 'combo',  description : 'Build without Julia\'s utf8proc',             choices : ['auto', 'yes', 'no'])
 option('with-capsicum',     type : 'combo',  description : 'Build with Capsicum support',                 choices : ['auto', 'yes', 'no'])
 option('static-dependency', type : 'combo',  description : 'Request static dependencies',                 choices : ['no', 'yes'])

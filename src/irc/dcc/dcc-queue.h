@@ -1,5 +1,5 @@
-#ifndef IRSSI_IRC_DCC_DCC_QUEUE_H_
-#define IRSSI_IRC_DCC_DCC_QUEUE_H_
+#ifndef IRSSI_IRC_DCC_DCC_QUEUE_H
+#define IRSSI_IRC_DCC_DCC_QUEUE_H
 
 #include <irssi/src/irc/dcc/dcc-chat.h>
 

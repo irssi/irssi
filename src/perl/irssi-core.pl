@@ -1,9 +1,7 @@
 # NOTE: this is printed through printf()-like function,
 # so no extra percent characters.
 
-# %%d : must be first - 1 if perl libraries are to be linked 
-#       statically with irssi binary, 0 if not
-# %%s : must be second - use Irssi; use Irssi::Irc; etc..
+# %%s : use Irssi; use Irssi::Irc; etc..
 package Irssi::Core;
 
 use Symbol;
@@ -15,7 +13,7 @@ $SIG{__WARN__} = sub {
 };
 
 sub is_static {
-  return %d;
+  return 0;
 }
 
 sub destroy {

@@ -37,9 +37,7 @@
 #include <fcntl.h>
 
 #include <glib.h>
-#ifdef HAVE_GMODULE
-#  include <gmodule.h>
-#endif
+#include <gmodule.h>
 
 typedef guint64 uoff_t;
 #define PRIuUOFF_T G_GUINT64_FORMAT

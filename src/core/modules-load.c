@@ -27,8 +27,6 @@
 #include <irssi/src/core/commands.h>
 #include <irssi/src/core/misc.h>
 
-#ifdef HAVE_GMODULE
-
 /* Returns the module name without path, "lib" prefix or ".so" suffix */
 static char *module_get_name(const char *path, int *start, int *end)
 {
@@ -395,15 +393,6 @@ static void module_file_deinit_gmodule(MODULE_FILE_REC *file)
 	g_module_close(file->gmodule);
 }
 
-#else /* !HAVE_GMODULE - modules are not supported */
-
-int module_load(const char *path, char **prefixes)
-{
-        return FALSE;
-}
-
-#endif
-
 void module_file_unload(MODULE_FILE_REC *file)
 {
 	MODULE_REC *root;
@@ -414,10 +403,8 @@ void module_file_unload(MODULE_FILE_REC *file)
         if (file->initialized)
 		signal_emit("module unloaded", 2, file->root, file);
 
-#ifdef HAVE_GMODULE
 	if (file->gmodule != NULL)
                 module_file_deinit_gmodule(file);
-#endif
 
 	g_free(file->name);
 	g_free(file->defined_module_name);

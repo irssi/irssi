@@ -1,15 +1,11 @@
 #ifndef IRSSI_CORE_NETWORK_H
 #define IRSSI_CORE_NETWORK_H
 
-#ifdef HAVE_SOCKS_H
-#include <socks.h>
-#endif
-
 #include <sys/types.h>
-#  include <sys/socket.h>
-#  include <netinet/in.h>
-#  include <netdb.h>
-#  include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 
 #ifndef AF_INET6
 #  ifdef PF_INET6

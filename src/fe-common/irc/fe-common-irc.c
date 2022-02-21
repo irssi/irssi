@@ -30,11 +30,6 @@
 #include <irssi/src/fe-common/irc/fe-irc-server.h>
 #include <irssi/src/fe-common/irc/fe-irc-channels.h>
 
-#ifdef HAVE_STATIC_IRC
-void fe_irc_modules_init(void);
-void fe_irc_modules_deinit(void);
-#endif
-
 void fe_irc_queries_init(void);
 void fe_irc_queries_deinit(void);
 
@@ -105,18 +100,10 @@ void fe_common_irc_init(void)
 
 	settings_check();
 	module_register("irc", "fe-common");
-
-#ifdef HAVE_STATIC_IRC
-	fe_irc_modules_init();
-#endif
 }
 
 void fe_common_irc_deinit(void)
 {
-#ifdef HAVE_STATIC_IRC
-	fe_irc_modules_deinit();
-#endif
-
 	fe_irc_channels_deinit();
 	fe_irc_queries_deinit();
 	fe_irc_messages_deinit();

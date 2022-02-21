@@ -16,13 +16,7 @@
 #define MODULE_DATA(rec) \
 	g_hash_table_lookup((rec)->module_data, MODULE_NAME)
 
-
-#ifdef HAVE_GMODULE
-#  define MODULE_IS_STATIC(rec) \
-        ((rec)->gmodule == NULL)
-#else
-#  define MODULE_IS_STATIC(rec) TRUE
-#endif
+#define MODULE_IS_STATIC(rec) ((rec)->gmodule == NULL)
 
 #define MODULE_ABICHECK(fn_modulename) \
 void fn_modulename ## _abicheck(int *version)	\
@@ -45,9 +39,7 @@ typedef struct {
         char *defined_module_name;
 	void (*module_deinit) (void);
 
-#ifdef HAVE_GMODULE
 	GModule *gmodule; /* static, if NULL */
-#endif
 	unsigned int initialized:1;
 } MODULE_FILE_REC;
 
