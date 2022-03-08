@@ -115,9 +115,9 @@ static void cmd_ignore_show(void)
 }
 
 /* SYNTAX: IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
-                  [-network <network>] [-channels <channel>] [-time <str>] <mask> [<levels>]
+                  [-network <network>] [-channels <channel>] [-time <time>] <mask> [<levels>]
            IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
-	          [-network <network>] [-time <str>] <channels> [<levels>] */
+	          [-network <network>] [-time <time>] <channels> [<levels>] */
 /* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_ignore(const char *data)
 {
