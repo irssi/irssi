@@ -36,35 +36,16 @@ jobs:
           TERMUX_PKG_DEPENDS="glib, libandroid-glob, libiconv, libotr, ncurses, openssl, perl, utf8proc"
           TERMUX_PKG_BREAKS="irssi"
           TERMUX_PKG_REPLACES="irssi"
+          TERMUX_MESON_PERL_CROSS_FILE=$TERMUX_PKG_TMPDIR/meson-miniperl-cross-$TERMUX_ARCH.txt
           TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
           -Dfhs-prefix=$TERMUX_PREFIX
+          --cross-file $TERMUX_MESON_PERL_CROSS_FILE
           "
 
-          termux_step_configure_meson() {
-              termux_setup_meson
-
-              local perl_version=$(. $TERMUX_SCRIPTDIR/packages/perl/build.sh; echo $TERMUX_PKG_VERSION)
-              local perl_srcdir=$TERMUX_TOPDIR/perl/src
-
-              sed -i "/\\[binaries\\]/a\\
-          perl = ['$perl_srcdir/miniperl', '-I$TERMUX_PREFIX/lib/perl5/$perl_version/${TERMUX_ARCH}-android', '-I$TERMUX_PREFIX/lib/perl5/$perl_version']" \
-                  $TERMUX_MESON_CROSSFILE
-
-              CC=gcc CXX=g++ CFLAGS= CXXFLAGS= CPPFLAGS= LDFLAGS= $TERMUX_MESON \
-                $TERMUX_PKG_SRCDIR \
-                $TERMUX_PKG_BUILDDIR \
-                --cross-file $TERMUX_MESON_CROSSFILE \
-                --prefix $TERMUX_PREFIX \
-                --libdir lib \
-                --buildtype minsize \
-                --strip \
-                $TERMUX_PKG_EXTRA_CONFIGURE_ARGS
-          }
-
           termux_step_post_configure() {
+              # Make build log less noisy.
               sed -i "s:-I$TERMUX_PREFIX/:-isystem$TERMUX_PREFIX/:g" $TERMUX_PKG_BUILDDIR/build.ninja
           }
-
 
           termux_step_pre_configure() {
               LDFLAGS+=" -landroid-glob"
@@ -74,6 +55,14 @@ jobs:
 
               # Make sure that perl stuff is reinstalled.
               rm -rf $TERMUX_PREFIX/lib/irssi/perl
+
+              local perl_version=$(. $TERMUX_SCRIPTDIR/packages/perl/build.sh; echo $TERMUX_PKG_VERSION)
+              local perl_srcdir=$TERMUX_TOPDIR/perl/src
+
+              cat <<MESON_PERL_CROSS >$TERMUX_MESON_PERL_CROSS_FILE
+          [binaries]
+          perl = ['$perl_srcdir/miniperl', '-I$TERMUX_PREFIX/lib/perl5/$perl_version/${TERMUX_ARCH}-android', '-I$TERMUX_PREFIX/lib/perl5/$perl_version']
+          MESON_PERL_CROSS
           }
 
           BUILD_SH
