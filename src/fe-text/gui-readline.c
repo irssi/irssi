@@ -163,7 +163,7 @@ static int get_scroll_count(void)
 	else if (count < 1)
                 count = 1.0/count;
 
-	if (*str == '/') {
+	if (*str == '/' || *str == '.') {
 		count = (active_mainwin->height-active_mainwin->statusbar_lines)/count;
 	}
 	return (int)count;
