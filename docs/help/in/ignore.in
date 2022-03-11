@@ -14,6 +14,8 @@
     -network:     Ignores only on a specific network.
     -channels:    Ignores only on specific channels.
     -time:        The timeout to automatically remove the ignore.
+                  Accepts units specified in days, hours, minutes, seconds,
+                  milliseconds, or no unit for seconds.
 
     The mask, channels and levels to ignore; if no argument is provided, the
     list of ignores will be displayed.
@@ -44,6 +46,8 @@
     /IGNORE #irssi NO_ACT JOINS PARTS QUITS
     /IGNORE mike NO_ACT -MSGS
     /IGNORE mike HIDDEN PUBLIC JOINS PARTS QUITS
+    /IGNORE -time 5days christmas PUBLICS
+    /IGNORE -time 300 mike PUBLICS
 
 %9See also:%9 ACCEPT, SILENCE, UNIGNORE
 
