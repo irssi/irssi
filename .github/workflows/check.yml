@@ -41,11 +41,11 @@ jobs:
         include:
           - os: ubuntu-18.04
             builder: meson
-            meson_ver: ==0.49.2
+            meson_ver: ==0.53.2
             setuptools_ver: <51
           - os: ubuntu-latest
             builder: meson
-            meson_ver: <0.61.2
+            meson_ver: <0.63.0
           - os: ubuntu-latest
             builder: meson
             flags: meson-latest FAILURE-OK

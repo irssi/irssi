@@ -4,7 +4,7 @@
 
 To compile Irssi you need:
 
-- meson-0.49 build system with ninja-1.5 or greater
+- meson-0.53 build system with ninja-1.8 or greater
 - glib-2.32 or greater
 - openssl (for ssl support)
 - perl-5.6 or greater (for Perl support)

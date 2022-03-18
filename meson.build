@@ -1,6 +1,6 @@
 project('irssi', 'c',
   version : '1.4-head-an',
-  meson_version : '>=0.49',
+  meson_version : '>=0.53',
   default_options : ['warning_level=1'])
 
 ############################
@@ -53,12 +53,17 @@ want_static_dependency = get_option('static-dependency') == 'yes'
 
 package_version     = get_option('PACKAGE_VERSION') != '' ? get_option('PACKAGE_VERSION') : meson.project_version()
 
+fs = import('fs')
+if fs.exists('config.status') or fs.exists('irssi-version.h') or fs.exists('default-config.h') or fs.exists('default-theme.h') or fs.exists('src/perl/irssi-core.pl.h') or fs.exists('src/perl/perl-signals-list.h') or fs.exists('irssi-config.h')
+  error('this tree has been configured with autotools, cannot proceed')
+endif
+
 chat_modules = ['irc']
 
-run_command('mkdir', meson.current_build_dir() / incdir)
-run_command('ln', '-s', meson.current_source_dir() / 'src', meson.current_build_dir() / incdir)
-run_command('ln', '-s', meson.current_build_dir() / 'irssi-config.h', meson.current_build_dir() / incdir)
-run_command('ln', '-s', meson.current_build_dir() / 'irssi-version.h', meson.current_build_dir() / incdir)
+run_command('mkdir', meson.current_build_dir() / incdir, check : false)
+run_command('ln', '-s', meson.current_source_dir() / 'src', meson.current_build_dir() / incdir, check : false)
+run_command('ln', '-s', meson.current_build_dir() / 'irssi-config.h', meson.current_build_dir() / incdir, check : false)
+run_command('ln', '-s', meson.current_build_dir() / 'irssi-version.h', meson.current_build_dir() / incdir, check : false)
 
 def_moduledir  = '-D' + 'MODULEDIR'  + '="' + (get_option('prefix') / moduledir) + '"'
 def_sysconfdir = '-D' + 'SYSCONFDIR' + '="' + (get_option('prefix') / get_option('sysconfdir')) + '"'
@@ -78,7 +83,7 @@ if meson.is_cross_build()
 else
   cross_perl = build_perl
 endif
-run_command(build_perl, files('utils/syntax.pl'))
+run_command(build_perl, files('utils/syntax.pl'), check : true)
 
 ###################
 # irssi-version.h #
@@ -331,7 +336,7 @@ if want_perl
   #### ccopts ####
   perl_ccopts = meson.get_cross_property('perl_ccopts', false)
   if perl_ccopts == false
-    res = run_command(cross_perl, '-MExtUtils::Embed', '-e', 'ccopts')
+    res = run_command(cross_perl, '-MExtUtils::Embed', '-e', 'ccopts', check : true)
     perl_ccopts = res.stdout().strip().split()
   endif
   foreach fl : perl_ccopts
@@ -345,7 +350,7 @@ if want_perl
   #### ldopts ####
   perl_ldopts = meson.get_cross_property('perl_ldopts', false)
   if perl_ldopts == false
-    res = run_command(cross_perl, '-MExtUtils::Embed', '-e', 'ldopts')
+    res = run_command(cross_perl, '-MExtUtils::Embed', '-e', 'ldopts', check : true)
     perl_ldopts = res.stdout().strip().split()
   endif
   skip_libs = ['-ldb', '-ldbm', '-lndbm', '-lgdbm', '-lc', '-lposix', '-rdynamic']
@@ -362,7 +367,7 @@ if want_perl
 
   perl_version = meson.get_cross_property('perl_version', false)
   if perl_version == false
-    perl_version = run_command(cross_perl, '-V::version:').stdout().split('\'')[1]
+    perl_version = run_command(cross_perl, '-V::version:', check : true).stdout().split('\'')[1]
   endif
   perl_dep = declare_dependency(compile_args : perl_cflags, link_args : perl_ldflags,
     version : perl_version)
@@ -386,7 +391,7 @@ int main()
   else
     xsubpp_file_c = meson.get_cross_property('perl_xsubpp', false)
     if xsubpp_file_c == false
-      xsubpp_file_c = run_command(build_perl, '-MExtUtils::ParseXS', '-Eprint $INC{"ExtUtils/ParseXS.pm"} =~ s{ParseXS\\.pm$}{xsubpp}r').stdout()
+      xsubpp_file_c = run_command(build_perl, '-MExtUtils::ParseXS', '-Eprint $INC{"ExtUtils/ParseXS.pm"} =~ s{ParseXS\\.pm$}{xsubpp}r', check : true).stdout()
     endif
     xsubpp = generator(build_perl,
       output : '@BASENAME@.c',
@@ -396,7 +401,7 @@ int main()
     xsubpp_file = files(xsubpp_file_c)
 
     if with_perl_lib == 'module'
-      perl_install_base = run_command(build_perl, '-MText::ParseWords=shellwords', '-e', 'grep { s/^INSTALL_BASE=// && print && exit } shellwords $ENV{PERL_MM_OPT}').stdout()
+      perl_install_base = run_command(build_perl, '-MText::ParseWords=shellwords', '-e', 'grep { s/^INSTALL_BASE=// && print && exit } shellwords $ENV{PERL_MM_OPT}', check : true).stdout()
       if perl_install_base == ''
         with_perl_lib = ''
       endif
@@ -415,12 +420,12 @@ int main()
       if with_perl_lib in ['site', 'vendor']
         perlmoddir = meson.get_cross_property('perl_install' + with_perl_lib + 'arch', false)
         if perlmoddir == false
-          perlmoddir = run_command(cross_perl, '-V::install' + with_perl_lib + 'arch:').stdout().split('\'')[1]
+          perlmoddir = run_command(cross_perl, '-V::install' + with_perl_lib + 'arch:', check : true).stdout().split('\'')[1]
         endif
       elif with_perl_lib == 'module'
         perl_archname = meson.get_cross_property('perl_archname', false)
         if perl_archname == false
-          perl_archname = run_command(cross_perl, '-V::archname:').stdout().split('\'')[1]
+          perl_archname = run_command(cross_perl, '-V::archname:', check : true).stdout().split('\'')[1]
         endif
         perlmoddir = perl_install_base / 'lib' / 'perl5' / perl_archname
       endif
@@ -441,7 +446,7 @@ int main()
     if set_perl_use_lib
       perl_inc = meson.get_cross_property('perl_inc', false)
       if perl_inc == false
-        set_perl_use_lib = run_command(cross_perl, '-e', 'exit ! grep $_ eq $ARGV[0], grep /^\\//, @INC', perl_use_lib).returncode() != 0
+        set_perl_use_lib = run_command(cross_perl, '-e', 'exit ! grep $_ eq $ARGV[0], grep /^\\//, @INC', perl_use_lib, check : false).returncode() != 0
       else
         set_perl_use_lib = not perl_inc.contains(perl_use_lib)
       endif
