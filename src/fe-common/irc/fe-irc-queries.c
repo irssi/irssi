@@ -24,6 +24,11 @@
 #include <irssi/src/core/servers.h>
 #include <irssi/src/core/queries.h>
 #include <irssi/src/core/nicklist.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+
+int query_type;
 
 static QUERY_REC *query_find_address(SERVER_REC *server, const char *address)
 {
@@ -88,14 +93,42 @@ static void event_privmsg(SERVER_REC *server, const char *data,
 	}
 }
 
+static void sig_window_bound_query(SERVER_REC *server)
+{
+	GSList *wtmp, *btmp, *bounds;
+
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	for (wtmp = windows; wtmp != NULL; wtmp = wtmp->next) {
+		WINDOW_REC *win = wtmp->data;
+		bounds = g_slist_copy(win->bound_items);
+
+		for (btmp = bounds; btmp != NULL; btmp = btmp->next) {
+			WINDOW_BIND_REC *bound = btmp->data;
+
+			if (bound->type == query_type &&
+			    g_strcmp0(server->tag, bound->servertag) == 0) {
+				irc_query_create(bound->servertag, bound->name, TRUE);
+			}
+		}
+
+		g_slist_free(bounds);
+	}
+}
+
 void fe_irc_queries_init(void)
 {
-        settings_add_bool("lookandfeel", "query_track_nick_changes", TRUE);
+	query_type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
 
+	settings_add_bool("lookandfeel", "query_track_nick_changes", TRUE);
+
+	signal_add("server connected", sig_window_bound_query);
 	signal_add_first("event privmsg", (SIGNAL_FUNC) event_privmsg);
 }
 
 void fe_irc_queries_deinit(void)
 {
+	signal_remove("server connected", sig_window_bound_query);
 	signal_remove("event privmsg", (SIGNAL_FUNC) event_privmsg);
 }
