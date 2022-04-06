@@ -868,6 +868,10 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 372", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 422", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 439", (SIGNAL_FUNC) event_target_too_fast);
+	signal_remove("event 524", (SIGNAL_FUNC) event_helpnotfound);
+	signal_remove("event 704", (SIGNAL_FUNC) event_helpstart);
+	signal_remove("event 705", (SIGNAL_FUNC) event_helptxt);
+	signal_remove("event 706", (SIGNAL_FUNC) event_endofhelp);
 	signal_remove("event 707", (SIGNAL_FUNC) event_target_too_fast);
 
         signal_remove("default event numeric", (SIGNAL_FUNC) event_numeric);
