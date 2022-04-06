@@ -89,6 +89,7 @@ FORMAT_REC fecommon_irc_formats[] = {
 	{ "invitelist_long", "{channel $0}: invite {ban $1} {comment by {nick $2}, $3 secs ago}", 4, { 0, 0, 0, 1 } },
 	{ "no_such_channel", "{channel $0}: No such channel", 1, { 0 } },
 	{ "channel_synced", "Join to {channel $0} was synced in {hilight $1} secs", 2, { 0, 2 } },
+	{ "irctxt_help_not_found", "$1", 2, { 0, 0 } },
 	{ "irctxt_help_start", "$1", 2, { 0, 0 } },
 	{ "irctxt_help_txt", "$1", 2, { 0, 0 } },
 	{ "irctxt_end_of_help", "$1", 2, { 0, 0 } },

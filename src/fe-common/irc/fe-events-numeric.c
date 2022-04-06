@@ -578,6 +578,14 @@ static void event_help(IRC_SERVER_REC *server, int formatnum, const char *data) 
 	g_free(params);
 }
 
+static void event_helpnotfound(IRC_SERVER_REC *server, const char *data,
+		      const char *nick)
+{
+	/* Numeric 524 (ERR_HELPNOTFOUND) sent as a reply to HELP or HELPOP command.
+	 */
+	event_help(server, IRCTXT_HELP_NOT_FOUND, data);
+}
+
 static void event_helpstart(IRC_SERVER_REC *server, const char *data,
 		      const char *nick)
 {
@@ -761,6 +769,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 372", (SIGNAL_FUNC) event_motd);
 	signal_add("event 422", (SIGNAL_FUNC) event_motd);
 	signal_add("event 439", (SIGNAL_FUNC) event_target_too_fast);
+	signal_add("event 524", (SIGNAL_FUNC) event_helpnotfound);
 	signal_add("event 704", (SIGNAL_FUNC) event_helpstart);
 	signal_add("event 705", (SIGNAL_FUNC) event_helptxt);
 	signal_add("event 706", (SIGNAL_FUNC) event_endofhelp);
