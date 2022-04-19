@@ -355,7 +355,7 @@ static void read_settings(void)
 
 void fe_queries_init(void)
 {
-	settings_add_level("lookandfeel", "autocreate_query_level", "MSGS DCCMSGS");
+	settings_add_level("lookandfeel", "autocreate_query_level", "MSGS DCCMSGS NOTICES");
 	settings_add_bool("lookandfeel", "autocreate_own_query", TRUE);
 	settings_add_time("lookandfeel", "autoclose_query", "0");
 

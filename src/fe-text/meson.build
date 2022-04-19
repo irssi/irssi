@@ -27,7 +27,11 @@ executable('irssi',
     'textbuffer-view.c',
     'textbuffer.c',
   )
-  + [ irssi_version_h ],
+  + [
+    irssi_version_h,
+    default_config_h,
+    default_theme_h,
+  ],
   include_directories : rootinc,
   implicit_include_directories : false,
   export_dynamic : true,

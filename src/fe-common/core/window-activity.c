@@ -143,7 +143,7 @@ void window_activity_init(void)
 {
 	settings_add_str("lookandfeel", "activity_hide_targets", "");
 	settings_add_level("lookandfeel", "activity_hide_level", "");
-	settings_add_level("lookandfeel", "activity_msg_level", "PUBLIC");
+	settings_add_level("lookandfeel", "activity_msg_level", "PUBLIC NOTICES");
 	settings_add_level("lookandfeel", "activity_hilight_level", "MSGS DCCMSGS");
 	signal_window_hilight_check = signal_get_uniq_id("window hilight check");
 
