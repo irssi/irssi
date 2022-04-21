@@ -554,7 +554,8 @@ static void event_489(IRC_SERVER_REC *server, const char *data, const char *nick
 	g_free(params);
 }
 
-static void event_help(IRC_SERVER_REC *server, int formatnum, const char *data) {
+static void event_help(IRC_SERVER_REC *server, int formatnum, const char *data)
+{
 	/* Common handling for umerics 704 (RPL_HELPSTART), 705 (RPL_HELPTXT),
 	 * and 706 (RPL_ENDOFHELP); sent as a reply to HELP or HELPOP command.
 	 */
@@ -573,29 +574,25 @@ static void event_help(IRC_SERVER_REC *server, int formatnum, const char *data) 
 		help_text = " ";
 	}
 
-	printformat(server, NULL, MSGLEVEL_CRAP, formatnum,
-			topic, help_text);
+	printformat(server, NULL, MSGLEVEL_CRAP, formatnum, topic, help_text);
 	g_free(params);
 }
 
-static void event_helpstart(IRC_SERVER_REC *server, const char *data,
-		      const char *nick)
+static void event_helpstart(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
 	/* Numeric 704 (RPL_HELPSTART) sent as a reply to HELP or HELPOP command.
 	 */
 	event_help(server, IRCTXT_SERVER_HELP_START, data);
 }
 
-static void event_helptxt(IRC_SERVER_REC *server, const char *data,
-		      const char *nick)
+static void event_helptxt(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
 	/* Numeric 705 (RPL_HELPTXT), sent as a reply to HELP or HELPOP command.
 	 */
 	event_help(server, IRCTXT_SERVER_HELP_TXT, data);
 }
 
-static void event_endofhelp(IRC_SERVER_REC *server, const char *data,
-		      const char *nick)
+static void event_endofhelp(IRC_SERVER_REC *server, const char *data, const char *nick)
 {
 	/* Numeric 706 (RPL_ENDOFHELP), sent as a reply to HELP or HELPOP command.
 	 */
