@@ -583,7 +583,7 @@ static void event_helpstart(IRC_SERVER_REC *server, const char *data,
 {
 	/* Numeric 704 (RPL_HELPSTART) sent as a reply to HELP or HELPOP command.
 	 */
-	event_help(server, IRCTXT_HELP_START, data);
+	event_help(server, IRCTXT_SERVER_HELP_START, data);
 }
 
 static void event_helptxt(IRC_SERVER_REC *server, const char *data,
@@ -591,7 +591,7 @@ static void event_helptxt(IRC_SERVER_REC *server, const char *data,
 {
 	/* Numeric 705 (RPL_HELPTXT), sent as a reply to HELP or HELPOP command.
 	 */
-	event_help(server, IRCTXT_HELP_TXT, data);
+	event_help(server, IRCTXT_SERVER_HELP_TXT, data);
 }
 
 static void event_endofhelp(IRC_SERVER_REC *server, const char *data,
@@ -599,7 +599,7 @@ static void event_endofhelp(IRC_SERVER_REC *server, const char *data,
 {
 	/* Numeric 706 (RPL_ENDOFHELP), sent as a reply to HELP or HELPOP command.
 	 */
-	event_help(server, IRCTXT_END_OF_HELP, data);
+	event_help(server, IRCTXT_SERVER_END_OF_HELP, data);
 }
 
 static void event_target_too_fast(IRC_SERVER_REC *server, const char *data,
