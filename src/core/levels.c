@@ -23,10 +23,12 @@
 
 /* the order of these levels must match the bits in levels.h */
 static const char *levels[] = {
+	/* clang-format off */
 	"CRAP",
 	"MSGS",
 	"PUBLICS",
 	"NOTICES",
+	"PUBNOTICES",
 	"SNOTES",
 	"CTCPS",
 	"ACTIONS",
@@ -46,6 +48,7 @@ static const char *levels[] = {
 	"CLIENTERRORS",
 	"HILIGHTS",
 	NULL
+	/* clang-format on */
 };
 
 int level_get(const char *level)

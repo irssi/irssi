@@ -20,9 +20,10 @@
         MODES           A channel mode is modified.
         MSGS            Private messages.
         NICKS           A nickname changes to another nickname.
-        NOTICES         Notices sent from a nickname.
+        NOTICES         Private notices.
         PARTS           A nickname leaves a channel.
         PUBLIC          Public messages in a channel.
+        PUBNOTICES      Public notices in a channel.
         QUITS           A nickname disconnects from IRC.
         SNOTES          Notices sent from a server.
         TOPICS          A channel topic is modified.

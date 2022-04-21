@@ -269,13 +269,22 @@ static char *notice_channel_context(SERVER_REC *server, const char *msg)
 
 static void sig_message_own_notice(IRC_SERVER_REC *server, const char *msg, const char *target)
 {
-	char *channel;
+	gboolean is_public;
+	const char *cleantarget;
+	char *context_channel;
+
+	cleantarget = fe_channel_skip_prefix(server, target);
+	is_public = server_ischannel(SERVER(server), cleantarget);
 	/* check if this is a cnotice */
-	channel = notice_channel_context((SERVER_REC *) server, msg);
-	printformat(server, channel != NULL ? channel : fe_channel_skip_prefix(server, target),
-	            MSGLEVEL_NOTICES | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT, IRCTXT_OWN_NOTICE,
-	            target, msg);
-	g_free(channel);
+	context_channel = is_public ? NULL : notice_channel_context((SERVER_REC *) server, msg);
+
+	printformat(
+	    server, context_channel != NULL ? context_channel : cleantarget,
+	    (is_public || context_channel != NULL ? MSGLEVEL_PUBNOTICES : MSGLEVEL_NOTICES) |
+	        MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
+	    IRCTXT_OWN_NOTICE, target, msg);
+
+	g_free(context_channel);
 }
 
 static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
@@ -283,7 +292,9 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
 				   const char *target)
 {
 	const char *oldtarget;
-	int level = MSGLEVEL_NOTICES;
+	char *context_channel;
+	int level;
+	gboolean is_public;
 
 	oldtarget = target;
 	target = fe_channel_skip_prefix(IRC_SERVER(server), target);
@@ -299,29 +310,32 @@ static void sig_message_irc_notice(SERVER_REC *server, const char *msg,
                 return;
 	}
 
-	if (ignore_check_plus(server, nick, address,
-			 server_ischannel(SERVER(server), target) ? target : NULL,
-			      msg, &level, TRUE))
+	is_public = server_ischannel(SERVER(server), target);
+	/* check if this is a cnotice */
+	context_channel = is_public ? NULL : notice_channel_context(server, msg);
+	level = (is_public || context_channel != NULL) ? MSGLEVEL_PUBNOTICES : MSGLEVEL_NOTICES;
+
+	if (ignore_check_plus(server, nick, address, is_public ? target : context_channel, msg,
+	                      &level, TRUE)) {
+		g_free(context_channel);
 		return;
+	}
 
-	if (server_ischannel(SERVER(server), target)) {
+	if (is_public) {
 		/* notice in some channel */
-		printformat(server, target, level,
-			    IRCTXT_NOTICE_PUBLIC, nick, oldtarget, msg);
+		char *nickmode;
+		nickmode = channel_get_nickmode(channel_find(server, target), nick);
+		printformat(server, target, level, IRCTXT_NOTICE_PUBLIC, nick, oldtarget, msg,
+		            nickmode);
 	} else {
-		char *channel;
-		/* check if this is a cnotice */
-		channel = notice_channel_context(server, msg);
-
-		if (channel == NULL) {
+		if (context_channel == NULL) {
 			/* private notice */
 			privmsg_get_query(SERVER(server), nick, FALSE, MSGLEVEL_NOTICES);
 		}
-		printformat(server, channel == NULL ? nick : channel, level, IRCTXT_NOTICE_PRIVATE,
-		            nick, address, msg);
-
-		g_free(channel);
+		printformat(server, context_channel == NULL ? nick : context_channel, level,
+		            IRCTXT_NOTICE_PRIVATE, nick, address, msg);
 	}
+	g_free(context_channel);
 }
 
 static void sig_message_own_ctcp(IRC_SERVER_REC *server, const char *cmd,
