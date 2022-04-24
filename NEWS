@@ -4,12 +4,10 @@ v1.3.2 2022-xx-xx The Irssi team <staff@irssi.org>
 	- Fix crash in Perl's $view->set_bookmark (freebsd#254237,
           an#56)
 
-v1.3.1-an 2021-12-17  Ailin Nemui <Nei>
 	- Minor help fixes (an#51, an#52)
 	- Fix regression where own channel status was forgotten after
           /UPGRADE (#1357, an#53)
 
-v1.3.0-an 2021-11-11  Ailin Nemui <Nei>
 	* /SET resolve_reverse_lookup setting was removed (#1034,
           #1135)
 	* Irssi will try to connect on IPv4 if IPv6 connection failed
