@@ -29,7 +29,7 @@ ninja -C Build && sudo ninja -C Build install
 #### Release source installation
 
 * Download [release](https://github.com/irssi/irssi/releases)
-* Verify signature
+* [Verify](https://irssi.org/download/#release-sources) signature
 ```
 tar xJf irssi-*.tar.xz
 cd irssi-*
@@ -62,7 +62,7 @@ ninja -C Build && sudo ninja -C Build install
 
 Please report security issues to staff@irssi.org. Thanks!
 
-## [Bugs](https://github.com/irssi/irssi/issues) / Suggestions / Contributing
+## [Bugs](https://github.com/irssi/irssi/issues) / Suggestions / [Contributing](https://irssi.org/development/)
 
 Check the GitHub issues if it is already listed in there; if not, open
 an issue on GitHub or send a mail to [staff@irssi.org](mailto:staff@irssi.org).
