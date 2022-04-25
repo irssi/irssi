@@ -101,28 +101,10 @@ PPCODE:
 	}
 	XPUSHs(sv_2mortal(newRV_noinc((SV *) hv)));
 
-void
+Irssi::UI::LineInfoMeta
 textbuffer_line_get_meta(line)
 	Irssi::TextUI::Line line
-PREINIT:
-	HV *hv;
-	LINE_REC *l;
-	TEXT_BUFFER_META_REC *m;
-	GHashTableIter iter;
-	char *key;
-	char *val;
-PPCODE:
-	hv = newHV();
-	l = line->line;
-	if (l->info.meta != NULL) {
-		m = l->info.meta;
-		if (m->hash != NULL) {
-			g_hash_table_iter_init(&iter, m->hash);
-			while (
-			    g_hash_table_iter_next(&iter, (gpointer *) &key, (gpointer *) &val)) {
-				(void) hv_store(hv, key, strlen(key), new_pv(val), 0);
-			}
-		}
-		(void) hv_store(hv, "server_time", 11, newSViv(m->server_time), 0);
-	}
-	XPUSHs(sv_2mortal(newRV_noinc((SV *) hv)));
+CODE:
+	RETVAL = line->line->info.meta;
+OUTPUT:
+	RETVAL

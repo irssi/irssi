@@ -15,7 +15,6 @@
 #define MAX_IRC_USER_TAGS_LEN 4094
 
 #define CAP_LS_VERSION "302"
-#define CAP_MAXLINE "oragono.io/maxline-2"
 #define CAP_MESSAGE_TAGS "message-tags"
 #define CAP_SASL "sasl"
 #define CAP_MULTI_PREFIX "multi-prefix"
@@ -119,6 +118,7 @@ struct _IRC_SERVER_REC {
 	                 there actually is, to make flood control remember
 			 how many messages can be sent before starting the
 			 flood control */
+	int cmdlater; /* number of commands in queue to be sent later */
 	GSList *cmdqueue; /* command, redirection, ... */
 	gint64 wait_cmd; /* don't send anything to server before this */
 	gint64 last_cmd; /* last time command was sent to server */

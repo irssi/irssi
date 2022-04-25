@@ -24,7 +24,7 @@ typedef struct {
 	int level;
 	time_t time;
 	char *text;
-	struct _TEXT_BUFFER_META_REC *meta;
+	struct _LINE_INFO_META_REC *meta;
 	struct _TEXT_BUFFER_FORMAT_REC *format;
 } LINE_INFO_REC;
 

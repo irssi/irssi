@@ -1,11 +1,10 @@
-# [Irssi](https://irssi.org/)
+# [Irssi](https://irssi.org)
 
 ![Build Status](https://github.com/irssi/irssi/workflows/Check%20Irssi/badge.svg?branch=master)
 
-Irssi is a modular chat client that is most commonly known for its
-text mode user interface, but 80% of the code isn't text mode
-specific. Irssi comes with IRC support built in, and there are
-third party [ICB](https://github.com/jperkin/irssi-icb),
+Irssi is a modular text mode chat client. It comes with IRC support
+built in, and there are third party
+[ICB](https://github.com/jperkin/irssi-icb),
 [SILC](http://www.silcnet.org/),
 [XMPP](http://cybione.org/~irssi-xmpp/) (Jabber),
 [PSYC](http://about.psyc.eu/Irssyc) and
@@ -34,8 +33,8 @@ ninja -C Build && sudo ninja -C Build install
 ```
 tar xJf irssi-*.tar.xz
 cd irssi-*
-./configure
-make && sudo make install
+meson Build
+ninja -C Build && sudo ninja -C Build install
 ```
 
 ### Requirements

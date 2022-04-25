@@ -369,7 +369,7 @@ void server_connect_init(SERVER_REC *server)
 	server->type = module_get_uniq_id("SERVER", 0);
 	server_ref(server);
 	server->current_incoming_meta =
-	    g_hash_table_new_full(g_str_hash, (GEqualFunc) g_strcmp0,
+	    g_hash_table_new_full(g_str_hash, (GEqualFunc) g_str_equal,
 	                          (GDestroyNotify) i_refstr_release, (GDestroyNotify) g_free);
 
 	server->nick = g_strdup(server->connrec->nick);

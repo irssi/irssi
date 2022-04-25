@@ -15,7 +15,7 @@
 %9Examples:%9
 
     /RECONNECT
-    /RECONNECT ExampleNet
+    /RECONNECT liberachat
     /RECONNECT EFnet BRB :)
 
 %9See also:%9 CONNECT, DISCONNECT, NETWORK, RMRECONNS, SERVER

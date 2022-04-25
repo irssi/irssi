@@ -19,13 +19,23 @@ jobs:
       matrix:
         sanitizer: [address, undefined, memory]
     steps:
+    - uses: actions/checkout@main
+      with:
+        path: irssi
+    - name: Docker build build_fuzzers container
+      run: |
+        # google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+        docker build -t build_fuzzers:actions -f "/home/runner/work/_actions/google/oss-fuzz/master/infra/build_fuzzers.Dockerfile" "/home/runner/work/_actions/google/oss-fuzz/master/infra"
     - name: Build Fuzzers (${{ matrix.sanitizer }})
       id: build
-      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
-      with:
-        oss-fuzz-project-name: 'irssi'
-        dry-run: false
-        sanitizer: ${{ matrix.sanitizer }}
+      env:
+        OSS_FUZZ_PROJECT_NAME: 'irssi'
+        DRY_RUN: false
+        SANITIZER: ${{ matrix.sanitizer }}
+        PROJECT_SRC_PATH: /github/workspace/irssi
+        REPOSITORY: 'irssi'
+      run: |
+        docker run --workdir /github/workspace --rm -e OSS_FUZZ_PROJECT_NAME -e DRY_RUN -e SANITIZER -e PROJECT_SRC_PATH -e REPOSITORY -e WORKSPACE=/github/workspace -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "$GITHUB_WORKSPACE":"/github/workspace" build_fuzzers:actions
     - name: Run Fuzzers (${{ matrix.sanitizer }})
       uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
       with:

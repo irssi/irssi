@@ -11,11 +11,17 @@
 
     Evaluates the given commands and executes them; you can use internal
     variables and separate multiple commands by using the ';' character.
+    If the command contains a string with '$', '\' or ';' those characters 
+    need to be escaped:
+        '$' -> '$$'
+        '\' -> '\\' (or even '\\\\', depending on where they are used)
+        ';' -> '\;'
 
 %9Examples:%9
 
     /EVAL echo I am connected to ${S} on ${chatnet} as ${N}
     /EVAL echo My user privileges are +${usermode}; echo Let's party!
+    to print '1;2$3\4': /EVAL echo 1\;2$$3\\4       
 
 %9References:%9
 

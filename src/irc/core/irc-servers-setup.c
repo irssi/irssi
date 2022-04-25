@@ -121,9 +121,9 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 	if (ircnet->sasl_mechanism != NULL) {
 		if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "plain")) {
 			/* The PLAIN method needs both the username and the password */
-			conn->sasl_mechanism = SASL_MECHANISM_PLAIN;
 			if (ircnet->sasl_username != NULL && *ircnet->sasl_username &&
 			    ircnet->sasl_password != NULL && *ircnet->sasl_password) {
+				conn->sasl_mechanism = SASL_MECHANISM_PLAIN;
 				conn->sasl_username = g_strdup(ircnet->sasl_username);
 				conn->sasl_password = g_strdup(ircnet->sasl_password);
 			} else
@@ -188,6 +188,7 @@ static void init_userinfo(void)
 
 static void sig_server_setup_read(IRC_SERVER_SETUP_REC *rec, CONFIG_NODE *node)
 {
+	int starttls;
 	g_return_if_fail(rec != NULL);
 	g_return_if_fail(node != NULL);
 
@@ -197,7 +198,10 @@ static void sig_server_setup_read(IRC_SERVER_SETUP_REC *rec, CONFIG_NODE *node)
 	rec->max_cmds_at_once = config_node_get_int(node, "cmds_max_at_once", 0);
 	rec->cmd_queue_speed = config_node_get_int(node, "cmd_queue_speed", 0);
 	rec->max_query_chans = config_node_get_int(node, "max_query_chans", 0);
-	rec->starttls = config_node_get_bool(node, "starttls", STARTTLS_NOTSET);
+	starttls = config_node_get_bool(node, "starttls", -1);
+	rec->starttls = starttls == -1 ? STARTTLS_NOTSET :
+	                starttls == 0  ? STARTTLS_DISALLOW :
+                                         STARTTLS_ENABLED;
 	if (rec->starttls == STARTTLS_ENABLED) {
 		rec->use_tls = 0;
 	}

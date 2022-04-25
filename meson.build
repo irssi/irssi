@@ -1,5 +1,5 @@
 project('irssi', 'c',
-  version : '1.3-head',
+  version : '1.3.2',
   meson_version : '>=0.49',
   default_options : ['warning_level=1'])
 
@@ -52,6 +52,8 @@ want_glib_internal  = get_option('install-glib') != 'no'
 require_glib_internal = get_option('install-glib') == 'force'
 
 want_static_dependency = get_option('static-dependency') == 'yes'
+
+package_version     = get_option('PACKAGE_VERSION') != '' ? get_option('PACKAGE_VERSION') : meson.project_version()
 
 chat_modules = ['irc']
 
@@ -273,7 +275,12 @@ endif
 dep += glib_dep
 dep += gmodule_dep
 
-openssl_dep = dependency('openssl', static : want_static_dependency)
+if glib_internal and want_static_dependency and want_fuzzer
+  openssl_proj = subproject('openssl', default_options : ['default_library=static', 'asm=disabled'])
+  openssl_dep = openssl_proj.get_variable('openssl_dep')
+else
+  openssl_dep = dependency('openssl', static : want_static_dependency)
+endif
 dep += openssl_dep
 
 ############
@@ -535,7 +542,7 @@ foreach h : headers
 endforeach
 
 conf.set('HAVE_LIBUTF8PROC', have_libutf8proc)
-conf.set_quoted('PACKAGE_VERSION', meson.project_version())
+conf.set_quoted('PACKAGE_VERSION', package_version)
 conf.set_quoted('PACKAGE_TARNAME', meson.project_name())
 
 configure_file(output : 'irssi-config.h',
@@ -576,7 +583,11 @@ pc_requires = []
 if not glib_internal
   pc_requires += glib_dep
 endif
-pc.generate(filebase : 'irssi-1', name : 'Irssi', description : 'Irssi chat client', requires : pc_requires)
+pc.generate(filebase : 'irssi-1',
+  name : 'Irssi',
+  description : 'Irssi chat client',
+  version : package_version,
+  requires : pc_requires)
 
 ###########
 # irssi.1 #

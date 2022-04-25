@@ -42,7 +42,7 @@ enum {
 	MSGLEVEL_HIDDEN       = 0x10000000, /* Hidden from view */
 	MSGLEVEL_RESERVED1    = 0x20000000,
 	MSGLEVEL_RESERVED2    = 0x40000000,
-	MSGLEVEL_FORMAT       = 0x80000000  /* Format data */
+	MSGLEVEL_FORMAT       = (int)0x80000000  /* Format data */
 };
 /* clang-format on */
 

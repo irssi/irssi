@@ -17,8 +17,8 @@
 %9Examples:%9
 
     /QUERY mike
-    /QUERY -ExampleNet bob
-    /QUERY -ExampleNet -window sarah
+    /QUERY -liberachat bob
+    /QUERY -liberachat -window sarah
 
 %9See also:%9 MSG, UNQUERY, WINDOW
 

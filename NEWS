@@ -1,4 +1,290 @@
-v1.3-head 2021-xx-xx  The Irssi team <staff@irssi.org>
+v1.3.2 2022-xx-xx The Irssi team <staff@irssi.org>
+	- CHANTYPES take precedence over (missing) STATUSMSG in /join
+          (#1358, an#54)
+	- Fix crash in Perl's $view->set_bookmark (freebsd#254237,
+          an#56)
+
+	- Minor help fixes (an#51, an#52)
+	- Fix regression where own channel status was forgotten after
+          /UPGRADE (#1357, an#53)
+
+	* /SET resolve_reverse_lookup setting was removed (#1034,
+          #1135)
+	* Irssi will try to connect on IPv4 if IPv6 connection failed
+	  (#1146). By Shivaram Lingamneni
+
+	* The display system now renders formats on the fly (#1079,
+	  #1188, #1191, #1192, #1204, #1205, #1209, #1349, #1355,
+	  an#13, an#14, an#28, an#29, an#36, an#37, an#49)
+
+	  This major change will break scripts that try to modify
+	  printed text during "print text" signal (#1189). They need
+	  to be ported to modify the text during "print format"
+	  instead. It also breaks the usage of using /FORMAT to add
+	  different colours to a line. Such usage needs to be ported
+	  to using $expando variables instead. Affected scripts
+	  include format_identify.pl, friends_peder.pl, nickcolor.pl,
+	  nm.pl, people.pl
+
+	  The "gui print text finished" and "gui print text after
+	  finished" signals gained a TEXT_DEST_REC *parameter in the
+	  process.
+
+	  A new "gui render line text" signal is available to change
+	  the rendering of a line
+
+	* made the $Z expando (time) dynamic (#1087, #1207, #1208)
+
+	  This change breaks the usage of /SET timestamp_format to
+	  supply a custom displayed time stamp. Affected scripts
+	  include binary_time.pl
+
+	* /HILIGHT -priority now affects which hilight rule gets
+	  applied (#1228, #1232)
+	* The NAMES list is now hidden by default if there are more
+	  than 18 users on the channel (an#7)
+
+	  To revert to the previous behaviour
+
+	      /SET show_names_on_join_limit -1
+
+	* -tls_verify is now enabled by default (#1170, an#18, #1309,
+           an#23, #1343, #1351)
+
+	  This may cause an ugly display of notls_verify in the output
+	  of /SERVER LIST, even on plain-text connection, on old
+	  configs. Kindly remove the "tls_verify = "no";" entries from
+	  your config file manually.
+
+	* Irssi will now attempt STARTTLS if advertised (#1170, #1312,
+	  an#19)
+
+	  Use -disallow_starttls if you absolutely do not want this
+
+	  In order to check for a STARTTLS advertisement, Irssi will
+	  now wait for a response (even an error) to CAP LS 302. If
+	  your bouncer/server does not want to communicate before
+	  receiving USER/PASS at all, use -nocap to disable the CAP
+	  check.
+
+	* Channel sync requests (WHO, MODE) are now sent "later" than
+          user commands. This should improve responsiveness to user
+          commands in the autojoin phase (an#26, an#32, an#33)
+	* Irssi is now using full paths in #include directives and
+          consequently does not add all directories to the include
+          path anymore (#1040)
+	* The Build System was ported to Meson (#1064, #1065, #1068,
+	  #1071, #1072, #1073, #1074, #1075, #1084, #1085, #1118, #1166,
+	  #1223, #1224, #1245, #1313, #1314, an#31)
+	* Scriptassist was changed to use a YAML database (#1163)
+
+	  It will tell you when you need to update your setting
+
+	* /BIND shows all partial matches (#1155)
+	* Cleanup of unused functions (#1017, #1132, #1145, #1182,
+	  #1246, #1264)
+
+	  Functions removed:
+
+	      NET_CALLBACK
+	      NET_HOST_CALLBACK
+	      RESOLVED_NAME_REC
+	      net_gethostbyaddr_nonblock
+	      net_connect_nonblock
+	      [ SIMPLE_THREAD_REC, simple_init, simple_readpipe ]
+	      hash_save_key
+
+	  Functions deprecated:
+
+	      dec2octal
+	      g_timeval_cmp
+	      get_timeval_diff
+
+	  Function names corrected:
+
+	      g_input -> i_input
+	      g_istr -> i_istr
+	      g_io_channel -> i_io_channel
+	      g_hash_free_value -> i_hash_free_value
+	      remove g_free_true
+	      gslist -> i_slist
+	      glog_func -> i_log_func
+	      glist -> i_list
+
+	  If multi-version compatibility is desired, module authors
+	  can find an example of backwards compatible code in
+	  cdidier/irssi-xmpp#55
+
+	+ Add MSGLEVEL_HIDDEN to Perl (#1044)
+	+ Add $view->set_hidden_level and $view->remove_lines_by_level
+	  to Perl (#1026)
+	+ Add a /SET scrollback_max_age setting (#1022). By Heikki
+	  Orsila
+	+ Add /SET actlist_prefer_window_name (#1025)
+	+ Add -window option to /CAT (#1023, #1159)
+	+ Add an option to list specific sections with
+
+	      /SET -section lookandfeel
+
+	  (#1048)
+
+	+ Add support for IRCv3 CAP LS 302 (#1091)
+	+ Add a new "print noformat" signal that goes together with
+	  "print format" (#1088, #1192)
+	+ Add support for IRCv3 extended-join. /SET show_extended_join
+	  to enable (#1097, #1107, #1124)
+
+	  There are two new /FORMATs, join_extended and
+	  join_extended_account, that theme writers need to take into
+	  account if desired.
+
+	+ Add support for IRCv3 setname (#1093, #1104, #1254, GL#33)
+	+ Add support for IRCv3 account-notify (#1100, #1098, GL#33,
+	  #1105, #1131). Credit to oss-fuzz
+	  /SET show_account_notify to enable
+	+ Add support for IRCv3 invite-notify (#1094)
+	+ Add support for receiving IRCv3 message-tags (#576, #1090)
+	+ Add support for sending IRCv3 message-tags (#1092, an#34)
+	+ Enable the znc.in/self-message CAP by default (#1123)
+	+ Add support for IRCv3 away-notify. /SET away_notify_public
+	  to enable (#1099, GL#33, #1105)
+	+ Add support for IRCv3 chghost (#1096, GL#33, #1105)
+
+	  For servers with broken chghost implementation that fill the
+	  status window with host changed messages, one may add "quote
+	  cap req -chghost" to the -autosendcmd or, if the host change
+	  messages are entirely undesired, "/format -delete
+	  host_changed"
+
+	+ Add support for IRCv3 server-time. /SET show_server_time to
+	  enable (#1108)
+	+ Add support for logging IRCv3 server-time.
+	  /SET log_server_time to disable (#1318, an#16)
+	+ Add IRCv3 features to signals.txt (#1111)
+
+	  In particular, "message join" now takes 2 additional
+	  arguments, script and module authors must beware of this
+	  change.
+
+	+ Show the unignore time in /IGNORE output (#1158, #1161)
+	+ Add /SET quit_on_hup to make the behaviour of SIGHUP
+	  configurable (#828, #1169). By Pinguin1234
+	+ Support numeric 489 as ERR_SECUREONLYCHAN (#1193, #1196). By
+	  Michael Hansen
+	+ Improve support for building Irssi in Termux-Android with
+	  Meson (#1199)
+	+ Add usermode key to Irssi::Irc::Chatnet in Perl (#1288). By
+	  Jessica Sophie Porter
+	+ Add format_string_expand and format_string_unexpand
+	  functions to Perl (#1286)
+	+ Add ...->format_create_dest(...)->printformat("format",
+	  args...) and ...->printformat_module("module", "format",
+	  args...) methods to Perl (#1284)
+
+	  You can avoid any CORE::GLOBAL::caller hacks using the
+	  printformat_module method, especially sind that hack was not
+	  safe during signal emissions
+
+	+ Add tracking of user accounts in the channel nicklist using
+	  WHOX on join (#1250)
+	+ Add auto-loading of the Perl and otr module from /SET
+	  autoload_modules (#1295)
+	+ Add /IGNORE ... NOHILIGHT to ignore some hilights (#1260)
+	+ Do not beep on hidden lines with /SET beep_msg_level
+	  ... -HIDDEN (#1259)
+	+ Added /CS, /MS, /NS, and /OS aliases to the default config
+	  (#1316). By Mathis Beer
+	+ Allow -tls_ca{file,path} '' to unset an argument (#730,
+	  #1060, an#30)
+	+ Add a "server outgoing modify" signal to intercept outgoing
+	  messages (#1148, #1151, an#15, an#43). Original by
+	  JustAnotherArchivist
+	- remove some hard-coded 510 byte assumptions (#1086)
+	- Several fixes for error checks in SSL (#944, #1037, #943,
+          #1036). Reported by Chi Li
+	- Wrong variable tested in mask_match (#902, #1035)
+	- Fix bug where irssi-proxy with `?'-port would not reconnect
+          (#1041)
+	- Allow shrinking of /SET rawlog_lines (#957, #1020). By
+          Marcus "Teschi" Prinz
+	- Fix /WINDOW BALANCE warning (#1054)
+	- fix overflow when first command history entry expires
+          (#1070)
+	- begin modularising IRC module (#1067, #1112, #1113)
+	- fix some memory leaks in /DCC RESUME and settings_add
+          (#1077). By Zero King
+	- fix cut-off text with theme_indent module and /SET
+          indent_always OFF (#1078)
+	- fix the cap_queue order (#1095)
+	- add reference counted strings (#1089)
+	- Fix irc_op_public messages not triggering hilights (#354,
+          #891, #1129). By Dan Collins
+	- Fix /IGNORE not setting the right level in irc_op_public
+          messages (#1280). Credit to oss-fuzz
+	- Fix GTimeVal deprecation (#1141, #1144, #1145, #1350, an#44)
+
+	  If multi-version compatibility is desired, module authors
+	  can find an example of backwards compatible code in
+	  cdidier/irssi-xmpp#53
+
+	- Fix /IGNORE ... MODES NO_ACT not working (#1164)
+	- Deprecated -ssl* options are hidden from tab completion
+          (#1171)
+	- Make /SET actlist_sort a choice type (#1198)
+	- Fix crash from self-unloading script (#1206). By Thomas
+          Stagner
+	- Fix crash during Perl signal emission (#1233, #1234)
+	- Fix a case where empty lines or comments inside channels or
+          servers in the config would confuse Irssi (#1062, #1242,
+          #1243)
+	- Fix reported freezing in DCC GET on slow disks (#159, #1271)
+	- Fix message-tags parsing (#1274, #1275). Credit to oss-fuzz
+	- Fail redirects when receiving numeric 263 (RPL_TRYAGAIN) in
+          response to /WHO (#1283)
+	- Some updates to .gitignore (#1302). By Rene Kita
+	- Fix build on operating systems with X/Open Curses, version 2
+	  (#1305, #1308). By Nia Alarie (Regression introduced with
+	  #1290, alternative fix for Irssi 1.2.3 no-term.h.patch)
+	- Fix otr module not using g_strndup, e.g. on Solaris 10
+          (#1315). By Claes Nästén
+	- Fix cursor getting stuck for auto completions that changes
+          case (#1176, #1322, an#8). By ffrogman
+	- Restore operation of tag/* in /SET activity_hide_targets
+	  (#1337, an#11) nb. the ::all syntax was working in Irssi 1.1
+	  and 1.2 (and continues to work)
+	- Fix /SERVER ADD -matrix -network my_matrix_network
+          (an#12). By Andrej Kacian
+	- Fix /SERVER ADD creating duplicated entries in the config
+          file (#1317, an#22, an#41)
+	- Fix critical when SASL user is set and SASL password is
+          empty (#1325, an#21)
+	- Misc fixes (#1106, #1141, #1272, #1297, an#35)
+	- Fuzz fixes (#1116, #1117, #1119, #1125, #1126, an#20)
+	- Build system fixes (#1101, #1102, #1069, #1140, #1181, #1253)
+	- Sync docs and scripts (an#39)
+	- Text and Help updates
+	  - add -tls_* options to manual (#1029, #1030). By Jacob
+            V. Rasmussen
+	  - missing targets in /MSG (#1032)
+	  - wrong parameter in /ECHO (#1024)
+	  - Spelling in OTR (#1047). By David Gall
+	  - Clarify statusbar priority (#1049). By Marius Gedminas
+	  - Document get_irssi_dir in Perl (#1051, #1052). By Alex
+            Shafer
+	  - typo in /HILIGHT help (#1081). By DFrostByte
+	  - improved clarity of your_nick_owned (#1138). By Mike Quin
+	  - Update some URLs to https (#1163)
+	  - Add documentation for escaping some characters (#1329,
+            #1330, an#9). By Guntbert Reiter
+	  - Fix some typos (#1336, an#10). By Francis Mteo
+	  - Document $abiversion and parse_special (an#38). By bw1
+	- Infrastructure updates:
+	  - Support for Github Actions (#1039, #1103, #1160, #1212,
+            #1231, #1252, #1261, an#40)
+	  - Run clang-format on pull requests (#1172, #1173, #1184,
+            #1230, #1247, #1287)
+	  - Run abidiff on pull requests (#1179, #1195)
+	  - Test CI-Fuzz (#1279, #1304, an#17)
 
 v1.2.3 2021-04-11 The Irssi team <staff@irssi.org>
 	- Fix the compilation of utf8proc (#1021)
@@ -40,7 +326,7 @@ v1.2.3 2021-04-11 The Irssi team <staff@irssi.org>
 
 v1.2.2 2019-08-29 The Irssi team <staff@irssi.org>
 	- Fix a use after free issue when receiving IRCv3 CAP
-          information from the server (GL#34)
+          information from the server (GL#34, GL!35)
 	- Fix a crash during startup when windows weren't fully
           initialised yet (#1114, bdo#935813)
 

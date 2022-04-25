@@ -47,11 +47,11 @@ static void strip_params_colon(char *const);
 /* The core of the irc_send_cmd* functions. If `raw' is TRUE, the `cmd'
    won't be checked at all if it's 512 bytes or not, or if it contains
    line feeds or not. Use with extreme caution! */
-void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
-		       int send_now, int immediate, int raw)
+void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd, int irc_send_when, int raw)
 {
 	GString *str;
 	int len;
+	guint pos;
 	gboolean server_supports_tag;
 
 	g_return_if_fail(server != NULL);
@@ -66,6 +66,14 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 	if (server->cmdcount == 0)
 		irc_servers_start_cmd_timeout();
 	server->cmdcount++;
+
+	pos = g_slist_length(server->cmdqueue);
+	if (server->cmdlater > pos / 2) {
+		server->cmdlater = pos / 2;
+		pos = 0;
+	} else {
+		pos -= 2 * server->cmdlater;
+	}
 
 	if (!raw) {
 		const char *tmp = cmd;
@@ -105,37 +113,56 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd,
 		g_string_append(str, cmd);
 	}
 
-	if (send_now) {
-		rawlog_output(server->rawlog, str->str);
-		server_redirect_command(server, str->str, server->redirect_next);
-                server->redirect_next = NULL;
-	}
-
 	if (!raw) {
-                /* Add CR+LF to command */
-		g_string_append_c(str, 13);
-		g_string_append_c(str, 10);
+		/* Add CR+LF to command */
+		g_string_append(str, "\r\n");
 	}
 
-	if (send_now) {
-                irc_server_send_data(server, str->str, str->len);
-		g_string_free(str, TRUE);
-	} else {
+	if (irc_send_when == IRC_SEND_NOW) {
+		int crlf;
 
-		/* add to queue */
-		if (immediate) {
-			server->cmdqueue = g_slist_prepend(server->cmdqueue,
-							   server->redirect_next);
-			server->cmdqueue = g_slist_prepend(server->cmdqueue,
-							   g_string_free(str, FALSE));
-		} else {
-			server->cmdqueue = g_slist_append(server->cmdqueue,
-							  g_string_free(str, FALSE));
-			server->cmdqueue = g_slist_append(server->cmdqueue,
-							  server->redirect_next);
+		if (str->len > 2 && str->str[str->len - 2] == '\r')
+			crlf = 2;
+		else if (str->len > 1 && str->str[str->len - 1] == '\n')
+			crlf = 1;
+		else
+			crlf = 0;
+
+		if (crlf)
+			g_string_truncate(str, str->len - crlf);
+
+		signal_emit("server outgoing modify", 3, server, str, crlf);
+		if (str->len) {
+			if (crlf == 2)
+				g_string_append(str, "\r\n");
+			else if (crlf == 1)
+				g_string_append(str, "\n");
+
+			irc_server_send_data(server, str->str, str->len);
+
+			/* add to rawlog without [CR+]LF */
+			if (crlf)
+				g_string_truncate(str, str->len - crlf);
+			rawlog_output(server->rawlog, str->str);
+			server_redirect_command(server, str->str, server->redirect_next);
 		}
+		g_string_free(str, TRUE);
+	} else if (irc_send_when == IRC_SEND_NEXT) {
+		/* add to queue */
+		server->cmdqueue = g_slist_prepend(server->cmdqueue, server->redirect_next);
+		server->cmdqueue = g_slist_prepend(server->cmdqueue, g_string_free(str, FALSE));
+	} else if (irc_send_when == IRC_SEND_NORMAL) {
+		server->cmdqueue = g_slist_insert(server->cmdqueue, server->redirect_next, pos);
+		server->cmdqueue = g_slist_insert(server->cmdqueue, g_string_free(str, FALSE), pos);
+	} else if (irc_send_when == IRC_SEND_LATER) {
+		server->cmdqueue = g_slist_append(server->cmdqueue, g_string_free(str, FALSE));
+		server->cmdqueue = g_slist_append(server->cmdqueue, server->redirect_next);
+		server->cmdlater++;
+	} else {
+		g_warn_if_reached();
 	}
-        server->redirect_next = NULL;
+
+	server->redirect_next = NULL;
 }
 
 /* Send command to IRC server */
@@ -149,7 +176,7 @@ void irc_send_cmd(IRC_SERVER_REC *server, const char *cmd)
 	           (server->cmdcount < server->max_cmds_at_once ||
 		    server->cmd_queue_speed <= 0);
 
-	irc_send_cmd_full(server, cmd, send_now, FALSE, FALSE);
+	irc_send_cmd_full(server, cmd, send_now ? IRC_SEND_NOW : IRC_SEND_NORMAL, FALSE);
 }
 
 /* Send command to IRC server */
@@ -173,7 +200,7 @@ void irc_send_cmd_now(IRC_SERVER_REC *server, const char *cmd)
 {
 	g_return_if_fail(cmd != NULL);
 
-        irc_send_cmd_full(server, cmd, TRUE, TRUE, FALSE);
+	irc_send_cmd_full(server, cmd, IRC_SEND_NOW, FALSE);
 }
 
 /* Send command to server putting it at the beginning of the queue of
@@ -183,7 +210,15 @@ void irc_send_cmd_first(IRC_SERVER_REC *server, const char *cmd)
 {
 	g_return_if_fail(cmd != NULL);
 
-        irc_send_cmd_full(server, cmd, FALSE, TRUE, FALSE);
+	irc_send_cmd_full(server, cmd, IRC_SEND_NEXT, FALSE);
+}
+
+/* Send command to server putting it at the end of the queue. */
+void irc_send_cmd_later(IRC_SERVER_REC *server, const char *cmd)
+{
+	g_return_if_fail(cmd != NULL);
+
+	irc_send_cmd_full(server, cmd, IRC_SEND_LATER, FALSE);
 }
 
 static char *split_nicks(const char *cmd, char **pre, char **nicks, char **post, int arg)

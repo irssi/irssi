@@ -156,3 +156,22 @@ print(dest, str)
 	char *str
 CODE:
 	printtext_dest(dest, "%s", str);
+
+#*******************************
+MODULE = Irssi::UI::Formats  PACKAGE = Irssi::UI::TextDest  PREFIX = format_dest_
+#*******************************
+
+void
+format_dest_meta_stash(dest, meta_key, meta_value)
+	Irssi::UI::TextDest dest
+	char *meta_key
+	char *meta_value
+
+char *
+format_dest_meta_stash_find(dest, meta_key)
+	Irssi::UI::TextDest dest
+	char *meta_key
+CODE:
+	RETVAL = (char *) format_dest_meta_stash_find(dest, meta_key);
+OUTPUT:
+	RETVAL

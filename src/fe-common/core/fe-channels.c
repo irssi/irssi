@@ -107,9 +107,14 @@ static void signal_window_item_changed(WINDOW_REC *window, WI_ITEM_REC *item)
 
 static void sig_channel_joined(CHANNEL_REC *channel)
 {
-	if (settings_get_bool("show_names_on_join") &&
-	    !channel->session_rejoin)
-		fe_channels_nicklist(channel, CHANNEL_NICKLIST_FLAG_ALL);
+	if (settings_get_bool("show_names_on_join") && !channel->session_rejoin) {
+		int limit = settings_get_int("show_names_on_join_limit");
+		int flags = CHANNEL_NICKLIST_FLAG_ALL;
+		if (limit > 0 && g_hash_table_size(channel->nicks) > limit) {
+			flags |= CHANNEL_NICKLIST_FLAG_COUNT;
+		}
+		fe_channels_nicklist(channel, flags);
+	}
 }
 
 /* SYNTAX: JOIN [-window] [-invite] [-<server tag>] <channels> [<keys>] */
@@ -625,6 +630,7 @@ void fe_channels_init(void)
 {
 	settings_add_bool("lookandfeel", "autoclose_windows", TRUE);
 	settings_add_bool("lookandfeel", "show_names_on_join", TRUE);
+	settings_add_int("lookandfeel", "show_names_on_join_limit", 18);
 	settings_add_int("lookandfeel", "names_max_columns", 6);
 	settings_add_int("lookandfeel", "names_max_width", 0);
 

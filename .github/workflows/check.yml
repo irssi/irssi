@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: prepare required software
         run: |
-          sudo apt install $apt_build_deps $apt_build_deps_autotools
+          sudo apt update && sudo apt install $apt_build_deps $apt_build_deps_autotools
       - uses: actions/checkout@main
       - name: make dist
         run: |
@@ -38,18 +38,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-16.04, ubuntu-latest]
+        os: [ubuntu-18.04, ubuntu-latest]
         builder: [meson, configure]
         compiler: [clang, gcc]
         flags: [regular]
         include:
-          - os: ubuntu-16.04
+          - os: ubuntu-18.04
             builder: meson
             meson_ver: ==0.49.2
             setuptools_ver: <51
           - os: ubuntu-latest
             builder: meson
-            meson_ver: <0.59.0
+            meson_ver: <0.60.0
           - os: ubuntu-latest
             builder: meson
             flags: meson-latest FAILURE-OK
@@ -64,7 +64,7 @@ jobs:
           meson_ver: ${{ matrix.meson_ver }}
           setuptools_ver: ${{ matrix.setuptools_ver }}
         run: |
-          sudo apt install $apt_build_deps $apt_build_deps_${{ matrix.builder }}
+          sudo apt update && sudo apt install $apt_build_deps $apt_build_deps_${{ matrix.builder }}
           eval "$get_pip_build_deps_${{ matrix.builder }}"
           curl -SLf https://github.com/irssi-import/actions-irssi/raw/master/check-irssi/render.pl -o ~/render.pl && chmod +x ~/render.pl
       - name: unpack archive
@@ -118,5 +118,5 @@ jobs:
           echo load perl >> irssi-test/startup
           echo load proxy >> irssi-test/startup
           echo ^quit >> irssi-test/startup
-          irssi-build/bin/irssi --home irssi-test | ~/render.pl
+          irssi-build/bin/irssi --home irssi-test | perl -Mutf8 -C ~/render.pl
           cat irc.log.*
