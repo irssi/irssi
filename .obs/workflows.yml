@@ -1,0 +1,13 @@
+workflow:
+  steps:
+    - branch_package:
+        source_project: home:ailin_nemui:irssi-git-an
+        source_package: irssi-git-an
+        target_project: home:ailin_nemui:CI
+    - set_flags:
+        flags:
+          - type: publish
+            status: enable
+            project: home:ailin_nemui:CI
+  filters:
+    event: pull_request
