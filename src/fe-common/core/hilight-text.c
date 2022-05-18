@@ -793,7 +793,7 @@ void hilight_text_init(void)
 
 	read_settings();
 
-	nickmatch = nickmatch_init(hilight_nick_cache);
+	nickmatch = nickmatch_init(hilight_nick_cache, NULL);
 	read_hilight_config();
 
 	signal_add_first("print text", (SIGNAL_FUNC) sig_print_text);
