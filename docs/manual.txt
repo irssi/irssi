@@ -18,16 +18,16 @@
 	9. Text highlighting
 	10. Ignoring
 	11. Logging
+	12. Commands
+	14. Last log (currently text version only)
+	15. Word completion
+	16. Recode
+	18. Key bindings (text version)
+	19. Perl scripting
 
 	( not written yet: )
-	12. Commands
 	13. Themes
-	14. Last log (currently text version only)
-	15. Nick and word completion
-	16. Recode
 	17. Windowing system (text version)
-	18. Keyboard (text version)
-	19. Perl scripting
 
 
 
@@ -141,44 +141,7 @@
 	--hostname -h		Specify what host name to use
 
 
- 2. Message levels
-
-
-	Message levels (or in short, levels) are used almost everywhere.
-	They describe what kind of messages we're dealing with. Here's a
-	list of them all:
-
-	CRAP            - Can be almost anything
-	MSGS            - Private messages
-	PUBLIC          - Public messages in channel
-	NOTICES         - Notices
-	SNOTES          - Server notices
-	CTCPS           - CTCP messages
-	ACTIONS         - Actions (/me) - usually ORed with PUBLIC or MSGS
-	JOINS           - Someone joins a channel
-	PARTS           - Someone parts a channel
-	QUITS           - Someone quits IRC
-	KICKS           - Someone gets kicked from channel
-	MODES           - Channel mode is changed
-	TOPICS          - Channel topic is changed
-	WALLOPS         - Wallop is received
-	INVITES         - Invite is received
-	NICKS           - Someone changes nick
-	DCC             - DCC related messages
-	DCCMSGS         - DCC chat messages
-	CLIENTNOTICES   - Irssi's notices
-	CLIENTERRORS    - Irssi's error messages
-	CLIENTCRAP      - Some other messages from Irssi
-
-	And a few special ones that could be included with the
-	levels above:
-
-	HILIGHT         - Text is highlighted
-	NOHILIGHT       - Don't check highlighting for this message
-	NO_ACT          - Don't trigger channel activity when printing
-	                  this message
-	NEVER           - Never ignore or log this message
-
+ 2. Message levels <https://irssi.org/documentation/help/levels/>
 
  3. Flood protection
 
@@ -252,47 +215,12 @@
 	Currently only messages, notices and ctcps are checked for
 	flooding.
 
-	/SET flood_max_msgs = <count>, default is 4
-	/SET flood_timecheck = <seconds>, default is 5 seconds
+	/SET flood_max_msgs <count>, default is 4
+	/SET flood_timecheck <seconds>, default is 5 seconds
 	If either of these is 0, the flood checking is disabled.
 
 
- 4. Configuration
-
- 4.1 Configuration files
-
-	The configuration is saved to ~/.irssi/config file. You can edit
-	it with text editor if you want, you can also add comments to it
-	and they stay there even if /SAVE is used. Comments are the lines
-	starting with # character. Any errors in config file are displayed
-	at startup.
-
-	Irssi uses it's own config library for handling the config file.
-	The format is pretty much the same as in libPropList and should be
-	easily understandable.
-
-	You can reload the config file on the fly with /RELOAD command, you
-	can also read a different config file with /RELOAD <filename>.
-
-	If you change any settings, they aren't saved to file until you use
-	/SAVE. You can save the config file to different place with
-	/SAVE <filename>.
-
- 4.2 Settings
-
-	You can view or change the settings with /SET command.
-
-	/SET without any arguments displays all the settings.
-	/SET <key> displays settings which key (partly) matches <key>
-	/SET <key> <value> sets <key> to <value>
-
-	Boolean settings accepts only values ON, OFF and TOGGLE. You can
-	also use /TOGGLE command to change them, so /TOGGLE <key> behaves
-	like /SET <key> TOGGLE. /TOGGLE also accepts arguments ON and OFF
-	when /TOGGLE behaves exactly like /SET.
-
-	Remember that changes are not saved until you use /SAVE!
-
+ 4. Configuration <https://irssi.org/documentation/manual/configuration/>
 
  5. Servers
 
@@ -367,11 +295,11 @@
 	you setup the server using /SERVER ADD (see next section). If the
 	settings can't be found there either, Irssi will use the defaults:
 
-	/SET default_nick = <nick>, defaults to user_name
-	/SET alternate_nick = <nick>, defaults to <default_nick>_
-	/SET user_name = <user>, defaults to your login name
-	/SET real_name = <name>, taken from /etc/passwd by default
-	/SET hostname = <host>, what host name to use when connecting
+	/SET default_nick <nick>, defaults to user_name
+	/SET alternate_nick <nick>, defaults to <default_nick>_
+	/SET user_name <user>, defaults to your login name
+	/SET real_name <name>, taken from /etc/passwd by default
+	/SET hostname <host>, what host name to use when connecting
 	/SET skip_motd ON|OFF|TOGGLE - Don't show server's MOTD
 
 	NOTE: /CONNECT is also a command for IRC operators to connect IRC
@@ -792,13 +720,7 @@
 	/SET massjoin_max_joins <count>.
 
 
- 7. IRC commands and features (FIXME)
-
- 7.x Basic commands
-
- 7.x IRC operator commands
-
- 7.x Away features
+ 7. IRC commands and features <https://irssi.org/documentation/help/>
 
  8. Notify list
 
@@ -846,9 +768,9 @@
 
 	/HILIGHT without any arguments displays list of the hilights.
 
-If <color> is a
-	number, Irssi will treat it as a MIRC color code. You can also use
-	bolds (^B), underlines (^_) etc. as <color> if you like.
+	If <color> is a number, Irssi will treat it as a MIRC color
+	code. You can also use bolds (^B), underlines (^_) etc. as
+	<color> if you like.
 
 
  10. Ignoring
@@ -993,29 +915,24 @@ If <color> is a
 
 	You can disable this feature by setting awaylog_level to NONE.
 
- 12. Commands
+ 12. Commands <https://irssi.org/documentation/manual/commands/>
 
-	Any char in the `cmdchars' setting can begin a command. The
-	syntax for a command is the following:
+ 13. Themes
 
-	<CMDCHAR>[<CMDCHAR>][^]<DATA>
+ 14. Last log <https://irssi.org/documentation/help/lastlog/>
 
-	If <CMDCHAR> is repeated two times, alias expansion is
-	disabled, enabled otherwise. If `^' is present, command output
-	is disabled. If <DATA> begins with a space, command lookup is
-	inhibited and the data is sent to the active window item
-	(useful to send a line that begins with <CMDCHAR>).
+ 15. Word completion <https://irssi.org/documentation/help/completion/>
 
  16. Recode
 
-	irssi supports selective encoding of incoming/outgoing messages
+	Irssi supports selective encoding of incoming/outgoing messages
 	through the recode system. All incoming/outgoing messages can be
 	optionally converted to/from the charset specified by the
 	`term_charset' variable (which defaults to the locale encoding and
 	should _not_ be changed in most cases), by setting the `recode'
 	variable to 'ON'.
 	Since there is no way in IRC to know the encoding associated to a
-	message, for incoming messages irssi uses the following algorithm:
+	message, for incoming messages Irssi uses the following algorithm:
 
 	if `recode_autodetect_utf8' is 'ON' and the message is valid UTF-8 the
 	encoding is assumed to be UTF-8.
@@ -1031,6 +948,10 @@ If <color> is a
 	encoding for both incoming/outgoing messages. '//TRANSLIT' is a GNU
 	iconv specific extension to peform transliteration (locale dependent)
 	when a character is not representable in the destination encoding.
+
+ 18. Key bindings <https://irssi.org/documentation/help/bind_-list/>
+
+ 19. Scripting <https://irssi.org/documentation/scripting/>
 
 .. no, the docs end here, I got bored of writing these after a few days and 
 haven't touched these since then.
