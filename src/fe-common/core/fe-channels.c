@@ -646,7 +646,7 @@ void fe_channels_init(void)
 	command_bind("channel modify", NULL, (SIGNAL_FUNC) cmd_channel_modify);
 	command_bind("channel remove", NULL, (SIGNAL_FUNC) cmd_channel_remove);
 	command_bind("channel list", NULL, (SIGNAL_FUNC) cmd_channel_list);
-	command_bind("names", NULL, (SIGNAL_FUNC) cmd_names);
+	command_bind_first("names", NULL, (SIGNAL_FUNC) cmd_names);
 	command_bind("cycle", NULL, (SIGNAL_FUNC) cmd_cycle);
 
 	command_set_options("channel add", "auto noauto -bots -botcmd");
