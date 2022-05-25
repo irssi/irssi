@@ -490,6 +490,11 @@ static void read_ignores(void)
 	nickmatch_rebuild(nickmatch);
 }
 
+static void free_cache_matches(GSList *matches)
+{
+	g_slist_free(matches);
+}
+
 static void ignore_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 			      NICK_REC *nick)
 {
@@ -520,7 +525,7 @@ static void ignore_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 void ignore_init(void)
 {
 	ignores = NULL;
-	nickmatch = nickmatch_init(ignore_nick_cache);
+	nickmatch = nickmatch_init(ignore_nick_cache, (GDestroyNotify) free_cache_matches);
 	time_tag = g_timeout_add(1000, (GSourceFunc) unignore_timeout, NULL);
 
         read_ignores();

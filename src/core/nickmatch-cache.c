@@ -28,12 +28,13 @@
 
 static GSList *lists;
 
-NICKMATCH_REC *nickmatch_init(NICKMATCH_REBUILD_FUNC func)
+NICKMATCH_REC *nickmatch_init(NICKMATCH_REBUILD_FUNC func, GDestroyNotify value_destroy_func)
 {
 	NICKMATCH_REC *rec;
 
 	rec = g_new0(NICKMATCH_REC, 1);
 	rec->func = func;
+	rec->value_destroy_func = value_destroy_func;
 
 	lists = g_slist_append(lists, rec);
         return rec;
@@ -43,8 +44,9 @@ void nickmatch_deinit(NICKMATCH_REC *rec)
 {
 	lists = g_slist_remove(lists, rec);
 
-        g_hash_table_destroy(rec->nicks);
-        g_free(rec);
+	if (rec->nicks != NULL)
+		g_hash_table_destroy(rec->nicks);
+	g_free(rec);
 }
 
 static void nickmatch_check_channel(CHANNEL_REC *channel, NICKMATCH_REC *rec)
@@ -65,8 +67,8 @@ void nickmatch_rebuild(NICKMATCH_REC *rec)
 	if (rec->nicks != NULL)
 		g_hash_table_destroy(rec->nicks);
 
-	rec->nicks = g_hash_table_new((GHashFunc) g_direct_hash,
-				      (GCompareFunc) g_direct_equal);
+	rec->nicks = g_hash_table_new_full((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal,
+	                                   NULL, (GDestroyNotify) rec->value_destroy_func);
 
 	g_slist_foreach(channels, (GFunc) nickmatch_check_channel, rec);
 }
