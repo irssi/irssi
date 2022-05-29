@@ -14,7 +14,7 @@ if test -z "$VERSION_DATE"; then
 	;;
     esac
     VERSION_TIME=`echo "$DATE" | cut -f 1 -d ' ' | tr -d v | tr .- ' '`
-    VERSION_TIME=`printf %d%d%02d $VERSION_TIME 2>/dev/null`
+    VERSION_TIME=`printf %d%d%02d $VERSION_TIME 2>/dev/null | cut -c 1-4`
 fi
 
 echo "#define IRSSI_VERSION_DATE $VERSION_DATE"
