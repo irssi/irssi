@@ -1,4 +1,24 @@
-v1.4-head-an 2022-xx-xx  Ailin Nemui <Nei>
+v1.5-head-an 2022-xx-xx  Ailin Nemui <Nei>
+
+v1.4.0-an 2022-05-31  Ailin Nemui <Nei>
+	* Format the output of /QUOTE HELP (#1371, an#82). By Val
+	  Lorentz. Add /SHELP as default alias (an#83)
+	+ GLib log message filter: /SET glib_log_domains (an#50,
+	  an#59). By Andrej Kacian
+	+ An option to clear the cutbuffer:
+	  /SET empty_kill_clears_cutbuffer (an#58). By Mikael
+	  Magnusson
+	+ Scriptable pastebin (an#60)
+	+ Configurable actlist separator: /SET actlist_separator
+	  (#1364, an#61)
+	- Fix window left/right not skipping visible windows
+	  (an#57). By Mikael Magnusson
+	- Fix wrong printf-format on OpenBSD (an#66, an#68). Reported
+	  by Aaron Bieber
+	- Fix erroneous output produced by autoload_modules (an#72)
+	- Fix scroll_page_count setting with `.' (#1365, an#76)
+	- Fix memory leak in /IGNORE (#1373, an#84). Found by Jookia
+	- Misc fixes (an#45, an#67, an#70, #1368, an#77)
 
 v1.3.2-an 2022-01-14  Ailin Nemui <Nei>
 	- CHANTYPES take precedence over (missing) STATUSMSG in /join
