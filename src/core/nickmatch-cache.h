@@ -7,9 +7,10 @@ typedef void (*NICKMATCH_REBUILD_FUNC) (GHashTable *list,
 typedef struct {
         GHashTable *nicks;
 	NICKMATCH_REBUILD_FUNC func;
+	GDestroyNotify value_destroy_func;
 } NICKMATCH_REC;
 
-NICKMATCH_REC *nickmatch_init(NICKMATCH_REBUILD_FUNC func);
+NICKMATCH_REC *nickmatch_init(NICKMATCH_REBUILD_FUNC func, GDestroyNotify value_destroy_func);
 void nickmatch_deinit(NICKMATCH_REC *rec);
 
 /* Calls rebuild function for all nicks in all channels.

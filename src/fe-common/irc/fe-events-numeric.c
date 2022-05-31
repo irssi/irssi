@@ -554,6 +554,51 @@ static void event_489(IRC_SERVER_REC *server, const char *data, const char *nick
 	g_free(params);
 }
 
+static void event_help(IRC_SERVER_REC *server, int formatnum, const char *data)
+{
+	/* Common handling for umerics 704 (RPL_HELPSTART), 705 (RPL_HELPTXT),
+	 * and 706 (RPL_ENDOFHELP); sent as a reply to HELP or HELPOP command.
+	 */
+	char *params, *topic, *help_text;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 3, NULL, &topic, &help_text);
+
+	g_return_if_fail(help_text != NULL);
+
+	if (help_text[0] == '\0') {
+		/* Empty lines can be used by servers for styling; and we need to replace
+		 * them with something non-empty or they would be dropped when displayed.
+		 */
+		help_text = " ";
+	}
+
+	printformat(server, NULL, MSGLEVEL_CRAP, formatnum, topic, help_text);
+	g_free(params);
+}
+
+static void event_helpstart(IRC_SERVER_REC *server, const char *data, const char *nick)
+{
+	/* Numeric 704 (RPL_HELPSTART) sent as a reply to HELP or HELPOP command.
+	 */
+	event_help(server, IRCTXT_SERVER_HELP_START, data);
+}
+
+static void event_helptxt(IRC_SERVER_REC *server, const char *data, const char *nick)
+{
+	/* Numeric 705 (RPL_HELPTXT), sent as a reply to HELP or HELPOP command.
+	 */
+	event_help(server, IRCTXT_SERVER_HELP_TXT, data);
+}
+
+static void event_endofhelp(IRC_SERVER_REC *server, const char *data, const char *nick)
+{
+	/* Numeric 706 (RPL_ENDOFHELP), sent as a reply to HELP or HELPOP command.
+	 */
+	event_help(server, IRCTXT_SERVER_END_OF_HELP, data);
+}
+
 static void event_target_too_fast(IRC_SERVER_REC *server, const char *data,
 		      const char *nick)
 {
@@ -713,6 +758,9 @@ void fe_events_numeric_init(void)
 	signal_add("event 372", (SIGNAL_FUNC) event_motd);
 	signal_add("event 422", (SIGNAL_FUNC) event_motd);
 	signal_add("event 439", (SIGNAL_FUNC) event_target_too_fast);
+	signal_add("event 704", (SIGNAL_FUNC) event_helpstart);
+	signal_add("event 705", (SIGNAL_FUNC) event_helptxt);
+	signal_add("event 706", (SIGNAL_FUNC) event_endofhelp);
 	signal_add("event 707", (SIGNAL_FUNC) event_target_too_fast);
 
         signal_add("default event numeric", (SIGNAL_FUNC) event_numeric);
@@ -808,6 +856,9 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 372", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 422", (SIGNAL_FUNC) event_motd);
 	signal_remove("event 439", (SIGNAL_FUNC) event_target_too_fast);
+	signal_remove("event 704", (SIGNAL_FUNC) event_helpstart);
+	signal_remove("event 705", (SIGNAL_FUNC) event_helptxt);
+	signal_remove("event 706", (SIGNAL_FUNC) event_endofhelp);
 	signal_remove("event 707", (SIGNAL_FUNC) event_target_too_fast);
 
         signal_remove("default event numeric", (SIGNAL_FUNC) event_numeric);

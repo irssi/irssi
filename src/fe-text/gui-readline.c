@@ -69,6 +69,7 @@ static GArray *paste_buffer_rest;
 static char *paste_old_prompt;
 static int paste_prompt, paste_line_count;
 static int paste_join_multiline;
+static int paste_ignore_first_nl;
 static int paste_timeout_id;
 static int paste_use_bracketed_mode;
 static int paste_bracketed_mode;
@@ -80,6 +81,25 @@ static int previous_yank_preceded;
  * https://cirw.in/blog/bracketed-paste */
 static const unichar bp_start[] = { 0x1b, '[', '2', '0', '0', '~' };
 static const unichar bp_end[]   = { 0x1b, '[', '2', '0', '1', '~' };
+
+#define BRACKETED_PASTE_TIMEOUT (5 * 1000) // ms
+
+#if GLIB_CHECK_VERSION(2, 62, 0)
+/* nothing */
+#else
+/* compatibility code for old GLib */
+GArray *g_array_copy(GArray *array)
+{
+	GArray *out;
+	guint elt_size;
+
+	elt_size = g_array_get_element_size(array);
+	out = g_array_sized_new(FALSE, FALSE, elt_size, array->len);
+	memcpy(out->data, array->data, array->len * elt_size);
+
+	return out;
+}
+#endif
 
 static void sig_input(void);
 
@@ -143,7 +163,7 @@ static int get_scroll_count(void)
 	else if (count < 1)
                 count = 1.0/count;
 
-	if (*str == '/') {
+	if (*str == '/' || *str == '.') {
 		count = (active_mainwin->height-active_mainwin->statusbar_lines)/count;
 	}
 	return (int)count;
@@ -330,7 +350,7 @@ static void paste_send(void)
 	g_string_free(str, TRUE);
 }
 
-static void paste_flush(int send)
+static void paste_flush(void (*send)(void))
 {
 	if (paste_prompt) {
 		gui_entry_set_text(active_entry, paste_entry);
@@ -338,8 +358,8 @@ static void paste_flush(int send)
 		g_free_and_null(paste_entry);
 	}
 
-	if (send)
-		paste_send();
+	if (send != NULL)
+		send();
 	g_array_set_size(paste_buffer, 0);
 
 	/* re-add anything that may have been after the bracketed paste end */
@@ -356,6 +376,128 @@ static void paste_flush(int send)
 	paste_line_count = 0;
 
 	gui_entry_redraw(active_entry);
+}
+
+static void paste_print_line(const char *str)
+{
+	printformat_window(active_win, MSGLEVEL_CLIENTCRAP, TXT_PASTE_CONTENT, str);
+}
+
+static void paste_print(void)
+{
+	GArray *garr;
+	unichar *arr;
+	GString *str;
+	char out[10];
+	unsigned int i;
+	gboolean free_garr;
+
+	if (paste_join_multiline) {
+		garr = g_array_copy(paste_buffer);
+		paste_buffer_join_lines(garr);
+		free_garr = TRUE;
+	} else {
+		garr = paste_buffer;
+		free_garr = FALSE;
+	}
+
+	arr = &g_array_index(garr, unichar, 0);
+
+	str = g_string_new(NULL);
+	for (i = 0; i < garr->len; i++) {
+		if (isnewline(arr[i])) {
+			paste_print_line(str->str);
+			g_string_truncate(str, 0);
+		} else if (active_entry->utf8) {
+			out[g_unichar_to_utf8(arr[i], out)] = '\0';
+			g_string_append(str, out);
+		} else if (term_type == TERM_TYPE_BIG5) {
+			if (arr[i] > 0xff)
+				g_string_append_c(str, (arr[i] >> 8) & 0xff);
+			g_string_append_c(str, arr[i] & 0xff);
+		} else {
+			g_string_append_c(str, arr[i]);
+		}
+	}
+
+	if (str->len)
+		paste_print_line(str->str);
+
+	g_string_free(str, TRUE);
+	if (free_garr)
+		g_array_free(garr, TRUE);
+}
+
+static void paste_event(const char *arg)
+{
+	GArray *garr;
+	unichar *arr;
+	GString *str;
+	char out[10];
+	unsigned int i;
+	gboolean free_garr;
+
+	if (paste_join_multiline) {
+		garr = g_array_copy(paste_buffer);
+		paste_buffer_join_lines(garr);
+		free_garr = TRUE;
+	} else {
+		garr = paste_buffer;
+		free_garr = FALSE;
+	}
+
+	arr = &g_array_index(garr, unichar, 0);
+	str = g_string_new(NULL);
+	for (i = 0; i < garr->len; i++) {
+		if (isnewline(arr[i])) {
+			g_string_append_c(str, '\n');
+		} else if (active_entry->utf8) {
+			out[g_unichar_to_utf8(arr[i], out)] = '\0';
+			g_string_append(str, out);
+		} else if (term_type == TERM_TYPE_BIG5) {
+			if (arr[i] > 0xff)
+				g_string_append_c(str, (arr[i] >> 8) & 0xff);
+			g_string_append_c(str, arr[i] & 0xff);
+		} else {
+			g_string_append_c(str, arr[i]);
+		}
+	}
+
+	if (signal_emit("paste event", 2, str->str, arg)) {
+		paste_flush(NULL);
+	}
+
+	g_string_free(str, TRUE);
+	if (free_garr)
+		g_array_free(garr, TRUE);
+}
+
+static void paste_insert_edit(void)
+{
+	unichar *arr;
+	unsigned int i;
+
+	if (paste_join_multiline)
+		paste_buffer_join_lines(paste_buffer);
+
+	arr = &g_array_index(paste_buffer, unichar, 0);
+	for (i = 0; i < paste_buffer->len; i++) {
+		if (isnewline(arr[i])) {
+			gui_entry_insert_char(active_entry, '\\');
+			gui_entry_insert_char(active_entry, 'n');
+		} else if (arr[i] == 9) {
+			gui_entry_insert_char(active_entry, '\\');
+			gui_entry_insert_char(active_entry, 't');
+		} else if (arr[i] == 27) {
+			gui_entry_insert_char(active_entry, '\\');
+			gui_entry_insert_char(active_entry, 'e');
+		} else if (arr[i] == '\\') {
+			gui_entry_insert_char(active_entry, '\\');
+			gui_entry_insert_char(active_entry, '\\');
+		} else {
+			gui_entry_insert_char(active_entry, arr[i]);
+		}
+	}
 }
 
 static void insert_paste_prompt(void)
@@ -729,6 +871,17 @@ static gboolean paste_timeout(gpointer data)
 	int split_lines;
 	paste_was_bracketed_mode = paste_bracketed_mode;
 
+	if (paste_ignore_first_nl && paste_line_count == 1) {
+		unichar last_char;
+
+		last_char = g_array_index(paste_buffer, unichar, paste_buffer->len - 1);
+
+		if (isnewline(last_char)) {
+			g_array_set_size(paste_buffer, paste_buffer->len - 1);
+			paste_line_count--;
+		}
+	}
+
 	/* number of lines after splitting extra-long messages */
 	split_lines = paste_buffer->len / LINE_SPLIT_LIMIT;
 
@@ -747,7 +900,7 @@ static gboolean paste_timeout(gpointer data)
 				active_win->active != NULL)
 		insert_paste_prompt();
 	else
-		paste_flush(TRUE);
+		paste_flush(paste_send);
 	paste_timeout_id = -1;
 	return FALSE;
 }
@@ -777,12 +930,14 @@ static void paste_bracketed_end(int i, gboolean rest)
 	}
 
 	/* decide what to do with the buffer */
+	if (paste_timeout_id != -1)
+		g_source_remove(paste_timeout_id);
 	paste_timeout(NULL);
 
 	paste_bracketed_mode = FALSE;
 }
 
-static void paste_bracketed_middle()
+static void paste_bracketed_middle(void)
 {
 	int i;
 	int marklen = G_N_ELEMENTS(bp_end);
@@ -830,8 +985,10 @@ static void sig_input(void)
 		term_gets(buffer, &line_count);
 		key = g_array_index(buffer, unichar, 0);
 		/* Either Ctrl-k or Ctrl-c is pressed */
-		if (key == 11 || key == 3)
-			paste_flush(key == 11);
+		if (key < 32 && key != 13 /* CR */ && key != 10 /* LF */ && key != 27 /* Esc */) {
+			key_pressed(keyboard, "paste");
+			signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
+		}
 		g_array_free(buffer, TRUE);
 	} else {
 		term_gets(paste_buffer, &paste_line_count);
@@ -869,7 +1026,47 @@ static void sig_input(void)
 
 static void key_paste_start(void)
 {
-	paste_bracketed_mode = TRUE;
+	if (paste_use_bracketed_mode) {
+		paste_bracketed_mode = TRUE;
+		if (paste_timeout_id != -1)
+			g_source_remove(paste_timeout_id);
+		paste_timeout_id = g_timeout_add(BRACKETED_PASTE_TIMEOUT, paste_timeout, NULL);
+	}
+}
+
+static void key_paste_cancel(void)
+{
+	if (paste_prompt) {
+		paste_flush(NULL);
+	}
+}
+
+static void key_paste_print(void)
+{
+	if (paste_prompt) {
+		paste_print();
+	}
+}
+
+static void key_paste_send(void)
+{
+	if (paste_prompt) {
+		paste_flush(paste_send);
+	}
+}
+
+static void key_paste_edit(void)
+{
+	if (paste_prompt) {
+		paste_flush(paste_insert_edit);
+	}
+}
+
+static void key_paste_event(const char *arg)
+{
+	if (paste_prompt) {
+		paste_event(arg);
+	}
 }
 
 time_t get_idle_time(void)
@@ -1131,11 +1328,14 @@ static void setup_changed(void)
 
 	paste_verify_line_count = settings_get_int("paste_verify_line_count");
 	paste_join_multiline = settings_get_bool("paste_join_multiline");
+	paste_ignore_first_nl = settings_get_bool("paste_ignore_first_nl");
 	paste_use_bracketed_mode = settings_get_bool("paste_use_bracketed_mode");
 
 	term_set_appkey_mode(settings_get_bool("term_appkey_mode"));
 	/* Enable the bracketed paste mode on demand */
 	term_set_bracketed_paste_mode(paste_use_bracketed_mode);
+	if (!paste_use_bracketed_mode)
+		paste_bracketed_mode = FALSE;
 }
 
 void gui_readline_init(void)
@@ -1164,7 +1364,8 @@ void gui_readline_init(void)
 	   keycodes. this must be larger to allow them to work. */
 	settings_add_int("misc", "paste_verify_line_count", 5);
 	settings_add_bool("misc", "paste_join_multiline", TRUE);
-        setup_changed();
+	settings_add_bool("misc", "paste_ignore_first_nl", FALSE);
+	setup_changed();
 
 	keyboard = keyboard_create(NULL);
         key_configure_freeze();
@@ -1235,7 +1436,13 @@ void gui_readline_init(void)
 
 	key_bind("key", NULL, "meta-O-M", "return", (SIGNAL_FUNC) key_combo);
 
-	key_bind("paste_start", "Bracketed paste start", "meta2-200~", "paste_start", (SIGNAL_FUNC) key_paste_start);
+	/* clang-format off */
+	key_bind("paste_start", "Bracketed paste start", "^[[200~", "paste_start", (SIGNAL_FUNC) key_paste_start);
+	key_bind("paste_cancel", "Cancel paste", "paste-^C", NULL, (SIGNAL_FUNC) key_paste_cancel);
+	key_bind("paste_print", "Print paste to screen", "paste-^P", NULL, (SIGNAL_FUNC) key_paste_print);
+	key_bind("paste_send", "Send paste to target", "paste-^K", NULL, (SIGNAL_FUNC) key_paste_send);
+	key_bind("paste_edit", "Insert paste to input line", "paste-^E", NULL, (SIGNAL_FUNC) key_paste_edit);
+	key_bind("paste_event", "Send paste to event", "paste-^U", NULL, (SIGNAL_FUNC) key_paste_event);
 
 	/* cursor movement */
 	key_bind("backward_character", "Move the cursor a character backward", "left", NULL, (SIGNAL_FUNC) key_backward_character);
@@ -1307,8 +1514,9 @@ void gui_readline_init(void)
         /* inserting special input characters to line.. */
 	key_bind("escape_char", "Insert the next character exactly as-is to input line", NULL, NULL, (SIGNAL_FUNC) key_escape);
 	key_bind("insert_text", "Append text to line", NULL, NULL, (SIGNAL_FUNC) key_insert_text);
+	/* clang-format on */
 
-        /* autoreplaces */
+	/* autoreplaces */
 	key_bind("multi", NULL, "return", "check_replaces;send_line", NULL);
 	key_bind("multi", NULL, "space", "check_replaces;insert_text  ", NULL);
 
@@ -1338,6 +1546,11 @@ void gui_readline_deinit(void)
         key_configure_freeze();
 
 	key_unbind("paste_start", (SIGNAL_FUNC) key_paste_start);
+	key_unbind("paste_cancel", (SIGNAL_FUNC) key_paste_cancel);
+	key_unbind("paste_print", (SIGNAL_FUNC) key_paste_print);
+	key_unbind("paste_send", (SIGNAL_FUNC) key_paste_send);
+	key_unbind("paste_edit", (SIGNAL_FUNC) key_paste_edit);
+	key_unbind("paste_event", (SIGNAL_FUNC) key_paste_event);
 
 	key_unbind("backward_character", (SIGNAL_FUNC) key_backward_character);
 	key_unbind("forward_character", (SIGNAL_FUNC) key_forward_character);

@@ -712,37 +712,12 @@ void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 	}
 }
 
-static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
+void irc_server_send_and_redirect(IRC_SERVER_REC *server, GString *str, REDIRECT_REC *redirect)
 {
-	REDIRECT_REC *redirect;
-        GSList *link;
-	GString *str;
-	long usecs;
-	char *cmd;
 	int crlf;
 
-	if (!IS_IRC_SERVER(server))
-		return 0;
-
-	if (server->cmdcount == 0 && server->cmdqueue == NULL)
-		return 0;
-
-	if (now < server->wait_cmd)
-		return 1;
-
-	usecs = (now - server->last_cmd) / G_TIME_SPAN_MILLISECOND;
-	if (usecs < server->cmd_queue_speed)
-		return 1;
-
-	server->cmdcount--;
-	if (server->cmdqueue == NULL) return 1;
-
-        /* get command */
-	cmd = server->cmdqueue->data;
-        redirect = server->cmdqueue->next->data;
-
-	/* send command */
-	str = g_string_new(cmd);
+	g_return_if_fail(server != NULL);
+	g_return_if_fail(str != NULL);
 
 	if (str->len > 2 && str->str[str->len - 2] == '\r')
 		crlf = 2;
@@ -769,6 +744,40 @@ static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
 		rawlog_output(server->rawlog, str->str);
 		server_redirect_command(server, str->str, redirect);
 	}
+}
+
+static int server_cmd_timeout(IRC_SERVER_REC *server, gint64 now)
+{
+	REDIRECT_REC *redirect;
+	GSList *link;
+	GString *str;
+	long usecs;
+	char *cmd;
+
+	if (!IS_IRC_SERVER(server))
+		return 0;
+
+	if (server->cmdcount == 0 && server->cmdqueue == NULL)
+		return 0;
+
+	if (now < server->wait_cmd)
+		return 1;
+
+	usecs = (now - server->last_cmd) / G_TIME_SPAN_MILLISECOND;
+	if (usecs < server->cmd_queue_speed)
+		return 1;
+
+	server->cmdcount--;
+	if (server->cmdqueue == NULL)
+		return 1;
+
+	/* get command */
+	cmd = server->cmdqueue->data;
+	redirect = server->cmdqueue->next->data;
+
+	/* send command */
+	str = g_string_new(cmd);
+	irc_server_send_and_redirect(server, str, redirect);
 	g_string_free(str, TRUE);
 
 	/* remove from queue */
