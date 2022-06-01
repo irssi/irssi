@@ -96,6 +96,7 @@ GArray *g_array_copy(GArray *array)
 	elt_size = g_array_get_element_size(array);
 	out = g_array_sized_new(FALSE, FALSE, elt_size, array->len);
 	memcpy(out->data, array->data, array->len * elt_size);
+	out->len = array->len;
 
 	return out;
 }
