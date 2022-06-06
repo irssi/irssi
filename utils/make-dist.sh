@@ -57,8 +57,8 @@ cat <<SETUP_CFG >setup.cfg
 [metadata]
 name = $name
 version = $version
-url = https://ailin-nemui.github.io/irssi/
-maintainer = Ailin Nemui
+url = https://irssi.org/
+maintainer = The Irssi team
 maintainer_email = @
 license = GNU General Public License v2 or later (GPLv2+)
 
