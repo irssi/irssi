@@ -1,4 +1,5 @@
-v1.4.0 2022-xx-xx The Irssi team <staff@irssi.org>
+v1.4.1 2022-06-12 The Irssi team <staff@irssi.org>
+	! Note: botti no longer compiles; get in touch if you use it
 	* Format the output of /QUOTE HELP (#1371, an#82). By Val
 	  Lorentz. Add /SHELP as default alias (an#83)
 	+ GLib log message filter: /SET glib_log_domains (an#50,
@@ -6,7 +7,7 @@ v1.4.0 2022-xx-xx The Irssi team <staff@irssi.org>
 	+ An option to clear the cutbuffer:
 	  /SET empty_kill_clears_cutbuffer (an#58). By Mikael
 	  Magnusson
-	+ Scriptable pastebin (an#60)
+	+ Scriptable pastebin (an#60, an#88)
 	+ Configurable actlist separator: /SET actlist_separator
 	  (#1364, an#61)
 	- Fix window left/right not skipping visible windows
