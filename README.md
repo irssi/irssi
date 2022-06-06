@@ -11,7 +11,7 @@ there are third party [ICB](https://github.com/jperkin/irssi-icb),
 [Quassel](https://github.com/phhusson/quassel-irssi) protocol modules
 available.
 
-![irssi](https://user-images.githubusercontent.com/5665186/154820868-50c35841-04f4-4f4c-8df9-dd5aa4bbcde8.png)
+![irssi](https://user-images.githubusercontent.com/5665186/32180643-cf127f60-bd92-11e7-8aa2-882313ce1d8e.png)
 
 ## [Download information](https://ailin-nemui.github.io/irssi/Getting.html)
 

@@ -1,6 +1,7 @@
-v1.5-head-an 2022-xx-xx  Ailin Nemui <Nei>
+v1.5-head-an 2022-xx-xx  The Irssi team <staff@irssi.org>
 
-v1.4.0-an 2022-05-31  Ailin Nemui <Nei>
+v1.4.1 2022-06-12 The Irssi team <staff@irssi.org>
+	! Note: botti no longer compiles; get in touch if you use it
 	* Format the output of /QUOTE HELP (#1371, an#82). By Val
 	  Lorentz. Add /SHELP as default alias (an#83)
 	+ GLib log message filter: /SET glib_log_domains (an#50,
@@ -8,7 +9,7 @@ v1.4.0-an 2022-05-31  Ailin Nemui <Nei>
 	+ An option to clear the cutbuffer:
 	  /SET empty_kill_clears_cutbuffer (an#58). By Mikael
 	  Magnusson
-	+ Scriptable pastebin (an#60)
+	+ Scriptable pastebin (an#60, an#88)
 	+ Configurable actlist separator: /SET actlist_separator
 	  (#1364, an#61)
 	- Fix window left/right not skipping visible windows
@@ -20,18 +21,15 @@ v1.4.0-an 2022-05-31  Ailin Nemui <Nei>
 	- Fix memory leak in /IGNORE (#1373, an#84). Found by Jookia
 	- Misc fixes (an#45, an#67, an#70, #1368, an#77)
 
-v1.3.2-an 2022-01-14  Ailin Nemui <Nei>
 	- CHANTYPES take precedence over (missing) STATUSMSG in /join
           (#1358, an#54)
 	- Fix crash in Perl's $view->set_bookmark (freebsd#254237,
           an#56)
 
-v1.3.1-an 2021-12-17  Ailin Nemui <Nei>
 	- Minor help fixes (an#51, an#52)
 	- Fix regression where own channel status was forgotten after
           /UPGRADE (#1357, an#53)
 
-v1.3.0-an 2021-11-11  Ailin Nemui <Nei>
 	* /SET resolve_reverse_lookup setting was removed (#1034,
           #1135)
 	* Irssi will try to connect on IPv4 if IPv6 connection failed
