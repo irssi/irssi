@@ -58,6 +58,9 @@ if fs.exists('config.status') or fs.exists('irssi-version.h') or fs.exists('defa
   error('this tree has been configured with autotools, cannot proceed')
 endif
 
+UNSET = '=INVALID='
+UNSET_ARR = [UNSET]
+
 chat_modules = ['irc']
 
 run_command('mkdir', meson.current_build_dir() / incdir, check : false)
@@ -334,8 +337,8 @@ if want_perl
   perl_rpath = ''
 
   #### ccopts ####
-  perl_ccopts = meson.get_cross_property('perl_ccopts', false)
-  if perl_ccopts == false
+  perl_ccopts = meson.get_cross_property('perl_ccopts', UNSET_ARR)
+  if perl_ccopts == UNSET_ARR
     res = run_command(cross_perl, '-MExtUtils::Embed', '-e', 'ccopts', check : true)
     perl_ccopts = res.stdout().strip().split()
   endif
@@ -348,8 +351,8 @@ if want_perl
   perl_cflags += cc.get_supported_arguments('-fPIC')
 
   #### ldopts ####
-  perl_ldopts = meson.get_cross_property('perl_ldopts', false)
-  if perl_ldopts == false
+  perl_ldopts = meson.get_cross_property('perl_ldopts', UNSET_ARR)
+  if perl_ldopts == UNSET_ARR
     res = run_command(cross_perl, '-MExtUtils::Embed', '-e', 'ldopts', check : true)
     perl_ldopts = res.stdout().strip().split()
   endif
@@ -365,8 +368,8 @@ if want_perl
     endif
   endforeach
 
-  perl_version = meson.get_cross_property('perl_version', false)
-  if perl_version == false
+  perl_version = meson.get_cross_property('perl_version', UNSET)
+  if perl_version == UNSET
     perl_version = run_command(cross_perl, '-V::version:', check : true).stdout().split('\'')[1]
   endif
   perl_dep = declare_dependency(compile_args : perl_cflags, link_args : perl_ldflags,
@@ -389,8 +392,8 @@ int main()
       warning('error linking with perl libraries')
     endif
   else
-    xsubpp_file_c = meson.get_cross_property('perl_xsubpp', false)
-    if xsubpp_file_c == false
+    xsubpp_file_c = meson.get_cross_property('perl_xsubpp', UNSET)
+    if xsubpp_file_c == UNSET
       xsubpp_file_c = run_command(build_perl, '-MExtUtils::ParseXS', '-Eprint $INC{"ExtUtils/ParseXS.pm"} =~ s{ParseXS\\.pm$}{xsubpp}r', check : true).stdout()
     endif
     xsubpp = generator(build_perl,
@@ -418,13 +421,13 @@ int main()
       set_perl_use_lib = false
       perl_library_dir = with_perl_lib + ' default'
       if with_perl_lib in ['site', 'vendor']
-        perlmoddir = meson.get_cross_property('perl_install' + with_perl_lib + 'arch', false)
-        if perlmoddir == false
+        perlmoddir = meson.get_cross_property('perl_install' + with_perl_lib + 'arch', UNSET)
+        if perlmoddir == UNSET
           perlmoddir = run_command(cross_perl, '-V::install' + with_perl_lib + 'arch:', check : true).stdout().split('\'')[1]
         endif
       elif with_perl_lib == 'module'
-        perl_archname = meson.get_cross_property('perl_archname', false)
-        if perl_archname == false
+        perl_archname = meson.get_cross_property('perl_archname', UNSET)
+        if perl_archname == UNSET
           perl_archname = run_command(cross_perl, '-V::archname:', check : true).stdout().split('\'')[1]
         endif
         perlmoddir = perl_install_base / 'lib' / 'perl5' / perl_archname
@@ -444,8 +447,8 @@ int main()
 
     perl_use_lib = get_option('prefix') / perlmoddir
     if set_perl_use_lib
-      perl_inc = meson.get_cross_property('perl_inc', false)
-      if perl_inc == false
+      perl_inc = meson.get_cross_property('perl_inc', UNSET_ARR)
+      if perl_inc == UNSET_ARR
         set_perl_use_lib = run_command(cross_perl, '-e', 'exit ! grep $_ eq $ARGV[0], grep /^\\//, @INC', perl_use_lib, check : false).returncode() != 0
       else
         set_perl_use_lib = not perl_inc.contains(perl_use_lib)
