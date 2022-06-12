@@ -1464,8 +1464,10 @@ void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view,
 
 	if (view->window != window) {
 		view->window = window;
-                if (window != NULL)
+		if (window != NULL) {
+			textbuffer_view_resize(view, view->width, view->height);
 			view->dirty = TRUE;
+		}
 	}
 }
 
