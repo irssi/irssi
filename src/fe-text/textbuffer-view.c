@@ -419,7 +419,7 @@ static void view_remove_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 
 	cache = g_hash_table_lookup(view->cache->line_cache, line);
 	if (cache != NULL) {
-                g_free(cache);
+		line_cache_destroy(NULL, cache);
 		g_hash_table_remove(view->cache->line_cache, line);
 	}
 }
