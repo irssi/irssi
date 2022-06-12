@@ -1494,11 +1494,17 @@ static int line_cache_check_remove(void *key, LINE_CACHE_REC *cache,
 static int sig_check_linecache(void)
 {
 	GSList *tmp, *caches;
-        time_t now;
+	time_t now;
 
-        now = time(NULL); caches = NULL;
+	now = time(NULL);
+	caches = NULL;
 	for (tmp = views; tmp != NULL; tmp = tmp->next) {
 		TEXT_BUFFER_VIEW_REC *rec = tmp->data;
+
+		if (rec->window != NULL) {
+			/* keep visible lines mapped */
+			view_get_lines_height(rec, rec->startline, rec->subline, NULL);
+		}
 
 		if (g_slist_find(caches, rec->cache) != NULL)
 			continue;
@@ -1509,7 +1515,7 @@ static int sig_check_linecache(void)
 					    &now);
 	}
 
-        g_slist_free(caches);
+	g_slist_free(caches);
 	return 1;
 }
 
