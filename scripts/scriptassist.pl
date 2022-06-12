@@ -5,7 +5,7 @@
 
 use strict;
 
-our $VERSION = '2020042700';
+our $VERSION = '2022053100';
 our %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -30,7 +30,7 @@ $have_gpg = 0;
 eval "use GnuPG qw(:algo :trust);";
 $have_gpg = 1 if not ($@);
 
-my $irssi_version = qv(Irssi::parse_special('v$J') =~ s/-.*//r);
+my $irssi_version = qv('v'.Irssi::parse_special('$J') =~ s/[^.\d].*//r);
 
 sub show_help {
     my $help = "scriptassist $VERSION
