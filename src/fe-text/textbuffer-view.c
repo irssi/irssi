@@ -1023,13 +1023,17 @@ void textbuffer_view_clear(TEXT_BUFFER_VIEW_REC *view)
 /* Scroll the view up/down */
 void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines)
 {
-	int count;
+	int count, ypos;
 
-        g_return_if_fail(view != NULL);
+	g_return_if_fail(view != NULL);
 
-	count = view_scroll(view, &view->startline, &view->subline,
-			    lines, TRUE);
-	view->ypos += lines < 0 ? count : -count;
+	count = view_scroll(view, &view->startline, &view->subline, lines, TRUE);
+
+	ypos = view->ypos + (lines < 0 ? count : -count);
+	textbuffer_view_init_ypos(view);
+	if (ypos != view->ypos)
+		textbuffer_view_resize(view, view->width, view->height);
+
 	view->bottom = view_is_bottom(view);
         if (view->bottom) view->more_text = FALSE;
 
