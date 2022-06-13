@@ -71,7 +71,7 @@ static char *force_channel_name(IRC_SERVER_REC *server, const char *name)
 		return g_strdup(name);
 
 	chantypes = g_hash_table_lookup(server->isupport, "chantypes");
-	if (chantypes == NULL || *chantypes == '\0')
+	if (chantypes == NULL || *chantypes == '\0' || strchr(chantypes, '#') != NULL)
 		chantypes = "#";
 
 	return g_strdup_printf("%c%s", *chantypes, name);
