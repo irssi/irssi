@@ -168,7 +168,7 @@ message('*** Or alternatively install your distribution\'s package')
 message('*** On Debian: sudo apt-get install libglib2.0-dev')
 message('*** On Redhat: dnf install glib2-devel')
 if not require_glib_internal
-  glib_dep = dependency('glib-2.0', version : '>=2.32', required : not want_glib_internal, static : want_static_dependency)
+  glib_dep = dependency('glib-2.0', version : '>=2.32', required : not want_glib_internal, static : want_static_dependency, include_type : 'system')
 else
   glib_dep = dependency('', required : false)
 endif
@@ -250,9 +250,9 @@ if not glib_dep.found()
     dependencies : glib_internal_dependencies,
     sources : glib_internal_build_t,
     compile_args : [
-      '-I' + (meson.current_source_dir() / 'subprojects' / glib_internal_version / 'glib'),
-      '-I' + (meson.current_source_dir() / 'subprojects' / glib_internal_version),
-      '-I' + (meson.current_build_dir() / 'build-subprojects' / 'glib' / 'glib'),
+      '-isystem' + (meson.current_source_dir() / 'subprojects' / glib_internal_version / 'glib'),
+      '-isystem' + (meson.current_source_dir() / 'subprojects' / glib_internal_version),
+      '-isystem' + (meson.current_build_dir() / 'build-subprojects' / 'glib' / 'glib'),
     ],
     link_args : [ meson.current_build_dir() / 'build-subprojects' / 'glib' / 'glib' / 'libglib-2.0.a' ],
   )
@@ -265,12 +265,12 @@ if not glib_dep.found()
   gmodule_dep = declare_dependency(sources : glib_internal_build_t,
     dependencies : libdl_dep,
     compile_args : [
-      '-I' + (meson.current_source_dir() / 'subprojects' / glib_internal_version / 'gmodule'),
+      '-isystem' + (meson.current_source_dir() / 'subprojects' / glib_internal_version / 'gmodule'),
     ],
     link_args : [ meson.current_build_dir() / 'build-subprojects' / 'glib' / 'gmodule' / 'libgmodule-2.0.a' ],
   )
 else
-  gmodule_dep = dependency('gmodule-2.0', static : want_static_dependency)
+  gmodule_dep = dependency('gmodule-2.0', static : want_static_dependency, include_type : 'system')
 endif
 dep += glib_dep
 dep += gmodule_dep
@@ -279,7 +279,7 @@ if glib_internal and want_static_dependency and want_fuzzer
   openssl_proj = subproject('openssl', default_options : ['default_library=static', 'asm=disabled'])
   openssl_dep = openssl_proj.get_variable('openssl_dep')
 else
-  openssl_dep = dependency('openssl', static : want_static_dependency)
+  openssl_dep = dependency('openssl', static : want_static_dependency, include_type : 'system')
 endif
 dep += openssl_dep
 
@@ -338,6 +338,9 @@ if want_perl
   endif
   foreach fl : perl_ccopts
     if fl.startswith('-D') or fl.startswith('-U') or fl.startswith('-I') or fl.startswith('-i') or fl.startswith('-f') or fl.startswith('-m')
+      if fl.startswith('-I')
+        fl = '-isystem' + fl.split('-I')[1]
+      endif
       perl_cflags += fl
     endif
   endforeach
@@ -469,8 +472,8 @@ endif
 
 have_otr = false
 if want_otr
-  libgcrypt = dependency('libgcrypt', version : '>=1.2.0', required : require_otr, static : want_static_dependency)
-  libotr = dependency('libotr', version : '>=4.1.0', required : require_otr, static : want_static_dependency)
+  libgcrypt = dependency('libgcrypt', version : '>=1.2.0', required : require_otr, static : want_static_dependency, include_type : 'system')
+  libotr = dependency('libotr', version : '>=4.1.0', required : require_otr, static : want_static_dependency, include_type : 'system')
   if libgcrypt.found() and libotr.found()
     dep += libgcrypt
     dep += libotr
