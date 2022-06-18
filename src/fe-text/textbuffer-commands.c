@@ -393,6 +393,7 @@ static void cmd_scrollback_redraw(void)
 
 	term_refresh_freeze();
 	textbuffer_view_reset_cache(gui->view);
+	textbuffer_view_resize(gui->view, gui->view->width, gui->view->height);
 	gui_window_redraw(active_win);
 	term_refresh_thaw();
 }
