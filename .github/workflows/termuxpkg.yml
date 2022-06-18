@@ -42,11 +42,6 @@ jobs:
           --cross-file $TERMUX_MESON_PERL_CROSS_FILE
           "
 
-          termux_step_post_configure() {
-              # Make build log less noisy.
-              sed -i "s:-I$TERMUX_PREFIX/:-isystem$TERMUX_PREFIX/:g" $TERMUX_PKG_BUILDDIR/build.ninja
-          }
-
           termux_step_pre_configure() {
               LDFLAGS+=" -landroid-glob"
 
