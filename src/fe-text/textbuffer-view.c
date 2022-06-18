@@ -402,10 +402,9 @@ view_update_line_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 	if (rec->count > 1) {
 		for (pos = 0; lines != NULL; pos++) {
-			void *data = lines->data;
+			LINE_CACHE_SUB_REC *data = lines->data;
 
-			memcpy(&rec->lines[pos], data,
-			       sizeof(LINE_CACHE_SUB_REC));
+			memcpy(&rec->lines[pos], data, sizeof(LINE_CACHE_SUB_REC));
 
 			lines = g_slist_remove(lines, data);
 			g_free(data);
@@ -427,7 +426,7 @@ static void view_remove_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 
 	cache = g_hash_table_lookup(view->cache->line_cache, line);
 	if (cache != NULL) {
-                g_free(cache);
+		line_cache_destroy(NULL, cache);
 		g_hash_table_remove(view->cache->line_cache, line);
 	}
 }
@@ -438,7 +437,7 @@ static void view_update_cache(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	view_remove_cache(view, line, update_counter);
 
 	if (view->buffer->cur_line == line)
-		view->cache->last_linecount = view_get_linecount(view, line);
+		view_get_linecount(view, line);
 }
 
 void textbuffer_view_reset_cache(TEXT_BUFFER_VIEW_REC *view)
@@ -467,6 +466,7 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	unichar chr;
 	int xpos, color, drawcount, first, need_move, need_clrtoeol, char_width;
 	unsigned int fg24, bg24;
+	fg24 = bg24 = UINT_MAX;
 
 	if (view->dirty) /* don't bother drawing anything - redraw is coming */
 		return 0;
@@ -767,7 +767,6 @@ static void view_unregister_indent_func(TEXT_BUFFER_VIEW_REC *view,
 	/* recreate cache so it won't contain references
 	   to the indent function */
 	textbuffer_view_reset_cache(view);
-	view->cache = textbuffer_cache_get(view->siblings, view->width);
 }
 
 void textbuffer_views_unregister_indent_func(INDENT_FUNC indent_func)
@@ -1033,13 +1032,17 @@ void textbuffer_view_clear(TEXT_BUFFER_VIEW_REC *view)
 /* Scroll the view up/down */
 void textbuffer_view_scroll(TEXT_BUFFER_VIEW_REC *view, int lines)
 {
-	int count;
+	int count, ypos;
 
-        g_return_if_fail(view != NULL);
+	g_return_if_fail(view != NULL);
 
-	count = view_scroll(view, &view->startline, &view->subline,
-			    lines, TRUE);
-	view->ypos += lines < 0 ? count : -count;
+	count = view_scroll(view, &view->startline, &view->subline, lines, TRUE);
+
+	ypos = view->ypos + (lines < 0 ? count : -count);
+	textbuffer_view_init_ypos(view);
+	if (ypos != view->ypos)
+		textbuffer_view_resize(view, view->width, view->height);
+
 	view->bottom = view_is_bottom(view);
         if (view->bottom) view->more_text = FALSE;
 
@@ -1079,10 +1082,10 @@ LINE_CACHE_REC *textbuffer_view_get_line_cache(TEXT_BUFFER_VIEW_REC *view,
 	cache = g_hash_table_lookup(view->cache->line_cache, line);
 	if (cache == NULL)
 		cache = view_update_line_cache(view, line);
-        else
+	else
 		cache->last_access = time(NULL);
 
-        return cache;
+	return cache;
 }
 
 static void view_insert_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
@@ -1263,12 +1266,13 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 	view_bookmarks_check(view, line);
 
 	if (view->buffer->cur_line == line) {
-                /* the last line is being removed */
+		/* the last line is being removed */
 		LINE_REC *prevline;
 
-		prevline = view->buffer->first_line == line ? NULL :
-			textbuffer_line_last(view->buffer)->prev;
-		view->cache->last_linecount = prevline == NULL ? 0 :
+		prevline = view->buffer->first_line == line ?
+		               NULL :
+		               textbuffer_line_last(view->buffer)->prev;
+		if (prevline != NULL)
 			view_get_linecount(view, prevline);
 	}
 
@@ -1474,8 +1478,10 @@ void textbuffer_view_set_window(TEXT_BUFFER_VIEW_REC *view,
 
 	if (view->window != window) {
 		view->window = window;
-                if (window != NULL)
+		if (window != NULL) {
+			textbuffer_view_resize(view, view->width, view->height);
 			view->dirty = TRUE;
+		}
 	}
 }
 
@@ -1504,11 +1510,17 @@ static int line_cache_check_remove(void *key, LINE_CACHE_REC *cache,
 static int sig_check_linecache(void)
 {
 	GSList *tmp, *caches;
-        time_t now;
+	time_t now;
 
-        now = time(NULL); caches = NULL;
+	now = time(NULL);
+	caches = NULL;
 	for (tmp = views; tmp != NULL; tmp = tmp->next) {
 		TEXT_BUFFER_VIEW_REC *rec = tmp->data;
+
+		if (rec->window != NULL) {
+			/* keep visible lines mapped */
+			view_get_lines_height(rec, rec->startline, rec->subline, NULL);
+		}
 
 		if (g_slist_find(caches, rec->cache) != NULL)
 			continue;
@@ -1519,7 +1531,7 @@ static int sig_check_linecache(void)
 					    &now);
 	}
 
-        g_slist_free(caches);
+	g_slist_free(caches);
 	return 1;
 }
 
