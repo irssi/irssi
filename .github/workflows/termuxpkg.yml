@@ -18,17 +18,14 @@ jobs:
           path: src.irssi.git
       - name: download termux docker container
         uses: docker://termux/package-builder:latest
-      - name: build perl package
-        run: |
-          ./scripts/run-docker.sh ./build-package.sh -i perl
       - name: create irssi build receipe
         run: |
           mkdir packages/irssi-an
           cat << 'BUILD_SH' > packages/irssi-an/build.sh
-          TERMUX_PKG_HOMEPAGE=https://ailin-nemui.github.io/irssi/
+          TERMUX_PKG_HOMEPAGE=https://irssi.org/
           TERMUX_PKG_DESCRIPTION="Terminal based IRC client"
           TERMUX_PKG_LICENSE="GPL-2.0"
-          TERMUX_PKG_MAINTAINER="@ailin-nemui"
+          TERMUX_PKG_MAINTAINER="@irssi"
           TERMUX_PKG_VERSION=@VERSION@
           TERMUX_PKG_REVISION=@REVISION@
           TERMUX_PKG_SRCURL=file:///home/builder/termux-packages/src.irssi.git
@@ -36,7 +33,7 @@ jobs:
           TERMUX_PKG_DEPENDS="glib, libandroid-glob, libiconv, libotr, ncurses, openssl, perl, utf8proc"
           TERMUX_PKG_BREAKS="irssi"
           TERMUX_PKG_REPLACES="irssi"
-          TERMUX_MESON_PERL_CROSS_FILE=$TERMUX_PKG_TMPDIR/meson-miniperl-cross-$TERMUX_ARCH.txt
+          TERMUX_MESON_PERL_CROSS_FILE=$TERMUX_PKG_TMPDIR/meson-perl-cross-$TERMUX_ARCH.txt
           TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
           -Dfhs-prefix=$TERMUX_PREFIX
           --cross-file $TERMUX_MESON_PERL_CROSS_FILE
@@ -48,15 +45,17 @@ jobs:
               # Make build log less noisy.
               CFLAGS+=" -Wno-compound-token-split-by-macro"
 
-              # Make sure that perl stuff is reinstalled.
-              rm -rf $TERMUX_PREFIX/lib/irssi/perl
-
               local perl_version=$(. $TERMUX_SCRIPTDIR/packages/perl/build.sh; echo $TERMUX_PKG_VERSION)
-              local perl_srcdir=$TERMUX_TOPDIR/perl/src
 
-              cat <<MESON_PERL_CROSS >$TERMUX_MESON_PERL_CROSS_FILE
-          [binaries]
-          perl = ['$perl_srcdir/miniperl', '-I$TERMUX_PREFIX/lib/perl5/$perl_version/${TERMUX_ARCH}-android', '-I$TERMUX_PREFIX/lib/perl5/$perl_version']
+              cat << MESON_PERL_CROSS >$TERMUX_MESON_PERL_CROSS_FILE
+          [properties]
+          perl_version = '$perl_version'
+          perl_ccopts = ['-I$TERMUX_PREFIX/include', '-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64', '-I$TERMUX_PREFIX/lib/perl5/$perl_version/${TERMUX_ARCH}-android/CORE']
+          perl_ldopts = ['-Wl,-E', '-I$TERMUX_PREFIX/include', '-L$TERMUX_PREFIX/lib/perl5/$perl_version/${TERMUX_ARCH}-android/CORE', '-lperl', '-lm', '-ldl']
+          perl_archname = '${TERMUX_ARCH}-android'
+          perl_installsitearch = '$TERMUX_PREFIX/lib/perl5/site_perl/$perl_version/${TERMUX_ARCH}-android'
+          perl_installvendorarch = ''
+          perl_inc = ['$TERMUX_PREFIX/lib/perl5/site_perl/$perl_version/${TERMUX_ARCH}-android', '$TERMUX_PREFIX/lib/perl5/site_perl/$perl_version', '$TERMUX_PREFIX/lib/perl5/$perl_version/${TERMUX_ARCH}-android', '$TERMUX_PREFIX/lib/perl5/$perl_version']
           MESON_PERL_CROSS
           }
 
@@ -68,9 +67,12 @@ jobs:
               -e "s:@REVISION@:$GITHUB_RUN_NUMBER:" \
               packages/irssi-an/build.sh
           git -C src.irssi.git tag v$version
+      - name: prepare output folder
+        run: |
+          install -m a+rwx -d output
       - name: build irssi package
         run: |
-          ./scripts/run-docker.sh ./build-package.sh -I irssi-an
+          sudo ./scripts/run-docker.sh ./build-package.sh -I irssi-an
       - uses: actions/upload-artifact@v2
         with:
           name: irssi-termux-pkg
