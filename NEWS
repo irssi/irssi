@@ -1,4 +1,18 @@
-v1.4.1 2022-06-12 The Irssi team <staff@irssi.org>
+v1.4.2 2022-07-17  The Irssi team <staff@irssi.org>
+	* Add irssimoduledir to irssi-1.pc in the Meson build (#1383,
+          #1378)
+	- Use -isystem includes, limiting warnings to Irssi
+          code. Fixes compilation with Perl 5.36 (#1381,
+          gentoo#851522, #1384)
+	- Fix missing lines when changing dynamic textbuffer contents
+          (#1382, #1387). Reported by externalserver15
+	- Fix Perl cross compilation with Meson 0.60.0 (#1377)
+	- Fix default channel prefix used for /JOIN to default to `#'
+          (#1385, #1388)
+	- Fix crash in /LASTLOG by getting line texts before printing
+          (#1367, #1398)
+
+v1.4.1 2022-06-12  The Irssi team <staff@irssi.org>
 	! Note: botti no longer compiles; get in touch if you use it
 	* Format the output of /QUOTE HELP (#1371, an#82). By Val
 	  Lorentz. Add /SHELP as default alias (an#83)
@@ -306,7 +320,7 @@ v1.4.1 2022-06-12 The Irssi team <staff@irssi.org>
 	  - Run abidiff on pull requests (#1179, #1195)
 	  - Test CI-Fuzz (#1279, #1304, an#17)
 
-v1.2.3 2021-04-11 The Irssi team <staff@irssi.org>
+v1.2.3 2021-04-11  The Irssi team <staff@irssi.org>
 	- Fix the compilation of utf8proc (#1021)
 	- Fix wrong call to free. By Zero King (#1076)
 	- Fix a colour reset in true colour themes when encountering
@@ -344,13 +358,13 @@ v1.2.3 2021-04-11 The Irssi team <staff@irssi.org>
 	- Fix memory leak when receiving bogus SASL authentication
           data. Found and fixed by Sergey Valentey (#1293)
 
-v1.2.2 2019-08-29 The Irssi team <staff@irssi.org>
+v1.2.2 2019-08-29  The Irssi team <staff@irssi.org>
 	- Fix a use after free issue when receiving IRCv3 CAP
           information from the server (GL#34, GL!35)
 	- Fix a crash during startup when windows weren't fully
           initialised yet (#1114, bdo#935813)
 
-v1.2.1 2019-06-29 The Irssi team <staff@irssi.org>
+v1.2.1 2019-06-29  The Irssi team <staff@irssi.org>
 	! Contains all changes from 1.1.3
 	- Fix a test on big endian machines (#1014)
 	- Fix the compile time conditionality of wcwidth
@@ -361,17 +375,17 @@ v1.2.1 2019-06-29 The Irssi team <staff@irssi.org>
           encoding) in the input prompt was broken (#1018,
           #1057). Initial patch by Артём Курашов
 
-v1.1.3 2019-06-29 The Irssi team <staff@irssi.org>
+v1.1.3 2019-06-29  The Irssi team <staff@irssi.org>
 	! Contains all changes from 1.0.8
 	- Fix regression of #779 where autolog_ignore_targets would
           not matching itemless windows anymore (#1012, #1013)
 
-v1.0.8 2019-06-29 The Irssi team <staff@irssi.org>
+v1.0.8 2019-06-29  The Irssi team <staff@irssi.org>
 	- Fix a use after free issue when sending the SASL login on
           (automatic and manual) reconnects (#1055, #1058). Reported
           by ilbelkyr
 
-v1.2.0 2019-02-11 The Irssi team <staff@irssi.org>
+v1.2.0 2019-02-11  The Irssi team <staff@irssi.org>
 	! Contains all changes from 1.1.2
 	* Improved the /STATUSBAR commands (#858)
 	* /SET no longer shows `=' between setting and value (#886)
@@ -459,7 +473,7 @@ v1.2.0 2019-02-11 The Irssi team <staff@irssi.org>
 	- Misc fixes (#840, #839, #843, #953, #962). Tests (#806,
           #875, #905, #964, #1011). Fuzzing (#929).
 
-v1.1.2 2019-01-09 The Irssi team <staff@irssi.org>
+v1.1.2 2019-01-09  The Irssi team <staff@irssi.org>
 	- Fix the resetting of window hiddenlevel (#861)
 	- Fix clearing of hidelevel in layout (#951)
 	- Fix accessing unallocated text when checking entry position
@@ -478,14 +492,14 @@ v1.1.2 2019-01-09 The Irssi team <staff@irssi.org>
 	- Fix Perl detection on MacOS. By Dominyk Tiller (#927)
 	- Misc fixes. By Jaroslav Škarvada (#981, #982)
 
-v1.1.1 2018-02-15 The Irssi team <staff@irssi.org>
+v1.1.1 2018-02-15  The Irssi team <staff@irssi.org>
 	! Contains all changes from 1.0.7
 	- Restore compatibility with OpenSSL < 1.0.2 (#820, #831)
 	- Fix test compilation on some platforms (#815, #816)
 	- Fix portability and backwards compatibility of test runner
           (#818, #845)
 
-v1.0.7 2018-02-15 The Irssi team <staff@irssi.org>
+v1.0.7 2018-02-15  The Irssi team <staff@irssi.org>
 	- Prevent use after free error during the execution of some
 	  commands. Found by Joseph Bisch (GL#17, GL!24).
 	- Revert netsplit print optimisation due to crashes (#465, #809,
@@ -504,7 +518,7 @@ v1.0.7 2018-02-15 The Irssi team <staff@irssi.org>
           resize (GL#25, GL#29, #836).
 	- Minor help correction. By William Jackson (#834).
 
-v1.1.0 2018-01-15 The Irssi team <staff@irssi.org>
+v1.1.0 2018-01-15  The Irssi team <staff@irssi.org>
 	! Warning. Irssi is broken and will crash with OpenSSL < 1.0.2
           due to openssl/openssl commit
           5b4b9ce976fce09a7a92e2f25b91a1635cb840fe
@@ -586,7 +600,7 @@ v1.1.0 2018-01-15 The Irssi team <staff@irssi.org>
 	  #738)
 	- Fix space issue in glib-2.0.m4 (#621)
 
-v1.0.6 2018-01-07 The Irssi team <staff@irssi.org>
+v1.0.6 2018-01-07  The Irssi team <staff@irssi.org>
 	! Note: Code and aliases using `$($'-like constructs are no
           longer supported due to issue GL#18. Sorry about the
           inconvenience.
