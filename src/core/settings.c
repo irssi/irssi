@@ -673,18 +673,6 @@ GSList *settings_get_sorted(void)
 	return list;
 }
 
-void sig_term(int n)
-{
-	/* if we get SIGTERM after this, just die instead of coming back here. */
-	signal(SIGTERM, SIG_DFL);
-
-	/* quit from all servers too.. */
-	signal_emit("command quit", 1, "");
-
-	/* and die */
-	raise(SIGTERM);
-}
-
 /* Yes, this is my own stupid checksum generator, some "real" algorithm
    would be nice but would just take more space without much real benefit */
 static unsigned int file_checksum(const char *fname)
@@ -805,8 +793,6 @@ static void init_configfile(void)
 		signal_emit("gui dialog", 2, "error", str);
                 g_free(str);
 	}
-
-	signal(SIGTERM, sig_term);
 }
 
 int settings_reread(const char *fname)

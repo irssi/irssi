@@ -331,6 +331,11 @@ int main(int argc, char **argv)
 	/* Does the same as g_main_run(main_loop), except we
 	   can call our dirty-checker after each iteration */
 	while (!quitting) {
+		if (sigterm_received) {
+			sigterm_received = FALSE;
+			signal_emit("gui exit", 0);
+		}
+
 		if (sighup_received) {
 			sighup_received = FALSE;
 

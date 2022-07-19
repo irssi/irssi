@@ -14,6 +14,7 @@
 extern int irssi_gui;
 extern int irssi_init_finished; /* TRUE after "irssi init finished" signal is sent */
 extern int sighup_received; /* TRUE after received SIGHUP. */
+extern int sigterm_received; /* TRUE after received SIGTERM. */
 extern time_t client_start_time;
 
 void core_preinit(const char *path);
