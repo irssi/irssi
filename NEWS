@@ -114,7 +114,7 @@ v1.4.1 2022-06-12  The Irssi team <staff@irssi.org>
 
 	* Channel sync requests (WHO, MODE) are now sent "later" than
           user commands. This should improve responsiveness to user
-          commands in the autojoin phase (an#26, an#32, an#33)
+          commands in the autojoin phase (#1300, an#26, an#32, an#33)
 	* Irssi is now using full paths in #include directives and
           consequently does not add all directories to the include
           path anymore (#1040)
