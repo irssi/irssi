@@ -448,6 +448,7 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 {
 	SERVER_SETUP_REC *rec;
 	CHATNET_REC *chatnetrec;
+	CHAT_PROTOCOL_REC *proto;
 	char *server, *chatnet, *family;
 	int port;
 	char *value = NULL;
@@ -468,27 +469,40 @@ static SERVER_SETUP_REC *server_setup_read(CONFIG_NODE *node)
 
 	rec = NULL;
 
-	chatnetrec = chatnet == NULL ? NULL : chatnet_find(chatnet);
-	if (chatnetrec == NULL && chatnet != NULL) {
-                /* chat network not found, create it. */
-		if (chatnet_find_unavailable(chatnet)) {
+	if (chatnet != NULL) {
+		chatnetrec = chatnet_find(chatnet);
+		if (chatnetrec != NULL) {
+			proto = CHAT_PROTOCOL(chatnetrec);
+		} else {
+			/* chat network not found, create it. */
+			if (chatnet_find_unavailable(chatnet)) {
+				/* no protocols loaded, skip loading servers */
+				return NULL;
+			}
+			proto = chat_protocol_get_default();
+			chatnetrec = proto->create_chatnet();
+			chatnetrec->chat_type = chat_protocol_get_default()->id;
+			chatnetrec->name = g_strdup(chatnet);
+			chatnet_create(chatnetrec);
+		}
+	} else {
+		chatnetrec = NULL;
+		proto = chat_protocol_get_default();
+		if (proto == NULL) {
 			/* no protocols loaded, skip loading servers */
 			return NULL;
 		}
-		chatnetrec = chat_protocol_get_default()->create_chatnet();
-		chatnetrec->chat_type = chat_protocol_get_default()->id;
-		chatnetrec->name = g_strdup(chatnet);
-		chatnet_create(chatnetrec);
 	}
 
 	family = config_node_get_str(node, "family", "");
 
-	rec = CHAT_PROTOCOL(chatnetrec)->create_server_setup();
+	rec = proto->create_server_setup();
 	rec->type = module_get_uniq_id("SERVER SETUP", 0);
-        rec->chat_type = CHAT_PROTOCOL(chatnetrec)->id;
+	rec->chat_type = proto->id;
 	rec->chatnet = chatnetrec == NULL ? NULL : g_strdup(chatnetrec->name);
-	rec->family = g_ascii_strcasecmp(family, "inet6") == 0 ? AF_INET6 :
-		(g_ascii_strcasecmp(family, "inet") == 0 ? AF_INET : 0);
+	rec->family = g_ascii_strcasecmp(family, "inet6") == 0 ?
+	                  AF_INET6 :
+	                  (g_ascii_strcasecmp(family, "inet") == 0 ? AF_INET : 0);
 	rec->address = g_strdup(server);
 	rec->password = g_strdup(config_node_get_str(node, "password", NULL));
 
