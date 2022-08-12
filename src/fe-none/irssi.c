@@ -29,10 +29,11 @@
 static GMainLoop *main_loop;
 static char *autoload_module;
 static int reload;
+static int quitting;
 
 static void sig_exit(void)
 {
-	g_main_loop_quit(main_loop);
+	quitting = TRUE;
 }
 
 static void sig_reload(void)
@@ -103,7 +104,14 @@ int main(int argc, char **argv)
 		reload = FALSE;
 		module_load(autoload_module, NULL);
 		main_loop = g_main_loop_new(NULL, TRUE);
-		g_main_loop_run(main_loop);
+		while (!quitting && !reload) {
+			if (sigterm_received) {
+				sigterm_received = FALSE;
+				signal_emit("gui exit", 0);
+			}
+
+			g_main_context_iteration(NULL, TRUE);
+		}
 		g_main_loop_unref(main_loop);
 	}
 	while (reload);

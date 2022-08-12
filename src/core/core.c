@@ -68,6 +68,7 @@ void wcwidth_wrapper_deinit(void);
 int irssi_gui;
 int irssi_init_finished;
 int sighup_received;
+int sigterm_received;
 time_t client_start_time;
 
 static char *irssi_dir, *irssi_config_file;
@@ -87,6 +88,11 @@ const char *get_irssi_config(void)
 static void sig_hup(int signo)
 {
 	sighup_received = TRUE;
+}
+
+static void sig_term(int signo)
+{
+	sigterm_received = TRUE;
 }
 
 static void read_settings(void)
@@ -113,8 +119,15 @@ static void read_settings(void)
 	sigaction(SIGHUP, &act, NULL);
 
 	for (n = 0; n < sizeof(signals)/sizeof(signals[0]); n++) {
-		act.sa_handler = find_substr(ignores, signames[n]) ?
-			SIG_IGN : SIG_DFL;
+		if (find_substr(ignores, signames[n])) {
+			act.sa_handler = SIG_IGN;
+		} else {
+			/* set default handlers */
+			if (signals[n] == SIGTERM)
+				act.sa_handler = sig_term;
+			else
+				act.sa_handler = SIG_DFL;
+		}
 		sigaction(signals[n], &act, NULL);
 	}
 
