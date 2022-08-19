@@ -492,7 +492,7 @@ have_capsicum = false
 if want_capsicum
   if cc.has_function('cap_enter', dependencies : cc.find_library('c'))
     libnv = cc.find_library('nv', required : require_capsicum)
-    nvlist_create_found = libnv.found() and cc.has_function('nvlist_create', dependencies : libnv)
+    nvlist_create_found = libnv.found() and cc.has_function('nvlist_create', dependencies : libnv, prefix : '#include <sys/nv.h>')
     if nvlist_create_found
       dep += libnv
       have_capsicum = true
