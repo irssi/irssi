@@ -309,17 +309,7 @@ static void server_init_1(IRC_SERVER_REC *server)
 	server->wait_cmd = g_get_real_time();
 	server->wait_cmd += 120 * G_USEC_PER_SEC;
 
-	if (!conn->no_cap) {
-		signal_emit("server waiting cap ls", 2, server, CAP_LS_VERSION);
-		irc_send_cmd_now(server, "CAP LS " CAP_LS_VERSION);
-		/* to detect non-CAP servers, send this bogus join */
-		/* the : will make INSPIRCD respond with 451 instead of 461, too */
-		irc_send_cmd_now(server, "JOIN :");
-	}
-	if (conn->starttls)
-		irc_server_send_starttls(server);
-	else if (conn->no_cap)
-		server_init_2(server);
+	server_init_2(server);
 }
 
 static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
