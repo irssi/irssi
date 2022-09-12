@@ -28,6 +28,8 @@
     -tls_pinned_pubkey: Pinned public key fingerprint.
     -auto:              Automatically connects to the server on startup.
     -noauto:            Doesn't connect to the server on startup.
+    -cap:               Enable CAPREQ for server.
+    -nocap:             Disable CAPREQ for server.
     -network:           The network the server belongs to.
     -host:              The hostname you would like to connect from.
     -cmdspeed:          Specifies the minimum amount of time, expressed in
