@@ -51,7 +51,7 @@ const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 	return target;
 }
 
-/* SYNTAX: SERVER ADD|MODIFY [-4 | -6] [-tls_cert <cert>] [-tls_pkey <pkey>]
+/* SYNTAX: SERVER ADD|MODIFY [-4 | -6] [-cap | -nocap] [-tls_cert <cert>] [-tls_pkey <pkey>]
                              [-tls_pass <password>] [-tls_verify] [-tls_cafile <cafile>]
                              [-tls_capath <capath>] [-tls_ciphers <list>] [-tls | -notls]
                              [-starttls | -nostarttls | -disallow_starttls | -nodisallow_starttls]
