@@ -114,8 +114,8 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
                    [-tls_verify] [-tls_cafile <cafile>] [-tls_capath <capath>]
                    [-tls_ciphers <list>] [-tls_pinned_cert <fingerprint>]
                    [-tls_pinned_pubkey <fingerprint>] [-!] [-noautosendcmd] [-tls | -notls]
-                   [-starttls | -disallow_starttls] [-noproxy] [-network <network>]
-                   [-host <hostname>] [-rawlog <file>]
+                   [-nocap] [-starttls | -disallow_starttls] [-noproxy]
+                   [-network <network>] [-host <hostname>] [-rawlog <file>]
                    <address>|<chatnet> [<port> [<password> [<nick>]]] */
 /* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_connect(const char *data)
@@ -215,7 +215,7 @@ static void cmd_server(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 		  [-tls_pass <password>] [-tls_verify] [-tls_cafile <cafile>] 
 		  [-tls_capath <capath>]
 		  [-tls_ciphers <list>] [-tls_pinned_cert <fingerprint>] [-tls_pinned_pubkey <fingerprint>]
-		  [-!] [-noautosendcmd]
+		  [-!] [-noautosendcmd] [-nocap]
 		  [-noproxy] [-network <network>] [-host <hostname>]
 		  [-rawlog <file>]
 		  [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
