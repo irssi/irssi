@@ -36,6 +36,7 @@
     -cmdmax:            Specifies the maximum number of commands to perform
                         before starting the internal flood protection.
     -port:              Specifies the port to connect to the server.
+    -nocap:             Disable CAPREQ for server
     -noproxy:           Ignores the global proxy configuration.
     -rawlog:            Immediately open rawlog after connecting.
     -noautosendcmd:     Doesn't execute autosendcmd.
