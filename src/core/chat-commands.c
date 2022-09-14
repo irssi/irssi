@@ -114,8 +114,8 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
                    [-tls_verify] [-tls_cafile <cafile>] [-tls_capath <capath>]
                    [-tls_ciphers <list>] [-tls_pinned_cert <fingerprint>]
                    [-tls_pinned_pubkey <fingerprint>] [-!] [-noautosendcmd] [-tls | -notls]
-                   [-starttls | -disallow_starttls] [-noproxy] [-network <network>]
-                   [-host <hostname>] [-rawlog <file>]
+                   [-nocap] [-starttls | -disallow_starttls] [-noproxy]
+                   [-network <network>] [-host <hostname>] [-rawlog <file>]
                    <address>|<chatnet> [<port> [<password> [<nick>]]] */
 /* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_connect(const char *data)
@@ -211,14 +211,14 @@ static void cmd_server(const char *data, SERVER_REC *server, WI_ITEM_REC *item)
 	command_runsub("server", data, server, item);
 }
 
-/* SYNTAX: SERVER CONNECT [-4 | -6] [-tls] [-tls_cert <cert>] [-tls_pkey <pkey>] 
-		  [-tls_pass <password>] [-tls_verify] [-tls_cafile <cafile>] 
-		  [-tls_capath <capath>]
-		  [-tls_ciphers <list>] [-tls_pinned_cert <fingerprint>] [-tls_pinned_pubkey <fingerprint>]
-		  [-!] [-noautosendcmd]
-		  [-noproxy] [-network <network>] [-host <hostname>]
-		  [-rawlog <file>]
-		  [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
+/* SYNTAX: SERVER CONNECT [-4 | -6] [-tls] [-tls_cert <cert>] [-tls_pkey <pkey>]
+                  [-tls_pass <password>] [-tls_verify] [-tls_cafile <cafile>]
+                  [-tls_capath <capath>] [-tls_ciphers <list>]
+                  [-tls_pinned_cert <fingerprint>] [-tls_pinned_pubkey <fingerprint>]
+                  [-!] [-noautosendcmd] [-nocap]
+                  [-noproxy] [-network <network>] [-host <hostname>]
+                  [-rawlog <file>]
+                  [+]<address>|<chatnet> [<port> [<password> [<nick>]]] */
 /* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_server_connect(const char *data, SERVER_REC *server)
 {
