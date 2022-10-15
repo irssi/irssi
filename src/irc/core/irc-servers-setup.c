@@ -220,9 +220,11 @@ static void sig_server_setup_saved(IRC_SERVER_SETUP_REC *rec,
 		iconfig_node_set_int(node, "cmd_queue_speed", rec->cmd_queue_speed);
 	if (rec->max_query_chans > 0)
 		iconfig_node_set_int(node, "max_query_chans", rec->max_query_chans);
-	if (rec->starttls != STARTTLS_NOTSET)
-		iconfig_node_set_bool(node, "starttls", rec->starttls);
-	else
+	if (rec->starttls == STARTTLS_DISALLOW)
+		iconfig_node_set_bool(node, "starttls", FALSE);
+	else if (rec->starttls == STARTTLS_ENABLED)
+		iconfig_node_set_bool(node, "starttls", TRUE);
+	else if (rec->starttls == STARTTLS_NOTSET)
 		iconfig_node_set_str(node, "starttls", NULL);
 	if (rec->no_cap)
 		iconfig_node_set_bool(node, "no_cap", TRUE);
