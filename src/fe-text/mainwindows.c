@@ -1629,6 +1629,7 @@ static int window_refnum_left(int refnum, int wrap)
 {
         MAIN_WINDOW_REC *find_sticky;
 	WINDOW_REC *window;
+	int start_refnum = refnum;
 
 	window = window_find_refnum(refnum);
 	g_return_val_if_fail(window != NULL, -1);
@@ -1638,7 +1639,7 @@ static int window_refnum_left(int refnum, int wrap)
 
 	do {
 		refnum = window_refnum_prev(refnum, wrap);
-		if (refnum < 0)
+		if (refnum < 0 || refnum == start_refnum)
 			break;
 
 		window = window_find_refnum(refnum);
@@ -1651,6 +1652,7 @@ static int window_refnum_right(int refnum, int wrap)
 {
         MAIN_WINDOW_REC *find_sticky;
 	WINDOW_REC *window;
+	int start_refnum = refnum;
 
 	window = window_find_refnum(refnum);
 	g_return_val_if_fail(window != NULL, -1);
@@ -1660,7 +1662,7 @@ static int window_refnum_right(int refnum, int wrap)
 
 	do {
 		refnum = window_refnum_next(refnum, wrap);
-		if (refnum < 0)
+		if (refnum < 0 || refnum == start_refnum)
 			break;
 
 		window = window_find_refnum(refnum);
