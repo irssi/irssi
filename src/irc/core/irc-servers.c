@@ -79,11 +79,11 @@ static int ischannel_func(SERVER_REC *server, const char *data)
 	if (*data == '\0')
 		return FALSE;
 
-	chantypes = g_hash_table_lookup(irc_server->isupport, "chantypes");
+	chantypes = g_hash_table_lookup(irc_server->isupport, "CHANTYPES");
 	if (chantypes == NULL)
 		chantypes = "#&!+"; /* normal, local, secure, modeless */
 
-	statusmsg = g_hash_table_lookup(irc_server->isupport, "statusmsg");
+	statusmsg = g_hash_table_lookup(irc_server->isupport, "STATUSMSG");
 	if (statusmsg == NULL && strchr(chantypes, '@') == NULL)
 		statusmsg = "@";
 
@@ -296,11 +296,12 @@ static void server_init_1(IRC_SERVER_REC *server)
 		irc_cap_toggle(server, CAP_STARTTLS, TRUE);
 	}
 
-	server->isupport = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
-
 	/* set the standards */
-	g_hash_table_insert(server->isupport, g_strdup("CHANMODES"), g_strdup("beI,k,l,imnpst"));
-	g_hash_table_insert(server->isupport, g_strdup("PREFIX"), g_strdup("(ohv)@%+"));
+	if (!g_hash_table_contains(server->isupport, "CHANMODES"))
+		g_hash_table_insert(server->isupport, g_strdup("CHANMODES"),
+		                    g_strdup("beI,k,l,imnpst"));
+	if (!g_hash_table_contains(server->isupport, "PREFIX"))
+		g_hash_table_insert(server->isupport, g_strdup("PREFIX"), g_strdup("(ohv)@%+"));
 
 	server->cmdcount = 0;
 
@@ -466,7 +467,16 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 
 	modes_server_init(server);
 
-        server_connect_init((SERVER_REC *) server);
+	server->isupport = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
+
+	server->isnickflag = isnickflag_func;
+	server->ischannel = ischannel_func;
+	server->split_message = split_message;
+	server->send_message = send_message;
+	server->query_find_func = (QUERY_REC * (*) (SERVER_REC *, const char *) ) irc_query_find;
+	server->nick_comp_func = irc_nickcmp_rfc1459;
+
+	server_connect_init((SERVER_REC *) server);
 	return (SERVER_REC *) server;
 }
 
@@ -555,14 +565,6 @@ static void sig_connected(IRC_SERVER_REC *server)
 {
 	if (!IS_IRC_SERVER(server))
 		return;
-
-	server->isnickflag = isnickflag_func;
-	server->ischannel = ischannel_func;
-	server->split_message = split_message;
-	server->send_message = send_message;
-	server->query_find_func =
-		(QUERY_REC *(*)(SERVER_REC *, const char *)) irc_query_find;
-	server->nick_comp_func = irc_nickcmp_rfc1459;
 
 	server->splits = g_hash_table_new((GHashFunc) i_istr_hash, (GCompareFunc) i_istr_equal);
 
