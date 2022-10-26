@@ -35,8 +35,10 @@
                   quoted (e.g. -priority "-1")
     -alignment:   Display the item on the right side.
 
-    Where statusbar refers to the name of the statusbar; if no argument is
-    given, the entire list of statusbars will be displayed.
+    Where statusbar refers to the name of the statusbar; if no
+    argument is given, or `LIST` is given, the entire list of
+    statusbars along with a quick overview of their properties will be
+    displayed.
 
 %9Description:%9
 
