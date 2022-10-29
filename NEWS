@@ -1,3 +1,12 @@
+v1.4.3 2022-10-31  The Irssi team <staff@irssi.org>
+	- Fix freeze on Alt+arrows (#1416, #1417)
+	- Fix crash on /upgrade (#1399, #1419)
+	- Fix saving of -disallow_starttls (#1401, #1420)
+	- Fix libnv detection on FreeBSD (freebsd#265397, #1407). By
+	  Guido Falsi and Kristof Provost
+	- Minor help and script fixes (#1380, #1393, #1411, #1413,
+	  #1414, #1415)
+
 v1.4.2 2022-07-17  The Irssi team <staff@irssi.org>
 	* Add irssimoduledir to irssi-1.pc in the Meson build (#1383,
           #1378)
