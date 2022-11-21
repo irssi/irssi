@@ -23,6 +23,7 @@ struct _HILIGHT_REC {
 	unsigned int case_sensitive:1;/* `text' must match case */
 	Regex *preg;
 	char *servertag;
+	char *comment;
 };
 
 extern GSList *hilights;
