@@ -118,6 +118,7 @@ static void show_lastlog(const char *searchtext, GHashTable *optlist,
 			return;
 		}
 	}
+	view = WINDOW_GUI(window)->view;
 
 	if (g_hash_table_lookup(optlist, "new") != NULL)
 		startline = textbuffer_view_get_bookmark(view, "lastlog_last_check");
