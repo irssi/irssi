@@ -93,7 +93,7 @@ static void cmd_window_scroll(const char *data)
 				   gui->scroll : settings_get_bool("scroll"));
 }
 
-/* SYNTAX: WINDOW HIDELEVEL [<level>] */
+/* SYNTAX: WINDOW HIDELEVEL [<levels>] */
 static void cmd_window_hidelevel(const char *data)
 {
 	GUI_WINDOW_REC *gui;

@@ -400,7 +400,7 @@ static void cmd_window_previous(void)
 	window_set_active(window_find_refnum(num));
 }
 
-/* SYNTAX: WINDOW LEVEL [<level>] */
+/* SYNTAX: WINDOW LEVEL [<levels>] */
 static void cmd_window_level(const char *data)
 {
 	char *level;
