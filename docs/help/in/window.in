@@ -42,6 +42,7 @@
     LEFT:         %|Go to the previous window numerically that is part of the current sticky group (or not part of any sticky group).
     RIGHT:        %|Go to the next window numerically that is part of the current sticky group (or not part of any sticky group).
     STICK:        %|Make the currently active window sticky, or stick the window specified by number to the currently visible split window. Or turn off stickyness of the currently active window or the window specified by number.
+    HIDELEVEL:    %|Changes the levels of text lines that should be hidden from view, or query the current hidden level.
     MOVE LEFT:    %|Move the window to the numerically previous location inside the current sticky group.
     MOVE RIGHT:   %|Move the window to the numerically next location inside the current sticky group.
     MOVE UP:      %|Move the current window to the sticky group of the previous split window. If no sticky group remains, the split window collapses.
@@ -51,6 +52,8 @@
     -directional: %|Set the split window in the given direction to the current one active, or move the current window to the sticky group of the split window in the given direction. (If no sticky group remains, the split window collapses.)
 
    %|Add the required arguments for the given command. Without arguments, the details (size, immortality, levels, server, name and sticky group) of the currently active window are displayed. If used with a number as argument, same as WINDOW REFNUM.
+
+   %|LEVEL and HIDELEVEL modify the currently set level. Without arguments, the current level is displayed. Levels listed starting with `+' are added to the current levels. Levels listed starting with `-' are removed from the current levels. To clear the levels, start the new level setting with `NONE'. Levels listed starting with `^' are either removed or added from the current setting, depending on whether they were previously set or not (since Irssi 1.5). Levels listed as is are also added to the current levels. Afterwards, the new level setting is displayed.
 
 %9Description:%9
 
@@ -68,6 +71,7 @@
     /WINDOW LOG OFF
     /WINDOW LOG ON ~/logs/debug.log
     /WINDOW LEVEL -ALL +NOTICES
+    /WINDOW HIDELEVEL ^JOINS ^PARTS ^QUITS
     /WINDOW LOGFILE ~/logs/notices.log
 
 %9See also:%9 JOIN, LEVELS, LOG, QUERY
