@@ -184,13 +184,15 @@ int combine_level(int dest, const char *src)
 
 	list = g_strsplit(src, " ", -1);
 	for (item = list; *item != NULL; item++) {
-		itemname = *item + (**item == '+' || **item == '-' ? 1 : 0);
+		itemname = *item + (**item == '+' || **item == '-' || **item == '^' ? 1 : 0);
 		itemlevel = level_get(itemname);
 
-		if (g_strcmp0(itemname, "NONE") == 0)
-                        dest = 0;
+		if (g_ascii_strcasecmp(itemname, "NONE") == 0)
+			dest = 0;
 		else if (**item == '-')
 			dest &= ~(itemlevel);
+		else if (**item == '^')
+			dest ^= itemlevel;
 		else
 			dest |= itemlevel;
 	}
