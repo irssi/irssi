@@ -1,6 +1,6 @@
 [wrap-file]
 # make sure to update the glib_internal_version in meson.build
-directory = glib-2.58.3
-source_url = https://download.gnome.org/sources/glib/2.58/glib-2.58.3.tar.xz
-source_filename = glib-2.58.3.tar.xz
-source_hash = 8f43c31767e88a25da72b52a40f3301fefc49a665b56dc10ee7cc9565cbe7481
+directory = glib-2.74.3
+source_url = https://download.gnome.org/sources/glib/2.74/glib-2.74.3.tar.xz
+source_filename = glib-2.74.3.tar.xz
+source_hash = e9bc41ecd9690d9bc6a970cc7380119b828e5b6a4b16c393c638b3dc2b87cbcb

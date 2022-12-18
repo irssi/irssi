@@ -6,7 +6,8 @@ project('irssi', 'c',
 ############################
 ############################
 
-glib_internal_version = 'glib-2.58.3' # keep this in sync with subprojects/glib.wrap
+glib_internal_version = 'glib-2.74.3' # keep this in sync with subprojects/glib.wrap
+glib_pcre2_internal_version = 'pcre2-10.40'
 cc = meson.get_compiler('c')
 rootinc = include_directories('.')
 dep = []
@@ -238,7 +239,7 @@ if not glib_dep.found()
   glib_internal_configure_t = custom_target('glib-internal-configure',
     command : [ meson_cmd, 'setup', '--prefix=/irssi-glib-internal',
       '--buildtype=' + get_option('buildtype'),
-      '-Dlibmount=false', '-Dselinux=false', '-Ddefault_library=static', '-Dinternal_pcre=true',
+      '-Dlibmount=disabled', '-Dselinux=disabled', '-Ddefault_library=static', '-Dforce_fallback_for=pcre2',
       glib_internal_configure_args,
       (meson.current_build_dir() / 'build-subprojects' / 'glib'),
       (meson.current_source_dir() / 'subprojects' / glib_internal_version) ],
@@ -247,6 +248,7 @@ if not glib_dep.found()
     depends : glib_internal_download_t,)
   glib_internal_build_t = custom_target('glib-internal-build',
     command : [ ninja, '-C', meson.current_build_dir() / 'build-subprojects' / 'glib',
+      'subprojects' / glib_pcre2_internal_version / 'libpcre2-8.a',
       'glib' / 'libglib-2.0.a',
       'gmodule' / 'libgmodule-2.0.a'],
     console : true,
@@ -260,7 +262,10 @@ if not glib_dep.found()
       '-isystem' + (meson.current_source_dir() / 'subprojects' / glib_internal_version),
       '-isystem' + (meson.current_build_dir() / 'build-subprojects' / 'glib' / 'glib'),
     ],
-    link_args : [ meson.current_build_dir() / 'build-subprojects' / 'glib' / 'glib' / 'libglib-2.0.a' ],
+    link_args : [
+      meson.current_build_dir() / 'build-subprojects' / 'glib' / 'subprojects' / glib_pcre2_internal_version / 'libpcre2-8.a',
+      meson.current_build_dir() / 'build-subprojects' / 'glib' / 'glib' / 'libglib-2.0.a',
+    ],
   )
   built_src += glib_internal_build_t
   libdl_dep = []
