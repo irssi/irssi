@@ -18,6 +18,7 @@ TEXT_BUFFER_REC *color_buf;
 gboolean scrollback_format;
 gboolean show_server_time;
 int signal_gui_render_line_text;
+GTimeZone *utc;
 
 static void collector_free(GSList **collector)
 {
@@ -125,7 +126,7 @@ static LINE_INFO_META_REC *line_meta_create(GHashTable *meta_hash)
 	while (g_hash_table_iter_next(&iter, (gpointer *) &key, (gpointer *) &val)) {
 		if (g_strcmp0("time", key) == 0) {
 			GDateTime *time;
-			if ((time = g_date_time_new_from_iso8601(val, NULL)) != NULL) {
+			if ((time = g_date_time_new_from_iso8601(val, utc)) != NULL) {
 				meta->server_time = g_date_time_to_unix(time);
 				g_date_time_unref(time);
 			}
@@ -446,6 +447,7 @@ static void read_settings(void)
 void textbuffer_formats_init(void)
 {
 	signal_gui_render_line_text = signal_get_uniq_id("gui render line text");
+	utc = g_time_zone_new_utc();
 
 	settings_add_bool("lookandfeel", "scrollback_format", TRUE);
 	settings_add_bool("lookandfeel", "show_server_time", FALSE);
@@ -463,4 +465,6 @@ void textbuffer_formats_deinit(void)
 	signal_remove("print format", (SIGNAL_FUNC) sig_print_format);
 	signal_remove("print noformat", (SIGNAL_FUNC) sig_print_noformat);
 	signal_remove("gui print text finished", (SIGNAL_FUNC) sig_gui_print_text_finished);
+
+	g_time_zone_unref(utc);
 }
