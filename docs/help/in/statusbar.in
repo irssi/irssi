@@ -10,7 +10,7 @@
     RESET:        Restores the default statusbar configuration.
     ADDITEM:      Adds an item to the specified statusbar. It can be set to
                   appear before/after another item and left/right aligned
-                  to a specified position on the screen.
+                  on the screen.
     MODIFYITEM:   Changes an item position inside a bar.
     REMOVEITEM:   Removes an item from the specified statusbar.
     INFO:         List the current details and items of the specified
@@ -18,15 +18,16 @@
 
     -disable:     Removes a statusbar from the list.
     -type:        Sets the type of statusbar, for each split window or only
-                  for the current root screen.
+                  once at the root (very top or bottom) of the screen.
     -placement:   Sets the placement of the statusbar, either at the top or
-                  the bottom of the screen.
+                  the bottom of the screen or split window.
     -position:    Sets the position of the statusbar. Represented as a
-                  number, with 0 implying the first position.
-    -visible:     Sets the visibility of the statusbar or item. If set to
-                  always it is visible on all screens, otherwise if set to
-                  inactive or active then it is only visible on inactive
-                  or active screens, respectively.
+                  number, with smaller numbers implying a position further
+                  to the top.
+    -visible:     Sets the visibility of the statusbar. If set to always,
+                  it is visible on all split windows, otherwise if set to
+                  inactive or active then it is only visible on inactive or
+                  active split windows, respectively.
     -before:      This item is added before the other item.
     -after:       This item is added after the other item.
     -priority:    When the statusbar items overflow, the item with the
