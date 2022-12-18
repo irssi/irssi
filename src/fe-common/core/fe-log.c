@@ -327,21 +327,34 @@ static void cmd_window_logfile(const char *data)
 {
 	LOG_REC *log;
 	char window[MAX_INT_STRLEN];
+	void *free_arg;
+	char *fname;
+
+	if (!cmd_get_params(data, &free_arg, 1, &fname)) {
+		return;
+	}
+
+	if (!fname || strlen(fname) == 0) {
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
+	}
 
 	ltoa(window, active_win->refnum);
 	log = logs_find_item(LOG_ITEM_WINDOW_REFNUM, window, NULL, NULL);
 
 	if (log != NULL) {
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_WINDOWLOG_FILE_LOGGING);
+		cmd_params_free(free_arg);
 		return;
 	}
 
-	log = log_create_rec(data, MSGLEVEL_ALL);
+	log = log_create_rec(fname, MSGLEVEL_ALL);
 	log->colorizer = log_colorizer_strip;
 	log_item_add(log, LOG_ITEM_WINDOW_REFNUM, window, NULL);
 	log_update(log);
 
 	printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_WINDOWLOG_FILE, data);
+
+	cmd_params_free(free_arg);
 }
 
 /* window's refnum changed - update the logs to log the new window refnum */
