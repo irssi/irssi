@@ -57,6 +57,7 @@ static int skip_next_printtext;
 static char *log_theme_name;
 
 static char **autolog_ignore_targets;
+static GTimeZone *utc;
 
 static char *log_colorizer_strip(const char *str)
 {
@@ -542,7 +543,7 @@ static void log_line(TEXT_DEST_REC *dest, const char *text)
 		char *val;
 		if ((val = g_hash_table_lookup(dest->meta, "time")) != NULL) {
 			GDateTime *time;
-			if ((time = g_date_time_new_from_iso8601(val, NULL)) != NULL) {
+			if ((time = g_date_time_new_from_iso8601(val, utc)) != NULL) {
 				t = g_date_time_to_unix(time);
 				g_date_time_unref(time);
 			}
@@ -744,6 +745,7 @@ void fe_log_init(void)
 {
 	autoremove_tag = g_timeout_add(60000, (GSourceFunc) sig_autoremove, NULL);
 	skip_next_printtext = FALSE;
+	utc = g_time_zone_new_utc();
 
 	settings_add_bool("log", "awaylog_colors", TRUE);
         settings_add_bool("log", "autolog", FALSE);
@@ -811,6 +813,7 @@ void fe_log_deinit(void)
 	if (autolog_ignore_targets != NULL)
 		g_strfreev(autolog_ignore_targets);
 
+	g_time_zone_unref(utc);
 	g_free_not_null(autolog_path);
 	g_free_not_null(log_theme_name);
 }

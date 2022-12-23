@@ -170,8 +170,10 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 
 	case '{':
 		/* block */
-		if (key == NULL && node->type != NODE_TYPE_LIST)
+		if (key == NULL && node->type != NODE_TYPE_LIST) {
+			g_scanner_error(rec->scanner, "Missing key");
 			return G_TOKEN_ERROR;
+		}
 
 		newnode = config_node_section(rec, node, key, NODE_TYPE_BLOCK);
 		config_parse_loop(rec, newnode, (GTokenType) '}');
@@ -186,8 +188,11 @@ static GTokenType config_parse_symbol(CONFIG_REC *rec, CONFIG_NODE *node)
 
 	case '(':
 		/* list */
-		if (key == NULL)
+		if (key == NULL && !rec->list_of_lists) {
+			g_scanner_error(rec->scanner, "List of lists not allowed");
 			return G_TOKEN_ERROR;
+		}
+
 		newnode = config_node_section(rec, node, key, NODE_TYPE_LIST);
 		config_parse_loop(rec, newnode, (GTokenType) ')');
 		g_free_not_null(key);

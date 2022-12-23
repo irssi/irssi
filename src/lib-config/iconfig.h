@@ -62,6 +62,8 @@ struct _CONFIG_REC {
 	GIOChannel *handle;
 	int tmp_indent_level; /* indentation position */
 	int tmp_last_lf; /* last character was a line feed */
+
+	int list_of_lists : 1; /* list of lists allowed */
 };
 
 /* Open configuration. The file is created if it doesn't exist, unless
