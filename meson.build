@@ -594,7 +594,10 @@ pc.generate(filebase : 'irssi-1',
   description : 'Irssi chat client',
   version : package_version,
   requires : pc_requires,
-  variables : ['irssimoduledir=${libdir}' / incdir / 'modules'])
+  variables : [
+    'irssimoduledir=${libdir}' / incdir / 'modules',
+    'signalsfile=${prefix}' / docdir / 'signals.txt'
+  ])
 
 ###########
 # irssi.1 #
