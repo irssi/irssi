@@ -28,7 +28,7 @@ jobs:
           TERMUX_PKG_MAINTAINER="@irssi"
           TERMUX_PKG_VERSION=@VERSION@
           TERMUX_PKG_REVISION=@REVISION@
-          TERMUX_PKG_SRCURL=file:///home/builder/termux-packages/src.irssi.git
+          TERMUX_PKG_SRCURL=git+file:///home/builder/termux-packages/src.irssi.git
           TERMUX_PKG_AUTO_UPDATE=true
           TERMUX_PKG_DEPENDS="glib, libandroid-glob, libiconv, libotr, ncurses, openssl, perl, utf8proc"
           TERMUX_PKG_BREAKS="irssi"
