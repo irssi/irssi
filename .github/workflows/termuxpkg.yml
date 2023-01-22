@@ -73,7 +73,7 @@ jobs:
       - name: build irssi package
         run: |
           sudo ./scripts/run-docker.sh ./build-package.sh -I irssi-an
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: irssi-termux-pkg
           path: output/irssi-an*.deb

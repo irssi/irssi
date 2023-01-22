@@ -21,7 +21,7 @@ jobs:
       - name: make dist
         run: |
           ./utils/make-dist.sh
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: irssi-*.tar.gz
           retention-days: 1
@@ -51,7 +51,7 @@ jobs:
             flags: meson-latest FAILURE-OK
     steps:
       - name: fetch dist
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
       - name: set PATH
         run: |
           echo "$HOME/.local/bin" >> $GITHUB_PATH

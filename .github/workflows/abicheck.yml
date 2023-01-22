@@ -36,8 +36,8 @@ jobs:
           base_abi=$(getabidef base$prefix)
           echo base abi : $base_abi
           ./base$prefix/bin/irssi --version
-          echo "::set-output name=base_abi::$base_abi"
-      - uses: actions/upload-artifact@v2
+          echo base_abi=$base_abi >> $GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v3
         with:
           name: base.inst
           path: base
@@ -70,8 +70,8 @@ jobs:
           merge_abi=$(getabidef merge$prefix)
           echo merge abi : $merge_abi
           ./merge$prefix/bin/irssi --version
-          echo "::set-output name=merge_abi::$merge_abi"
-      - uses: actions/upload-artifact@v2
+          echo merge_abi=$merge_abi >> $GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v3
         with:
           name: merge.inst
           path: merge
@@ -89,12 +89,12 @@ jobs:
         run: |
           sudo apt install abigail-tools
       - name: fetch base build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: base.inst
           path: base
       - name: fetch merge build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: merge.inst
           path: merge
@@ -103,7 +103,7 @@ jobs:
           abipkgdiff -l base merge >abipkgdiff.out && diff_ret=0 || diff_ret=$?
           echo "diff_ret=$diff_ret" >> $GITHUB_ENV
           cat abipkgdiff.out
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: abipkgdiff.out
       - run: |
