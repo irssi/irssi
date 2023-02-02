@@ -1279,7 +1279,7 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 
 #define IS_COLOR_CODE(c) \
 	((c) == 2 || (c) == 3 || (c) == 4 || (c) == 6 || (c) == 7 || \
-	(c) == 15 || (c) == 22 || (c) == 27 || (c) == 29 || (c) == 31)
+	(c) == 15 || (c) == 17 || (c) == 22 || (c) == 27 || (c) == 29 || (c) == 31)
 
 /* Return how many characters in `str' must be skipped before `len'
    characters of text is skipped. */
@@ -1553,6 +1553,10 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			fgcolor = theme->default_color;
 			bgcolor = -1;
 			flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
+			break;
+		case 17:
+			if (!hide_text_style)
+				flags ^= GUI_PRINT_FLAG_MONOSPACE;
 			break;
 		case 22:
 			/* reverse */
