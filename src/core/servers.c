@@ -764,7 +764,7 @@ static void sig_chat_protocol_deinit(CHAT_PROTOCOL_REC *proto)
 
 void servers_init(void)
 {
-	settings_add_bool("server", "resolve_prefer_ipv6", FALSE);
+	settings_add_bool("server", "resolve_prefer_ipv6", TRUE);
 	lookup_servers = servers = NULL;
 
 	signal_add("chat protocol deinit", (SIGNAL_FUNC) sig_chat_protocol_deinit);
