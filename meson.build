@@ -591,7 +591,12 @@ if not glib_internal
 endif
 signalsfile = docdir / 'signals.txt'
 if signalsfile.startswith('/')
-  signalsfile = signalsfile.replace(get_option('prefix'), '${prefix}')
+  signalsfile = signalsfile.split(get_option('prefix'))
+  if signalsfile[0] == ''
+    signalsfile = '${prefix}' + signalsfile[1]
+  else
+    signalsfile = signalsfile[0]
+  endif
 else
   signalsfile = '${prefix}' / signalsfile
 endif
