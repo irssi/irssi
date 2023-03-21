@@ -29,7 +29,7 @@
     because it is allowed in addition to other ignores for the same target.
     The special level 'HIDDEN' can be used to hide matching messages that can
     later be revealed using /WINDOW HIDELEVEL -HIDDEN
-    The special level 'NOHILIGHT' can be used to supress hilights without actually
+    The special level 'NOHILIGHT' can be used to suppress hilights without actually
     ignoring the message.
 
 %9Examples:%9
