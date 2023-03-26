@@ -214,7 +214,6 @@ static void sig_print_noformat(TEXT_DEST_REC *dest, const char *text)
 	if (!scrollback_format)
 		return;
 
-	special_push_collector(NULL);
 	info = store_lineinfo_tmp(dest);
 
 	info->format = format_rec_new(NULL, NULL, 2, (const char *[]){ NULL, text });
