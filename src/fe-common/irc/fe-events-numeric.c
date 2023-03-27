@@ -138,18 +138,55 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+/* Get time elapsed since an event */
+static char *time_ago(time_t seconds)
+{
+	static char ret[128];
+	long unsigned years, weeks, days, hours, minutes;
+
+	seconds = time(NULL) - seconds;
+
+	years = seconds/(86400*365);
+	seconds %= (86400*365);
+	weeks = seconds/604800;
+	seconds %= 604800;
+	days = seconds/86400;
+	seconds %= 86400;
+	hours = seconds/3600;
+	hours %= 3600;
+	minutes = seconds/60;
+	minutes %= 60;
+	seconds %= 60;
+
+	if (years)
+		snprintf(ret, sizeof(ret), "%luy %luw %lud", years, weeks, days);
+	else if (weeks)
+		snprintf(ret, sizeof(ret), "%luw %lud %luh", weeks, days, hours);
+	else if (days)
+		snprintf(ret, sizeof(ret), "%lud %luh %lum", days, hours, minutes);
+	else if (hours)
+		snprintf(ret, sizeof(ret), "%luh %lum", hours, minutes);
+	else if (minutes)
+		snprintf(ret, sizeof(ret), "%lum %lus", minutes, (long unsigned)seconds);
+	else
+		snprintf(ret, sizeof(ret), "%lus", (long unsigned)seconds);
+
+	return ret;
+}
+
 static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	BAN_REC *banrec;
 	const char *channel;
-	char *params, *ban, *setby, *tims, *timestr;
+	char *params, *ban, *setby, *tims, *timestr, *ago;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 5, NULL, &channel,
 				  &ban, &setby, &tims);
-	timestr = my_asctime((time_t) atol(tims));
+	timestr = my_asctime((time_t) atoll(tims));
+	ago = time_ago((time_t) atoll(tims));
 
 	chanrec = irc_channel_find(server, channel);
 	banrec = chanrec == NULL ? NULL : banlist_find(chanrec->banlist, ban);
@@ -158,7 +195,7 @@ static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 	printformat(server, channel, MSGLEVEL_CRAP,
 		    *setby == '\0' ? IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
 		    banrec == NULL ? 0 : g_slist_index(chanrec->banlist, banrec)+1,
-		    channel, ban, setby, timestr);
+		    channel, ban, setby, timestr, ago);
 
 	g_free(timestr);
 	g_free(params);
@@ -167,40 +204,49 @@ static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 static void event_eban_list(IRC_SERVER_REC *server, const char *data)
 {
 	const char *channel;
-	char *params, *ban, *setby, *tims, *timestr;
+	char *params, *ban, *setby, *tims, *timestr, *ago;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 5, NULL, &channel,
 				  &ban, &setby, &tims);
-	timestr = my_asctime((time_t) atol(tims));
+	timestr = my_asctime((time_t) atoll(tims));
+	ago = time_ago((time_t) atoll(tims));
 
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
 		    *setby == '\0' ? IRCTXT_EBANLIST : IRCTXT_EBANLIST_LONG,
-		    channel, ban, setby, timestr);
+		    channel, ban, setby, timestr, ago);
 
 	g_free(timestr);
 	g_free(params);
 }
 
+static void do_quiet_list(IRC_SERVER_REC *server, const char *channel, char *ban, char *setby, char *tims) {
+	char *timestr, *ago;
+
+	timestr = my_asctime((time_t) atoll(tims));
+	ago = time_ago((time_t) atoll(tims));
+
+	channel = get_visible_target(server, channel);
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    *setby == '\0' ? IRCTXT_QUIETLIST : IRCTXT_QUIETLIST_LONG,
+		    channel, ban, setby, timestr, ago);
+
+	g_free(timestr);
+}
+
 static void event_quiet_list(IRC_SERVER_REC *server, const char *data)
 {
 	const char *channel;
-	char *params, *ban, *setby, *tims, *timestr;
+	char *params, *ban, *setby, *tims;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 6, NULL, &channel,
 				  NULL, &ban, &setby, &tims);
-	timestr = my_asctime((time_t) atol(tims));
+	do_quiet_list(server, channel, ban, setby, tims);
 
-	channel = get_visible_target(server, channel);
-	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_QUIETLIST : IRCTXT_QUIETLIST_LONG,
-		    channel, ban, setby, timestr);
-
-	g_free(timestr);
 	g_free(params);
 }
 
@@ -232,18 +278,19 @@ static void event_accept_list(IRC_SERVER_REC *server, const char *data)
 static void event_invite_list(IRC_SERVER_REC *server, const char *data)
 {
 	const char *channel;
-	char *params, *invite, *setby, *tims, *timestr;
+	char *params, *invite, *setby, *tims, *timestr, *ago;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 5, NULL, &channel, &invite,
 			&setby, &tims);
-	timestr = my_asctime((time_t) atol(tims));
+	timestr = my_asctime((time_t) atoll(tims));
+	ago = time_ago((time_t) atoll(tims));
 
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
 		    *setby == '\0' ? IRCTXT_INVITELIST : IRCTXT_INVITELIST_LONG,
-		    channel, invite, setby, timestr);
+		    channel, invite, setby, timestr, ago);
 
 	g_free(timestr);
 	g_free(params);
@@ -716,7 +763,7 @@ static void event_target_received(IRC_SERVER_REC *server, const char *data,
 static void event_hybrid_quiet_list(IRC_SERVER_REC *server, const char *data)
 {
 	const char *channel;
-	char *params, *ban, *setby, *tims, *timestr;
+	char *params, *ban, *setby, *tims;
 
 	g_return_if_fail(data != NULL);
 
@@ -728,15 +775,9 @@ static void event_hybrid_quiet_list(IRC_SERVER_REC *server, const char *data)
 		event_target_received(server, data, NULL);
 		return;
 	}
-	channel = get_visible_target(server, channel);
 
-	timestr = my_asctime((time_t) atol(tims));
+	do_quiet_list(server, channel, ban, setby, tims);
 
-	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_QUIETLIST : IRCTXT_QUIETLIST_LONG,
-		    channel, ban, setby, timestr);
-
-	g_free(timestr);
 	g_free(params);
 }
 
