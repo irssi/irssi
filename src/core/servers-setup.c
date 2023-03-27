@@ -305,6 +305,11 @@ static SERVER_CONNECT_REC *create_addr_conn(int chat_type, const char *address, 
 	proto = chat_type >= 0 ? chat_protocol_find_id(chat_type) :
                 chat_protocol_get_default();
 
+	if (proto == NULL) {
+		signal_stop();
+		return NULL;
+	}
+
 	g_return_val_if_fail(proto != NULL, NULL);
 
 	conn = proto->create_server_connect();
