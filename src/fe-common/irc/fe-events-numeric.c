@@ -204,6 +204,26 @@ static void event_quiet_list(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+static void event_hybrid_quiet_list(IRC_SERVER_REC *server, const char *data)
+{
+	const char *channel;
+	char *params, *ban, *setby, *tims, *timestr;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 5, NULL, &channel,
+				  &ban, &setby, &tims);
+	timestr = my_asctime((time_t) atol(tims));
+
+	channel = get_visible_target(server, channel);
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    *setby == '\0' ? IRCTXT_QUIETLIST : IRCTXT_QUIETLIST_LONG,
+		    channel, ban, setby, timestr);
+
+	g_free(timestr);
+	g_free(params);
+}
+
 static void event_silence_list(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *mask;
@@ -746,6 +766,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 367", (SIGNAL_FUNC) event_ban_list);
 	signal_add("event 348", (SIGNAL_FUNC) event_eban_list);
 	signal_add("event 728", (SIGNAL_FUNC) event_quiet_list);
+	signal_add("event 344", (SIGNAL_FUNC) event_hybrid_quiet_list); /* used by ircd-hybrid */
 	signal_add("event 346", (SIGNAL_FUNC) event_invite_list);
 	signal_add("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_add("event 332", (SIGNAL_FUNC) event_topic_get);
@@ -804,8 +825,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 470", (SIGNAL_FUNC) event_received);
 	signal_add("event 479", (SIGNAL_FUNC) event_received);
 
-	signal_add("event 344", (SIGNAL_FUNC) event_target_received); /* reop list */
-	signal_add("event 345", (SIGNAL_FUNC) event_target_received); /* end of reop list */
+	signal_add("event 345", (SIGNAL_FUNC) event_target_received); /* end of reop list/hybrid quiet list */
 	signal_add("event 347", (SIGNAL_FUNC) event_target_received); /* end of invite exception list */
 	signal_add("event 349", (SIGNAL_FUNC) event_target_received); /* end of ban exception list */
 	signal_add("event 368", (SIGNAL_FUNC) event_target_received); /* end of ban list */
@@ -844,6 +864,7 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 367", (SIGNAL_FUNC) event_ban_list);
 	signal_remove("event 348", (SIGNAL_FUNC) event_eban_list);
 	signal_remove("event 728", (SIGNAL_FUNC) event_quiet_list);
+	signal_remove("event 344", (SIGNAL_FUNC) event_hybrid_quiet_list);
 	signal_remove("event 346", (SIGNAL_FUNC) event_invite_list);
 	signal_remove("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_remove("event 332", (SIGNAL_FUNC) event_topic_get);
@@ -898,7 +919,6 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 470", (SIGNAL_FUNC) event_received);
 	signal_remove("event 479", (SIGNAL_FUNC) event_received);
 
-	signal_remove("event 344", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 345", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 347", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 349", (SIGNAL_FUNC) event_target_received);
