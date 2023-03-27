@@ -204,26 +204,6 @@ static void event_quiet_list(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
-static void event_hybrid_quiet_list(IRC_SERVER_REC *server, const char *data)
-{
-	const char *channel;
-	char *params, *ban, *setby, *tims, *timestr;
-
-	g_return_if_fail(data != NULL);
-
-	params = event_get_params(data, 5, NULL, &channel,
-				  &ban, &setby, &tims);
-	timestr = my_asctime((time_t) atol(tims));
-
-	channel = get_visible_target(server, channel);
-	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_QUIETLIST : IRCTXT_QUIETLIST_LONG,
-		    channel, ban, setby, timestr);
-
-	g_free(timestr);
-	g_free(params);
-}
-
 static void event_silence_list(IRC_SERVER_REC *server, const char *data)
 {
 	char *params, *nick, *mask;
@@ -731,6 +711,33 @@ static void event_target_received(IRC_SERVER_REC *server, const char *data,
 				  const char *nick)
 {
         print_event_received(server, data, nick, TRUE);
+}
+
+static void event_hybrid_quiet_list(IRC_SERVER_REC *server, const char *data)
+{
+	const char *channel;
+	char *params, *ban, *setby, *tims, *timestr;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 5, NULL, &channel,
+				  &ban, &setby, &tims);
+
+	if (*tims == '\0') {
+		/* probably not a quiet list */
+		event_target_received(server, data, NULL);
+		return;
+	}
+	channel = get_visible_target(server, channel);
+
+	timestr = my_asctime((time_t) atol(tims));
+
+	printformat(server, channel, MSGLEVEL_CRAP,
+		    *setby == '\0' ? IRCTXT_QUIETLIST : IRCTXT_QUIETLIST_LONG,
+		    channel, ban, setby, timestr);
+
+	g_free(timestr);
+	g_free(params);
 }
 
 static void event_motd(IRC_SERVER_REC *server, const char *data,
