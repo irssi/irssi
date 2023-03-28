@@ -146,16 +146,12 @@ static char *time_ago(time_t seconds)
 
 	seconds = time(NULL) - seconds;
 
-	years = seconds/(86400*365);
-	seconds %= (86400*365);
-	weeks = seconds/604800;
-	seconds %= 604800;
-	days = seconds/86400;
-	seconds %= 86400;
-	hours = seconds/3600;
-	hours %= 3600;
-	minutes = seconds/60;
-	minutes %= 60;
+	years = seconds / (86400 * 365);
+	seconds %= (86400 * 365);
+	weeks = seconds / 604800;
+	days = (seconds / 86400) % 7;
+	hours = (seconds / 3600) % 24;
+	minutes = (seconds / 60) % 60;
 	seconds %= 60;
 
 	if (years)
