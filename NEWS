@@ -1,5 +1,24 @@
 v1.5-head 202x-xx-xx  The Irssi team <staff@irssi.org>
 
+v1.4.4 2023-03-31  The Irssi team <staff@irssi.org>
+	* Expose location of signals.txt via pkg-config (codeberg!1,
+          #1439, #1446, #1447). By Andrej Kacian
+	+ Levels can now be inverted using `^' prefix in the /WINDOW
+	  (HIDE)LEVEL commands (#1428)
+	+ Support receiving monospace (#1370, #1442). By Linus
+	  Heckemann
+	- Fix config broken by /WINDOW LOGFILE without parameter
+          (#1392, #1432)
+	- Fix broken /LASTLOG -window switch (#1418, #1424, regression
+          introduced in #1398)
+	- Fix logic in how actions are printed for other protocols
+          (codeberg!3, #1454). By Andrej Kacian
+	- Fix stale special collector use after free (#1456). Reported
+          by ednash
+	- Help and message fixes (#1421, #1429, #1431, #1434, #1438,
+          #1452, #1453, #1455). Includes work by Jimmie Tyrrell and
+          Sven Grewe
+
 v1.4.3 2022-10-31  The Irssi team <staff@irssi.org>
 	- Fix freeze on Alt+arrows (#1416, #1417)
 	- Fix crash on /upgrade (#1399, #1419)
