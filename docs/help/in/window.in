@@ -53,7 +53,7 @@
 
    %|Add the required arguments for the given command. Without arguments, the details (size, immortality, levels, server, name and sticky group) of the currently active window are displayed. If used with a number as argument, same as WINDOW REFNUM.
 
-   %|LEVEL and HIDELEVEL modify the currently set level. Without arguments, the current level is displayed. Levels listed starting with `+' are added to the current levels. Levels listed starting with `-' are removed from the current levels. To clear the levels, start the new level setting with `NONE'. Levels listed starting with `^' are either removed or added from the current setting, depending on whether they were previously set or not (since Irssi 1.5). Levels listed as is are also added to the current levels. Afterwards, the new level setting is displayed.
+   %|LEVEL and HIDELEVEL modify the currently set level. Without arguments, the current level is displayed. Levels listed starting with `+' are added to the current levels. Levels listed starting with `-' are removed from the current levels. To clear the levels, start the new level setting with `NONE'. Levels listed starting with `^' are either removed or added from the current setting, depending on whether they were previously set or not (since Irssi 1.4.4). Levels listed as is are also added to the current levels. Afterwards, the new level setting is displayed.
 
 %9Description:%9
 
