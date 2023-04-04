@@ -33,6 +33,8 @@
 #include <irssi/src/core/channels.h>
 #include <irssi/src/core/nicklist.h>
 
+#include <irssi/src/core/misc.h>
+
 static char *session_file;
 char *irssi_binary = NULL;
 
@@ -65,6 +67,7 @@ static void cmd_upgrade(const char *data)
 	if (*data == '\0')
 		data = irssi_binary;
 
+	data = convert_home(data);
 	if ((binary = g_find_program_in_path(data)) == NULL)
 		cmd_return_error(CMDERR_PROGRAM_NOT_FOUND);
 
