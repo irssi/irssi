@@ -26,6 +26,7 @@
 #include <irssi/src/core/net-sendbuffer.h>
 #include <irssi/src/core/pidwait.h>
 #include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/misc.h>
 
 #include <irssi/src/core/chat-protocols.h>
 #include <irssi/src/core/servers.h>
@@ -59,13 +60,19 @@ void session_upgrade(void)
 static void cmd_upgrade(const char *data)
 {
 	CONFIG_REC *session;
-	char *session_file, *str;
+	char *session_file, *str, *name;
 	char *binary;
 
 	if (*data == '\0')
-		data = irssi_binary;
+		name = irssi_binary;
+	else
+		name = convert_home(data);
 
-	if ((binary = g_find_program_in_path(data)) == NULL)
+	binary = g_find_program_in_path(name);
+	if (name != irssi_binary)
+		g_free(name);
+
+	if (binary == NULL)
 		cmd_return_error(CMDERR_PROGRAM_NOT_FOUND);
 
 	/* save the session */
