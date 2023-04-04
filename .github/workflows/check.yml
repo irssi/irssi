@@ -34,12 +34,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-latest]
+        os: [ubuntu-20.04, ubuntu-latest]
         builder: [meson]
         compiler: [clang, gcc]
         flags: [regular]
         include:
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             builder: meson
             meson_ver: ==0.53.2
             setuptools_ver: <51
