@@ -153,7 +153,7 @@ eval {
 $in_irssi = $@ ? 0 : 1;
 
 if (!in_irssi()) {
-  print "Warning: This script should be run inside irssi\n";
+  print STDERR "Warning: This script should be run inside irssi\n";
 } else {
   bootstrap Irssi $VERSION if (!$static);
 
