@@ -716,6 +716,7 @@ void fe_events_numeric_init(void)
 	last_away_msg = NULL;
 
   settings_add_bool("lookandfeel", "print_topic_on_join", TRUE);
+  settings_add_bool("lookandfeel", "print_url_on_join", TRUE);
 
 	/* clang-format off */
 	signal_add("event 221", (SIGNAL_FUNC) event_user_mode);
@@ -742,7 +743,11 @@ void fe_events_numeric_init(void)
 	signal_add("event 306", (SIGNAL_FUNC) event_nowaway);
 	signal_add("event 305", (SIGNAL_FUNC) event_unaway);
 	signal_add("event 301", (SIGNAL_FUNC) event_away);
-	signal_add("event 328", (SIGNAL_FUNC) event_chanserv_url);
+
+  if (settings_get_bool("print_url_on_join")) {
+	  signal_add("event 328", (SIGNAL_FUNC) event_chanserv_url);
+  }
+
 	signal_add("event 302", (SIGNAL_FUNC) event_userhost);
 	signal_add("event 341", (SIGNAL_FUNC) event_sent_invite);
 
@@ -844,7 +849,11 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 306", (SIGNAL_FUNC) event_nowaway);
 	signal_remove("event 305", (SIGNAL_FUNC) event_unaway);
 	signal_remove("event 301", (SIGNAL_FUNC) event_away);
-	signal_remove("event 328", (SIGNAL_FUNC) event_chanserv_url);
+
+  if (settings_get_bool("print_url_on_join")) {
+	  signal_remove("event 328", (SIGNAL_FUNC) event_chanserv_url);
+  }
+
 	signal_remove("event 302", (SIGNAL_FUNC) event_userhost);
 	signal_remove("event 341", (SIGNAL_FUNC) event_sent_invite);
 
