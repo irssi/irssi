@@ -715,6 +715,8 @@ void fe_events_numeric_init(void)
 	last_away_nick = NULL;
 	last_away_msg = NULL;
 
+  settings_add_bool("lookandfeel", "print_topic_on_join", TRUE);
+
 	/* clang-format off */
 	signal_add("event 221", (SIGNAL_FUNC) event_user_mode);
 	signal_add("event 303", (SIGNAL_FUNC) event_ison);
@@ -729,8 +731,12 @@ void fe_events_numeric_init(void)
 	signal_add("event 348", (SIGNAL_FUNC) event_eban_list);
 	signal_add("event 346", (SIGNAL_FUNC) event_invite_list);
 	signal_add("event 433", (SIGNAL_FUNC) event_nick_in_use);
-	signal_add("event 332", (SIGNAL_FUNC) event_topic_get);
-	signal_add("event 333", (SIGNAL_FUNC) event_topic_info);
+
+  if (settings_get_bool("print_topic_on_join")) {
+    signal_add("event 332", (SIGNAL_FUNC) event_topic_get);
+    signal_add("event 333", (SIGNAL_FUNC) event_topic_info);
+  }
+
 	signal_add("event 324", (SIGNAL_FUNC) event_channel_mode);
 	signal_add("event 329", (SIGNAL_FUNC) event_channel_created);
 	signal_add("event 306", (SIGNAL_FUNC) event_nowaway);
@@ -827,8 +833,12 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 348", (SIGNAL_FUNC) event_eban_list);
 	signal_remove("event 346", (SIGNAL_FUNC) event_invite_list);
 	signal_remove("event 433", (SIGNAL_FUNC) event_nick_in_use);
-	signal_remove("event 332", (SIGNAL_FUNC) event_topic_get);
-	signal_remove("event 333", (SIGNAL_FUNC) event_topic_info);
+
+  if (settings_get_bool("print_topic_on_join")) {
+    signal_remove("event 332", (SIGNAL_FUNC) event_topic_get);
+    signal_remove("event 333", (SIGNAL_FUNC) event_topic_info);
+  }
+
 	signal_remove("event 324", (SIGNAL_FUNC) event_channel_mode);
 	signal_remove("event 329", (SIGNAL_FUNC) event_channel_created);
 	signal_remove("event 306", (SIGNAL_FUNC) event_nowaway);
