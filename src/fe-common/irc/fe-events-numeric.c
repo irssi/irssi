@@ -138,50 +138,111 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 	g_free(params);
 }
 
+/* Get time elapsed since an event */
+static char *time_ago(time_t seconds)
+{
+	static char ret[128];
+	long unsigned years, weeks, days, hours, minutes;
+
+	seconds = time(NULL) - seconds;
+
+	years = seconds / (86400 * 365);
+	seconds %= (86400 * 365);
+	weeks = seconds / 604800;
+	days = (seconds / 86400) % 7;
+	hours = (seconds / 3600) % 24;
+	minutes = (seconds / 60) % 60;
+	seconds %= 60;
+
+	if (years)
+		snprintf(ret, sizeof(ret), "%luy %luw %lud", years, weeks, days);
+	else if (weeks)
+		snprintf(ret, sizeof(ret), "%luw %lud %luh", weeks, days, hours);
+	else if (days)
+		snprintf(ret, sizeof(ret), "%lud %luh %lum", days, hours, minutes);
+	else if (hours)
+		snprintf(ret, sizeof(ret), "%luh %lum", hours, minutes);
+	else if (minutes)
+		snprintf(ret, sizeof(ret), "%lum %lus", minutes, (long unsigned) seconds);
+	else
+		snprintf(ret, sizeof(ret), "%lus", (long unsigned) seconds);
+
+	return ret;
+}
+
 static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 {
 	IRC_CHANNEL_REC *chanrec;
 	BAN_REC *banrec;
 	const char *channel;
-	char *params, *ban, *setby, *tims;
-	long secs;
+	char *params, *ban, *setby, *tims, *timestr, *ago;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 5, NULL, &channel,
 				  &ban, &setby, &tims);
-	secs = *tims == '\0' ? 0 :
-		(long) (time(NULL) - atol(tims));
+	timestr = my_asctime((time_t) atoll(tims));
+	ago = time_ago((time_t) atoll(tims));
 
 	chanrec = irc_channel_find(server, channel);
 	banrec = chanrec == NULL ? NULL : banlist_find(chanrec->banlist, ban);
 
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
-		    banrec == NULL ? 0 : g_slist_index(chanrec->banlist, banrec)+1,
-		    channel, ban, setby, secs);
+	            *setby == '\0' ? IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
+	            banrec == NULL ? 0 : g_slist_index(chanrec->banlist, banrec) + 1, channel, ban,
+	            setby, ago, timestr);
 
+	g_free(timestr);
 	g_free(params);
 }
 
 static void event_eban_list(IRC_SERVER_REC *server, const char *data)
 {
 	const char *channel;
-	char *params, *ban, *setby, *tims;
-	long secs;
+	char *params, *ban, *setby, *tims, *timestr, *ago;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 5, NULL, &channel,
 				  &ban, &setby, &tims);
-	secs = *tims == '\0' ? 0 :
-		(long) (time(NULL) - atol(tims));
+	timestr = my_asctime((time_t) atoll(tims));
+	ago = time_ago((time_t) atoll(tims));
 
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_EBANLIST : IRCTXT_EBANLIST_LONG,
-		    channel, ban, setby, secs);
+	            *setby == '\0' ? IRCTXT_EBANLIST : IRCTXT_EBANLIST_LONG, channel, ban, setby,
+	            timestr, ago);
+
+	g_free(timestr);
+	g_free(params);
+}
+
+static void do_quiet_list(IRC_SERVER_REC *server, const char *channel, char *ban, char *setby,
+                          char *tims)
+{
+	char *timestr, *ago;
+
+	timestr = my_asctime((time_t) atoll(tims));
+	ago = time_ago((time_t) atoll(tims));
+
+	channel = get_visible_target(server, channel);
+	printformat(server, channel, MSGLEVEL_CRAP,
+	            *setby == '\0' ? IRCTXT_QUIETLIST : IRCTXT_QUIETLIST_LONG, channel, ban, setby,
+	            ago, timestr);
+
+	g_free(timestr);
+}
+
+static void event_quiet_list(IRC_SERVER_REC *server, const char *data)
+{
+	const char *channel;
+	char *params, *ban, *setby, *tims;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 6, NULL, &channel, NULL, &ban, &setby, &tims);
+	do_quiet_list(server, channel, ban, setby, tims);
 
 	g_free(params);
 }
@@ -214,20 +275,21 @@ static void event_accept_list(IRC_SERVER_REC *server, const char *data)
 static void event_invite_list(IRC_SERVER_REC *server, const char *data)
 {
 	const char *channel;
-	char *params, *invite, *setby, *tims;
-	long secs;
+	char *params, *invite, *setby, *tims, *timestr, *ago;
 
 	g_return_if_fail(data != NULL);
 
 	params = event_get_params(data, 5, NULL, &channel, &invite,
 			&setby, &tims);
-	secs = *tims == '\0' ? 0 :
-		(long) (time(NULL) - atol(tims));
+	timestr = my_asctime((time_t) atoll(tims));
+	ago = time_ago((time_t) atoll(tims));
 
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_INVITELIST : IRCTXT_INVITELIST_LONG,
-		    channel, invite, setby, secs);
+	            *setby == '\0' ? IRCTXT_INVITELIST : IRCTXT_INVITELIST_LONG, channel, invite,
+	            setby, timestr, ago);
+
+	g_free(timestr);
 	g_free(params);
 }
 
@@ -695,6 +757,26 @@ static void event_target_received(IRC_SERVER_REC *server, const char *data,
         print_event_received(server, data, nick, TRUE);
 }
 
+static void event_hybrid_quiet_list(IRC_SERVER_REC *server, const char *data)
+{
+	const char *channel;
+	char *params, *ban, *setby, *tims;
+
+	g_return_if_fail(data != NULL);
+
+	params = event_get_params(data, 5, NULL, &channel, &ban, &setby, &tims);
+
+	if (*tims == '\0') {
+		/* probably not a quiet list */
+		event_target_received(server, data, NULL);
+		return;
+	}
+
+	do_quiet_list(server, channel, ban, setby, tims);
+
+	g_free(params);
+}
+
 static void event_motd(IRC_SERVER_REC *server, const char *data,
 		       const char *nick, const char *addr)
 {
@@ -727,6 +809,8 @@ void fe_events_numeric_init(void)
 	signal_add("event 281", (SIGNAL_FUNC) event_accept_list);
 	signal_add("event 367", (SIGNAL_FUNC) event_ban_list);
 	signal_add("event 348", (SIGNAL_FUNC) event_eban_list);
+	signal_add("event 728", (SIGNAL_FUNC) event_quiet_list);
+	signal_add("event 344", (SIGNAL_FUNC) event_hybrid_quiet_list); /* used by ircd-hybrid */
 	signal_add("event 346", (SIGNAL_FUNC) event_invite_list);
 	signal_add("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_add("event 332", (SIGNAL_FUNC) event_topic_get);
@@ -785,8 +869,7 @@ void fe_events_numeric_init(void)
 	signal_add("event 470", (SIGNAL_FUNC) event_received);
 	signal_add("event 479", (SIGNAL_FUNC) event_received);
 
-	signal_add("event 344", (SIGNAL_FUNC) event_target_received); /* reop list */
-	signal_add("event 345", (SIGNAL_FUNC) event_target_received); /* end of reop list */
+	signal_add("event 345", (SIGNAL_FUNC) event_target_received); /* end of reop list/hybrid quiet list */
 	signal_add("event 347", (SIGNAL_FUNC) event_target_received); /* end of invite exception list */
 	signal_add("event 349", (SIGNAL_FUNC) event_target_received); /* end of ban exception list */
 	signal_add("event 368", (SIGNAL_FUNC) event_target_received); /* end of ban list */
@@ -804,7 +887,6 @@ void fe_events_numeric_init(void)
 	signal_add("event 506", (SIGNAL_FUNC) event_target_received); /* cannot send (+R) */
 	signal_add("event 716", (SIGNAL_FUNC) event_target_received); /* cannot /msg (+g) */
 	signal_add("event 717", (SIGNAL_FUNC) event_target_received); /* +g notified */
-	signal_add("event 728", (SIGNAL_FUNC) event_target_received); /* quiet (or other) list */
 	signal_add("event 729", (SIGNAL_FUNC) event_target_received); /* end of quiet (or other) list */
 	/* clang-format on */
 }
@@ -825,6 +907,8 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 281", (SIGNAL_FUNC) event_accept_list);
 	signal_remove("event 367", (SIGNAL_FUNC) event_ban_list);
 	signal_remove("event 348", (SIGNAL_FUNC) event_eban_list);
+	signal_remove("event 728", (SIGNAL_FUNC) event_quiet_list);
+	signal_remove("event 344", (SIGNAL_FUNC) event_hybrid_quiet_list);
 	signal_remove("event 346", (SIGNAL_FUNC) event_invite_list);
 	signal_remove("event 433", (SIGNAL_FUNC) event_nick_in_use);
 	signal_remove("event 332", (SIGNAL_FUNC) event_topic_get);
@@ -879,7 +963,6 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 470", (SIGNAL_FUNC) event_received);
 	signal_remove("event 479", (SIGNAL_FUNC) event_received);
 
-	signal_remove("event 344", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 345", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 347", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 349", (SIGNAL_FUNC) event_target_received);
@@ -898,6 +981,5 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 506", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 716", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 717", (SIGNAL_FUNC) event_target_received);
-	signal_remove("event 728", (SIGNAL_FUNC) event_target_received);
 	signal_remove("event 729", (SIGNAL_FUNC) event_target_received);
 }
