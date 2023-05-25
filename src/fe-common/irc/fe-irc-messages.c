@@ -173,7 +173,7 @@ static void sig_message_own_action(IRC_SERVER_REC *server, const char *msg,
 	oldtarget = target;
 	target = fe_channel_skip_prefix(IRC_SERVER(server), target);
 	if (server_ischannel(SERVER(server), target))
-		item = irc_channel_find(server, target);
+		item = channel_find(SERVER(server), target);
 	else
 		item = irc_query_find(server, target);
 
