@@ -163,9 +163,9 @@ static char *time_ago(time_t seconds)
 	else if (hours)
 		snprintf(ret, sizeof(ret), "%luh %lum", hours, minutes);
 	else if (minutes)
-		snprintf(ret, sizeof(ret), "%lum %lus", minutes, (long unsigned)seconds);
+		snprintf(ret, sizeof(ret), "%lum %lus", minutes, (long unsigned) seconds);
 	else
-		snprintf(ret, sizeof(ret), "%lus", (long unsigned)seconds);
+		snprintf(ret, sizeof(ret), "%lus", (long unsigned) seconds);
 
 	return ret;
 }
@@ -211,14 +211,16 @@ static void event_eban_list(IRC_SERVER_REC *server, const char *data)
 
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_EBANLIST : IRCTXT_EBANLIST_LONG,
-		    channel, ban, setby, timestr, ago);
+	            *setby == '\0' ? IRCTXT_EBANLIST : IRCTXT_EBANLIST_LONG, channel, ban, setby,
+	            timestr, ago);
 
 	g_free(timestr);
 	g_free(params);
 }
 
-static void do_quiet_list(IRC_SERVER_REC *server, const char *channel, char *ban, char *setby, char *tims) {
+static void do_quiet_list(IRC_SERVER_REC *server, const char *channel, char *ban, char *setby,
+                          char *tims)
+{
 	char *timestr, *ago;
 
 	timestr = my_asctime((time_t) atoll(tims));
@@ -239,8 +241,7 @@ static void event_quiet_list(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 6, NULL, &channel,
-				  NULL, &ban, &setby, &tims);
+	params = event_get_params(data, 6, NULL, &channel, NULL, &ban, &setby, &tims);
 	do_quiet_list(server, channel, ban, setby, tims);
 
 	g_free(params);
@@ -285,8 +286,8 @@ static void event_invite_list(IRC_SERVER_REC *server, const char *data)
 
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_INVITELIST : IRCTXT_INVITELIST_LONG,
-		    channel, invite, setby, timestr, ago);
+	            *setby == '\0' ? IRCTXT_INVITELIST : IRCTXT_INVITELIST_LONG, channel, invite,
+	            setby, timestr, ago);
 
 	g_free(timestr);
 	g_free(params);
@@ -763,8 +764,7 @@ static void event_hybrid_quiet_list(IRC_SERVER_REC *server, const char *data)
 
 	g_return_if_fail(data != NULL);
 
-	params = event_get_params(data, 5, NULL, &channel,
-				  &ban, &setby, &tims);
+	params = event_get_params(data, 5, NULL, &channel, &ban, &setby, &tims);
 
 	if (*tims == '\0') {
 		/* probably not a quiet list */
