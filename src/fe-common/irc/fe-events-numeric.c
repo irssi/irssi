@@ -189,9 +189,9 @@ static void event_ban_list(IRC_SERVER_REC *server, const char *data)
 
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
-		    banrec == NULL ? 0 : g_slist_index(chanrec->banlist, banrec)+1,
-		    channel, ban, setby, timestr, ago);
+	            *setby == '\0' ? IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
+	            banrec == NULL ? 0 : g_slist_index(chanrec->banlist, banrec) + 1, channel, ban,
+	            setby, ago, timestr);
 
 	g_free(timestr);
 	g_free(params);
@@ -226,8 +226,8 @@ static void do_quiet_list(IRC_SERVER_REC *server, const char *channel, char *ban
 
 	channel = get_visible_target(server, channel);
 	printformat(server, channel, MSGLEVEL_CRAP,
-		    *setby == '\0' ? IRCTXT_QUIETLIST : IRCTXT_QUIETLIST_LONG,
-		    channel, ban, setby, timestr, ago);
+	            *setby == '\0' ? IRCTXT_QUIETLIST : IRCTXT_QUIETLIST_LONG, channel, ban, setby,
+	            ago, timestr);
 
 	g_free(timestr);
 }
