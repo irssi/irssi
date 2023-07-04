@@ -18,7 +18,7 @@ T_BufferLineWrapper
 OUTPUT
 
 T_PlainObj
-	$arg = plain_bless($var, \"$type\");
+	$arg = plain_bless($var, \"$ntype\");
 
 T_BufferLineWrapper
 	$arg = perl_buffer_line_bless($var);
