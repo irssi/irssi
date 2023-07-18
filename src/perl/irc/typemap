@@ -36,5 +36,5 @@ T_DccObj
 	$arg = simple_iobject_bless((DCC_REC *)$var);
 
 T_PlainObj
-	$arg = plain_bless($var, \"$type\");
+	$arg = plain_bless($var, \"$ntype\");
 
