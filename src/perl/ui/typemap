@@ -13,5 +13,5 @@ T_PlainObj
 OUTPUT
 
 T_PlainObj
-	$arg = plain_bless($var, \"$type\");
+	$arg = plain_bless($var, \"$ntype\");
 
