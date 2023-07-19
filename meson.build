@@ -394,7 +394,7 @@ int main()
   else
     xsubpp_file_c = meson.get_cross_property('perl_xsubpp', UNSET)
     if xsubpp_file_c == UNSET
-      xsubpp_file_c = run_command(build_perl, '-MExtUtils::ParseXS', '-Eprint $INC{"ExtUtils/ParseXS.pm"} =~ s{ParseXS\\.pm$}{xsubpp}r').stdout()
+      xsubpp_file_c = run_command(build_perl, '-MExtUtils::ParseXS', '-e($r = $INC{"ExtUtils/ParseXS.pm"}) =~ s{ParseXS\\.pm$}{xsubpp}; print $r').stdout()
     endif
     xsubpp = generator(build_perl,
       output : '@BASENAME@.c',
