@@ -7,7 +7,7 @@ To compile Irssi you need:
 - meson-0.53 build system with ninja-1.8 or greater
 - glib-2.32 or greater
 - openssl (for ssl support)
-- perl-5.6 or greater (for Perl support)
+- perl-5.8 or greater (for building, and optionally Perl scripts)
 - terminfo or ncurses (for text frontend)
 
 For most people, this should work just fine:
