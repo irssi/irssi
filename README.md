@@ -58,6 +58,13 @@ ninja -C Build && sudo ninja -C Build install
 
 ## [Modules](https://irssi.org/modules/)
 
+## [Docker](https://hub.docker.com/_/irssi)
+
+Unofficial official images are available on dockerhub [here](https://hub.docker.com/_/irssi).
+
+You can run the lastest release without a hitch using [gvisor](https://gvisor.dev/) and `--cap-drop ALL`.
+
+
 ## [Security information](https://irssi.org/security/)
 
 Please report security issues to staff@irssi.org. Thanks!
