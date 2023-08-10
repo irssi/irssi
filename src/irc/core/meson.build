@@ -39,6 +39,7 @@ libirc_core_a = static_library('irc_core',
   ],
   dependencies : dep)
 libirc_core_sm = shared_module('irc_core',
+  name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
   link_whole : libirc_core_a)

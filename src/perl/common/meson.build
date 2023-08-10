@@ -20,6 +20,7 @@ shared_module('Irssi',
   )
   + [ irssi_version_h ],
   name_prefix : '',
+  name_suffix : perl_module_suffix,
   install : true,
   install_dir : perlmoddir / 'auto' / 'Irssi',
   include_directories : rootinc,
