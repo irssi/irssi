@@ -30,6 +30,13 @@
 #include <termios.h>
 #include <stdio.h>
 
+#ifdef HAVE_TERM_H
+#include <term.h>
+#else
+/* TODO: This needs arguments, starting with C2X. */
+int tputs();
+#endif
+
 /* returns number of characters in the beginning of the buffer being a
    a single character, or -1 if more input is needed. The character will be
    saved in result */
@@ -313,9 +320,6 @@ inline static int term_putchar(int c)
 {
         return fputc(c, current_term->out);
 }
-
-/* copied from terminfo-core.c */
-int tputs();
 
 static int termctl_set_color_24bit(int bg, unsigned int lc)
 {
