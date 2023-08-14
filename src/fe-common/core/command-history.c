@@ -261,7 +261,12 @@ static const char *command_history_prev_int(WINDOW_REC *window, const char *text
 	if (*text != '\0' &&
 	    (pos == NULL || g_strcmp0(((HISTORY_ENTRY_REC *)pos->data)->text, text) != 0)) {
 		/* save the old entry to history */
-		command_history_add(history, text);
+		if (pos != NULL && settings_get_bool("command_history_editable")) {
+			history_entry_destroy(pos->data);
+			pos->data = history_entry_new(history, text);
+		} else {
+			command_history_add(history, text);
+		}
 	}
 
 	return history->pos == NULL ? text : ((HISTORY_ENTRY_REC *)history->pos->data)->text;
@@ -292,7 +297,12 @@ static const char *command_history_next_int(WINDOW_REC *window, const char *text
 	if (*text != '\0' &&
 	    (pos == NULL || g_strcmp0(((HISTORY_ENTRY_REC *)pos->data)->text, text) != 0)) {
 		/* save the old entry to history */
-		command_history_add(history, text);
+		if (pos != NULL && settings_get_bool("command_history_editable")) {
+			history_entry_destroy(pos->data);
+			pos->data = history_entry_new(history, text);
+		} else {
+			command_history_add(history, text);
+		}
 	}
 	return history->pos == NULL ? "" : ((HISTORY_ENTRY_REC *)history->pos->data)->text;
 }
@@ -467,6 +477,7 @@ void command_history_init(void)
 {
 	settings_add_int("history", "max_command_history", 100);
 	settings_add_bool("history", "window_history", FALSE);
+	settings_add_bool("history", "command_history_editable", FALSE);
 
 	special_history_func_set(special_history_func);
 
