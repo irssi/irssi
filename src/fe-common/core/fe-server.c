@@ -101,8 +101,14 @@ static SERVER_SETUP_REC *create_server_setup(GHashTable *optlist)
 		}
 	}
 
-        server = rec->create_server_setup();
-        server->chat_type = rec->id;
+	if (rec == NULL) {
+		/* no protocols loaded, bail out */
+		signal_emit("chat protocol unknown", 1, "(none)");
+		return NULL;
+	}
+
+	server = rec->create_server_setup();
+	server->chat_type = rec->id;
 	server->tls_verify = TRUE;
 	return server;
 }
