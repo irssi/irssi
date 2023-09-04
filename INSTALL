@@ -108,3 +108,11 @@ would call:
 Getting perl scripting to work needs a few things:
 
  - TODO
+
+
+ Apple MacOS / Darwin
+
+At the time of writing, meson has an open issue with correctly linking
+libraries on macos.
+
+See docs/meson-macos-ar.txt for a workaround.
