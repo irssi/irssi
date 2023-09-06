@@ -1,0 +1,6 @@
+;; manual workaround for meson bug https://github.com/mesonbuild/meson/issues/11165
+;; fixes compilation with meson on apple macos
+;; usage: meson --native-file ./docs/meson-macos-ar.txt ...
+
+[binaries]
+ar = ['/bin/sh', '-c', 'ar=${AR:-ar}; ranlib=${RANLIB:-ranlib -c -}; case "x$1" in xcsr*) $ar "$@" && $ranlib "$2" || exit $?; ;; *) exec $ar "$@"; ;; esac;', 'ar']
