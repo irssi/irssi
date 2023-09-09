@@ -16,11 +16,13 @@
     -4:                 Connects using IPv4.
     -6:                 Connects using IPv6.
     -tls:               Connects using TLS encryption.
+    -notls:             Connect without TLS encrption.
     -tls_cert:          The TLS client certificate file.
     -tls_pkey:          The TLS client private key, if not included in the
                         certificate file.
     -tls_pass:          The password for the TLS client private key or certificate.
-    -tls_verify:        Verifies the TLS certificate of the server.
+    -tls_verify:        Verifies the TLS certificate of the server.	
+    -notls_verify:      Doesn't verify the TLS certificate of the server.
     -tls_cafile:        The file with the list of CA certificates.
     -tls_capath:        The directory which contains the CA certificates.
     -tls_ciphers:       TLS cipher suite preference lists.
