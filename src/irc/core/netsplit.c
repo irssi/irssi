@@ -222,7 +222,7 @@ NETSPLIT_CHAN_REC *netsplit_find_channel(IRC_SERVER_REC *server,
 int quitmsg_is_split(const char *msg)
 {
 	const char *host2, *p;
-        int prev, len, host1_dot, host2_dot;
+	int prev, host1_dot, host2_dot;
 
 	g_return_val_if_fail(msg != NULL, FALSE);
 
@@ -242,7 +242,8 @@ int quitmsg_is_split(const char *msg)
 	     - can't contain ':' or '/' chars (some servers allow URLs)
 	   */
 	host2 = NULL;
-	prev = '\0'; len = 0; host1_dot = host2_dot = 0;
+	prev = '\0';
+	host1_dot = host2_dot = 0;
 	while (*msg != '\0') {
 		if (*msg == ' ') {
 			if (prev == '.' || prev == '\0') {
@@ -254,7 +255,7 @@ int quitmsg_is_split(const char *msg)
 				return FALSE; /* only one space allowed */
 			if (!host1_dot)
                                 return FALSE; /* host1 didn't have domain */
-                        host2 = msg+1; len = -1;
+			host2 = msg + 1;
 		} else if (*msg == '.') {
 			if (prev == '\0' || prev == ' ' || prev == '.') {
 				/* domains can't start with '.'
@@ -270,7 +271,7 @@ int quitmsg_is_split(const char *msg)
 			return FALSE;
 
 		prev = *msg;
-                msg++; len++;
+		msg++;
 	}
 
 	if (!host2_dot || prev == '.')
