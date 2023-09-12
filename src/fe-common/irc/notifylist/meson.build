@@ -13,6 +13,7 @@ libfe_irc_notifylist_a = static_library('fe_irc_notifylist',
   ],
   dependencies : dep)
 shared_module('fe_irc_notifylist',
+  name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
   link_with : dl_cross_irc_notifylist,

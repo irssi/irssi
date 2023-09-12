@@ -9,6 +9,7 @@ libirc_flood_a = static_library('irc_flood',
   implicit_include_directories : false,
   dependencies : dep)
 shared_module('irc_flood',
+  name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
   link_with : dl_cross_irc_core,
