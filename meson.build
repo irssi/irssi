@@ -73,6 +73,16 @@ def_scriptdir  = '-D' + 'SCRIPTDIR'  + '="' + (get_option('prefix') / scriptdir)
 
 def_suppress_printf_fallback = '-D' + 'SUPPRESS_PRINTF_FALLBACK'
 
+
+module_suffix = []
+perl_module_suffix = []
+# Meson uses the wrong module extensions on Mac.
+# https://gitlab.gnome.org/GNOME/glib/issues/520
+if ['darwin', 'ios'].contains(host_machine.system())
+  module_suffix = 'so'
+  perl_module_suffix = 'bundle'
+endif
+
 ##############
 # Help files #
 ##############
