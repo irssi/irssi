@@ -65,6 +65,9 @@ jobs:
           curl -SLf https://github.com/irssi-import/actions-irssi/raw/master/check-irssi/render.pl -o ~/render.pl && chmod +x ~/render.pl
       - name: unpack archive
         run: tar xaf artifact/irssi-*.tar.gz
+      - name: Setup local annotations
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: irssi-import/actions-irssi/problem-matchers@master
       - name: build and install with meson
         run: |
           # ninja install

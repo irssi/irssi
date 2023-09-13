@@ -390,6 +390,11 @@ if want_perl
   if perl_version == UNSET
     perl_version = run_command(cross_perl, '-V::version:', check : true).stdout().split('\'')[1]
   endif
+
+  # disable clang warning
+  if perl_version.version_compare('<5.35.2')
+    perl_cflags += cc.get_supported_arguments('-Wno-compound-token-split-by-macro')
+  endif
   perl_dep = declare_dependency(compile_args : perl_cflags, link_args : perl_ldflags,
     version : perl_version)
 
