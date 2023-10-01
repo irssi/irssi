@@ -1,3 +1,24 @@
+v1.4.5 2023-10-03  The Irssi team <staff@irssi.org>
+	+ Add workaround for Perl 5.38.0 bug that breaks the Irssi
+          locale and glyph rendering (scripts.irssi.org#857, #1498)
+	- Fix Perl scripts broken by Perl 5.38 (scripts.irssi.org#851,
+          #1474). With input from Leon Timmermans
+	- Document workaround to fix linker errors when building with
+          meson on Apple (#1435, #1492)
+	- Fix meson using wrong filenames on Apple, leading to broken
+          Perl support (#1483, #1493)
+	- Fix /upgrade not accepting `~' (#1460, #1462). By Lukas Mai 
+	- Improve compatibility with Perl5-IDEA (#1465, #1467). By
+          Charlie Daffern
+	- Fix logic in how own actions are printed for other protocols
+          (codeberg!5, #1471). By Andrej Kacian
+	- Fix crash on old PowerPC Mac (#1482, #1484)
+	- Fix wrong prototype of library function used in terminal
+          handling (#1495). By Emil Engler
+	- Minor cleanups (#1488, #1497). Includes work by Emil Engler
+	- Minor help and documentation fixes (#1458, #1494, #1477,
+          #1478). Includes work by KindOne
+
 v1.4.4 2023-03-31  The Irssi team <staff@irssi.org>
 	* Expose location of signals.txt via pkg-config (codeberg!1,
           #1439, #1446, #1447). By Andrej Kacian
