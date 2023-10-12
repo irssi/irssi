@@ -81,17 +81,17 @@ static void sasl_start(IRC_SERVER_REC *server, const char *data, const char *fro
 			irc_send_cmd_now(server, "AUTHENTICATE EXTERNAL");
 			break;
 
-		case SASL_SCRAM_SHA_1:
-			irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-1");
-			break;
+	        case SASL_SCRAM_SHA_1:
+		        irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-1");
+		        break;
 
-		case SASL_SCRAM_SHA_256:
-			irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-256");
-			break;
+	        case SASL_SCRAM_SHA_256:
+		        irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-256");
+		        break;
 
-		case SASL_SCRAM_SHA_512:
-			irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-512");
-			break;
+	        case SASL_SCRAM_SHA_512:
+		        irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-512");
+		        break;
 	}
 	server->sasl_timeout = g_timeout_add(SASL_TIMEOUT, (GSourceFunc) sasl_timeout, server);
 }
@@ -237,17 +237,19 @@ void sasl_send_response(IRC_SERVER_REC *server, GString *response)
 
 /*
  * Sends AUTHENTICATE messages to log in via SCRAM.
-*/
-static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const char *digest) {
+ */
+static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const char *digest)
+{
 	char *enc, *cmd, *output;
 	int ret;
 	size_t output_len;
 	IRC_SERVER_CONNECT_REC *conn = server->connrec;
 
 	if (conn->scram_session == NULL) {
-		conn->scram_session = scram_create_session(digest, conn->sasl_username, conn->sasl_password);
+		conn->scram_session =
+		    scram_create_session(digest, conn->sasl_username, conn->sasl_password);
 
-		if(conn->scram_session == NULL) {
+		if (conn->scram_session == NULL) {
 			g_error("Could not create SCRAM session with digest %s", digest);
 			irc_send_cmd_now(server, "AUTHENTICATE *");
 			return;
@@ -264,19 +266,18 @@ static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const c
 		g_free(cmd);
 		g_free(enc);
 		g_free(output);
-	}
-	else if (ret == SCRAM_SUCCESS) {
+	} else if (ret == SCRAM_SUCCESS) {
 		// Authentication succeeded
 		irc_send_cmd_now(server, "AUTHENTICATE +");
 		scram_free_session(conn->scram_session);
 		conn->scram_session = NULL;
-	}
-	else if (ret == SCRAM_ERROR) {
+	} else if (ret == SCRAM_ERROR) {
 		// Authentication failed
 		irc_send_cmd_now(server, "AUTHENTICATE *");
 
-		if(conn->scram_session->error != NULL) {
-			g_warning("SASL SCRAM authentication failed: %s", conn->scram_session->error);
+		if (conn->scram_session->error != NULL) {
+			g_warning("SASL SCRAM authentication failed: %s",
+			          conn->scram_session->error);
 		}
 
 		scram_free_session(conn->scram_session);
@@ -320,17 +321,17 @@ static void sasl_step_complete(IRC_SERVER_REC *server, GString *data)
 			sasl_send_response(server, NULL);
 			break;
 
-		case SASL_SCRAM_SHA_1:
-			scram_authenticate(server, data->str, "SHA1");
-			break;
+	        case SASL_SCRAM_SHA_1:
+		        scram_authenticate(server, data->str, "SHA1");
+		        break;
 
-		case SASL_SCRAM_SHA_256:
-			scram_authenticate(server, data->str, "SHA256");
-			break;
+	        case SASL_SCRAM_SHA_256:
+		        scram_authenticate(server, data->str, "SHA256");
+		        break;
 
-		case SASL_SCRAM_SHA_512:
-			scram_authenticate(server, data->str, "SHA512");
-			break;
+	        case SASL_SCRAM_SHA_512:
+		        scram_authenticate(server, data->str, "SHA512");
+		        break;
 	}
 }
 

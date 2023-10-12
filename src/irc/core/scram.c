@@ -78,7 +78,7 @@ static int create_nonce(void *buffer, size_t length)
 }
 
 static int create_SHA(scram_session *session, const unsigned char *input, size_t input_len,
-					  unsigned char *output, unsigned int *output_len)
+                      unsigned char *output, unsigned int *output_len)
 {
 	EVP_MD_CTX *md_ctx = EVP_MD_CTX_new();
 
@@ -122,9 +122,10 @@ static int process_client_first(scram_session *session, char **output, size_t *o
 }
 
 static int process_server_first(scram_session *session, const char *data, char **output,
-								size_t *output_len)
+                                size_t *output_len)
 {
-	char **params, *client_final_message_without_proof, *salt, *server_nonce_b64, *client_proof_b64;
+	char **params, *client_final_message_without_proof, *salt, *server_nonce_b64,
+	    *client_proof_b64;
 	unsigned char *client_key, stored_key[EVP_MAX_MD_SIZE], *client_signature, *client_proof;
 	unsigned int i, param_count, salt_len, iteration_count, client_key_len, stored_key_len;
 	size_t client_nonce_len;
@@ -147,20 +148,17 @@ static int process_server_first(scram_session *session, const char *data, char *
 	for (i = 0; i < param_count; i++) {
 		if (!strncmp(params[i], "r=", 2)) {
 			server_nonce_b64 = g_strdup(params[i] + 2);
-		}
-		else if (!strncmp(params[i], "s=", 2)) {
+		} else if (!strncmp(params[i], "s=", 2)) {
 			salt = g_strdup(params[i] + 2);
-		}
-		else if (!strncmp(params[i], "i=", 2)) {
+		} else if (!strncmp(params[i], "i=", 2)) {
 			iteration_count = strtoul(params[i] + 2, NULL, 10);
 		}
 	}
 
 	g_strfreev(params);
 
-	if (server_nonce_b64 == NULL || *server_nonce_b64 == '\0'
-		|| salt == NULL || *salt == '\0'
-		|| iteration_count == 0) {
+	if (server_nonce_b64 == NULL || *server_nonce_b64 == '\0' || salt == NULL ||
+	    *salt == '\0' || iteration_count == 0) {
 		session->error = g_strdup_printf("Invalid server-first-message: %s", data);
 		return SCRAM_ERROR;
 	}
@@ -168,30 +166,34 @@ static int process_server_first(scram_session *session, const char *data, char *
 	client_nonce_len = strlen(session->client_nonce_b64);
 
 	// The server can append his nonce to the client's nonce
-	if (strlen(server_nonce_b64) < client_nonce_len
-		|| strncmp(server_nonce_b64, session->client_nonce_b64, client_nonce_len)) {
+	if (strlen(server_nonce_b64) < client_nonce_len ||
+	    strncmp(server_nonce_b64, session->client_nonce_b64, client_nonce_len)) {
 		session->error = g_strdup_printf("Invalid server nonce: %s", server_nonce_b64);
 		return SCRAM_ERROR;
 	}
 
-	salt_len = g_base64_decode_step((gchar *) salt, strlen((char *) salt), (guchar *) salt, &b64_state, &b64_save);
+	salt_len = g_base64_decode_step((gchar *) salt, strlen((char *) salt), (guchar *) salt,
+	                                &b64_state, &b64_save);
 
 	// SaltedPassword := Hi(Normalize(password), salt, i)
 	session->salted_password = malloc(session->digest_size);
-	PKCS5_PBKDF2_HMAC(session->password, strlen(session->password), (unsigned char *) salt, salt_len, iteration_count,
-						session->digest, session->digest_size, session->salted_password);
+	PKCS5_PBKDF2_HMAC(session->password, strlen(session->password), (unsigned char *) salt,
+	                  salt_len, iteration_count, session->digest, session->digest_size,
+	                  session->salted_password);
 
-	// AuthMessage := client-first-message-bare + "," +	server-first-message + "," + client-final-message-without-proof
+	// AuthMessage := client-first-message-bare + "," +
+	//                server-first-message + "," +
+	//                client-final-message-without-proof
 	client_final_message_without_proof = g_strdup_printf("c=biws,r=%s", server_nonce_b64);
 
-	session->auth_message = g_strdup_printf("%s,%s,%s", session->client_first_message_bare, data,
-											client_final_message_without_proof);
+	session->auth_message = g_strdup_printf("%s,%s,%s", session->client_first_message_bare,
+	                                        data, client_final_message_without_proof);
 
 	// ClientKey := HMAC(SaltedPassword, "Client Key")
 	client_key = g_malloc0(session->digest_size);
 
 	HMAC(session->digest, session->salted_password, session->digest_size,
-		 (unsigned char *) CLIENT_KEY, strlen(CLIENT_KEY), client_key, &client_key_len);
+	     (unsigned char *) CLIENT_KEY, strlen(CLIENT_KEY), client_key, &client_key_len);
 
 	// StoredKey := H(ClientKey)
 	if (!create_SHA(session, client_key, session->digest_size, stored_key, &stored_key_len)) {
@@ -201,7 +203,7 @@ static int process_server_first(scram_session *session, const char *data, char *
 	// ClientSignature := HMAC(StoredKey, AuthMessage)
 	client_signature = g_malloc0(session->digest_size);
 	HMAC(session->digest, stored_key, stored_key_len, (unsigned char *) session->auth_message,
-		 strlen((char *) session->auth_message), client_signature, NULL);
+	     strlen((char *) session->auth_message), client_signature, NULL);
 
 	// ClientProof := ClientKey XOR ClientSignature
 	client_proof = g_malloc0(client_key_len);
@@ -238,19 +240,22 @@ static int process_server_final(scram_session *session, const char *data)
 	}
 
 	verifier = g_strdup(data + 2);
-	verifier_len = g_base64_decode_step(verifier, strlen(verifier), (guchar *) verifier, &b64_state, &b64_save);
+	verifier_len = g_base64_decode_step(verifier, strlen(verifier), (guchar *) verifier,
+	                                    &b64_state, &b64_save);
 
 	// ServerKey := HMAC(SaltedPassword, "Server Key")
 	server_key = g_malloc0(session->digest_size);
 	HMAC(session->digest, session->salted_password, session->digest_size,
-		(unsigned char *) SERVER_KEY, strlen(SERVER_KEY), server_key, &server_key_len);
+	     (unsigned char *) SERVER_KEY, strlen(SERVER_KEY), server_key, &server_key_len);
 
 	// ServerSignature := HMAC(ServerKey, AuthMessage)
 	server_signature = g_malloc0(session->digest_size);
-	HMAC(session->digest, server_key, session->digest_size, (unsigned char *) session->auth_message,
-		strlen((char *) session->auth_message), server_signature, &server_signature_len);
+	HMAC(session->digest, server_key, session->digest_size,
+	     (unsigned char *) session->auth_message, strlen((char *) session->auth_message),
+	     server_signature, &server_signature_len);
 
-	if (verifier_len == server_signature_len && memcmp(verifier, server_signature, verifier_len) == 0) {
+	if (verifier_len == server_signature_len &&
+	    memcmp(verifier, server_signature, verifier_len) == 0) {
 		g_free(verifier);
 		g_free(server_key);
 		g_free(server_signature);

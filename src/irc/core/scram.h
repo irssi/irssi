@@ -3,9 +3,9 @@
 
 #include <openssl/evp.h>
 
-#define SCRAM_ERROR			0
-#define SCRAM_IN_PROGRESS	1
-#define SCRAM_SUCCESS		2
+#define SCRAM_ERROR 0
+#define SCRAM_IN_PROGRESS 1
+#define SCRAM_SUCCESS 2
 
 typedef struct {
 	const EVP_MD *digest;
