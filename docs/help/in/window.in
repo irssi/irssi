@@ -74,5 +74,5 @@
     /WINDOW HIDELEVEL ^JOINS ^PARTS ^QUITS
     /WINDOW LOGFILE ~/logs/notices.log
 
-%9See also:%9 JOIN, LEVELS, LOG, QUERY
+%9See also:%9 JOIN, LEVELS, LOG, QUERY, SET window_default_level, SET window_default_hidelevel
 
