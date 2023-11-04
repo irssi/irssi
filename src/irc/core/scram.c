@@ -104,7 +104,7 @@ static int create_SHA(scram_session *session, const unsigned char *input, size_t
 	return SCRAM_IN_PROGRESS;
 }
 
-static int process_client_first(scram_session *session, char **output, size_t *output_len)
+static scram_status process_client_first(scram_session *session, char **output, size_t *output_len)
 {
 	char nonce[NONCE_LENGTH];
 
@@ -121,16 +121,15 @@ static int process_client_first(scram_session *session, char **output, size_t *o
 	return SCRAM_IN_PROGRESS;
 }
 
-static int process_server_first(scram_session *session, const char *data, char **output,
+static scram_status process_server_first(scram_session *session, const char *data, char **output,
                                 size_t *output_len)
 {
 	char **params, *client_final_message_without_proof, *salt, *server_nonce_b64,
 	    *client_proof_b64;
 	unsigned char *client_key, stored_key[EVP_MAX_MD_SIZE], *client_signature, *client_proof;
-	unsigned int i, param_count, salt_len, iteration_count, client_key_len, stored_key_len;
+	unsigned int i, param_count, iteration_count, client_key_len, stored_key_len;
+	gsize salt_len = 0;
 	size_t client_nonce_len;
-	gint b64_state = 0;
-	guint b64_save = 0;
 
 	params = g_strsplit(data, ",", -1);
 	param_count = g_strv_length(params);
@@ -172,11 +171,11 @@ static int process_server_first(scram_session *session, const char *data, char *
 		return SCRAM_ERROR;
 	}
 
-	salt_len = g_base64_decode_step((gchar *) salt, strlen((char *) salt), (guchar *) salt,
-	                                &b64_state, &b64_save);
+	g_base64_decode_inplace((gchar *) salt, &salt_len);
 
 	// SaltedPassword := Hi(Normalize(password), salt, i)
-	session->salted_password = malloc(session->digest_size);
+	session->salted_password = g_malloc(session->digest_size);
+
 	PKCS5_PBKDF2_HMAC(session->password, strlen(session->password), (unsigned char *) salt,
 	                  salt_len, iteration_count, session->digest, session->digest_size,
 	                  session->salted_password);
@@ -227,21 +226,19 @@ static int process_server_first(scram_session *session, const char *data, char *
 	return SCRAM_IN_PROGRESS;
 }
 
-static int process_server_final(scram_session *session, const char *data)
+static scram_status process_server_final(scram_session *session, const char *data)
 {
 	char *verifier;
 	unsigned char *server_key, *server_signature;
-	unsigned int verifier_len = 0, server_key_len = 0, server_signature_len = 0;
-	gint b64_state = 0;
-	guint b64_save = 0;
+	unsigned int server_key_len = 0, server_signature_len = 0;
+	gsize verifier_len = 0;
 
 	if (strlen(data) < 3 || (data[0] != 'v' && data[1] != '=')) {
 		return SCRAM_ERROR;
 	}
 
 	verifier = g_strdup(data + 2);
-	verifier_len = g_base64_decode_step(verifier, strlen(verifier), (guchar *) verifier,
-	                                    &b64_state, &b64_save);
+	g_base64_decode_inplace(verifier, &verifier_len);
 
 	// ServerKey := HMAC(SaltedPassword, "Server Key")
 	server_key = g_malloc0(session->digest_size);
@@ -268,25 +265,26 @@ static int process_server_final(scram_session *session, const char *data)
 	}
 }
 
-int scram_process(scram_session *session, const char *input, char **output, size_t *output_len)
+scram_status scram_process(scram_session *session, const char *input, char **output, size_t *output_len)
 {
-	int ret = 0;
+	scram_status status;
 
 	switch (session->step) {
 	case 0:
-		ret = process_client_first(session, output, output_len);
+		status = process_client_first(session, output, output_len);
 		break;
 	case 1:
-		ret = process_server_first(session, input, output, output_len);
+		status = process_server_first(session, input, output, output_len);
 		break;
 	case 2:
-		ret = process_server_final(session, input);
+		status = process_server_final(session, input);
 		break;
 	default:
 		*output = NULL;
 		*output_len = 0;
+		status = SCRAM_ERROR;
 		break;
 	}
 
-	return ret;
+	return status;
 }
