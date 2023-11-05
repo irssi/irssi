@@ -135,11 +135,11 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 			if (ircnet->sasl_username != NULL && *ircnet->sasl_username &&
 			    ircnet->sasl_password != NULL && *ircnet->sasl_password) {
 				if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "SCRAM-SHA-1"))
-					conn->sasl_mechanism = SASL_SCRAM_SHA_1;
+					conn->sasl_mechanism = SASL_MECHANISM_SCRAM_SHA_1;
 				if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "SCRAM-SHA-256"))
-					conn->sasl_mechanism = SASL_SCRAM_SHA_256;
+					conn->sasl_mechanism = SASL_MECHANISM_SCRAM_SHA_256;
 				if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "SCRAM-SHA-512"))
-					conn->sasl_mechanism = SASL_SCRAM_SHA_512;
+					conn->sasl_mechanism = SASL_MECHANISM_SCRAM_SHA_512;
 
 				conn->sasl_username = g_strdup(ircnet->sasl_username);
 				conn->sasl_password = g_strdup(ircnet->sasl_password);
