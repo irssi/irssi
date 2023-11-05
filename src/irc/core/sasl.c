@@ -81,15 +81,15 @@ static void sasl_start(IRC_SERVER_REC *server, const char *data, const char *fro
 			irc_send_cmd_now(server, "AUTHENTICATE EXTERNAL");
 			break;
 
-	        case SASL_SCRAM_SHA_1:
+	        case SASL_MECHANISM_SCRAM_SHA_1:
 		        irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-1");
 		        break;
 
-	        case SASL_SCRAM_SHA_256:
+	        case SASL_MECHANISM_SCRAM_SHA_256:
 		        irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-256");
 		        break;
 
-	        case SASL_SCRAM_SHA_512:
+	        case SASL_MECHANISM_SCRAM_SHA_512:
 		        irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-512");
 		        break;
 	}
@@ -240,13 +240,13 @@ void sasl_send_response(IRC_SERVER_REC *server, GString *response)
  */
 static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const char *digest)
 {
-	char *enc, *cmd, *output;
+	char *output;
 	int ret;
 	size_t output_len;
 	IRC_SERVER_CONNECT_REC *conn = server->connrec;
 
 	if (conn->scram_session == NULL) {
-		conn->scram_session = scram_create_session(digest, conn->sasl_username, conn->sasl_password);
+		conn->scram_session = scram_session_create(digest, conn->sasl_username, conn->sasl_password);
 
 		if (conn->scram_session == NULL) {
 			g_error("Could not create SCRAM session with digest %s", digest);
@@ -259,11 +259,9 @@ static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const c
 
 	if (ret == SCRAM_IN_PROGRESS) {
 		// Authentication is still in progress
-		enc = g_base64_encode((guchar *) output, output_len);
-		cmd = g_strdup_printf("AUTHENTICATE %s", enc);
-		irc_send_cmd_now(server, cmd);
-		g_free(cmd);
-		g_free(enc);
+		GString *resp = g_string_new(output);
+		sasl_send_response(server, resp);
+		g_string_free(resp, TRUE);
 		g_free(output);
 	} else if (ret == SCRAM_SUCCESS) {
 		// Authentication succeeded
@@ -320,15 +318,15 @@ static void sasl_step_complete(IRC_SERVER_REC *server, GString *data)
 			sasl_send_response(server, NULL);
 			break;
 
-	        case SASL_SCRAM_SHA_1:
+	        case SASL_MECHANISM_SCRAM_SHA_1:
 		        scram_authenticate(server, data->str, "SHA1");
 		        break;
 
-	        case SASL_SCRAM_SHA_256:
+	        case SASL_MECHANISM_SCRAM_SHA_256:
 		        scram_authenticate(server, data->str, "SHA256");
 		        break;
 
-	        case SASL_SCRAM_SHA_512:
+	        case SASL_MECHANISM_SCRAM_SHA_512:
 		        scram_authenticate(server, data->str, "SHA512");
 		        break;
 	}
