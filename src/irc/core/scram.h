@@ -14,7 +14,7 @@ typedef struct {
 	char *auth_message;
 	char *error;
 	int step;
-} scram_session;
+} SCRAM_SESSION_REC;
 
 typedef enum
 {
@@ -23,8 +23,8 @@ typedef enum
 	SCRAM_SUCCESS
 } scram_status;
 
-scram_session *scram_session_create(const char *digset, const char *username, const char *password);
-void scram_free_session(scram_session *session);
-scram_status scram_process(scram_session *session, const char *input, char **output, size_t *output_len);
+SCRAM_SESSION_REC *scram_session_create(const char *digset, const char *username, const char *password);
+void scram_free_session(SCRAM_SESSION_REC *session);
+scram_status scram_process(SCRAM_SESSION_REC *session, const char *input, char **output, size_t *output_len);
 
 #endif

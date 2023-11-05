@@ -55,7 +55,7 @@ struct _IRC_SERVER_CONNECT_REC {
 	int sasl_mechanism;
 	char *sasl_username;
 	char *sasl_password;
-	scram_session *scram_session;
+	SCRAM_SESSION_REC *scram_session;
 
 	int max_cmds_at_once;
 	int cmd_queue_speed;
