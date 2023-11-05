@@ -16,15 +16,12 @@ typedef struct {
 	int step;
 } SCRAM_SESSION_REC;
 
-typedef enum
-{
-	SCRAM_ERROR = 0,
-	SCRAM_IN_PROGRESS,
-	SCRAM_SUCCESS
-} scram_status;
+typedef enum { SCRAM_ERROR = 0, SCRAM_IN_PROGRESS, SCRAM_SUCCESS } scram_status;
 
-SCRAM_SESSION_REC *scram_session_create(const char *digset, const char *username, const char *password);
+SCRAM_SESSION_REC *scram_session_create(const char *digset, const char *username,
+                                        const char *password);
 void scram_free_session(SCRAM_SESSION_REC *session);
-scram_status scram_process(SCRAM_SESSION_REC *session, const char *input, char **output, size_t *output_len);
+scram_status scram_process(SCRAM_SESSION_REC *session, const char *input, char **output,
+                           size_t *output_len);
 
 #endif

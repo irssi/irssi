@@ -33,7 +33,8 @@
 #define EVP_MD_CTX_free(ctx) EVP_MD_CTX_destroy(ctx)
 #endif
 
-SCRAM_SESSION_REC *scram_session_create(const char *digest, const char *username, const char *password)
+SCRAM_SESSION_REC *scram_session_create(const char *digest, const char *username,
+                                        const char *password)
 {
 	SCRAM_SESSION_REC *session;
 	const EVP_MD *md;
@@ -104,7 +105,8 @@ static int create_SHA(SCRAM_SESSION_REC *session, const unsigned char *input, si
 	return SCRAM_IN_PROGRESS;
 }
 
-static scram_status process_client_first(SCRAM_SESSION_REC *session, char **output, size_t *output_len)
+static scram_status process_client_first(SCRAM_SESSION_REC *session, char **output,
+                                         size_t *output_len)
 {
 	char nonce[NONCE_LENGTH];
 
@@ -121,8 +123,8 @@ static scram_status process_client_first(SCRAM_SESSION_REC *session, char **outp
 	return SCRAM_IN_PROGRESS;
 }
 
-static scram_status process_server_first(SCRAM_SESSION_REC *session, const char *data, char **output,
-                                size_t *output_len)
+static scram_status process_server_first(SCRAM_SESSION_REC *session, const char *data,
+                                         char **output, size_t *output_len)
 {
 	char **params, *client_final_message_without_proof, *salt, *server_nonce_b64,
 	    *client_proof_b64;
@@ -275,7 +277,8 @@ static scram_status process_server_final(SCRAM_SESSION_REC *session, const char 
 	}
 }
 
-scram_status scram_process(SCRAM_SESSION_REC *session, const char *input, char **output, size_t *output_len)
+scram_status scram_process(SCRAM_SESSION_REC *session, const char *input, char **output,
+                           size_t *output_len)
 {
 	scram_status status;
 

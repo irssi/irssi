@@ -246,7 +246,8 @@ static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const c
 	IRC_SERVER_CONNECT_REC *conn = server->connrec;
 
 	if (conn->scram_session == NULL) {
-		conn->scram_session = scram_session_create(digest, conn->sasl_username, conn->sasl_password);
+		conn->scram_session =
+		    scram_session_create(digest, conn->sasl_username, conn->sasl_password);
 
 		if (conn->scram_session == NULL) {
 			g_error("Could not create SCRAM session with digest %s", digest);
