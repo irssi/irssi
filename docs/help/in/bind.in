@@ -17,13 +17,15 @@ Details:
     Adds or removes a binding; the binding itself is case-sensitive and may
     contain as many characters as you want.
 
-    Uppercase characters usually indicate that you need to keep the shift-key
-    pressed to use the binding.
+    Key bindings are case sensitive so uppercase letters mean you also have
+    to use the shift key, except for ctrl which does not support shift but
+    the keys must always be typed in uppercase.
 
 %9Examples:%9
 
     /BIND
     /BIND meta-c /CLEAR
+    /BIND meta-C /CYCLE
     /BIND meta-q change_window 16
     /BIND -delete meta-y
     /BIND ^W^C /WINDOW NEW HIDE
