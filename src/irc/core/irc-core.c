@@ -79,7 +79,7 @@ static void destroy_server_connect(SERVER_CONNECT_REC *conn)
 	g_free_not_null(ircconn->sasl_password);
 
 	if (ircconn->scram_session != NULL) {
-		scram_free_session(ircconn->scram_session);
+		scram_session_free(ircconn->scram_session);
 	}
 }
 

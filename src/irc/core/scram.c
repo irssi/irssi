@@ -56,7 +56,7 @@ SCRAM_SESSION_REC *scram_session_create(const char *digest, const char *username
 	return session;
 }
 
-void scram_free_session(SCRAM_SESSION_REC *session)
+void scram_session_free(SCRAM_SESSION_REC *session)
 {
 	if (session == NULL) {
 		return;

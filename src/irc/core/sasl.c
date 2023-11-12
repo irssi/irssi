@@ -267,7 +267,7 @@ static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const c
 	} else if (ret == SCRAM_SUCCESS) {
 		// Authentication succeeded
 		irc_send_cmd_now(server, "AUTHENTICATE +");
-		scram_free_session(conn->scram_session);
+		scram_session_free(conn->scram_session);
 		conn->scram_session = NULL;
 	} else if (ret == SCRAM_ERROR) {
 		// Authentication failed
@@ -278,7 +278,7 @@ static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const c
 			          conn->scram_session->error);
 		}
 
-		scram_free_session(conn->scram_session);
+		scram_session_free(conn->scram_session);
 		conn->scram_session = NULL;
 	}
 }
