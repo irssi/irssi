@@ -50,10 +50,3 @@ sub eval_file {
     die "cap_sasl has been unloaded from Irssi ".Irssi::version()." because it conflicts with the built-in SASL support. See /help network for configuring SASL or read the ChangeLog for more information.";
   }
 }
-
-if ( $] >= 5.037005 && $] <= 5.038000 ) {
-  # https://github.com/Perl/perl5/issues/21366
-  print STDERR "\e7 \e[A Irssi: applying locale workaround for Perl 5.38.0 \e8";
-  require POSIX;
-  POSIX::setlocale(&POSIX::LC_ALL, "");
-}
