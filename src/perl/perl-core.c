@@ -90,24 +90,41 @@ static void xs_init(pTHX)
 void perl_scripts_init(void)
 {
 	char *code, *use_code;
+	int broken_perl;
 
 	perl_scripts = NULL;
         perl_sources_start();
 	perl_signals_start();
 
 	my_perl = perl_alloc();
+	broken_perl = wcwidth(160);
 	perl_construct(my_perl);
+	broken_perl = broken_perl != wcwidth(160);
 
-	perl_parse(my_perl, xs_init, G_N_ELEMENTS(perl_args)-1, perl_args, NULL);
+	perl_parse(my_perl, xs_init, G_N_ELEMENTS(perl_args) - 1, perl_args, NULL);
 
-        perl_common_start();
+	perl_common_start();
 
 	use_code = perl_get_use_list();
 	code = g_strdup_printf(irssi_core_code, use_code);
 	perl_eval_pv(code, TRUE);
+	if (broken_perl) {
+		g_warning("applying locale workaround for Perl %d.%d, see "
+		          "https://github.com/Perl/perl5/issues/21366",
+		          PERL_REVISION, PERL_VERSION);
+		perl_eval_pv("package Irssi::Core;"
+		             /* https://github.com/Perl/perl5/issues/21746 */
+		             "if ( $] == $] )"
+		             "{"
+		             "require POSIX;"
+		             "POSIX::setlocale(&POSIX::LC_ALL, \"\");"
+		             "}"
+		             "1;",
+		             TRUE);
+	}
 
 	g_free(code);
-        g_free(use_code);
+	g_free(use_code);
 }
 
 /* Destroy all perl scripts and deinitialize perl interpreter */
@@ -441,7 +458,7 @@ void perl_core_init(void)
 	char **argv = perl_args;
 
 	PERL_SYS_INIT3(&argc, &argv, &environ);
-        print_script_errors = 1;
+	print_script_errors = 1;
 	settings_add_str("perl", "perl_use_lib", PERL_USE_LIB);
 
 	/*PL_perl_destruct_level = 1; - this crashes with some people.. */
