@@ -20,10 +20,10 @@
 
 %9Description:%9
 
-    Manipulate the text in the window to go to a to the given line number, or
+    Manipulate the text in the window to go to the given line number, or
     clear the buffers.
 
-    The timestamp format is format is '[dd[.mm] | -<days ago>] hh:mi[:ss]'.
+    The timestamp format is '[dd[.mm] | -<days ago>] hh:mi[:ss]'.
 
 %9Examples:%9
 
