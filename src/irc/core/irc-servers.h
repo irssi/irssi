@@ -4,6 +4,7 @@
 #include <irssi/src/core/chat-protocols.h>
 #include <irssi/src/core/servers.h>
 #include <irssi/src/irc/core/modes.h>
+#include <irssi/src/irc/core/scram.h>
 
 /*
  * 63 is the maximum hostname length defined by the protocol.  10 is a common
@@ -54,6 +55,7 @@ struct _IRC_SERVER_CONNECT_REC {
 	int sasl_mechanism;
 	char *sasl_username;
 	char *sasl_password;
+	SCRAM_SESSION_REC *scram_session;
 
 	int max_cmds_at_once;
 	int cmd_queue_speed;
