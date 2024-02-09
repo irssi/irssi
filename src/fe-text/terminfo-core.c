@@ -35,8 +35,8 @@ int tigetflag();
 #define CAP_TYPE_STR	2
 
 typedef struct {
-        const char *ti_name; /* terminfo name */
-	const char *tc_name; /* termcap name */
+        char *ti_name; /* terminfo name */
+	char *tc_name; /* termcap name */
 	int type;
 	unsigned int offset;
 } TERMINFO_REC;
