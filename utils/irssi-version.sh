@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DATE=`grep '^v' $1/NEWS | head -1`
+DATE=`grep '^v' "$1"/NEWS | head -1`
 VERSION_DATE=`echo "$DATE" | cut -f 2 -d ' ' | tr -d -`
 case $VERSION_DATE in
   *xx)
