@@ -30,6 +30,7 @@
 #include <irssi/src/core/misc.h>
 #include <irssi/src/core/servers-setup.h>
 #include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/network-openssl.h>
 #include <irssi/src/core/net-sendbuffer.h>
 
 #include <stddef.h>
