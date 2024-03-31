@@ -111,7 +111,7 @@ static void cmd_window_hidelevel(const char *data)
 			   TXT_WINDOW_HIDELEVEL, level);
 	g_free(level);
 
-	signal_emit("window hidelevel changed", 1, active_win);
+	signal_emit("window hidelevel changed", 0);
 }
 
 static void cmd_scrollback(const char *data, SERVER_REC *server,
