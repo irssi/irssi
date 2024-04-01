@@ -30,6 +30,7 @@
 #include <irssi/src/core/servers-setup.h>
 #include <irssi/src/core/servers-reconnect.h>
 #include <irssi/src/core/channels.h>
+#include <irssi/src/core/chatnets.h>
 #include <irssi/src/core/queries.h>
 #include <irssi/src/core/window-item-def.h>
 #include <irssi/src/core/rawlog.h>
@@ -91,7 +92,7 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 		return NULL;
 	}
 
-	if (strchr(addr, '/') != NULL)
+	if (strchr(addr, '/') != NULL && chatnet_find(addr) == NULL)
 		conn->unix_socket = TRUE;
 
 	/* TLS options are handled in server_create_conn_opt ... -> server_setup_fill_optlist */
