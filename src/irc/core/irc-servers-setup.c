@@ -128,12 +128,31 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 				conn->sasl_password = g_strdup(ircnet->sasl_password);
 			} else
 				g_warning("The fields sasl_username and sasl_password are either missing or empty");
-		}
-		else if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "external")) {
+		} else if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "SCRAM-SHA-1") ||
+		           !g_ascii_strcasecmp(ircnet->sasl_mechanism, "SCRAM-SHA-256") ||
+		           !g_ascii_strcasecmp(ircnet->sasl_mechanism, "SCRAM-SHA-512")) {
+			/* The SCRAM-SHA-* methods need both the username and the password */
+			if (ircnet->sasl_username != NULL && *ircnet->sasl_username &&
+			    ircnet->sasl_password != NULL && *ircnet->sasl_password) {
+				if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "SCRAM-SHA-1"))
+					conn->sasl_mechanism = SASL_MECHANISM_SCRAM_SHA_1;
+				if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "SCRAM-SHA-256"))
+					conn->sasl_mechanism = SASL_MECHANISM_SCRAM_SHA_256;
+				if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "SCRAM-SHA-512"))
+					conn->sasl_mechanism = SASL_MECHANISM_SCRAM_SHA_512;
+
+				conn->sasl_username = g_strdup(ircnet->sasl_username);
+				conn->sasl_password = g_strdup(ircnet->sasl_password);
+			} else
+				g_warning("The fields sasl_username and sasl_password are either "
+				          "missing or empty");
+		} else if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "external")) {
 			conn->sasl_mechanism = SASL_MECHANISM_EXTERNAL;
+		} else {
+			g_warning("Unsupported SASL mechanism \"%s\" selected",
+			          ircnet->sasl_mechanism);
+			conn->sasl_mechanism = SASL_MECHANISM_MAX;
 		}
-		else
-			g_warning("Unsupported SASL mechanism \"%s\" selected", ircnet->sasl_mechanism);
 	}
 }
 
