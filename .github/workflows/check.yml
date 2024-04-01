@@ -25,7 +25,7 @@ jobs:
           # make dist
           ./autogen.sh $build_options_configure
           make dist
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: irssi-*.tar.gz
           retention-days: 1
@@ -55,7 +55,7 @@ jobs:
             flags: meson-latest FAILURE-OK
     steps:
       - name: fetch dist
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: set PATH
         run: |
           echo "$HOME/.local/bin" >> $GITHUB_PATH
