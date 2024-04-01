@@ -250,7 +250,7 @@ static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const c
 		    scram_session_create(digest, conn->sasl_username, conn->sasl_password);
 
 		if (conn->scram_session == NULL) {
-			g_error("Could not create SCRAM session with digest %s", digest);
+			g_critical("Could not create SCRAM session with digest %s", digest);
 			irc_send_cmd_now(server, "AUTHENTICATE *");
 			return;
 		}
@@ -260,13 +260,13 @@ static void scram_authenticate(IRC_SERVER_REC *server, const char *data, const c
 
 	if (ret == SCRAM_IN_PROGRESS) {
 		// Authentication is still in progress
-		GString *resp = g_string_new(output);
+		GString *resp = g_string_new_len(output, output_len);
 		sasl_send_response(server, resp);
 		g_string_free(resp, TRUE);
 		g_free(output);
 	} else if (ret == SCRAM_SUCCESS) {
 		// Authentication succeeded
-		irc_send_cmd_now(server, "AUTHENTICATE +");
+		sasl_send_response(server, NULL);
 		scram_session_free(conn->scram_session);
 		conn->scram_session = NULL;
 	} else if (ret == SCRAM_ERROR) {

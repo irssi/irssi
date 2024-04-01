@@ -137,7 +137,8 @@ static scram_status process_server_first(SCRAM_SESSION_REC *session, const char 
 	param_count = g_strv_length(params);
 
 	if (param_count < 3) {
-		session->error = g_strdup_printf("Invalid server-first-message: %s", data);
+		/* Invalid server-first-message */
+		session->error = g_strdup_printf("%s", data);
 		g_strfreev(params);
 		return SCRAM_ERROR;
 	}
