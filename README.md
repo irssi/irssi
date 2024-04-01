@@ -41,7 +41,7 @@ ninja -C Build && sudo ninja -C Build install
 
 - [glib-2.32](https://wiki.gnome.org/Projects/GLib) or greater
 - [openssl](https://www.openssl.org/)
-- [perl-5.6](https://www.perl.org/) or greater (for perl support)
+- [perl-5.8](https://www.perl.org/) or greater (for perl support)
 - terminfo or ncurses (for text frontend)
 
 #### See the [INSTALL](INSTALL) file for details
