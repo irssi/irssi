@@ -102,10 +102,41 @@ static char *module_get_sub(const char *name, const char *root)
         return g_strdup(name);
 }
 
-static GModule *module_open(const char *name, int *found)
+static GModule *module_open(const char *name)
 {
-	struct stat statbuf;
 	GModule *module;
+#if GLIB_CHECK_VERSION(2, 75, 0)
+	/* in this version of glib, g_module_open knows how to construct system-dependent module
+	   file names, and g_module_build_path is deprecated. */
+
+	char *path;
+
+	if (g_path_is_absolute(name) || *name == '~' ||
+	    (*name == '.' && name[1] == G_DIR_SEPARATOR))
+		path = g_strdup(name);
+	else {
+		/* first try from home dir */
+		path = g_strdup_printf("%s/modules/%s", get_irssi_dir(), name);
+
+		module = g_module_open(path, (GModuleFlags) 0);
+		g_free(path);
+		if (module != NULL) {
+			return module;
+		}
+
+		/* module not found from home dir, try global module dir */
+		path = g_strdup_printf("%s/%s", MODULEDIR, name);
+	}
+
+	module = g_module_open(path, (GModuleFlags) 0);
+	g_free(path);
+	return module;
+
+#else /* GLib < 2.75.0 */
+	/* in this version of glib, we build the module path with g_module_build_path.
+	   unfortunately, this is broken on Darwin when compiled with meson. */
+
+	struct stat statbuf;
 	char *path, *str;
 
 	if (g_path_is_absolute(name) || *name == '~' ||
@@ -120,7 +151,6 @@ static GModule *module_open(const char *name, int *found)
 		if (stat(path, &statbuf) == 0) {
 			module = g_module_open(path, (GModuleFlags) 0);
 			g_free(path);
-			*found = TRUE;
 			return module;
 		}
 
@@ -129,10 +159,11 @@ static GModule *module_open(const char *name, int *found)
 		path = g_module_build_path(MODULEDIR, name);
 	}
 
-	*found = stat(path, &statbuf) == 0;
 	module = g_module_open(path, (GModuleFlags) 0);
 	g_free(path);
 	return module;
+
+#endif
 }
 
 static char *module_get_func(const char *rootmodule, const char *submodule,
@@ -151,8 +182,7 @@ static char *module_get_func(const char *rootmodule, const char *submodule,
 	signal_emit("module error", 4, GINT_TO_POINTER(error), text, \
 		    rootmodule, submodule)
 
-/* Returns 1 if ok, 0 if error in module and
-   -1 if module wasn't found */
+/* Returns 1 if ok, 0 if not */
 static int module_load_name(const char *path, const char *rootmodule,
 			    const char *submodule, int silent)
 {
@@ -166,15 +196,15 @@ static int module_load_name(const char *path, const char *rootmodule,
 	gpointer value1, value2 = NULL;
 	char *versionfunc, *initfunc, *deinitfunc;
 	int module_abi_version = 0;
-        int found;
+	int valid;
 
-	gmodule = module_open(path, &found);
+	gmodule = module_open(path);
 	if (gmodule == NULL) {
-		if (!silent || found) {
+		if (!silent) {
 			module_error(MODULE_ERROR_LOAD, g_module_error(),
 				     rootmodule, submodule);
 		}
-		return found ? 0 : -1;
+		return 0;
 	}
 
 	/* get the module's irssi abi version and bail out on mismatch */
@@ -201,12 +231,12 @@ static int module_load_name(const char *path, const char *rootmodule,
 	/* get the module's init() and deinit() functions */
 	initfunc = module_get_func(rootmodule, submodule, "init");
 	deinitfunc = module_get_func(rootmodule, submodule, "deinit");
-	found = g_module_symbol(gmodule, initfunc, &value1) &&
-		g_module_symbol(gmodule, deinitfunc, &value2);
+	valid = g_module_symbol(gmodule, initfunc, &value1) &&
+	        g_module_symbol(gmodule, deinitfunc, &value2);
 	g_free(initfunc);
 	g_free(deinitfunc);
 
-	if (!found) {
+	if (!valid) {
 		module_error(MODULE_ERROR_INVALID, NULL,
 			     rootmodule, submodule);
 		g_module_close(gmodule);
@@ -310,7 +340,7 @@ static int module_load_full(const char *path, const char *rootmodule,
 	/* check if the given module exists.. */
 	try_prefixes = g_strcmp0(rootmodule, submodule) == 0;
 	status = module_load_name(path, rootmodule, submodule, try_prefixes);
-	if (status == -1 && try_prefixes) {
+	if (status <= 0 && try_prefixes) {
 		/* nope, try loading the module_core,
 		   fe_module, etc. */
 		status = module_load_prefixes(path, rootmodule,
