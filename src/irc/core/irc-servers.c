@@ -475,6 +475,7 @@ SERVER_REC *irc_server_init_connect(SERVER_CONNECT_REC *conn)
 	server->send_message = send_message;
 	server->query_find_func = (QUERY_REC * (*) (SERVER_REC *, const char *) ) irc_query_find;
 	server->nick_comp_func = irc_nickcmp_rfc1459;
+	server->sasl_success = FALSE;
 
 	server_connect_init((SERVER_REC *) server);
 	return (SERVER_REC *) server;

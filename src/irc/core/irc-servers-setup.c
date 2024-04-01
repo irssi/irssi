@@ -148,8 +148,11 @@ static void sig_server_setup_fill_chatnet(IRC_SERVER_CONNECT_REC *conn,
 				          "missing or empty");
 		} else if (!g_ascii_strcasecmp(ircnet->sasl_mechanism, "external")) {
 			conn->sasl_mechanism = SASL_MECHANISM_EXTERNAL;
-		} else
-			g_warning("Unsupported SASL mechanism \"%s\" selected", ircnet->sasl_mechanism);
+		} else {
+			g_warning("Unsupported SASL mechanism \"%s\" selected",
+			          ircnet->sasl_mechanism);
+			conn->sasl_mechanism = SASL_MECHANISM_MAX;
+		}
 	}
 }
 

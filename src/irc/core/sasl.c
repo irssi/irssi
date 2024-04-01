@@ -92,6 +92,12 @@ static void sasl_start(IRC_SERVER_REC *server, const char *data, const char *fro
 	        case SASL_MECHANISM_SCRAM_SHA_512:
 		        irc_send_cmd_now(server, "AUTHENTICATE SCRAM-SHA-512");
 		        break;
+
+	        case SASL_MECHANISM_MAX:
+		        signal_emit("server sasl failure", 2, server,
+		                    "Irssi: Unsupported SASL mechanism");
+		        irc_cap_finish_negotiation(server);
+		        return;
 	}
 	server->sasl_timeout = g_timeout_add(SASL_TIMEOUT, (GSourceFunc) sasl_timeout, server);
 }
