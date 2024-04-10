@@ -81,6 +81,7 @@ static void hilight_add_config(HILIGHT_REC *rec)
 	if (rec->regexp) iconfig_node_set_bool(node, "regexp", TRUE);
 	if (rec->case_sensitive) iconfig_node_set_bool(node, "matchcase", TRUE);
 	if (rec->servertag) iconfig_node_set_str(node, "servertag", rec->servertag);
+	if (rec->comment) iconfig_node_set_str(node, "comment", rec->comment);
 
 	if (rec->channels != NULL && *rec->channels != NULL) {
 		node = iconfig_node_section(node, "channels", NODE_TYPE_LIST);
@@ -107,6 +108,7 @@ static void hilight_destroy(HILIGHT_REC *rec)
 	g_free_not_null(rec->color);
 	g_free_not_null(rec->act_color);
 	g_free_not_null(rec->servertag);
+	g_free_not_null(rec->comment);
 	g_free(rec->text);
 	g_free(rec);
 }
@@ -506,7 +508,7 @@ static void read_hilight_config(void)
 	CONFIG_NODE *node;
 	HILIGHT_REC *rec;
 	GSList *tmp;
-	char *text, *color, *servertag;
+	char *text, *color, *servertag, *comment;
 
 	hilights_destroy_all();
 
@@ -552,6 +554,9 @@ static void read_hilight_config(void)
 		servertag = config_node_get_str(node, "servertag", NULL);
 		rec->servertag = servertag == NULL || *servertag == '\0' ? NULL :
 			g_strdup(servertag);
+		comment = config_node_get_str(node, "comment", NULL);
+		rec->comment = comment == NULL || *comment == '\0' ? NULL :
+			g_strdup(comment);
 		hilight_init_rec(rec);
 
 		node = iconfig_node_section(node, "channels", -1);
@@ -589,6 +594,8 @@ static void hilight_print(int index, HILIGHT_REC *rec)
 		g_string_append_printf(options, "-priority %d ", rec->priority);
 	if (rec->servertag != NULL)
 		g_string_append_printf(options, "-network %s ", rec->servertag);
+	if (rec->comment != NULL)
+		g_string_append_printf(options, "-comment %s ", rec->comment);
 	if (rec->color != NULL)
 		g_string_append_printf(options, "-color %s ", rec->color);
 	if (rec->act_color != NULL)
@@ -627,12 +634,12 @@ static void cmd_hilight_show(void)
 
 /* SYNTAX: HILIGHT [-nick | -word | -line] [-mask | -full | -matchcase | -regexp]
    [-color <color>] [-actcolor <color>] [-level <level>]
-   [-network <network>] [-channels <channels>] <text> */
+   [-network <network>] [-channels <channels>] [-comment <comment> <text> */
 static void cmd_hilight(const char *data)
 {
 	GHashTable *optlist;
 	HILIGHT_REC *rec;
-	char *colorarg, *actcolorarg, *levelarg, *priorityarg, *chanarg, *text, *servertag;
+	char *colorarg, *actcolorarg, *levelarg, *priorityarg, *chanarg, *text, *servertag, *comment;
 	char **channels;
 	void *free_arg;
 
@@ -653,6 +660,7 @@ static void cmd_hilight(const char *data)
 	colorarg = g_hash_table_lookup(optlist, "color");
 	actcolorarg = g_hash_table_lookup(optlist, "actcolor");
 	servertag = g_hash_table_lookup(optlist, "network");
+	comment = g_hash_table_lookup(optlist, "comment");
 
 	if (*text == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 
@@ -709,6 +717,11 @@ static void cmd_hilight(const char *data)
 		g_free_and_null(rec->servertag);
 		if (*servertag != '\0')
 			rec->servertag = g_strdup(servertag);
+	}
+	if (comment != NULL) {
+		g_free_and_null(rec->comment);
+		if (*comment != '\0')
+			rec->comment = g_strdup(comment);
 	}
 
 	hilight_create(rec);
@@ -803,7 +816,7 @@ void hilight_text_init(void)
 
 	command_bind("hilight", NULL, (SIGNAL_FUNC) cmd_hilight);
 	command_bind("dehilight", NULL, (SIGNAL_FUNC) cmd_dehilight);
-	command_set_options("hilight", "-color -actcolor -level -priority -network -channels nick word line mask full regexp matchcase");
+	command_set_options("hilight", "-color -actcolor -level -priority -network -channels -comment nick word line mask full regexp matchcase");
 }
 
 void hilight_text_deinit(void)
