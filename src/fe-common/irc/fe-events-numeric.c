@@ -35,6 +35,7 @@
 #include <irssi/src/fe-common/core/printtext.h>
 #include <irssi/src/fe-common/core/fe-channels.h>
 #include <irssi/src/fe-common/irc/fe-irc-server.h>
+#include <irssi/src/fe-common/irc/fe-irc-channels.h>
 
 static void print_event_received(IRC_SERVER_REC *server, const char *data,
 				 const char *nick, int target_param);
@@ -136,38 +137,6 @@ static void event_end_of_who(IRC_SERVER_REC *server, const char *data)
 	params = event_get_params(data, 2, NULL, &channel);
 	printformat(server, NULL, MSGLEVEL_CRAP, IRCTXT_END_OF_WHO, channel);
 	g_free(params);
-}
-
-/* Get time elapsed since an event */
-static char *time_ago(time_t seconds)
-{
-	static char ret[128];
-	long unsigned years, weeks, days, hours, minutes;
-
-	seconds = time(NULL) - seconds;
-
-	years = seconds / (86400 * 365);
-	seconds %= (86400 * 365);
-	weeks = seconds / 604800;
-	days = (seconds / 86400) % 7;
-	hours = (seconds / 3600) % 24;
-	minutes = (seconds / 60) % 60;
-	seconds %= 60;
-
-	if (years)
-		snprintf(ret, sizeof(ret), "%luy %luw %lud", years, weeks, days);
-	else if (weeks)
-		snprintf(ret, sizeof(ret), "%luw %lud %luh", weeks, days, hours);
-	else if (days)
-		snprintf(ret, sizeof(ret), "%lud %luh %lum", days, hours, minutes);
-	else if (hours)
-		snprintf(ret, sizeof(ret), "%luh %lum", hours, minutes);
-	else if (minutes)
-		snprintf(ret, sizeof(ret), "%lum %lus", minutes, (long unsigned) seconds);
-	else
-		snprintf(ret, sizeof(ret), "%lus", (long unsigned) seconds);
-
-	return ret;
 }
 
 static void event_ban_list(IRC_SERVER_REC *server, const char *data)

@@ -39,6 +39,7 @@
 #include <irssi/src/fe-common/core/window-items.h>
 #include <irssi/src/fe-common/core/printtext.h>
 #include <irssi/src/fe-common/core/keyboard.h>
+#include <irssi/src/fe-common/irc/fe-irc-channels.h>
 
 /* SYNTAX: ME <message> */
 static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)
@@ -224,15 +225,16 @@ static void bans_show_channel(IRC_CHANNEL_REC *channel, IRC_SERVER_REC *server)
 	/* show bans.. */
         counter = 1;
 	for (tmp = channel->banlist; tmp != NULL; tmp = tmp->next) {
+		char *timestr, *ago;
 		BAN_REC *rec = tmp->data;
+		timestr = my_asctime(rec->time);
+		ago = time_ago(rec->time);
 
 		printformat(server, channel->visible_name, MSGLEVEL_CRAP,
-			    (rec->setby == NULL || *rec->setby == '\0') ?
-			    IRCTXT_BANLIST : IRCTXT_BANLIST_LONG,
-			    counter, channel->visible_name,
-			    rec->ban, rec->setby,
-			    (int) (time(NULL)-rec->time));
-                counter++;
+		            (rec->setby == NULL || *rec->setby == '\0') ? IRCTXT_BANLIST :
+		                                                          IRCTXT_BANLIST_LONG,
+		            counter, channel->visible_name, rec->ban, rec->setby, ago, timestr);
+		counter++;
 	}
 }
 
