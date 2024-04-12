@@ -73,6 +73,38 @@ const char *fe_channel_skip_prefix(IRC_SERVER_REC *server, const char *target)
 	return target;
 }
 
+/* Get time elapsed since an event */
+char *time_ago(time_t seconds)
+{
+	static char ret[128];
+	long unsigned years, weeks, days, hours, minutes;
+
+	seconds = time(NULL) - seconds;
+
+	years = seconds / (86400 * 365);
+	seconds %= (86400 * 365);
+	weeks = seconds / 604800;
+	days = (seconds / 86400) % 7;
+	hours = (seconds / 3600) % 24;
+	minutes = (seconds / 60) % 60;
+	seconds %= 60;
+
+	if (years)
+		snprintf(ret, sizeof(ret), "%luy %luw %lud", years, weeks, days);
+	else if (weeks)
+		snprintf(ret, sizeof(ret), "%luw %lud %luh", weeks, days, hours);
+	else if (days)
+		snprintf(ret, sizeof(ret), "%lud %luh %lum", days, hours, minutes);
+	else if (hours)
+		snprintf(ret, sizeof(ret), "%luh %lum", hours, minutes);
+	else if (minutes)
+		snprintf(ret, sizeof(ret), "%lum %lus", minutes, (long unsigned) seconds);
+	else
+		snprintf(ret, sizeof(ret), "%lus", (long unsigned) seconds);
+
+	return ret;
+}
+
 static void sig_channel_rejoin(SERVER_REC *server, REJOIN_REC *rec)
 {
 	g_return_if_fail(rec != NULL);
