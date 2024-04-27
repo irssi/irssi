@@ -9,13 +9,13 @@ To make Irssi enter capability mode on startup, add
 capsicum = "yes";
 awaylog_file = "~/irclogs/away.log";
 
-to your ~/.irssi/config and restart the client.  Alternatively you can
-enter it "by hand", using the "/capsicum enter" command.  From the security
-point of view it's strongly preferable to use the former method, to avoid
-establishing connections without the sandbox protection; the "/capsicum"
-command is only intended for experimentation, and in cases where you need
-to do something that's not possible in capability mode - run scripts,
-for example - before continuing.
+to your ~/.irssi/config in the settings/core section, and restart the
+client.  Alternatively you can enter it "by hand", using the
+"/capsicum enter" command.  From the security point of view it's strongly
+preferable to use the former method, to avoid establishing connections
+without the sandbox protection; the "/capsicum" command is only intended
+for experimentation, and in cases where you need to do something that's not
+possible in capability mode - run scripts, for example - before continuing.
 
 There is no way to leave the capability mode, apart from exiting Irssi.
 When running in capability mode, there are certain restrictions - Irssi
