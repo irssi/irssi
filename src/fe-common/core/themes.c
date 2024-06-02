@@ -34,8 +34,8 @@
 #include "default-theme.h"
 
 GSList *themes;
-THEME_REC *current_theme;
-GHashTable *default_formats;
+THEME_REC *current_theme = NULL;
+GHashTable *default_formats = NULL;
 
 static int init_finished;
 static char *init_errors;
