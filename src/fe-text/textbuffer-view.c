@@ -1226,26 +1226,85 @@ static void view_remove_line_update_startline(TEXT_BUFFER_VIEW_REC *view,
 					      LINE_REC *line, int linecount)
 {
 	int scroll;
+	GString *line_text;
+
+	line_text = g_string_new(NULL);
+
+	if (view->startline != NULL)
+		textbuffer_line2text(view->startline, FALSE, line_text);
+
+	fprintf(stderr, "view_remove_line_update_startline\n"
+		"..         height: %d\n"
+		"..           ypos: %d\n"
+		"..        subline: %d\n"
+		"..empty_linecount: %d\n"
+		"..      startline: %s\n",
+		view->height, view->ypos, view->subline, view->empty_linecount, line_text->str);
+	g_string_truncate(line_text, 0);
+	if (line != NULL)
+		textbuffer_line2text(line, FALSE, line_text);
+	fprintf(stderr,
+		"..           line: %s\n", line_text->str);
+	g_string_truncate(line_text, 0);
 
 	if (view->startline == line) {
 		view->startline = view->startline->prev != NULL ?
 			view->startline->prev : view->startline->next;
 		view->subline = 0;
+
+		if (view->startline != NULL)
+			textbuffer_line2text(view->startline, FALSE, line_text);
+		fprintf(stderr, "... moving startline ...\n"
+			"..        subline: %d\n"
+			"..      startline: %s\n",
+			view->subline, line_text->str);
+		g_string_truncate(line_text, 0);
 	} else {
 		scroll = view->height -
 			view_get_lines_height(view, view->startline,
 					      view->subline, line);
-		if (scroll > 0) {
+		fprintf(stderr, "... other line ...\n"
+			"..         scroll: %d\n",
+			scroll);
+		if (view->empty_linecount > 0) {
+			view->empty_linecount = scroll;
+			if (view->empty_linecount < 0)
+				view->empty_linecount = 0;
+			else if (view->empty_linecount > view->height)
+				view->empty_linecount = view->height;
+			fprintf(stderr, "... changing empty_linecount ...\n"
+				"..empty_linecount: %d\n",
+				view->empty_linecount);
+		} else if (scroll > 0) {
 			view_scroll(view, &view->startline,
 				    &view->subline, -scroll, FALSE);
+			textbuffer_line2text(view->startline, FALSE, line_text);
+			fprintf(stderr, "... scrolling ...\n"
+				"..        subline: %d\n"
+				"..      startline: %s\n",
+				view->subline, line_text->str);
+			g_string_truncate(line_text, 0);
 		}
 	}
+	fprintf(stderr,
+		"..      linecount: %d\n",
+		linecount);
 
 	/* FIXME: this is slow and unnecessary, but it's easy and
 	   really works :) */
 	textbuffer_view_init_ypos(view);
-	if (textbuffer_line_exists_after(view->startline, line))
+	fprintf(stderr, "... init_ypos ...\n"
+		"..           ypos: %d\n",
+		view->ypos);
+	if (textbuffer_line_exists_after(view->startline, line)) {
 		view->ypos -= linecount;
+		fprintf(stderr, "... moving ypos by linecount ...\n"
+			"..           ypos: %d\n",
+			view->ypos);
+	}
+
+	g_string_free(line_text, TRUE);
+	fprintf(stderr, "\n");
 }
 
 static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
@@ -1298,7 +1357,9 @@ static void view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 			realcount = view_scroll(view, &view->bottom_startline,
 						&view->bottom_subline,
 						-linecount, FALSE);
+			fprintf(stderr, "adjusting empty_linecount [ %d -> ", view->empty_linecount);
 			view->empty_linecount += linecount-realcount;
+			fprintf(stderr, "%d , linecount: %d, realcount: %d ]\n", view->empty_linecount, linecount, realcount);
 		}
 
 		if (view->bottom_startline == line) {
@@ -1354,17 +1415,17 @@ void textbuffer_view_remove_line(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line)
 
 void textbuffer_view_remove_lines_by_level(TEXT_BUFFER_VIEW_REC *view, int level)
 {
-	LINE_REC *line, *next;
+	LINE_REC *line, *prev;
 
 	term_refresh_freeze();
-	line = textbuffer_view_get_lines(view);
+	line = textbuffer_line_last(view->buffer);
 
 	while (line != NULL) {
-		next = line->next;
+		prev = line->prev;
 
 		if (line->info.level & level)
 			textbuffer_view_remove_line(view, line);
-		line = next;
+		line = prev;
 	}
 	textbuffer_view_redraw(view);
 	term_refresh_thaw();
@@ -1525,9 +1586,47 @@ static int sig_check_linecache(void)
 	return 1;
 }
 
+#include "gui-windows.h"
+#include "commands.h"
+static void cmd_window_vi(const char *data)
+{
+	GUI_WINDOW_REC *gui;
+	TEXT_BUFFER_VIEW_REC *view;
+	GString *line_text;
+
+	gui = WINDOW_GUI(active_win);
+	view = gui->view;
+	
+	line_text = g_string_new(NULL);
+
+	if (view->startline != NULL)
+		textbuffer_line2text(view->startline, FALSE, line_text);
+
+	fprintf(stderr, "VIEW INFO\n"
+		"..         height: %d\n"
+		"..           ypos: %d\n"
+		"..        subline: %d\n"
+		"..empty_linecount: %d\n"
+		"..         bottom: %s\n"
+		"..      startline: %s\n"
+		".. bottom_subline: %d\n",
+		view->height, view->ypos, view->subline, view->empty_linecount, view->bottom ? "TRUE" : "FALSE", line_text->str,
+		view->bottom_subline);
+	g_string_truncate(line_text, 0);
+	if (view->bottom_startline != NULL)
+		textbuffer_line2text(view->bottom_startline, FALSE, line_text);
+	fprintf(stderr,		
+		"..bottom_startine: %s\n",
+		line_text->str);
+
+	g_string_free(line_text, TRUE);
+	fprintf(stderr, "\n");
+}
+
 void textbuffer_view_init(void)
 {
 	linecache_tag = g_timeout_add(LINE_CACHE_CHECK_TIME, (GSourceFunc) sig_check_linecache, NULL);
+	command_bind("window vi", NULL, (SIGNAL_FUNC) cmd_window_vi);
 }
 
 void textbuffer_view_deinit(void)
