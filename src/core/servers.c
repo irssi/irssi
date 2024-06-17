@@ -78,6 +78,10 @@ static char *server_create_address_tag(const char *address)
 	/* try to generate a reasonable server tag */
 	if (strchr(address, '.') == NULL) {
 		start = end = NULL;
+	} else if (g_ascii_strncasecmp(address, "irc.", 4) == 0) {
+		/* irc.it-hobby.km.ua -> it-hobby, irc.karbo-labs.pp.ua -> karbo-labs */
+		end = strchr(address + 3 + 1, '.');
+		start = address + 3;
 	} else if (g_ascii_strncasecmp(address, "irc", 3) == 0 ||
 	    g_ascii_strncasecmp(address, "chat", 4) == 0) {
 		/* irc-2.cs.hut.fi -> hut, chat.bt.net -> bt */
