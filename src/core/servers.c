@@ -80,11 +80,10 @@ static char *server_create_address_tag(const char *address)
 		start = end = NULL;
 	} else if (g_ascii_strncasecmp(address, "irc", 3) == 0 ||
 	    g_ascii_strncasecmp(address, "chat", 4) == 0) {
-		/* irc.it-hobby.km.ua -> it-hobby, chat.bt.net -> bt */
-		int offset = 3;
-		if (g_ascii_strncasecmp(address, "chat", 4) == 0) offset++;
-		end = strchr(address + offset + 1, '.');
-		start = address + offset;
+		/* irc-2.cs.hut.fi -> hut, chat.bt.net -> bt */
+		end = strrchr(address, '.');
+		start = end-1;
+		while (start > address && *start != '.') start--;
 	} else {
 		/* efnet.cs.hut.fi -> efnet */
 		end = strchr(address, '.');
