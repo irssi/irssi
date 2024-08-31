@@ -313,9 +313,9 @@ static void server_init_1(IRC_SERVER_REC *server)
 	if (!conn->no_cap) {
 		signal_emit("server waiting cap ls", 2, server, CAP_LS_VERSION);
 		irc_send_cmd_now(server, "CAP LS " CAP_LS_VERSION);
-		/* to detect non-CAP servers, send this bogus join */
-		/* the : will make INSPIRCD respond with 451 instead of 461, too */
-		irc_send_cmd_now(server, "JOIN :");
+
+		if (!server->cap_supported)
+			conn->no_cap = 1;
 	}
 	if (conn->starttls)
 		irc_server_send_starttls(server);
@@ -396,20 +396,6 @@ static void event_starttls(IRC_SERVER_REC *server, const char *data)
 	} else {
 		g_warning("net_start_ssl failed");
 	}
-}
-
-static void event_registerfirst(IRC_SERVER_REC *server, const char *data)
-{
-	g_return_if_fail(server != NULL);
-
-	if (!IS_IRC_SERVER(server))
-		return;
-
-	if (server->connected)
-		return;
-
-	if (!server->cap_supported && !server->connrec->starttls)
-		server_init_2(server);
 }
 
 static void event_capend(IRC_SERVER_REC *server)
@@ -1236,7 +1222,6 @@ void irc_servers_init(void)
 	signal_add_last("server destroyed", (SIGNAL_FUNC) sig_destroyed);
 	signal_add_last("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_add("event 670", (SIGNAL_FUNC) event_starttls);
-	signal_add("event 451", (SIGNAL_FUNC) event_registerfirst);
 	signal_add("server cap end", (SIGNAL_FUNC) event_capend);
 	signal_add("event 001", (SIGNAL_FUNC) event_connected);
 	signal_add("event 004", (SIGNAL_FUNC) event_server_info);
@@ -1267,7 +1252,6 @@ void irc_servers_deinit(void)
 	signal_remove("server destroyed", (SIGNAL_FUNC) sig_destroyed);
         signal_remove("server quit", (SIGNAL_FUNC) sig_server_quit);
 	signal_remove("event 670", (SIGNAL_FUNC) event_starttls);
-	signal_remove("event 451", (SIGNAL_FUNC) event_registerfirst);
 	signal_remove("server cap end", (SIGNAL_FUNC) event_capend);
 	signal_remove("event 001", (SIGNAL_FUNC) event_connected);
 	signal_remove("event 004", (SIGNAL_FUNC) event_server_info);
