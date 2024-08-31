@@ -313,13 +313,10 @@ static void server_init_1(IRC_SERVER_REC *server)
 	if (!conn->no_cap) {
 		signal_emit("server waiting cap ls", 2, server, CAP_LS_VERSION);
 		irc_send_cmd_now(server, "CAP LS " CAP_LS_VERSION);
-
-		if (!server->cap_supported)
-			conn->no_cap = 1;
 	}
 	if (conn->starttls)
 		irc_server_send_starttls(server);
-	else if (conn->no_cap)
+	else
 		server_init_2(server);
 }
 
