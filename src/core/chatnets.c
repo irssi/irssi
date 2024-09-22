@@ -30,7 +30,9 @@
 #include <irssi/src/core/chatnets.h>
 #include <irssi/src/core/servers.h>
 
-GSList *chatnets, *chatnets_unavailable; /* list of available chat networks */
+/* list of available chat networks */
+GSList *chatnets;
+static GSList *chatnets_unavailable;
 
 static void chatnet_config_save(CHATNET_REC *chatnet)
 {
