@@ -430,7 +430,7 @@ int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
 	}
 
 	if (count_v4 == 0 && count_v6 == 0)
-		return HOST_NOT_FOUND; /* shouldn't happen? */
+		return EAI_NONAME; /* shouldn't happen? */
 
 	/* if there are multiple addresses, return random one */
 	use_v4 = count_v4 <= 1 ? 0 : rand() % count_v4;
