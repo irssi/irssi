@@ -491,8 +491,6 @@ int net_ip2host(IPADDR *ip, char *host)
 
 int net_host2ip(const char *host, IPADDR *ip)
 {
-	unsigned long addr;
-
 	if (strchr(host, ':') != NULL) {
 		/* IPv6 */
 		ip->family = AF_INET6;
@@ -501,16 +499,8 @@ int net_host2ip(const char *host, IPADDR *ip)
 	} else {
 		/* IPv4 */
 		ip->family = AF_INET;
-#ifdef HAVE_INET_ATON
-		if (inet_aton(host, &ip->ip.s_addr) == 0)
+		if (inet_pton(AF_INET, host, &ip->ip) == 0)
 			return -1;
-#else
-		addr = inet_addr(host);
-		if (addr == INADDR_NONE)
-			return -1;
-
-		memcpy(&ip->ip, &addr, 4);
-#endif
 	}
 
 	return 0;
