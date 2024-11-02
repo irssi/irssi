@@ -212,13 +212,18 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 
 	g_return_if_fail(ip != NULL || unix_socket != NULL);
 
+	if (ip != NULL) {
+		server->connrec->chosen_family = ip->family;
+		net_ip2host(ip, ipaddr);
+		server->connrec->ipaddr = g_strdup(ipaddr);
+	}
+
 	signal_emit("server connecting", 2, server, ip);
 
 	if (server->connrec->no_connect)
 		return;
 
 	if (ip != NULL) {
-		server->connrec->chosen_family = ip->family;
 		own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
 		port = server->connrec->proxy != NULL ?
 			server->connrec->proxy_port : server->connrec->port;
@@ -637,6 +642,7 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->proxy_string_after);
 	g_free_not_null(conn->proxy_password);
 
+	g_free_not_null(conn->ipaddr);
 	g_free_not_null(conn->tag);
 	g_free_not_null(conn->address);
 	g_free_not_null(conn->chatnet);
