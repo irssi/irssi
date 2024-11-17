@@ -22,7 +22,7 @@ jobs:
           |
             CLANG_FORMAT=clang-format-14 git-clang-format-14 --diff FETCH_HEAD HEAD | tee git-clang-format.diff
             cmp -s <(echo no modified files to format) git-clang-format.diff || cmp -s <(echo -n) git-clang-format.diff
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: git-clang-format.diff
