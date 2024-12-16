@@ -38,6 +38,7 @@ jobs:
         builder: [meson]
         compiler: [clang, gcc]
         flags: [regular]
+        setuptools_ver: [<66]
         include:
           - os: ubuntu-20.04
             builder: meson
