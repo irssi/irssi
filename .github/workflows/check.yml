@@ -20,6 +20,30 @@ jobs:
         run: |
           sudo apt update && sudo apt install $apt_build_deps
           eval "$get_pip_build_deps_meson"
+          patch ~/.local/lib/python3.12/site-packages/pkg_resources/__init__.py <<- PATCH
+          --- __init__.py       2024-12-16 20:37:46.733230351 +0100
+          +++ __init__.py       2024-12-16 20:38:42.479554540 +0100
+          @@ -2188,7 +2188,8 @@ def resolve_egg_link(path):
+               return next(dist_groups, ())
+           
+           
+          -register_finder(pkgutil.ImpImporter, find_on_path)
+          +if hasattr(pkgutil, 'ImpImporter'):
+          +    register_finder(pkgutil.ImpImporter, find_on_path)
+           
+           if hasattr(importlib_machinery, 'FileFinder'):
+               register_finder(importlib_machinery.FileFinder, find_on_path)
+          @@ -2345,7 +2346,8 @@ def file_ns_handler(importer, path_item,
+                   return subpath
+           
+           
+          -register_namespace_handler(pkgutil.ImpImporter, file_ns_handler)
+          +if hasattr(pkgutil, 'ImpImporter'):
+          +    register_namespace_handler(pkgutil.ImpImporter, file_ns_handler)
+           register_namespace_handler(zipimport.zipimporter, file_ns_handler)
+           
+           if hasattr(importlib_machinery, 'FileFinder'):
+          PATCH
       - uses: actions/checkout@main
       - name: make dist
         run: |
