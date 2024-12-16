@@ -12,10 +12,14 @@ env:
 jobs:
   dist:
     runs-on: ubuntu-latest
+    env:
+      meson_ver: <0.63.0
+      setuptools_ver: <66
     steps:
       - name: prepare required software
         run: |
           sudo apt update && sudo apt install $apt_build_deps
+          eval "$get_pip_build_deps_meson"
       - uses: actions/checkout@main
       - name: make dist
         run: |
