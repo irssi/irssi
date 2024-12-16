@@ -3,8 +3,8 @@ name: abicheck
 env:
   build_options: -Dbuildtype=debug -Denable-true-color=yes -Dwith-proxy=yes -Dc_args=-DPERL_EUPXS_ALWAYS_EXPORT
   prefix: /usr/local
-  apt_build_deps: ninja-build libutf8proc-dev libperl-dev libotr5-dev
-  get_pip_build_deps: pip3 install setuptools; pip3 install wheel; pip3 install 'meson<0.59.0'
+  apt_build_deps: ninja-build libutf8proc-dev libperl-dev libotr5-dev libglib2.0-dev
+  get_pip_build_deps: pip3 install 'setuptools<66'; pip3 install wheel; pip3 install 'meson<0.59.0'
   getabidef_def: getabidef() { awk '$1=="#define" && $2=="IRSSI_ABI_VERSION" { print $3 }' "$1"/include/irssi/src/common.h; }
 jobs:
   build-base-ref:
