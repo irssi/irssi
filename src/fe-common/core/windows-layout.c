@@ -183,18 +183,26 @@ static void sig_layout_save_item(WINDOW_REC *window, WI_ITEM_REC *item,
 	}
 }
 
-static void window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
+static int window_save_items(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	GSList *tmp;
+	int save_only_channels = settings_get_bool("layout_save_only_channels");
+	int items_saved = FALSE;
 
 	node = iconfig_node_section(node, "items", NODE_TYPE_LIST);
 	for (tmp = window->items; tmp != NULL; tmp = tmp->next)
-		signal_emit("layout save item", 3, window, tmp->data, node);
+		if ((save_only_channels && IS_CHANNEL(tmp->data)) || !save_only_channels) {
+			items_saved = TRUE;
+			signal_emit("layout save item", 3, window, tmp->data, node);
+		}
+
+	return items_saved;
 }
 
 static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	char refnum[MAX_INT_STRLEN];
+	int save_node = FALSE;
 
         ltoa(refnum, window->refnum);
 	node = iconfig_node_section(node, refnum, NODE_TYPE_BLOCK);
@@ -224,9 +232,10 @@ static void window_save(WINDOW_REC *window, CONFIG_NODE *node)
 	while (window->bound_items != NULL)
 		window_bind_destroy(window, window->bound_items->data);
 	if (window->items != NULL)
-		window_save_items(window, node);
+		save_node = window_save_items(window, node);
 
-	signal_emit("layout save window", 2, window, node);
+	if (save_node)
+		signal_emit("layout save window", 2, window, node);
 }
 
 void windows_layout_save(void)
@@ -268,6 +277,8 @@ void windows_layout_init(void)
 	signal_add("layout restore item", (SIGNAL_FUNC) sig_layout_restore_item);
 	signal_add("layout restore", (SIGNAL_FUNC) sig_layout_restore);
 	signal_add("layout save item", (SIGNAL_FUNC) sig_layout_save_item);
+
+	settings_add_bool("misc", "layout_save_only_channels", FALSE);
 }
 
 void windows_layout_deinit(void)
