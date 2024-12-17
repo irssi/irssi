@@ -21,6 +21,8 @@
 #include "module.h"
 #include <irssi/src/core/network.h>
 
+#include <sys/select.h>
+
 /* when quitting, wait for max. 5 seconds before forcing to close the socket */
 #define MAX_QUIT_CLOSE_WAIT 5
 
