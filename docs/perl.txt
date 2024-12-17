@@ -522,6 +522,8 @@ Connect->{}
   address - Address where we connected (irc.blah.org)
   port - Port where we connected
   chatnet - Chat network
+  chosen_family - IP family chosen to connect to
+  ipaddr - IP address connected to
 
   password - Password we used in connection.
   wanted_nick - Nick which we would prefer to use
