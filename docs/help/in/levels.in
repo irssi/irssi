@@ -22,7 +22,7 @@
         NICKS           A nickname changes to another nickname.
         NOTICES         Private notices.
         PARTS           A nickname leaves a channel.
-        PUBLIC          Public messages in a channel.
+        PUBLICS         Public messages in a channel.
         PUBNOTICES      Public notices in a channel.
         QUITS           A nickname disconnects from IRC.
         SNOTES          Notices sent from a server.
@@ -31,7 +31,7 @@
 
     These are the special levels you can use:
 
-        HILIGHT         The text is highlighted.
+        HILIGHTS        The text is highlighted.
         NEVER           Never ignores or logs the message.
         HIDDEN          Hides the message when window HIDELEVEL includes HIDDEN.
         NO_ACT          Doesn't trigger any activity in the statusbar.
