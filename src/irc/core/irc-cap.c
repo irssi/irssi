@@ -234,7 +234,7 @@ static void event_cap (IRC_SERVER_REC *server, char *args, char *nick, char *add
 		}
 	}
 	else if (!g_ascii_strcasecmp(evt, "ACK")) {
-		int got_sasl = FALSE;
+		int got_sasl = (i_slist_find_string(server->cap_active, "sasl") != NULL);
 
 		/* Emit a signal for every ack'd cap */
 		for (i = 0; i < caps_length; i++) {
