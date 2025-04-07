@@ -1,0 +1,104 @@
+on:
+  push:
+    branches:
+     - master
+  pull_request:
+  workflow_dispatch:
+name: Check Irssi on Solaris
+env:
+  get_pip_build_deps_meson: pip3 install setuptools${setuptools_ver}; pip3 install wheel
+  prefix: ~/irssi-build
+jobs:
+  dist:
+    runs-on: ubuntu-latest
+    env:
+      setuptools_ver: <66
+    steps:
+      - name: prepare required software
+        run: |
+          sudo apt update && sudo apt install $apt_build_deps
+          eval "$get_pip_build_deps_meson"
+          patch ~/.local/lib/python3.12/site-packages/pkg_resources/__init__.py <<- PATCH
+          --- __init__.py       2024-12-16 20:37:46.733230351 +0100
+          +++ __init__.py       2024-12-16 20:38:42.479554540 +0100
+          @@ -2188,7 +2188,8 @@ def resolve_egg_link(path):
+               return next(dist_groups, ())
+           
+           
+          -register_finder(pkgutil.ImpImporter, find_on_path)
+          +if hasattr(pkgutil, 'ImpImporter'):
+          +    register_finder(pkgutil.ImpImporter, find_on_path)
+           
+           if hasattr(importlib_machinery, 'FileFinder'):
+               register_finder(importlib_machinery.FileFinder, find_on_path)
+          @@ -2345,7 +2346,8 @@ def file_ns_handler(importer, path_item,
+                   return subpath
+           
+           
+          -register_namespace_handler(pkgutil.ImpImporter, file_ns_handler)
+          +if hasattr(pkgutil, 'ImpImporter'):
+          +    register_namespace_handler(pkgutil.ImpImporter, file_ns_handler)
+           register_namespace_handler(zipimport.zipimporter, file_ns_handler)
+           
+           if hasattr(importlib_machinery, 'FileFinder'):
+          PATCH
+      - uses: actions/checkout@main
+      - name: make dist
+        run: |
+          ./utils/make-dist.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          path: irssi-*.tar.gz
+          retention-days: 1
+  install:
+    runs-on: ubuntu-latest
+    needs: dist
+    steps:
+      - name: fetch dist
+        uses: actions/download-artifact@v4
+      - name: Test in Solaris
+        uses: vmactions/solaris-vm@v1
+        with:
+          usesh: true
+          sync: rsync
+          release: "11.4-gcc"
+          prepare: |
+            pkg update --accept
+            pkg install meson
+            pkgutil -y -i curl
+            pkgutil -y -i gtar
+            pkgutil -y -i findutils
+          run: |
+            set -ex
+            export PKG_CONFIG_PATH=/usr/lib/64/pkgconfig
+            curl -SLf https://github.com/irssi-import/actions-irssi/raw/master/check-irssi/render.pl -o ~/render.pl && chmod +x ~/render.pl
+            gtar xzf artifact/irssi-*.tar.gz
+            # ninja install
+            cd irssi-*/
+            meson Build -Dwith-proxy=yes -Dwith-bot=yes -Dwith-perl=yes --prefix=$HOME/irssi-build
+            ninja -C Build
+            ninja -C Build install
+            # ninja test
+            ninja -C Build test
+            gfind -name testlog.txt -exec gsed -i -e '/Inherited environment:.* GITHUB/d' {} + -exec cat {} +
+            export TERM=xterm
+            # automated irssi launch test
+            cd
+            mkdir irssi-test
+            echo 'echo automated irssi launch test
+            ^set settings_autosave off
+            ^set -clear log_close_string
+            ^set -clear log_day_changed
+            ^set -clear log_open_string
+            ^set log_timestamp * 
+            ^window log on
+            load irc
+            load dcc
+            load flood
+            load notifylist
+            load perl
+            load otr
+            load proxy
+            ^quit' > irssi-test/startup
+            irssi-build/bin/irssi --home irssi-test | perl -Mutf8 -C ~/render.pl
+            cat irc.log.*
