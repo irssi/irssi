@@ -119,11 +119,10 @@ static void ctcp_default_reply(IRC_SERVER_REC *server, const char *data,
 	g_free(ctcp);
 }
 
-static void ctcp_ping_reply(IRC_SERVER_REC *server, const char *data,
-			    const char *nick, const char *addr,
-			    const char *target)
+static void ctcp_ping_reply(IRC_SERVER_REC *server, const char *data, const char *nick,
+                            const char *addr, const char *target)
 {
-	gint64 tv, tv2;
+	gint64 tv, tv2 = 0;
 	long usecs;
 
 	g_return_if_fail(data != NULL);
@@ -141,8 +140,9 @@ static void ctcp_ping_reply(IRC_SERVER_REC *server, const char *data,
 	tv2 += tv * G_TIME_SPAN_SECOND;
 	tv = g_get_real_time();
 	usecs = tv - tv2;
-	printformat(server, server_ischannel(SERVER(server), target) ? target : nick, MSGLEVEL_CTCPS,
-		    IRCTXT_CTCP_PING_REPLY, nick, usecs / G_TIME_SPAN_SECOND, usecs % G_TIME_SPAN_SECOND);
+	printformat(server, server_ischannel(SERVER(server), target) ? target : nick,
+	            MSGLEVEL_CTCPS, IRCTXT_CTCP_PING_REPLY, nick, usecs / G_TIME_SPAN_SECOND,
+	            usecs % G_TIME_SPAN_SECOND);
 }
 
 void fe_ctcp_init(void)
