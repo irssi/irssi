@@ -13,6 +13,9 @@ inline static int term_putchar(int c)
 }
 
 #ifdef HAVE_TERM_H
+#ifdef NEED_CURSES_H
+#include <curses.h>
+#endif
 #include <term.h>
 #else
 /* Don't bother including curses.h because of these -

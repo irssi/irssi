@@ -31,6 +31,9 @@
 #include <stdio.h>
 
 #ifdef HAVE_TERM_H
+#ifdef NEED_CURSES_H
+#include <curses.h>
+#endif
 #include <term.h>
 #else
 /* TODO: This needs arguments, starting with C2X. */
@@ -40,14 +43,13 @@ int tputs();
 /* returns number of characters in the beginning of the buffer being a
    a single character, or -1 if more input is needed. The character will be
    saved in result */
-typedef int (*TERM_INPUT_FUNC)(const unsigned char *buffer, int size,
-			       unichar *result);
+typedef int (*TERM_INPUT_FUNC)(const unsigned char *buffer, int size, unichar *result);
 
 struct _TERM_WINDOW {
-        /* Terminal to use for window */
+	/* Terminal to use for window */
 	TERM_REC *term;
 
-        /* Area for window in terminal */
+	/* Area for window in terminal */
 	int x, y;
 	int width, height;
 };

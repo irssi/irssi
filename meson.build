@@ -569,6 +569,28 @@ foreach h : headers
   endif
 endforeach
 
+if want_textui and conf.get('HAVE_TERM_H', 0) == 1
+  if not cc.links('''
+#include <stdio.h>
+#include <term.h>
+int main () {
+  return tputs("x", 1, putchar);
+}
+''', dependencies : textui_dep)
+    if cc.has_header('curses.h') and cc.links('''
+#include <curses.h>
+#include <term.h>
+int main () {
+  return tputs("x", 1, putchar);
+}
+''', dependencies : textui_dep, name : 'working Curses')
+      conf.set('NEED_CURSES_H', 1, description : 'tputs needs curses.h')
+    else
+      error('could not link terminfo')
+    endif
+  endif
+endif
+
 conf.set('HAVE_LIBUTF8PROC', have_libutf8proc)
 conf.set_quoted('PACKAGE_VERSION', package_version)
 conf.set_quoted('PACKAGE_TARNAME', meson.project_name())
