@@ -31,6 +31,9 @@
 #include <stdio.h>
 
 #ifdef HAVE_TERM_H
+#ifdef NEED_CURSES_H
+#include <curses.h>
+#endif
 #include <term.h>
 #else
 /* TODO: This needs arguments, starting with C2X. */
@@ -40,14 +43,13 @@ int tputs();
 /* returns number of characters in the beginning of the buffer being a
    a single character, or -1 if more input is needed. The character will be
    saved in result */
-typedef int (*TERM_INPUT_FUNC)(const unsigned char *buffer, int size,
-			       unichar *result);
+typedef int (*TERM_INPUT_FUNC)(const unsigned char *buffer, int size, unichar *result);
 
 struct _TERM_WINDOW {
-        /* Terminal to use for window */
+	/* Terminal to use for window */
 	TERM_REC *term;
 
-        /* Area for window in terminal */
+	/* Area for window in terminal */
 	int x, y;
 	int width, height;
 };
@@ -367,8 +369,8 @@ void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigne
 	if (!term_use_colors && bg > 0)
 		col |= ATTR_REVERSE;
 
-        set_normal = ((col & ATTR_RESETFG) && last_fg != COLOR_RESET) ||
-		((col & ATTR_RESETBG) && last_bg != COLOR_RESET);
+	set_normal = ((col & ATTR_RESETFG) && last_fg != COLOR_RESET) ||
+	             ((col & ATTR_RESETBG) && last_bg != COLOR_RESET);
 	if (((last_attrs & ATTR_BOLD) && (col & ATTR_BOLD) == 0) ||
 	    ((last_attrs & ATTR_REVERSE) && (col & ATTR_REVERSE) == 0) ||
 	    ((last_attrs & ATTR_BLINK) && (col & ATTR_BLINK) == 0)) {
@@ -379,19 +381,17 @@ void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigne
 
 	if (set_normal) {
 		last_fg = last_bg = COLOR_RESET;
-                last_attrs = 0;
+		last_attrs = 0;
 		terminfo_set_normal();
 	}
 
 	/* set foreground color */
-	if (fg != last_fg &&
-	    (fg != 0 || (col & ATTR_RESETFG) == 0)) {
-                if (term_use_colors) {
+	if (fg != last_fg && (fg != 0 || (col & ATTR_RESETFG) == 0)) {
+		if (term_use_colors) {
 			last_fg = fg;
 			if (fg >> 8)
-				termctl_set_color_24bit(0,
-							last_fg == COLOR_BLACK24 ? 0
-							: last_fg >> 8);
+				termctl_set_color_24bit(0, last_fg == COLOR_BLACK24 ? 0 :
+				                                                      last_fg >> 8);
 			else
 				terminfo_set_fg(last_fg);
 		}
@@ -399,19 +399,17 @@ void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigne
 
 	/* set background color */
 	if (window && window->term->TI_colors &&
-	    (term_color256map[bg&0xff]&8) == window->term->TI_colors)
+	    (term_color256map[bg & 0xff] & 8) == window->term->TI_colors)
 		col |= ATTR_BLINK;
 	if (col & ATTR_BLINK)
-		current_term->set_blink(current_term);
+		current_term->tr_set_blink(current_term);
 
-	if (bg != last_bg &&
-	    (bg != 0 || (col & ATTR_RESETBG) == 0)) {
-                if (term_use_colors) {
+	if (bg != last_bg && (bg != 0 || (col & ATTR_RESETBG) == 0)) {
+		if (term_use_colors) {
 			last_bg = bg;
 			if (bg >> 8)
-				termctl_set_color_24bit(1,
-							last_bg == COLOR_BLACK24 ? 0
-							: last_bg >> 8);
+				termctl_set_color_24bit(1, last_bg == COLOR_BLACK24 ? 0 :
+				                                                      last_bg >> 8);
 			else
 				terminfo_set_bg(last_bg);
 		}
@@ -423,7 +421,7 @@ void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigne
 
 	/* bold */
 	if (window && window->term->TI_colors &&
-	    (term_color256map[fg&0xff]&8) == window->term->TI_colors)
+	    (term_color256map[fg & 0xff] & 8) == window->term->TI_colors)
 		col |= ATTR_BOLD;
 	if (col & ATTR_BOLD)
 		terminfo_set_bold();
@@ -443,7 +441,7 @@ void term_set_color2(TERM_WINDOW *window, int col, unsigned int fgcol24, unsigne
 		terminfo_set_italic(FALSE);
 
 	/* update the new attribute settings whilst ignoring color values.  */
-	last_attrs = col & ~( BG_MASK | FG_MASK );
+	last_attrs = col & ~(BG_MASK | FG_MASK);
 }
 
 void term_move(TERM_WINDOW *window, int x, int y)
