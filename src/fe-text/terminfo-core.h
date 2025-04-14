@@ -57,32 +57,32 @@ struct _TERM_REC {
 	int width, height;
 
 	/* Cursor movement */
-	const char *TI_smcup, *TI_rmcup, *TI_cup;
-	const char *TI_hpa, *TI_vpa, *TI_cub1, *TI_cuf1;
-	const char *TI_civis, *TI_cnorm;
+	char *TI_smcup, *TI_rmcup, *TI_cup;
+	char *TI_hpa, *TI_vpa, *TI_cub1, *TI_cuf1;
+	char *TI_civis, *TI_cnorm;
 
 	/* Scrolling */
-	const char *TI_csr, *TI_wind;
-	const char *TI_ri, *TI_rin, *TI_ind, *TI_indn;
-	const char *TI_il, *TI_il1, *TI_dl, *TI_dl1;
+	char *TI_csr, *TI_wind;
+	char *TI_ri, *TI_rin, *TI_ind, *TI_indn;
+	char *TI_il, *TI_il1, *TI_dl, *TI_dl1;
 
 	/* Clearing screen */
-	const char *TI_clear, *TI_ed; /* + *TI_dl, *TI_dl1; */
+	char *TI_clear, *TI_ed; /* + *TI_dl, *TI_dl1; */
 
 	/* Clearing to end of line */
-	const char *TI_el;
+	char *TI_el;
 
 	/* Repeating character */
-	const char *TI_rep;
+	char *TI_rep;
 
 	/* Colors */
-	int TI_colors;                 /* numbers of colors in TI_fg[] and TI_bg[] */
-	const char *TI_sgr0;           /* turn off all attributes */
-	const char *TI_smul, *TI_rmul; /* underline on/off */
-	const char *TI_smso, *TI_rmso; /* standout on/off */
-	const char *TI_sitm, *TI_ritm; /* italic on/off */
-	const char *TI_bold, *TI_blink, *TI_rev;
-	const char *TI_setaf, *TI_setab, *TI_setf, *TI_setb;
+	int TI_colors;           /* numbers of colors in TI_fg[] and TI_bg[] */
+	char *TI_sgr0;           /* turn off all attributes */
+	char *TI_smul, *TI_rmul; /* underline on/off */
+	char *TI_smso, *TI_rmso; /* standout on/off */
+	char *TI_sitm, *TI_ritm; /* italic on/off */
+	char *TI_bold, *TI_blink, *TI_rev;
+	char *TI_setaf, *TI_setab, *TI_setf, *TI_setb;
 
 	/* Colors - generated and dynamically allocated */
 	char **TI_fg, **TI_bg, *TI_normal;
@@ -91,8 +91,8 @@ struct _TERM_REC {
 	char *TI_bel;
 
 	/* Keyboard-transmit mode */
-	const char *TI_smkx;
-	const char *TI_rmkx;
+	char *TI_smkx;
+	char *TI_rmkx;
 
 	/* Terminal mode states */
 	int appkey_enabled;
