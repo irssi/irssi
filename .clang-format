@@ -23,7 +23,7 @@ IndentCaseLabels: false
 IndentWidth: 8
 IndentWrappedFunctionNames: true
 KeepEmptyLinesAtTheStartOfBlocks: false
-Language: Cpp
+# Language: Cpp
 Cpp11BracedListStyle: false
 MaxEmptyLinesToKeep: 1
 PointerAlignment: Right
