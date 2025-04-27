@@ -18,6 +18,9 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#define _GNU_SOURCE
+#include <wchar.h>
+
 #define NEED_PERL_H
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
