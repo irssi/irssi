@@ -43,7 +43,6 @@
 #define IS_IRC_SERVER_CONNECT(conn) \
 	(IRC_SERVER_CONNECT(conn) ? TRUE : FALSE)
 
-/* clang-format off */
 /* all strings should be either NULL or dynamically allocated */
 /* address and nick are mandatory, rest are optional */
 struct _IRC_SERVER_CONNECT_REC {
@@ -62,11 +61,10 @@ struct _IRC_SERVER_CONNECT_REC {
 	int max_query_chans;
 
 	int max_kicks, max_msgs, max_modes, max_whois;
-	int disallow_starttls:1;
-	int starttls:1;
-	int no_cap:1;
+	unsigned int disallow_starttls : 1;
+	unsigned int starttls : 1;
+	unsigned int no_cap : 1;
 };
-/* clang-format on */
 
 #define STRUCT_SERVER_CONNECT_REC IRC_SERVER_CONNECT_REC
 struct _IRC_SERVER_REC {

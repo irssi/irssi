@@ -6,7 +6,7 @@
 #define IRSSI_GLOBAL_CONFIG "irssi.conf" /* config file name in /etc/ */
 #define IRSSI_HOME_CONFIG "config" /* config file name in ~/.irssi/ */
 
-#define IRSSI_ABI_VERSION 55
+#define IRSSI_ABI_VERSION 56
 
 #define DEFAULT_SERVER_ADD_PORT 6667
 #define DEFAULT_SERVER_ADD_TLS_PORT 6697
