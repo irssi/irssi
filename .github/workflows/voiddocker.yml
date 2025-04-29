@@ -39,6 +39,7 @@ jobs:
       - name: Test on Void Linux glibc
         run: |
           set -ex
+          curl -SLf https://github.com/irssi-import/actions-irssi/raw/master/check-irssi/render.pl -o ~/render.pl && chmod +x ~/render.pl
           tar xzf artifact/irssi-*.tar.gz
           # ninja install
           cd irssi-*/
