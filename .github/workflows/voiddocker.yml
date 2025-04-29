@@ -1,0 +1,72 @@
+on:
+  push:
+    branches:
+     - master
+  pull_request:
+  workflow_dispatch:
+name: Check Irssi on Void Linux glibc
+jobs:
+  dist:
+    runs-on: ubuntu-latest
+    container: ghcr.io/void-linux/void-glibc:latest
+    steps:
+      - name: prepare required software
+        run: |
+          xbps-install -Syu
+          xbps-install -Sy git findutils python3-setuptools tar xz gzip
+      - uses: actions/checkout@main
+      - name: make dist
+        run: |
+          git config --global --add safe.directory /__w/irssi/irssi
+          ./utils/make-dist.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          path: irssi-*.tar.gz
+          retention-days: 1
+  install:
+    runs-on: ubuntu-latest
+    container: ghcr.io/void-linux/void-glibc:latest
+    needs: dist
+    steps:
+      - name: prepare required software
+        run: |
+          xbps-install -Syu
+          xbps-install -Sy meson base-devel libglib-devel libutf8proc-devel ncurses-devel ncurses-base openssl-devel libotr-devel libgcrypt-devel tar findutils curl
+      - name: fetch dist
+        uses: actions/download-artifact@v4
+      - name: Setup local annotations
+        uses: irssi-import/actions-irssi/problem-matchers@master
+      - name: Test on Void Linux glibc
+        run: |
+          set -ex
+          tar xzf artifact/irssi-*.tar.gz
+          # ninja install
+          cd irssi-*/
+          meson Build -Dwith-proxy=yes -Dwith-bot=yes -Dwith-perl=yes --prefix=$HOME/irssi-build --buildtype debugoptimized
+          ninja -C Build
+          ninja -C Build install
+          # ninja test
+          ninja -C Build test
+          find -name testlog.txt -exec gsed -i -e '/Inherited environment:.* GITHUB/d' {} + -exec cat {} +
+          export TERM=xterm
+          # automated irssi launch test
+          cd
+          mkdir irssi-test
+          echo 'echo automated irssi launch test
+          ^set settings_autosave off
+          ^set -clear log_close_string
+          ^set -clear log_day_changed
+          ^set -clear log_open_string
+          ^set log_timestamp * 
+          ^window log on
+          load irc
+          load dcc
+          load flood
+          load notifylist
+          load perl
+          load otr
+          load proxy
+          ^quit' > irssi-test/startup
+          export LC_CTYPE=C.utf8
+          irssi-build/bin/irssi --home irssi-test | perl -Mutf8 -C ~/render.pl
+          cat irc.log.*
