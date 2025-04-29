@@ -43,6 +43,7 @@ if [ -z "$name" ] || [ -z "$version" ]; then
     echo "**Error**: ${PKG_NAME} make-dist.sh could not find either name or version, cannot proceed."
     exit 1
 fi
+version=$(echo "$version"|perl -p -e 's/-head/.dev0/')
 
 git log > ChangeLog
 
