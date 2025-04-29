@@ -47,7 +47,7 @@ jobs:
           ninja -C Build install
           # ninja test
           ninja -C Build test
-          find -name testlog.txt -exec gsed -i -e '/Inherited environment:.* GITHUB/d' {} + -exec cat {} +
+          find -name testlog.txt -exec sed -i -e '/Inherited environment:.* GITHUB/d' {} + -exec cat {} +
           export TERM=xterm
           # automated irssi launch test
           cd
