@@ -233,8 +233,10 @@ MAIN_WINDOW_REC *mainwindow_create(int right)
 			if (MAIN_WINDOW_TEXT_HEIGHT(parent) <
 			    WINDOW_MIN_SIZE+NEW_WINDOW_SIZE)
 				parent = find_window_with_room();
-			if (parent == NULL)
+			if (parent == NULL) {
+				g_free(rec);
 				return NULL; /* not enough space */
+			}
 
 			space = parent->height / 2;
 			rec->first_line = parent->first_line;
@@ -255,8 +257,10 @@ MAIN_WINDOW_REC *mainwindow_create(int right)
 			if (MAIN_WINDOW_TEXT_WIDTH(parent) < 2 * NEW_WINDOW_WIDTH) {
 				parent = find_window_with_room_right();
 			}
-			if (parent == NULL)
+			if (parent == NULL) {
+				g_free(rec);
 				return NULL; /* not enough space */
+			}
 
 			space = parent->width / 2;
 			rec->first_line = parent->first_line;
