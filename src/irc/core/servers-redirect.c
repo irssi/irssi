@@ -706,6 +706,14 @@ void servers_redirect_init(void)
 	                         NULL,                 /* */
 	                         NULL);
 
+	/* NAMES */
+	server_redirect_register("names", TRUE, 0,
+				 "event 353", -1, /* An element of NAMES */
+				 NULL,
+				 "event 366", 1, /* End of NAMES */
+				 NULL,
+				 NULL);
+
 	/* LIST */
 	server_redirect_register("list", FALSE, 0,
 				 "event 321", 1, /* Begins the LIST */
