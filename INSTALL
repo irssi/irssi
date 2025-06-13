@@ -9,7 +9,10 @@ To compile Irssi you need:
 - glib-2.32 or greater
 - openssl (for ssl support)
 - perl-5.8 or greater (for building, and optionally Perl scripts)
+  (n.b a complete perl is needed, including ExtUtils::Embed and xsubpp)
 - terminfo or ncurses (for text frontend)
+- utf8proc (optional, for additional char width calculation)
+- libgcrypt (for OTR)
 
 For most people, this should work just fine:
 
