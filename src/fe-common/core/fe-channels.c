@@ -117,7 +117,7 @@ static void sig_channel_joined(CHANNEL_REC *channel)
 	}
 }
 
-/* SYNTAX: JOIN [-window] [-invite] [-<server tag>] <channels> [<keys>] */
+/* SYNTAX: JOIN [-window] [-invite] [-<server tag>] <channels> [<keys>] / "0" */
 static void cmd_join(const char *data, SERVER_REC *server)
 {
 	WINDOW_REC *window;
@@ -141,6 +141,15 @@ static void cmd_join(const char *data, SERVER_REC *server)
 
 	/* -<server tag> */
 	server = cmd_options_get_server("join", optlist, server);
+
+	/* JOIN 0 (leave all channels) */
+	if (!invite && !samewindow && strcmp(pdata, "0") == 0) {
+		if (server == NULL || !server->connected)
+			cmd_param_error(CMDERR_NOT_CONNECTED);
+		server->channels_join(server, pdata, FALSE);
+		cmd_params_free(free_arg);
+		return;
+	}
 
 	channel = channel_find(server, pdata);
 	if (channel != NULL) {

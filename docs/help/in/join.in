@@ -13,7 +13,7 @@
 
 %9Description:%9
 
-    Joins the given channels.
+    Joins the given channels, or use `JOIN 0` to leave all currently joined channels.
 
 %9Examples:%9
 
@@ -21,6 +21,7 @@
     /JOIN #basementcat secret_lair
     /JOIN -invite
     /JOIN -liberachat #github,#libera,#irssi
+    /JOIN 0
 
 %9See also:%9 KICK, PART
 

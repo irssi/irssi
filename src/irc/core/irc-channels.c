@@ -92,6 +92,12 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 	g_return_if_fail(IS_IRC_SERVER(server) && server->connected);
 	if (*data == '\0') return;
 
+	/* JOIN 0 (leave all channels) */
+	if (strcmp(data, "0") == 0) {
+	    irc_send_cmd(IRC_SERVER(server), "JOIN 0");
+	    return;
+	}
+
 	if (!cmd_get_params(data, &free_arg, 2 | PARAM_FLAG_GETREST,
 			    &channels, &keys))
 		return;
