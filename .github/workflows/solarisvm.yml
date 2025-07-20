@@ -63,11 +63,11 @@ jobs:
           sync: rsync
           release: "11.4-gcc"
           prepare: |
-            pkg update --accept
-            pkg install meson
-            pkgutil -y -i curl
-            pkgutil -y -i gtar
-            pkgutil -y -i findutils
+            pkg update --accept || echo 1:$?
+            pkg install meson || echo 2:$?
+            pkgutil -y -i curl || echo 3:$?
+            pkgutil -y -i gtar || echo 4:$?
+            pkgutil -y -i findutils || echo 5:$?
           run: |
             set -ex
             export PKG_CONFIG_PATH=/usr/lib/64/pkgconfig
