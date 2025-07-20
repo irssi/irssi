@@ -6,8 +6,13 @@
 #  define _POSIX_VDISABLE 0
 #endif
 
+#ifdef TPUTS_SVR4
+#define putc_arg_t char
+#else
+#define putc_arg_t int
+#endif
 #define tput(s) tputs(s, 0, term_putchar)
-inline static int term_putchar(int c)
+inline static int term_putchar(putc_arg_t c)
 {
         return fputc(c, current_term->out);
 }
