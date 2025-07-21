@@ -626,7 +626,7 @@ static void cmd_hilight_show(void)
 }
 
 /* SYNTAX: HILIGHT [-nick | -word | -line] [-mask | -full | -matchcase | -regexp]
-   [-color <color>] [-actcolor <color>] [-level <level>]
+   [-color <color>] [-actcolor <color>] [-level <level>] [-priority <number>]
    [-network <network>] [-channels <channels>] <text> */
 static void cmd_hilight(const char *data)
 {
