@@ -570,23 +570,40 @@ foreach h : headers
 endforeach
 
 if want_textui and conf.get('HAVE_TERM_H', 0) == 1
-  if not cc.links('''
+  if cc.links('''
 #include <stdio.h>
 #include <term.h>
-int main () {
+int main (void) {
   return tputs("x", 1, putchar);
 }
-''', dependencies : textui_dep)
-    if cc.has_header('curses.h') and cc.links('''
+''', args : '-pedantic-errors', dependencies : textui_dep, name : 'Curses working')
+    # ok
+  else
+    has_curses_h = cc.has_header('curses.h')
+    if has_curses_h and cc.links('''
 #include <curses.h>
 #include <term.h>
-int main () {
+int main (void) {
   return tputs("x", 1, putchar);
 }
-''', dependencies : textui_dep, name : 'working Curses')
+''', args : '-pedantic-errors', dependencies : textui_dep, name : 'Curses working with curses.h')
       conf.set('NEED_CURSES_H', 1, description : 'tputs needs curses.h')
     else
-      error('could not link terminfo')
+      if has_curses_h and cc.links('''
+#include <curses.h>
+#include <term.h>
+int char_putchar (char c) {
+  return putchar(c);
+}
+int main (void) {
+  return tputs("x", 1, char_putchar);
+}
+''', args : '-pedantic-errors', dependencies : textui_dep, name : 'Curses with tputs third argument arg char')
+        conf.set('NEED_CURSES_H', 1, description : 'tputs needs curses.h')
+        conf.set('TPUTS_SVR4', 1, description : 'third argument of tputs has the type int (*)(char)')
+      else
+        error('could not link terminfo')
+      endif
     endif
   endif
 endif

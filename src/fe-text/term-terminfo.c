@@ -318,7 +318,12 @@ void term_window_scroll(TERM_WINDOW *window, int count)
 		term_lines_empty[window->y+y] = FALSE;
 }
 
-inline static int term_putchar(int c)
+#ifdef TPUTS_SVR4
+#define putc_arg_t char
+#else
+#define putc_arg_t int
+#endif
+inline static int term_putchar(putc_arg_t c)
 {
         return fputc(c, current_term->out);
 }
