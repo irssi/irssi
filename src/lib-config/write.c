@@ -26,6 +26,15 @@
 #define CONFIG_INDENT_SIZE 2
 static const char *indent_block = "  "; /* needs to be the same size as CONFIG_INDENT_SIZE! */
 
+#if GLIB_CHECK_VERSION(2, 76, 0)
+/* nothing */
+#else
+static gchar *g_string_free_and_steal(GString *string)
+{
+	return g_string_free(string, FALSE);
+}
+#endif
+
 /* write needed amount of indentation to the start of the line */
 static int config_write_indent(CONFIG_REC *rec)
 {
@@ -108,8 +117,7 @@ static char *config_escape_string(const char *text)
 
 	g_string_append_c(str, '"');
 
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 

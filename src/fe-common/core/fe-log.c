@@ -214,8 +214,7 @@ static char *log_items_get_list(LOG_REC *log)
 	if(rec->servertag != NULL)
 		g_string_append_printf(str, " (%s)", rec->servertag);
 
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 

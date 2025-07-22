@@ -395,9 +395,8 @@ char *theme_format_expand_get(THEME_REC *theme, const char **format)
 		(*format)++;
 	}
 
-	ret = str->str;
-        g_string_free(str, FALSE);
-        return ret;
+	ret = g_string_free_and_steal(str);
+	return ret;
 }
 
 static char *theme_format_expand_data_rec(THEME_REC *theme, const char **format,
@@ -496,8 +495,7 @@ static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp
 		p++;
 	}
 	g_free(ret);
-	abstract = str->str;
-	g_string_free(str, FALSE);
+	abstract = g_string_free_and_steal(str);
 
 	/* abstract may itself contain abstracts or replaces */
 	p = abstract;
@@ -568,15 +566,14 @@ static char *theme_format_expand_data_rec(THEME_REC *theme, const char **format,
 		}
 	}
 
-		/* save the last color */
-		if (save_last_fg != NULL)
-			*save_last_fg = last_fg;
-		if (save_last_bg != NULL)
-			*save_last_bg = last_bg;
+	/* save the last color */
+	if (save_last_fg != NULL)
+		*save_last_fg = last_fg;
+	if (save_last_bg != NULL)
+		*save_last_bg = last_bg;
 
-	ret = str->str;
-        g_string_free(str, FALSE);
-        return ret;
+	ret = g_string_free_and_steal(str);
+	return ret;
 }
 
 /* expand the data part in {abstract data} */
@@ -645,9 +642,8 @@ static char *theme_format_compress_colors(THEME_REC *theme, const char *format)
 		}
 	}
 
-	ret = str->str;
-        g_string_free(str, FALSE);
-        return ret;
+	ret = g_string_free_and_steal(str);
+	return ret;
 }
 
 char *theme_format_expand(THEME_REC *theme, const char *format)

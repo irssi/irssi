@@ -21,6 +21,7 @@
 #include "module.h"
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/settings.h>
+#include <irssi/src/core/misc.h>
 
 #include <irssi/src/irc/core/irc-commands.h>
 #include <irssi/src/irc/core/irc-servers.h>
@@ -443,8 +444,7 @@ char *modes_join(IRC_SERVER_REC *server, const char *old,
 	}
 	g_free(dup);
 
-	modestr = newmode->str;
-	g_string_free(newmode, FALSE);
+	modestr = g_string_free_and_steal(newmode);
 	return modestr;
 }
 
@@ -755,8 +755,7 @@ static char *get_nicks(IRC_SERVER_REC *server, WI_ITEM_REC *item,
 	}
 
         if (str->len > 0) g_string_truncate(str, str->len-1);
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	g_strfreev(matches);
 	cmd_params_free(free_arg);
 

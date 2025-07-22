@@ -26,6 +26,12 @@ long get_timeval_diff(const GTimeVal *tv1, const GTimeVal *tv2) G_GNUC_DEPRECATE
 GDateTime *g_date_time_new_from_iso8601(const gchar *iso_date, GTimeZone *default_tz);
 #endif
 
+#if GLIB_CHECK_VERSION(2, 76, 0)
+/* nothing */
+#else
+gchar *g_string_free_and_steal(GString *string);
+#endif
+
 GSList *i_slist_find_string(GSList *list, const char *key);
 GSList *i_slist_find_icase_string(GSList *list, const char *key);
 GList *i_list_find_string(GList *list, const char *key);

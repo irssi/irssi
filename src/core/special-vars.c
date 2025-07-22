@@ -88,8 +88,7 @@ static char *get_argument(char **cmd, char **arglist)
 	}
 	if (str->len > 0) g_string_truncate(str, str->len-1);
 
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 
@@ -412,8 +411,7 @@ char *get_alignment(const char *text, int align, int flags, char pad)
 		}
 	}
 
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 
@@ -604,8 +602,7 @@ char *parse_special_string(const char *cmd, SERVER_REC *server, void *item,
 	}
 	g_strfreev(arglist);
 
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 

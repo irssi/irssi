@@ -111,8 +111,7 @@ char *auto_word_complete(const char *line, int *pos)
 		*pos = startpos+strlen(replace);
 
 		g_string_insert(result, startpos, replace);
-		ret = result->str;
-		g_string_free(result, FALSE);
+		ret = g_string_free_and_steal(result);
 	}
 
 	g_free(word);
@@ -290,8 +289,7 @@ char *word_complete(WINDOW_REC *window, const char *line, int *pos, int erase, i
 	g_free_not_null(last_line);
 	last_line = g_strdup(result->str);
 
-	ret = result->str;
-	g_string_free(result, FALSE);
+	ret = g_string_free_and_steal(result);
 
 	/* free the data */
 	g_free(data);

@@ -135,6 +135,15 @@ GDateTime *g_date_time_new_from_iso8601(const gchar *iso_date, GTimeZone *defaul
 }
 #endif
 
+#if GLIB_CHECK_VERSION(2, 76, 0)
+/* nothing */
+#else
+gchar *g_string_free_and_steal(GString *string)
+{
+	return g_string_free(string, FALSE);
+}
+#endif
+
 int find_substr(const char *list, const char *item)
 {
 	const char *ptr;
@@ -261,8 +270,7 @@ char *gslistptr_to_string(GSList *list, int offset, const char *delimiter)
 		list = list->next;
 	}
 
-        ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 
@@ -280,8 +288,7 @@ char *i_slist_to_string(GSList *list, const char *delimiter)
 		list = list->next;
 	}
 
-        ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 

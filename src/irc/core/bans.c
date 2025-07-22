@@ -106,9 +106,8 @@ char *ban_get_masks(IRC_CHANNEL_REC *channel, const char *nicks, int ban_type)
 	if (str->len > 0)
 		g_string_truncate(str, str->len-1);
 
-	ret = str->str;
-	g_string_free(str, FALSE);
-        return ret;
+	ret = g_string_free_and_steal(str);
+	return ret;
 }
 
 void ban_set(IRC_CHANNEL_REC *channel, const char *bans, int ban_type)

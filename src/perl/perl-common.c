@@ -239,9 +239,8 @@ char *perl_get_use_list(void)
 	for (tmp = use_protocols; tmp != NULL; tmp = tmp->next)
 		g_string_append_printf(str, "use Irssi::%s;", (char *) tmp->data);
 
-	ret = str->str;
-        g_string_free(str, FALSE);
-        return ret;
+	ret = g_string_free_and_steal(str);
+	return ret;
 }
 
 void irssi_callXS(void (*subaddr)(pTHX_ CV* cv), CV *cv, SV **mark)
