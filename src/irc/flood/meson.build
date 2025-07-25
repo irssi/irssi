@@ -12,7 +12,7 @@ shared_module('irc_flood',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
-  link_with : dl_cross_irc_core,
+  link_with : dl_cross_irc_core + dl_cross_irssi_main,
   link_whole : libirc_flood_a)
 
 install_headers(

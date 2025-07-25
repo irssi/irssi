@@ -16,7 +16,7 @@ shared_module('fe_irc_notifylist',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
-  link_with : dl_cross_irc_notifylist,
+  link_with : dl_cross_irc_notifylist + dl_cross_irssi_main,
   link_whole : libfe_irc_notifylist_a)
 
 install_headers(

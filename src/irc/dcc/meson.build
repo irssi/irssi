@@ -16,7 +16,7 @@ libirc_dcc_sm = shared_module('irc_dcc',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
-  link_with : dl_cross_irc_core,
+  link_with : dl_cross_irc_core + dl_cross_irssi_main,
   dependencies : dep)
 
 dl_cross_irc_dcc = []

@@ -43,7 +43,8 @@ libirc_core_sm = shared_module('irc_core',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
-  link_whole : libirc_core_a)
+  link_whole : libirc_core_a,
+  link_with : dl_cross_irssi_main)
 
 dl_cross_irc_core = []
 if need_dl_cross_link

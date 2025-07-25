@@ -40,6 +40,7 @@ libperl_core_sm = shared_module('perl_core',
   build_rpath : perl_rpath,
   dependencies : dep_cflagsonly + [ perl_dep ] + dl_cross_dep,
   override_options : ['b_asneeded=false'],
+  link_with : dl_cross_irssi_main,
 )
 
 dl_cross_perl_core = []
@@ -61,7 +62,7 @@ shared_module('fe_perl',
   install : true,
   install_dir : moduledir,
   dependencies : dep,
-  link_with : dl_cross_perl_core,
+  link_with : dl_cross_perl_core + dl_cross_irssi_main,
 )
 
 subdir('common')

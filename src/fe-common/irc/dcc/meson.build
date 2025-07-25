@@ -21,7 +21,7 @@ shared_module('fe_irc_dcc',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
-  link_with : dl_cross_irc_dcc,
+  link_with : dl_cross_irc_dcc + dl_cross_irc_core + dl_cross_irssi_main,
   link_whole : libfe_irc_dcc_a)
 
 install_headers(
