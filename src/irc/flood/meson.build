@@ -8,12 +8,13 @@ libirc_flood_a = static_library('irc_flood',
   include_directories : rootinc,
   implicit_include_directories : false,
   dependencies : dep)
-shared_module('irc_flood',
+shared_library('irc_flood',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
   link_with : dl_cross_irc_core + dl_cross_irssi_main,
-  link_whole : libirc_flood_a)
+  link_whole : libirc_flood_a,
+  override_options : ['b_lundef=false'])
 
 install_headers(
   files('module.h'),

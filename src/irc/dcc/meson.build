@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-libirc_dcc_sm = shared_module('irc_dcc',
+libirc_dcc_sm = shared_library('irc_dcc',
   files(
     'dcc-autoget.c',
     'dcc-chat.c',
@@ -17,7 +17,8 @@ libirc_dcc_sm = shared_module('irc_dcc',
   install : true,
   install_dir : moduledir,
   link_with : dl_cross_irc_core + dl_cross_irssi_main,
-  dependencies : dep)
+  dependencies : dep,
+  override_options : ['b_lundef=false'])
 
 dl_cross_irc_dcc = []
 if need_dl_cross_link

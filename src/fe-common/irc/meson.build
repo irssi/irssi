@@ -28,12 +28,13 @@ libfe_common_irc_a = static_library('fe_common_irc',
     def_themesdir,
   ],
   dependencies : dep)
-shared_module('fe_common_irc',
+shared_library('fe_common_irc',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
   link_with : dl_cross_irc_core + dl_cross_irssi_main,
-  link_whole : libfe_common_irc_a)
+  link_whole : libfe_common_irc_a,
+  override_options : ['b_lundef=false'])
 
 install_headers(
   files(
