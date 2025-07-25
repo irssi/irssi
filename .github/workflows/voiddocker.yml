@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: prepare required software
         run: |
+          xbps-install -Syu xbps || :
           xbps-install -Syu
           xbps-install -Sy git findutils python3-setuptools tar xz gzip
       - uses: actions/checkout@main
@@ -30,6 +31,7 @@ jobs:
     steps:
       - name: prepare required software
         run: |
+          xbps-install -Syu xbps || :
           xbps-install -Syu
           xbps-install -Sy meson base-devel libglib-devel libutf8proc-devel ncurses-devel ncurses-base openssl-devel libotr-devel libgcrypt-devel tar findutils curl
       - name: fetch dist
