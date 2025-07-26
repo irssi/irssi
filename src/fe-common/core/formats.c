@@ -616,8 +616,7 @@ char *format_string_expand(const char *text, int *flags)
 		text++;
 	}
 
-	ret = out->str;
-	g_string_free(out, FALSE);
+	ret = g_string_free_and_steal(out);
 	return ret;
 }
 
@@ -792,8 +791,7 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 		text++;
 	}
 
-	ret = out->str;
-	g_string_free(out, FALSE);
+	ret = g_string_free_and_steal(out);
 	return ret;
 }
 
@@ -888,8 +886,7 @@ char *format_add_linestart(const char *text, const char *linestart)
 		text++;
 	}
 
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 
@@ -913,8 +910,7 @@ char *format_add_lineend(const char *text, const char *linestart)
 	}
 	g_string_append(str, linestart);
 
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 

@@ -88,8 +88,7 @@ static char *dcc_get_rename_file(const char *fname)
 		num++;
 	} while (stat(newname->str, &statbuf) == 0);
 
-	ret = newname->str;
-	g_string_free(newname, FALSE);
+	ret = g_string_free_and_steal(newname);
 	return ret;
 }
 
@@ -416,8 +415,7 @@ char *get_file_name(char **params, int fileparams)
 		out = g_string_append(out, params[pos]);
 	}
 
-	ret = out->str;
-	g_string_free(out, FALSE);
+	ret = g_string_free_and_steal(out);
 	return ret;
 }
 

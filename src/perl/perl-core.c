@@ -202,9 +202,8 @@ static char *script_data_get_name(void)
                 n++;
 	} while (perl_script_find(name->str) != NULL);
 
-	ret = name->str;
-        g_string_free(name, FALSE);
-        return ret;
+	ret = g_string_free_and_steal(name);
+	return ret;
 }
 
 static int perl_script_eval(PERL_SCRIPT_REC *script)

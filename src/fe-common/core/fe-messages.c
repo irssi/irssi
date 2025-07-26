@@ -133,8 +133,7 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 		}
 	}
 
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 	return ret;
 }
 
@@ -730,9 +729,8 @@ static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
                 n++;
 	} while (printnick_exists(firstnick, nick, newnick->str));
 
-	g_hash_table_insert(printnicks, nick, newnick->str);
-	g_string_free(newnick, FALSE);
-        g_free(nickhost);
+	g_hash_table_insert(printnicks, nick, g_string_free_and_steal(newnick));
+	g_free(nickhost);
 }
 
 static void sig_nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)

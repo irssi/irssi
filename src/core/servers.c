@@ -134,8 +134,7 @@ static char *server_create_tag(SERVER_CONNECT_REC *conn)
 	}
 	g_free(tag);
 
-	tag = str->str;
-	g_string_free(str, FALSE);
+	tag = g_string_free(str, FALSE);
 	return tag;
 }
 

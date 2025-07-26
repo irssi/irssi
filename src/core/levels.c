@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include <irssi/src/core/misc.h>
 #include <irssi/src/core/levels.h>
 
 /* the order of these levels must match the bits in levels.h */
@@ -169,8 +170,7 @@ char *bits2level(int bits)
         if (str->len > 0)
 		g_string_truncate(str, str->len-1);
 
-	ret = str->str;
-	g_string_free(str, FALSE);
+	ret = g_string_free_and_steal(str);
 
 	return ret;
 }

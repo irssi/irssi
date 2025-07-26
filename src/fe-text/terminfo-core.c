@@ -1,5 +1,6 @@
 #include "module.h"
 #include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
 #include <irssi/src/fe-text/terminfo-core.h>
 
 #ifndef _POSIX_VDISABLE
@@ -678,8 +679,7 @@ static int term_setup(TERM_REC *term)
 	if (term->TI_ritm &&
 	    (term->TI_sgr0 == NULL || g_strcmp0(term->TI_ritm, term->TI_sgr0) != 0))
 		g_string_append(str, term->TI_ritm);
-	term->TI_normal = str->str;
-	g_string_free(str, FALSE);
+	term->TI_normal = g_string_free_and_steal(str);
 	term->tr_set_normal = _set_normal;
 
 	term->tr_beep = term->TI_bel ? _beep : _ignore;

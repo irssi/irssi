@@ -24,6 +24,7 @@
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/commands.h>
 #include <irssi/src/core/settings.h>
+#include <irssi/src/core/misc.h>
 
 #include <irssi/src/core/levels.h>
 #include <irssi/src/core/servers.h>
@@ -240,8 +241,7 @@ static char *printtext_get_args(TEXT_DEST_REC *dest, const char *str,
 		}
 	}
 
-	ret = out->str;
-	g_string_free(out, FALSE);
+	ret = g_string_free_and_steal(out);
 	return ret;
 }
 
@@ -270,8 +270,7 @@ static char *printtext_expand_formats(const char *str, int *flags)
 		}
 	}
 
-	ret = out->str;
-	g_string_free(out, FALSE);
+	ret = g_string_free_and_steal(out);
 	return ret;
 }
 

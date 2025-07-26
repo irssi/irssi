@@ -469,8 +469,7 @@ static void sig_print_text(TEXT_DEST_REC *dest, const char *text,
 		}
 		g_string_append(str, text + pos);
 
-		newstr = str->str;
-		g_string_free(str, FALSE);
+		newstr = g_string_free_and_steal(str);
 
 		format_dest_meta_stash(dest, "hilight-start",
 		                       tmp = g_strdup_printf("%d", hilight_start));

@@ -874,8 +874,7 @@ char *irc_server_get_channels(IRC_SERVER_REC *server, int rejoin_channels_mode)
 		if (use_keys) g_string_append_printf(chans, " %s", keys->str);
 	}
 
-	ret = chans->str;
-	g_string_free(chans, FALSE);
+	ret = g_string_free_and_steal(chans);
 	g_string_free(keys, TRUE);
 
 	return ret;
