@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-executable('irssi',
+fe_text_irssi = executable('irssi',
   files(
     #### terminfo_sources ####
     'term-terminfo.c',
@@ -35,6 +35,7 @@ executable('irssi',
   include_directories : rootinc,
   implicit_include_directories : false,
   export_dynamic : true,
+  implib : true,
   link_with : [
     libconfig_a,
     libcore_a,
@@ -44,6 +45,9 @@ executable('irssi',
   dependencies : dep
   + textui_dep
 )
+if need_dl_cross_link_main
+  dl_cross_irssi_main = [ fe_text_irssi ]
+endif
 
 install_headers(
   files(
