@@ -8,6 +8,7 @@ project('irssi', 'c',
 
 glib_internal_version = 'glib-2.74.3' # keep this in sync with subprojects/glib.wrap
 glib_pcre2_internal_version = 'pcre2-10.40'
+glib_libffi_internal_version = 'libffi'
 cc = meson.get_compiler('c')
 rootinc = include_directories('.')
 dep = []
@@ -217,11 +218,6 @@ if not glib_dep.found()
       prov_lib = cc.find_library('iconv', dirs : '/usr/local/lib')
       glib_internal_usr_local = true
     endif
-    if cc.has_function('libiconv_open', dependencies : prov_lib)
-      glib_internal_configure_args += '-Diconv=gnu'
-    else
-      glib_internal_configure_args += '-Diconv=native'
-    endif
     glib_internal_dependencies += prov_lib
   endif
 
@@ -254,7 +250,7 @@ if not glib_dep.found()
   glib_internal_configure_t = custom_target('glib-internal-configure',
     command : [ meson_cmd, 'setup', '--prefix=/irssi-glib-internal',
       '--buildtype=' + get_option('buildtype'),
-      '-Dlibmount=disabled', '-Dselinux=disabled', '-Ddefault_library=static', '-Dforce_fallback_for=pcre2',
+      '-Dlibmount=disabled', '-Dselinux=disabled', '-Ddefault_library=static', '-Dforce_fallback_for=pcre2,libffi',
       glib_internal_configure_args,
       (meson.current_build_dir() / 'build-subprojects' / 'glib'),
       (meson.current_source_dir() / 'subprojects' / glib_internal_version) ],
@@ -263,9 +259,13 @@ if not glib_dep.found()
     depends : glib_internal_download_t,)
   glib_internal_build_t = custom_target('glib-internal-build',
     command : [ ninja, '-C', meson.current_build_dir() / 'build-subprojects' / 'glib',
+      'subprojects' / glib_libffi_internal_version / 'src' / 'libffi.a',
       'subprojects' / glib_pcre2_internal_version / 'libpcre2-8.a',
       'glib' / 'libglib-2.0.a',
-      'gmodule' / 'libgmodule-2.0.a'],
+      'gmodule' / 'libgmodule-2.0.a',
+      'gobject' / 'libgobject-2.0.a',
+      'gio' / 'libgio-2.0.a',
+      ],
     console : true,
     output : ['glib-internal-build'],
     depends : glib_internal_configure_t,)
@@ -295,11 +295,32 @@ if not glib_dep.found()
     ],
     link_args : [ meson.current_build_dir() / 'build-subprojects' / 'glib' / 'gmodule' / 'libgmodule-2.0.a' ],
   )
+  gobject_dep = declare_dependency(sources : glib_internal_build_t,
+    compile_args : [
+      '-isystem' + (meson.current_build_dir() / 'build-subprojects' / 'glib'),
+    ],
+    link_args : [
+      meson.current_build_dir() / 'build-subprojects' / 'glib' / 'subprojects' / glib_libffi_internal_version / 'src' / 'libffi.a',
+      meson.current_build_dir() / 'build-subprojects' / 'glib' / 'gobject' / 'libgobject-2.0.a'
+    ],
+  )
+  gio_dep = declare_dependency(sources : glib_internal_build_t,
+    dependencies : cc.find_library('z'),
+    compile_args : [
+      '-isystem' + (meson.current_source_dir() / 'subprojects' / glib_internal_version / 'gio'),
+      '-isystem' + (meson.current_build_dir() / 'build-subprojects' / 'glib'),
+    ],
+    link_args : [ meson.current_build_dir() / 'build-subprojects' / 'glib' / 'gio' / 'libgio-2.0.a' ],
+  )
 else
   gmodule_dep = dependency('gmodule-2.0', static : want_static_dependency, include_type : 'system')
+  gobject_dep = dependency('gobject-2.0', static : want_static_dependency, include_type : 'system')
+  gio_dep = dependency('gio-2.0', static : want_static_dependency, include_type : 'system')
 endif
 dep += glib_dep
 dep += gmodule_dep
+dep += gobject_dep
+dep += gio_dep
 
 if glib_internal and want_static_dependency and want_fuzzer
   openssl_proj = subproject('openssl', default_options : ['default_library=static', 'asm=disabled'])

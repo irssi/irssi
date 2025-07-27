@@ -74,6 +74,7 @@ static void irc_proxy_setup_changed(void)
 
 void irc_proxy_init(void)
 {
+	settings_add_bool("irssiproxy", "irssiproxy_prefer_ipv6", TRUE);
 	settings_add_str("irssiproxy", "irssiproxy_ports", "");
 	settings_add_str("irssiproxy", "irssiproxy_password", "");
 	settings_add_str("irssiproxy", "irssiproxy_bind", "");

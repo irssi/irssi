@@ -166,7 +166,7 @@ void fe_common_core_init(void)
 	settings_add_bool("lookandfeel", "use_msgs_window", FALSE);
 	g_get_charset(&str);
 	settings_add_str("lookandfeel", "term_charset", str);
-	settings_add_str("lookandfeel", "glib_log_domains", "all");
+	settings_add_str("lookandfeel", "glib_log_domains", "all -glib-gio:debug");
 	themes_init();
         theme_register(fecommon_core_formats);
 
@@ -258,13 +258,19 @@ void fe_common_core_deinit(void)
 	g_log_set_default_handler(logger_old, NULL);
 }
 
-static gboolean glib_domain_wanted(const char *domain)
+static gboolean glib_domain_wanted(const char *domain, const char *level)
 {
 	const char *domains;
 	char *c, *cur;
 	int len = 0;
 	int print_it = 0; /* -1 for exclude, 0 for undecided, 1 for include */
 	int incl;
+	char *domainlevel, *alllevel, *starlevel, *domainstar;
+
+	domainlevel = g_strdup_printf("%s:%s", domain, level);
+	alllevel = g_strdup_printf("all:%s", level);
+	starlevel = g_strdup_printf("*:%s", level);
+	domainstar = g_strdup_printf("%s:*", domain);
 
 	/* Go through each item in glib_log_domains setting to determine whether
 	 * or not we want to print message from this domain */
@@ -287,8 +293,10 @@ static gboolean glib_domain_wanted(const char *domain)
 		}
 
 		/* If we got a valid item, process it */
-		if (len > 0 && (!strncmp(domain, c, len) || !strncasecmp("all", c, len) ||
-		                !strncmp("*", c, len)))
+		if (len > 0 && (!strncasecmp(domain, c, len) || !strncasecmp("all", c, len) ||
+		                !strncmp("*", c, len) || !strncasecmp(domainstar, c, len) ||
+		                !strncasecmp(domainlevel, c, len) ||
+		                !strncasecmp(alllevel, c, len) || !strncasecmp(starlevel, c, len)))
 			print_it = incl;
 
 		/* Go past any spaces towards the next item */
@@ -299,6 +307,11 @@ static gboolean glib_domain_wanted(const char *domain)
 		c = cur;
 		len = 0;
 	} while (*c != '\0' && print_it != -1);
+
+	g_free(domainlevel);
+	g_free(alllevel);
+	g_free(starlevel);
+	g_free(domainstar);
 
 	return (print_it == 1);
 }
@@ -333,7 +346,7 @@ static void i_log_func(const char *log_domain, GLogLevelFlags log_level, const c
 	domain = (log_domain ? log_domain : "default");
 
 	/* Only print the message if we decided to */
-	if (!glib_domain_wanted(domain))
+	if (!glib_domain_wanted(domain, reason))
 		return;
 
 	if (windows == NULL)

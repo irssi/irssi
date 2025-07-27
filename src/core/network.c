@@ -81,27 +81,6 @@ int i_io_channel_read_block(GIOChannel *channel, void *data, int len)
 	return received < len ? -1 : 0;
 }
 
-IPADDR ip4_any = {
-	AF_INET,
-#if defined(IN6ADDR_ANY_INIT)
-	IN6ADDR_ANY_INIT
-#else
-	{ INADDR_ANY }
-#endif
-};
-
-int net_ip_compare(IPADDR *ip1, IPADDR *ip2)
-{
-	if (ip1->family != ip2->family)
-		return 0;
-
-	if (ip1->family == AF_INET6)
-		return memcmp(&ip1->ip, &ip2->ip, sizeof(ip1->ip)) == 0;
-
-	return memcmp(&ip1->ip, &ip2->ip, 4) == 0;
-}
-
-
 static void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
 {
 	if (ip == NULL) {
@@ -392,95 +371,87 @@ int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port)
 	return 0;
 }
 
-/* Get IP addresses for host, both IPv4 and IPv6 if possible.
-   If ip->family is 0, the address wasn't found.
-   Returns 0 = ok, others = error code for net_gethosterror() */
-int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6)
+void resolved_ip_ref(RESOLVED_IP_REC *iprec)
 {
-	union sockaddr_union *so;
-	struct addrinfo hints, *ai, *ailist;
-	int ret, count_v4, count_v6, use_v4, use_v6;
+	iprec->refcount++;
+}
+
+int resolved_ip_unref(RESOLVED_IP_REC *iprec)
+{
+	if (--iprec->refcount > 0) {
+		return TRUE;
+	}
+
+	g_resolver_free_addresses(iprec->ailist);
+	if (iprec->error != NULL) {
+		g_error_free(iprec->error);
+	}
+	g_free(iprec);
+
+	return FALSE;
+}
+
+/* Get IP addresses for host, both IPv4 and IPv6 if possible. */
+static RESOLVED_IP_REC *net_gethostbyname(const char *addr, GResolverNameLookupFlags flags)
+{
+	/* GList<GInetAddress> */
+	GList *ailist;
+	GError *error;
+	GResolver *resolver;
+	RESOLVED_IP_REC *iprec;
 
 #ifdef HAVE_CAPSICUM
 	if (capsicum_enabled())
-		return (capsicum_net_gethostbyname(addr, ip4, ip6));
+		return (capsicum_net_gethostbyname(addr, flags));
 #endif
 
-	g_return_val_if_fail(addr != NULL, -1);
+	g_return_val_if_fail(addr != NULL, NULL);
 
-	memset(ip4, 0, sizeof(IPADDR));
-	memset(ip6, 0, sizeof(IPADDR));
-
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_ADDRCONFIG;
-
-	/* save error to host_error for later use */
-	ret = getaddrinfo(addr, NULL, &hints, &ailist);
-	if (ret != 0)
-		return ret;
-
-	/* count IPs */
-        count_v4 = count_v6 = 0;
-	for (ai = ailist; ai != NULL; ai = ai->ai_next) {
-		if (ai->ai_family == AF_INET)
-			count_v4++;
-		else if (ai->ai_family == AF_INET6)
-			count_v6++;
+	error = NULL;
+	resolver = g_resolver_get_default();
+	ailist = g_resolver_lookup_by_name_with_flags(resolver, addr, flags, NULL, &error);
+	iprec = g_new0(RESOLVED_IP_REC, 1);
+	if (error != NULL) {
+		iprec->error = error;
+	} else {
+		iprec->ailist = ailist;
 	}
+	g_object_unref(resolver);
+	resolved_ip_ref(iprec);
 
-	if (count_v4 == 0 && count_v6 == 0)
-		return EAI_NONAME; /* shouldn't happen? */
-
-	/* if there are multiple addresses, return random one */
-	use_v4 = count_v4 <= 1 ? 0 : rand() % count_v4;
-	use_v6 = count_v6 <= 1 ? 0 : rand() % count_v6;
-
-	count_v4 = count_v6 = 0;
-	for (ai = ailist; ai != NULL; ai = ai->ai_next) {
-		so = (union sockaddr_union *) ai->ai_addr;
-
-		if (ai->ai_family == AF_INET) {
-			if (use_v4 == count_v4)
-				sin_get_ip(so, ip4);
-                        count_v4++;
-		} else if (ai->ai_family == AF_INET6) {
-			if (use_v6 == count_v6)
-				sin_get_ip(so, ip6);
-			count_v6++;
-		}
-	}
-	freeaddrinfo(ailist);
-	return 0;
+	return iprec;
 }
 
-/* Get name for host, *name should be g_free()'d unless it's NULL.
-   Return values are the same as with net_gethostbyname() */
-int net_gethostbyaddr(IPADDR *ip, char **name)
+int net_gethostbyname_first_ips(const char *addr, GResolverNameLookupFlags flags, IPADDR *ip4,
+                                IPADDR *ip6)
 {
-	union sockaddr_union so;
-	int host_error;
-	char hostname[NI_MAXHOST];
+	RESOLVED_IP_REC *iprec;
 
-	g_return_val_if_fail(ip != NULL, -1);
-	g_return_val_if_fail(name != NULL, -1);
+	iprec = net_gethostbyname(addr, flags);
+	if (iprec->error == NULL) {
+		GList *curr;
 
-	*name = NULL;
+		for (curr = iprec->ailist; curr->next; curr = curr->next) {
+			unsigned short family;
+			GInetAddress *addr;
 
-	memset(&so, 0, sizeof(so));
-	sin_set_ip(&so, ip);
+			addr = curr->data;
+			family = g_inet_address_get_family(addr);
+			if (ip4->family == 0 && family == AF_INET) {
+				ip4->family = AF_INET;
+				memcpy(&ip4->ip, g_inet_address_to_bytes(addr), sizeof(ip4->ip));
+			} else if (ip6->family == 0 && family == AF_INET6) {
+				ip6->family = AF_INET6;
+				memcpy(&ip6->ip, g_inet_address_to_bytes(addr), sizeof(ip6->ip));
+			}
+		}
 
-	/* save error to host_error for later use */
-        host_error = getnameinfo((struct sockaddr *)&so, sizeof(so),
-				 hostname, sizeof(hostname),
-				 NULL, 0,
-				 NI_NAMEREQD);
-        if (host_error != 0)
-                return host_error;
-
-	*name = g_strdup(hostname);
-
-	return 0;
+		resolved_ip_unref(iprec);
+		return 0;
+	} else {
+		resolved_ip_unref(iprec);
+		return -1;
+	}
 }
 
 int net_ip2host(IPADDR *ip, char *host)
@@ -517,29 +488,6 @@ int net_geterror(GIOChannel *handle)
 		return -1;
 
 	return data;
-}
-
-/* get error of net_gethostname() */
-const char *net_gethosterror(int error)
-{
-	g_return_val_if_fail(error != 0, NULL);
-
-	if (error == EAI_SYSTEM) {
-		return strerror(errno);
-	} else {
-		return gai_strerror(error);
-	}
-}
-
-/* return TRUE if host lookup failed because it didn't exist (ie. not
-   some error with name server) */
-int net_hosterror_notfound(int error)
-{
-#ifdef EAI_NODATA /* NODATA is deprecated */
-	return error != 1 && (error == EAI_NONAME || error == EAI_NODATA);
-#else
-	return error != 1 && (error == EAI_NONAME);
-#endif
 }
 
 /* Get name of TCP service */
