@@ -6,7 +6,7 @@ project('irssi', 'c',
 ############################
 ############################
 
-glib_internal_version = 'glib-2.74.3' # keep this in sync with subprojects/glib.wrap
+glib_internal_version = 'glib-2.74.7' # keep this in sync with subprojects/glib.wrap
 glib_pcre2_internal_version = 'pcre2-10.40'
 glib_libffi_internal_version = 'libffi'
 cc = meson.get_compiler('c')
