@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include <gio/gio.h>
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/net-sendbuffer.h>
 #include <irssi/src/irc/core/servers-redirect.h>
@@ -711,8 +712,9 @@ static void add_listen(const char *ircnet, int port, const char *port_or_path)
 		/* bind to specific host/ip? */
 		my_ip = NULL;
 		if (*settings_get_str("irssiproxy_bind") != '\0') {
-			if (net_gethostbyname(settings_get_str("irssiproxy_bind"),
-				                 &ip4, &ip6) != 0) {
+			if (net_gethostbyname_first_ips(settings_get_str("irssiproxy_bind"),
+			                                G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT, &ip4,
+			                                &ip6) != 0) {
 				printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 				          "Proxy: can not resolve '%s' - aborting",
 				          settings_get_str("irssiproxy_bind"));
