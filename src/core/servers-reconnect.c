@@ -19,6 +19,8 @@
 */
 
 #include "module.h"
+#include <gio/gio.h>
+#include <glib-object.h>
 #include <irssi/src/core/commands.h>
 #include <irssi/src/core/network.h>
 #include <irssi/src/core/signals.h>
@@ -120,6 +122,10 @@ static int server_reconnect_timeout(void)
 			if (server->connect_tag != -1) {
 				g_source_remove(server->connect_tag);
 				server->connect_tag = -1;
+			} else if (server->connect_cancellable != NULL) {
+				g_cancellable_cancel(server->connect_cancellable);
+				g_object_unref(server->connect_cancellable);
+				server->connect_cancellable = NULL;
 			}
 			server->connection_lost = TRUE;
 			server_connect_failed(server, "Timeout");
@@ -168,7 +174,8 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
         server_connect_ref(dest);
 	dest->type = module_get_uniq_id("SERVER CONNECT", 0);
 	dest->reconnection = src->reconnection;
-	dest->last_failed_family = src->last_failed_family;
+	dest->last_connected = src->last_connected;
+	dest->last_failed = src->last_failed;
 	dest->proxy = g_strdup(src->proxy);
         dest->proxy_port = src->proxy_port;
 	dest->proxy_string = g_strdup(src->proxy_string);

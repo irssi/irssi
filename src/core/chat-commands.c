@@ -101,10 +101,11 @@ static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 
         host = g_hash_table_lookup(optlist, "host");
 	if (host != NULL && *host != '\0') {
-		IPADDR ip4, ip6;
-
-		if (net_gethostbyname(host, &ip4, &ip6) == 0)
-                        server_connect_own_ip_save(conn, &ip4, &ip6);
+		IPADDR ip4 = { 0 };
+		IPADDR ip6 = { 0 };
+		if (net_gethostbyname_first_ips(host, G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT, &ip4,
+		                                &ip6) == 0)
+			server_connect_own_ip_save(conn, &ip4, &ip6);
 	}
 
 	cmd_params_free(free_arg);
