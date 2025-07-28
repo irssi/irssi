@@ -279,7 +279,6 @@ static void server_connect_callback_readpipe(RESOLVED_IP_REC *iprec, SERVER_REC 
 
 	server->connect_cancellable = NULL;
 
-	/* figure out if we should use IPv4 or v6 address */
 	if (iprec->error != NULL) {
 		/* error */
 		ip = NULL;
