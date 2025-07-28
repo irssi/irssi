@@ -19,8 +19,6 @@
 */
 
 #include "module.h"
-#include <gio/gio.h>
-#include <glib-object.h>
 #include <irssi/src/core/commands.h>
 #include <irssi/src/core/network.h>
 #include <irssi/src/core/signals.h>

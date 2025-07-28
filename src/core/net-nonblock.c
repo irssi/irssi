@@ -19,10 +19,10 @@
 */
 
 #include "module.h"
-#include "src/core/network.h"
 
 #include <signal.h>
 
+#include <irssi/src/core/network.h>
 #include <irssi/src/core/net-nonblock.h>
 
 typedef struct {
@@ -30,8 +30,8 @@ typedef struct {
 	void *cont_data;
 } NET_GETHOSTBYNAME_CALLBACK_DATA;
 
-void net_gethostbyname_callback(GResolver *resolver, GAsyncResult *result,
-                                NET_GETHOSTBYNAME_CALLBACK_DATA *data)
+static void net_gethostbyname_callback(GResolver *resolver, GAsyncResult *result,
+                                       NET_GETHOSTBYNAME_CALLBACK_DATA *data)
 {
 	/* GList<GInetAddress> */
 	GList *ailist;

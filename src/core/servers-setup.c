@@ -19,7 +19,6 @@
 */
 
 #include "module.h"
-#include <gio/gio.h>
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/network.h>
 #include <irssi/src/lib-config/iconfig.h>
