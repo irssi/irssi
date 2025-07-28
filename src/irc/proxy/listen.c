@@ -19,7 +19,6 @@
 */
 
 #include "module.h"
-#include <gio/gio.h>
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/net-sendbuffer.h>
 #include <irssi/src/irc/core/servers-redirect.h>
