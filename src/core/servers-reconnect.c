@@ -212,6 +212,10 @@ server_connect_copy_skeleton(SERVER_CONNECT_REC *src, int connect_info)
 		dest->own_ip6 = g_new(IPADDR, 1);
 		memcpy(dest->own_ip6, src->own_ip6, sizeof(IPADDR));
 	}
+	dest->resolved_host = src->resolved_host;
+	if (dest->resolved_host != NULL) {
+		resolved_ip_ref(dest->resolved_host);
+	}
 
 	dest->channels = g_strdup(src->channels);
 	dest->away_reason = g_strdup(src->away_reason);

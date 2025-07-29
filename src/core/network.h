@@ -21,6 +21,7 @@ struct _IPADDR {
 };
 
 typedef struct {
+	int refcount;
 	/* GList<GInetAddress> */
 	GList *ailist; /* needs to be freed */
 	GError *error; /* needs to be freed */
@@ -90,5 +91,8 @@ char *net_getservbyport(int port);
 
 int is_ipv4_address(const char *host);
 int is_ipv6_address(const char *host);
+
+void resolved_ip_ref(RESOLVED_IP_REC *iprec);
+int resolved_ip_unref(RESOLVED_IP_REC *iprec);
 
 #endif

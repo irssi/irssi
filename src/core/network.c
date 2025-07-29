@@ -392,6 +392,26 @@ int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port)
 	return 0;
 }
 
+void resolved_ip_ref(RESOLVED_IP_REC *iprec)
+{
+	iprec->refcount++;
+}
+
+int resolved_ip_unref(RESOLVED_IP_REC *iprec)
+{
+	if (--iprec->refcount > 0) {
+		return TRUE;
+	}
+
+	g_resolver_free_addresses(iprec->ailist);
+	if (iprec->error != NULL) {
+		g_error_free(iprec->error);
+	}
+	g_free(iprec);
+
+	return FALSE;
+}
+
 /* Get IP addresses for host, both IPv4 and IPv6 if possible. */
 RESOLVED_IP_REC *net_gethostbyname(const char *addr, GResolverNameLookupFlags flags)
 {
@@ -418,6 +438,7 @@ RESOLVED_IP_REC *net_gethostbyname(const char *addr, GResolverNameLookupFlags fl
 		iprec->ailist = ailist;
 	}
 	g_object_unref(resolver);
+	resolved_ip_ref(iprec);
 
 	return iprec;
 }
@@ -446,12 +467,10 @@ int net_gethostbyname_first_ips(const char *addr, GResolverNameLookupFlags flags
 			}
 		}
 
-		g_resolver_free_addresses(iprec->ailist);
-		g_free(iprec);
+		resolved_ip_unref(iprec);
 		return 0;
 	} else {
-		g_error_free(iprec->error);
-		g_free(iprec);
+		resolved_ip_unref(iprec);
 		return -1;
 	}
 }

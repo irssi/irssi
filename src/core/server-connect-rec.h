@@ -47,5 +47,6 @@ unsigned int tls_verify:1;
 unsigned int no_connect:1; /* don't connect() at all, it's done by plugin */
 int last_connected;
 int last_failed;
+RESOLVED_IP_REC *resolved_host;
 char *channels;
 char *away_reason;
