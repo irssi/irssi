@@ -47,6 +47,7 @@ static void net_gethostbyname_callback(GResolver *resolver, GAsyncResult *result
 		iprec->ailist = ailist;
 	}
 	g_object_unref(resolver);
+	resolved_ip_ref(iprec);
 
 	data->cont(iprec, data->cont_data);
 	g_free(data);

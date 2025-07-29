@@ -260,7 +260,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		server_connect_failed(server, errmsg2 ? errmsg2 : errmsg);
 		g_free(errmsg2);
 	} else {
-		server->connrec->last_failed = -1;
+		server->connrec->last_failed = 0;
 		if (!server->connrec->use_tls)
 			server->handle = net_sendbuffer_create(handle, 0);
 		if (server->connrec->use_tls)
@@ -272,12 +272,13 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 	}
 }
 
-static void server_connect_callback_readpipe(RESOLVED_IP_REC *iprec, SERVER_REC *server)
+static int server_start_connect_resolve(SERVER_REC *server);
+
+static void server_connect_use_resolved(SERVER_REC *server)
 {
 	IPADDR *ip;
 	const char *errormsg;
-
-	server->connect_cancellable = NULL;
+	RESOLVED_IP_REC *iprec = server->connrec->resolved_host;
 
 	if (iprec->error != NULL) {
 		/* error */
@@ -287,16 +288,26 @@ static void server_connect_callback_readpipe(RESOLVED_IP_REC *iprec, SERVER_REC 
 		int i;
 
 		curr = iprec->ailist;
-		for (i = 0; i <= server->connrec->last_failed; i++) {
-			if (curr != NULL)
+		i = 0;
+		while (i < server->connrec->last_failed) {
+			if (curr != NULL) {
 				curr = curr->next;
-			if (curr == NULL)
-				curr = iprec->ailist;
+				i++;
+			}
+			/* curr is different now */
+			if (curr == NULL) {
+				resolved_ip_unref(server->connrec->resolved_host);
+				server->connrec->resolved_host = NULL;
+				server->connrec->last_failed = 0;
+				/* retry resolve */
+				server_start_connect_resolve(server);
+				return;
+			}
 		}
 		if (curr != NULL) {
 			GInetAddress *addr;
 			addr = curr->data;
-			server->connrec->last_connected = i;
+			server->connrec->last_connected = i + 1;
 			ip = g_new0(IPADDR, 1);
 			ip->family = g_inet_address_get_family(addr);
 			memcpy(&ip->ip, g_inet_address_to_bytes(addr), sizeof(ip->ip));
@@ -333,13 +344,52 @@ static void server_connect_callback_readpipe(RESOLVED_IP_REC *iprec, SERVER_REC 
 			errormsg = "Host lookup failed";
 
 		server->connection_lost = TRUE;
+		/* clear the error in resolved_host */
+		server->connrec->resolved_host = NULL;
 		server_connect_failed(server, errormsg);
-	}
 
-	if (iprec->error != NULL)
-		g_error_free(iprec->error);
-	g_resolver_free_addresses(iprec->ailist);
-	g_free(iprec);
+		resolved_ip_unref(iprec);
+	}
+}
+
+static void server_connect_callback_resolved(RESOLVED_IP_REC *iprec, SERVER_REC *server)
+{
+	server->connect_cancellable = NULL;
+
+	if (server->connrec->resolved_host != NULL) {
+		resolved_ip_unref(server->connrec->resolved_host);
+	}
+	server->connrec->resolved_host = iprec;
+	if (iprec->error == NULL && iprec->ailist == NULL) {
+		server->connection_lost = TRUE;
+		server->dns_error = TRUE;
+		server_connect_failed(server, "Host lookup failed");
+	} else {
+		server_connect_use_resolved(server);
+	}
+}
+
+static int server_start_connect_resolve(SERVER_REC *server)
+{
+	const char *connect_address;
+	GResolverNameLookupFlags net_gethostbyname_flags;
+
+	connect_address =
+	    server->connrec->proxy != NULL ? server->connrec->proxy : server->connrec->address;
+	net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT;
+	if (server->connrec->family == AF_INET) {
+		net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY;
+	} else if (server->connrec->family == AF_INET6) {
+		net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_IPV6_ONLY;
+	}
+	if (server->connrec->resolved_host == NULL) {
+		server->connect_cancellable = net_gethostbyname_nonblock(
+		    connect_address, net_gethostbyname_flags,
+		    (net_gethostbyname_continuation_func) server_connect_callback_resolved, server);
+		return FALSE;
+	} else {
+		return TRUE;
+	}
 }
 
 SERVER_REC *server_connect(SERVER_CONNECT_REC *conn)
@@ -391,9 +441,6 @@ void server_connect_init(SERVER_REC *server)
 /* starts connecting to server */
 int server_start_connect(SERVER_REC *server)
 {
-	const char *connect_address;
-	GResolverNameLookupFlags net_gethostbyname_flags;
-
 	g_return_val_if_fail(server != NULL, FALSE);
 	if (!server->connrec->unix_socket && server->connrec->port <= 0)
 		return FALSE;
@@ -411,23 +458,17 @@ int server_start_connect(SERVER_REC *server)
 		/* connect with unix socket */
 		server_real_connect(server, NULL, server->connrec->address);
 	} else {
+		int already_resolved;
 		/* resolve host name */
-		connect_address = server->connrec->proxy != NULL ?
-			server->connrec->proxy : server->connrec->address;
-		net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT;
-		if (server->connrec->family == AF_INET) {
-			net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY;
-		} else if (server->connrec->family == AF_INET6) {
-			net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_IPV6_ONLY;
-		}
-		server->connect_cancellable = net_gethostbyname_nonblock(
-		    connect_address, net_gethostbyname_flags,
-		    (net_gethostbyname_continuation_func) server_connect_callback_readpipe, server);
+		already_resolved = server_start_connect_resolve(server);
 
 		server->connect_time = time(NULL);
 		lookup_servers = g_slist_append(lookup_servers, server);
 
 		signal_emit("server looking", 1, server);
+		if (already_resolved) {
+			server_connect_use_resolved(server);
+		}
 	}
 	return TRUE;
 }
@@ -634,6 +675,10 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 
 	g_free_not_null(conn->own_ip4);
 	g_free_not_null(conn->own_ip6);
+
+	if (conn->resolved_host != NULL) {
+		resolved_ip_unref(conn->resolved_host);
+	}
 
 	g_free_not_null(conn->password);
 	g_free_not_null(conn->nick);
