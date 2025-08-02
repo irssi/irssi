@@ -363,6 +363,9 @@ textbuffer-view.c
 textbuffer-formats.c
  "gui render line text", TEXT_DEST_REC, GString *str, LINE_INFO_META_REC
 
+textbuffer-commands.c
+ "window hidelevel changed", WINDOW_REC
+
 Perl
 ----
 
