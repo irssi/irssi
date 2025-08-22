@@ -39,6 +39,7 @@ MAIN_WINDOW_BORDER_REC *clrtoeol_info;
 int screen_reserved_top, screen_reserved_bottom;
 int screen_reserved_left, screen_reserved_right;
 static int screen_width, screen_height;
+static int screen_collapsed = 0; /* see mainwindows_resize */
 
 #define mainwindow_create_screen(window) \
 	term_window_create((window)->first_column + (window)->statusbar_columns_left, \
@@ -103,7 +104,16 @@ static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 	GSList *tmp;
 	int resized;
 
-	mainwindow_set_screen_size(window);
+	/* Clamp screen window size to at least 1x1 to keep text views valid */
+	{
+		int sx = window->first_column + window->statusbar_columns_left;
+		int sy = window->first_line + window->statusbar_lines_top;
+		int sw = window->width - window->statusbar_columns;
+		int sh = window->height - window->statusbar_lines;
+		if (sw < 1) sw = 1;
+		if (sh < 1) sh = 1;
+		term_window_move(window->screen_win, sx, sy, sw, sh);
+	}
 
 	resized = FALSE;
 	for (tmp = windows; tmp != NULL; tmp = tmp->next) {
@@ -112,9 +122,14 @@ static void mainwindow_resize_windows(MAIN_WINDOW_REC *window)
 		if (rec->gui_data != NULL &&
 		    WINDOW_GUI(rec)->parent == window &&
 		    !window_size_equals(rec, window)) {
-			resized = TRUE;
-			gui_window_resize(rec, MAIN_WINDOW_TEXT_WIDTH(window),
-					  MAIN_WINDOW_TEXT_HEIGHT(window));
+			{
+				int tw = MAIN_WINDOW_TEXT_WIDTH(window);
+				int th = MAIN_WINDOW_TEXT_HEIGHT(window);
+				if (tw < 1) tw = 1;
+				if (th < 1) th = 1;
+				resized = TRUE;
+				gui_window_resize(rec, tw, th);
+			}
 		}
 	}
 
@@ -724,15 +739,20 @@ static void mainwindows_rresize_line(int xdiff, MAIN_WINDOW_REC *win)
 	int windows, i, extra_width, next_column, shrunk;
 	int *widths;
 	GSList *line, *tmp;
+	int new_avail, old_avail, width_mod;
 
 	line = mainwindows_get_line(win);
 	windows = g_slist_length(line);
 	widths = g_new0(int, windows);
 
-	extra_width = screen_width - windows + 1;
+	/* Available text width on this line should respect globally reserved columns */
+	new_avail = screen_width - screen_reserved_left - screen_reserved_right - windows + 1;
+	old_avail = (screen_width - xdiff) - screen_reserved_left - screen_reserved_right - windows + 1;
+	extra_width = new_avail;
 	for (tmp = line, i = 0; tmp != NULL; tmp = tmp->next, i++) {
 		MAIN_WINDOW_REC *rec = tmp->data;
-		widths[i] = (MAIN_WINDOW_TEXT_WIDTH(rec) * (screen_width - windows + 1)) / (screen_width - xdiff - windows + 1);
+		/* Scale each window proportionally based on available text widths (excluding reserved columns) */
+		widths[i] = old_avail > 0 ? (MAIN_WINDOW_TEXT_WIDTH(rec) * new_avail) / old_avail : MAIN_WINDOW_TEXT_WIDTH(rec);
 		extra_width -= widths[i] + rec->statusbar_columns;
 	}
 	shrunk = FALSE;
@@ -744,18 +764,31 @@ static void mainwindows_rresize_line(int xdiff, MAIN_WINDOW_REC *win)
 		}
 	}
 
-	next_column = 0;
+	/* Start after reserved left columns */
+	next_column = screen_reserved_left;
 
-#define extra ( (i >= screen_width % windows && i < extra_width + (screen_width % windows)) \
-		|| i + windows < extra_width + (screen_width % windows) ? 1 : 0 )
+	/* Distribute any leftover width across windows; base modulo on available width */
+	width_mod = new_avail % windows;
+#define extra ( (i >= width_mod && i < extra_width + width_mod) \
+		|| i + windows < extra_width + width_mod ? 1 : 0 )
 
 	for (tmp = line, i = 0; tmp != NULL; tmp = tmp->next, i++) {
 		MAIN_WINDOW_REC *rec = tmp->data;
+		gboolean is_last = (tmp->next == NULL);
 		rec->first_column = next_column;
-		rec->last_column = rec->first_column + widths[i] + rec->statusbar_columns + extra - 1;
-		next_column = rec->last_column + 2;
-		mainwindow_resize(rec, widths[i] + rec->statusbar_columns + extra - rec->width, 0);
+		if (is_last) {
+			/* Anchor rightmost window to reserved-right boundary to avoid gap/lag */
+			rec->last_column = screen_width - 1 - screen_reserved_right;
+			mainwindow_resize(rec, (rec->last_column - rec->first_column + 1) - rec->width, 0);
+		} else {
+			rec->last_column = rec->first_column + widths[i] + rec->statusbar_columns + extra - 1;
+			/* Ensure we never write past the globally reserved right columns */
+			if (rec->last_column > screen_width - 1 - screen_reserved_right)
+				rec->last_column = screen_width - 1 - screen_reserved_right;
+			mainwindow_resize(rec, widths[i] + rec->statusbar_columns + extra - rec->width, 0);
+		}
 		rec->size_dirty = TRUE;
+		next_column = rec->last_column + 2;
 	}
 #undef extra
 
@@ -771,6 +804,38 @@ void mainwindows_resize(int width, int height)
 	ydiff = height-screen_height;
 	screen_width = width;
 	screen_height = height;
+
+	/* Collapse mode: allow resize down to 1x1 and avoid destructive layout. */
+	{
+		int avail_w = screen_width - screen_reserved_left - screen_reserved_right;
+		int avail_h = screen_height - screen_reserved_top - screen_reserved_bottom;
+		if (avail_w <= 1 || avail_h <= 1) {
+			GSList *tmp;
+			if (!screen_collapsed) screen_collapsed = 1;
+			for (tmp = mainwindows; tmp != NULL; tmp = tmp->next) {
+				MAIN_WINDOW_REC *rec = tmp->data;
+				rec->first_column = screen_reserved_left;
+				rec->last_column = screen_reserved_left;
+				rec->width = 1;
+				rec->first_line = screen_reserved_top;
+				rec->last_line = screen_reserved_top;
+				rec->height = 1;
+				rec->size_dirty = TRUE;
+				rec->dirty = TRUE;
+			}
+			signal_emit("terminal resized", 0);
+			irssi_redraw();
+			return;
+		} else if (screen_collapsed) {
+			/* Recover from collapsed state: reflow horizontally. */
+			MAIN_WINDOW_REC *win;
+			screen_collapsed = 0;
+			for (win = mainwindows_find_lower(NULL); win != NULL; win = mainwindows_find_lower(win)) {
+				mainwindows_rresize_line(0, win);
+			}
+			irssi_set_dirty();
+		}
+	}
 
 	if (ydiff > 0) {
 		/* algorithm: enlarge bottom window */
@@ -808,10 +873,11 @@ void mainwindows_resize(int width, int height)
 			GSList *line, *tmp;
 
 			line = mainwindows_get_line(win);
-			max_windows = (screen_width + 1) / (NEW_WINDOW_WIDTH + 1);
+			/* Respect globally reserved columns when computing capacity */
+			max_windows = (screen_width - screen_reserved_left - screen_reserved_right + 1) / (NEW_WINDOW_WIDTH + 1);
 			if (max_windows < 1)
 				max_windows = 1;
-			last_column = screen_width - 1;
+			last_column = screen_width - 1 - screen_reserved_right;
 			for (tmp = line, i = 0; tmp != NULL; tmp = tmp->next, i++) {
 				MAIN_WINDOW_REC *rec = tmp->data;
 				if (i >= max_windows)
@@ -822,7 +888,7 @@ void mainwindows_resize(int width, int height)
 			win = line->data;
 			g_slist_free(line);
 
-			mainwindows_rresize_line(screen_width - last_column + 1, win);
+			mainwindows_rresize_line(screen_width - screen_reserved_right - last_column + 1, win);
 		}
 	}
 
@@ -2005,4 +2071,56 @@ void mainwindows_deinit(void)
 	command_unbind("window move up", (SIGNAL_FUNC) cmd_window_move_up);
 	command_unbind("window move down", (SIGNAL_FUNC) cmd_window_move_down);
 	signal_remove("window print info", (SIGNAL_FUNC) sig_window_print_info);
+}
+
+int mainwindows_reserve_columns(int left, int right)
+{
+	MAIN_WINDOW_REC *window;
+	int ret = -1;
+	if (left != 0) {
+		GSList *list, *tmp;
+		g_return_val_if_fail(left > 0 || screen_reserved_left > left, -1);
+		ret = screen_reserved_left;
+		screen_reserved_left += left;
+		list = mainwindows_get_line(mainwindows_find_lower_right(NULL));
+		for (tmp = list; tmp != NULL; tmp = tmp->next) {
+			window = tmp->data;
+			window->first_column += left;
+			mainwindow_resize(window, -left, 0);
+		}
+		g_slist_free(list);
+	}
+	if (right != 0) {
+		GSList *list, *tmp;
+		g_return_val_if_fail(right > 0 || screen_reserved_right > right, -1);
+		ret = screen_reserved_right;
+		screen_reserved_right += right;
+		list = mainwindows_get_line(mainwindows_find_left_upper(NULL));
+		for (tmp = list; tmp != NULL; tmp = tmp->next) {
+			window = tmp->data;
+			window->last_column -= right;
+			mainwindow_resize(window, -right, 0);
+		}
+		g_slist_free(list);
+	}
+	return ret;
+}
+
+int mainwindow_set_statusbar_columns(MAIN_WINDOW_REC *window,
+				      int left, int right)
+{
+	int ret = -1;
+	if (left != 0) {
+		ret = window->statusbar_columns_left;
+		window->statusbar_columns_left += left;
+		window->statusbar_columns += left;
+	}
+	if (right != 0) {
+		ret = window->statusbar_columns_right;
+		window->statusbar_columns_right += right;
+		window->statusbar_columns += right;
+	}
+	if (left+right != 0)
+		window->size_dirty = TRUE;
+	return ret;
 }

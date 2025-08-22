@@ -68,6 +68,11 @@ int mainwindow_set_statusbar_lines(MAIN_WINDOW_REC *window,
 				   int top, int bottom);
 void mainwindows_redraw_dirty(void);
 
+/* Reserve columns at left/right of a main window (for side panels). */
+int mainwindows_reserve_columns(int left, int right);
+int mainwindow_set_statusbar_columns(MAIN_WINDOW_REC *window,
+				      int left, int right);
+
 GSList *mainwindows_get_sorted(int reverse);
 GSList *mainwindows_get_line(MAIN_WINDOW_REC *rec);
 

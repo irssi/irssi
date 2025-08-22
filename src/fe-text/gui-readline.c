@@ -35,6 +35,7 @@
 #include <irssi/src/fe-text/term.h>
 #include <irssi/src/fe-text/gui-entry.h>
 #include <irssi/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-text/sidepanels.h>
 #include <irssi/src/core/utf8.h>
 
 #include <string.h>
@@ -543,6 +544,11 @@ static void sig_gui_key_pressed(gpointer keyp)
 	int ret;
 
 	key = GPOINTER_TO_INT(keyp);
+
+	/* sidepanels: let mouse parser consume if applicable */
+	if (sidepanels_try_parse_mouse_key(key)) {
+		return;
+	}
 
 	if (redir != NULL && redir->flags & ENTRY_REDIRECT_FLAG_HOTKEY) {
 		handle_key_redirect(key);

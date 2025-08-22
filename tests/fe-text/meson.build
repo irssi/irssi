@@ -7,6 +7,7 @@ test_test_paste_join_multiline = executable('test-paste-join-multiline',
     '../../src/fe-text/term-terminfo.c',
     '../../src/fe-text/term.c',
     '../../src/fe-text/terminfo-core.c',
+    '../../src/fe-text/sidepanels.c',
     '../../src/fe-text/textbuffer-formats.c',
     '../../src/fe-text/textbuffer-view.c',
     '../../src/fe-text/textbuffer.c',
@@ -25,6 +26,7 @@ test_test_paste_join_multiline = executable('test-paste-join-multiline',
   implicit_include_directories : false,
   dependencies : dep + textui_dep,
 )
+
 test('test-paste-join-multiline test', test_test_paste_join_multiline,
   args : ['--tap'],
   protocol : 'tap')

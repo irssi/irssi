@@ -294,3 +294,16 @@ abstracts = {
   # hilight with specified color, $0 = color, $1 = text
   sb_act_hilight_color = "$0$1-%n";
 };
+formats = {
+  "fe-text" = {
+    # Sidepanel formatting - clean default theme with hex colors
+    sidepanel_header = "%z404040%_%_$0%_%_%N";
+    sidepanel_item = "%zCCCCCC$0%N";
+    sidepanel_item_selected = "%zFFFFFF%_%_$0%_%_%N";
+    sidepanel_item_activity = "%zFFFF00$0%N";
+    sidepanel_item_highlight = "%zFF0000%_%_$0%_%_%N";
+    sidepanel_nick_op = "%zFFFF00@%N%zCCCCCC$0%N";
+    sidepanel_nick_voice = "%z00FFFF+%N%zCCCCCC$0%N";
+    sidepanel_nick_normal = "%zCCCCCC$0%N";
+  };
+};
