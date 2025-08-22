@@ -1,8 +1,8 @@
-#include <irssi/src/common.h>
+#include <irssip/src/common.h>
 
 #define MODULE_NAME "fe-common/core"
 
-#include <irssi/src/core/utf8.h>
+#include <irssip/src/core/utf8.h>
 typedef struct {
 	time_t time;
 	char *nick;

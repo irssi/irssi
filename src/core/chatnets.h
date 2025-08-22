@@ -1,7 +1,7 @@
 #ifndef IRSSI_CORE_CHATNETS_H
 #define IRSSI_CORE_CHATNETS_H
 
-#include <irssi/src/core/modules.h>
+#include <irssip/src/core/modules.h>
 
 /* Returns CHATNET_REC if it's chatnet, NULL if it isn't. */
 #define CHATNET(chatnet) \
@@ -11,7 +11,7 @@
 	(CHATNET(chatnet) ? TRUE : FALSE)
 
 struct _CHATNET_REC {
-#include <irssi/src/core/chatnet-rec.h>
+#include <irssip/src/core/chatnet-rec.h>
 };
 
 extern GSList *chatnets; /* list of available chat networks */

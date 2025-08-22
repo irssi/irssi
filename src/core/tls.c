@@ -18,7 +18,7 @@
 
 #include "module.h"
 
-#include <irssi/src/core/tls.h>
+#include <irssip/src/core/tls.h>
 
 TLS_REC *tls_create_rec()
 {

@@ -19,7 +19,7 @@
 */
 
 #include <glib.h>
-#include <irssi/src/irc/core/irc.h>
+#include <irssip/src/irc/core/irc.h>
 #include <string.h>
 
 typedef struct {

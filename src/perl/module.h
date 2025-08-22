@@ -1,4 +1,4 @@
-#include <irssi/src/common.h>
+#include <irssip/src/common.h>
 
 #ifdef NEED_PERL_H
 #  include <EXTERN.h>

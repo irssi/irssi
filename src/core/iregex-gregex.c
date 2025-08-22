@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include <irssi/src/core/iregex.h>
+#include <irssip/src/core/iregex.h>
 
 struct _MatchInfo {
 	const char *valid_string;

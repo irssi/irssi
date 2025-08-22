@@ -1,7 +1,7 @@
 #ifndef IRSSI_CORE_CORE_H
 #define IRSSI_CORE_CORE_H
 
-#include <irssi/src/common.h>
+#include <irssip/src/common.h>
 
 /* for determining what GUI is currently in use: */
 #define IRSSI_GUI_NONE	0

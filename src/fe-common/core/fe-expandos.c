@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include <irssi/src/core/expandos.h>
-#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssip/src/core/expandos.h>
+#include <irssip/src/fe-common/core/fe-windows.h>
 
 /* Window ref# */
 static char *expando_winref(SERVER_REC *server, void *item, int *free_ret)

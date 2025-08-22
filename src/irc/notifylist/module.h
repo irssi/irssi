@@ -1,5 +1,5 @@
-#include <irssi/src/common.h>
-#include <irssi/src/irc/core/irc.h>
+#include <irssip/src/common.h>
+#include <irssip/src/irc/core/irc.h>
 
 #define MODULE_NAME "irc/notifylist"
 
@@ -23,7 +23,7 @@ typedef struct {
 	GSList *ison_tempusers; /* Temporary list for saving /ISON events.. */
 } MODULE_SERVER_REC;
 
-#include <irssi/src/irc/core/irc-servers.h>
+#include <irssip/src/irc/core/irc-servers.h>
 
 NOTIFY_NICK_REC *notify_nick_create(IRC_SERVER_REC *server, const char *nick);
 void notify_nick_destroy(NOTIFY_NICK_REC *rec);

@@ -1,6 +1,6 @@
 # this file is part of irssi
 
-executable('irssi',
+executable('irssip',
   files(
     #### terminfo_sources ####
     'term-terminfo.c',
