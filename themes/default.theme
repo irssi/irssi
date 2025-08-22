@@ -63,14 +63,13 @@ abstracts = {
   ##
 
   # text to insert at the beginning of each non-message line
-  line_start = "%B-%n!%B-%n ";
+  line_start = "%N";
 
   # timestamp styling, nothing by default
-  timestamp = "$*";
+  timestamp = "%b$*%C❱%N";
 
   # any kind of text that needs hilighting, default is to bold
-  hilight = "%_$*%_";
-
+  hilight = "%Y%_$*%_%N";
   # any kind of error message, default is bright red
   error = "%R$*%n";
 
@@ -118,7 +117,7 @@ abstracts = {
   ##
 
   # the basic styling of how to print message, $0 = nick mode, $1 = nick
-  msgnick = "%K<%n$0$1-%K>%n %|";
+  msgnick = "%K<%n$0$[10]1-%K>%n %|";
 
   # message from you is printed. "ownnick" specifies the styling of the
   # nick ($0 part in msgnick) and "ownmsgnick" specifies the styling of the
@@ -137,15 +136,15 @@ abstracts = {
   #  privmsgnick = "%K{msgnick  %R$*%K}%n";
 
   # $0 = nick mode, $1 = nick
-  ownmsgnick = "{msgnick $0 $1-}";
+  ownmsgnick = "{msgnick $0 $[10]1-}";
   ownnick = "%_$*%n";
 
   # public message in channel, $0 = nick mode, $1 = nick
-  pubmsgnick = "{msgnick $0 $1-}";
+  pubmsgnick = "{msgnick $0 $[10]1-}";
   pubnick = "%N$*%n";
 
   # public message in channel meant for me, $0 = nick mode, $1 = nick
-  pubmsgmenick = "{msgnick $0 $1-}";
+  pubmsgmenick = "{msgnick $0 $[10]1-}";
   menick = "%Y$*%n";
 
   # public highlighted message in channel
@@ -249,19 +248,33 @@ abstracts = {
   ## statusbar
   ##
 
-  # default background for all statusbars. You can also give
-  # the default foreground color for statusbar items.
-  sb_background = "%4%w";
-  window_border = "%4%w";
-
-  # default backround for "default" statusbar group
-  #sb_default_bg = "%4";
-  # background for prompt / input line
-  sb_prompt_bg = "%n";
-  # background for info statusbar
-  sb_info_bg = "%8";
-  # background for topicbar (same default)
-  #sb_topic_bg = "%4";
+  # Statusbar background and styling elements
+  sb_background = "%K";
+  # Void black background
+  window_border = "%B│%N";
+  # Electric blue cyberpunk border character
+  sb_topic_bg = "%B%W";
+  # Electric blue + white for topic
+  sb = "%B⚡%N $0-%B ⚬%N";
+  # Electric blue lightning + bullet
+  sbmode = "$0-";
+  # Mode display
+  sbservertag = ":$0 %N(%Gchange with ^X%N)";
+  # Server tag with green hint
+  sbmore = " %R❰%r❰%k❰ %Nmore %k❱%r❱%R❱ ";
+  # Triple-layered more indicator
+  sblag = "%R☠%N %RLAG%N %w$0-%N seconds";
+  # Skull + lag in crimson red
+  sb_default_bg = "%K";
+  # Default void black background
+  sb_info1_bg = "%B";
+  # Electric blue info1 background
+  sb_window_bg = "%B%W";
+  # Electric blue + white window bg
+  sb_window2_bg = "%B%W";
+  # Electric blue + white window2 bg
+  sb_info2_bg = "%C";
+  # Cyan steel info2 background
 
   # text at the beginning of statusbars. "sb" already puts a space there,
   # so we don't use anything by default.
@@ -283,27 +296,54 @@ abstracts = {
 
   # activity in statusbar
 
-  # ',' separator
-  sb_act_sep = "%c$*";
-  # normal text
-  sb_act_text = "%c$*";
-  # public message
-  sb_act_msg = "%W$*";
-  # hilight
-  sb_act_hilight = "%M$*";
-  # hilight with specified color, $0 = color, $1 = text
-  sb_act_hilight_color = "$0$1-%n";
+  # Shadow gray separator
+  sb_act_sep = "%k/%N";
+  # Silver white activity text
+  sb_act_text = "%w$*";
+  # Sky blue activity messages
+  sb_act_msg = "%b$*";
+  # Lime green activity highlights
+  sb_act_hilight = "%g$*";
+  # Sky blue highlight with color
+  sb_act_hilight_color = "%b$0$1-%N";
 };
 formats = {
-  "fe-text" = {
-    # Sidepanel formatting - clean default theme with hex colors
-    sidepanel_header = "%z404040%_%_$0%_%_%N";
-    sidepanel_item = "%zCCCCCC$0%N";
-    sidepanel_item_selected = "%zFFFFFF%_%_$0%_%_%N";
-    sidepanel_item_activity = "%zFFFF00$0%N";
-    sidepanel_item_highlight = "%zFF0000%_%_$0%_%_%N";
-    sidepanel_nick_op = "%zFFFF00@%N%zCCCCCC$0%N";
-    sidepanel_nick_voice = "%z00FFFF+%N%zCCCCCC$0%N";
-    sidepanel_nick_normal = "%zCCCCCC$0%N";
-  };
+    "fe-text" = {
+    # === LEFT PANEL (Window List) ===
+    # Server headers - electric blue with power symbol (consistent with theme primary)
+    sidepanel_header = "%B⚡%B$0%N";
+
+    # Normal items - steel gray (consistent with theme secondary text)
+    sidepanel_item = "%W %W$0%N";
+
+    # Selected items - neon green highlight (consistent with theme highlights)
+    sidepanel_item_selected = "%g%k❱ %g%k$0%N";
+
+    # === ACTIVITY HIERARCHY (by priority) ===
+
+    # PRIORITY 4 (Highest): NICK MENTION - magenta alert (when your nick is mentioned on channel)
+    sidepanel_item_nick_mention = "%M⬢ %M$0%N";
+
+    # PRIORITY 4 (Highest): QUERY MESSAGE - magenta alert (new messages in query/private)
+    sidepanel_item_query_msg = "%M◆ %M$0%N";
+
+    # PRIORITY 3: CHANNEL ACTIVITY - yellow warning (messages on channel without mention)
+    sidepanel_item_activity = "%y● %y$0%N";
+
+    # PRIORITY 1 (Lowest): EVENTS - green info (join/part/quit/nick changes)
+    sidepanel_item_events = "%G○%N %G$0%N";
+
+    # PRIORITY 2: HIGHLIGHTS - red alert (keyword highlights, fallback)
+    sidepanel_item_highlight = "%R☠ %R$0%N";
+
+    # New dual-parameter formats - status and nick separated for theme flexibility
+    # Operators - gold status symbol with steel nick (power users)
+    sidepanel_nick_op_status = "%Y$0%N%B$1%N";
+
+    # Voice users - cyan status with lighter nick (trusted users)
+    sidepanel_nick_voice_status = "%C$0%N%c$1%N";
+
+    # Normal users - subtle gray for clean appearance
+    sidepanel_nick_normal_status = "%k$0%N%w$1%N";
+    };
 };
