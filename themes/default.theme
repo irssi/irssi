@@ -306,14 +306,14 @@ abstracts = {
 formats = {
   "fe-common/core" = {
 
-    own_msg = "$nickalign{ownmsgnick $2 {ownnick $0}}$1";
-    own_msg_channel = "$nickalign{ownmsgnick $3 {ownnick $0}{msgchannel $1}}$2";
-    pubmsg_me = "$nickalign{pubmsgmenick $2 {menick $0}}$1";
-    pubmsg_me_channel = "$nickalign{pubmsgmenick $3 {menick $0}{msgchannel $1}}$2";
-    pubmsg_hilight = "$nickalign{pubmsghinick $0 $3 $1}$2";
-    pubmsg_hilight_channel = "$nickalign{pubmsghinick $0 $4 $1{msgchannel $2}}$3";
-    pubmsg = "$nickalign{pubmsgnick $2 {pubnick $0}}$1";
-    pubmsg_channel = "$nickalign{pubmsgnick $3 {pubnick $0}{msgchannel $1}}$2";
+    own_msg = "$nickalign{ownmsgnick $2 {ownnick $nicktrunc}}$1";
+    own_msg_channel = "$nickalign{ownmsgnick $3 {ownnick $nicktrunc}{msgchannel $1}}$2";
+    pubmsg_me = "$nickalign{pubmsgmenick $2 {menick $nicktrunc}}$1";
+    pubmsg_me_channel = "$nickalign{pubmsgmenick $3 {menick $nicktrunc}{msgchannel $1}}$2";
+    pubmsg_hilight = "$nickalign{pubmsghinick $0 $3 $nicktrunc}$2";
+    pubmsg_hilight_channel = "$nickalign{pubmsghinick $0 $4 $nicktrunc{msgchannel $2}}$3";
+    pubmsg = "$nickalign{pubmsgnick $2 {pubnick $nicktrunc}}$1";
+    pubmsg_channel = "$nickalign{pubmsgnick $3 {pubnick $nicktrunc}{msgchannel $1}}$2";
     msg_private = "{privmsg $0 $1}$2";
     msg_private_query = "{privmsgnick $0}$2";
 

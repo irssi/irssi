@@ -87,19 +87,6 @@ static char *expando_nickalign(SERVER_REC *server, void *item, int *free_ret)
 	total_chars = mode_chars + nick_chars;
 
 	if (total_chars > width) {
-		/* Nick za długi - przytnij z >> */
-		int available_for_nick = width - mode_chars - 2; /* -2 dla >> */
-		if (available_for_nick > 0) {
-			/* Przytnij nick i dodaj >> */
-			char *truncated = g_strndup(current_nick, available_for_nick);
-			g_free(current_nick);
-			current_nick = g_strdup_printf("%s>>", truncated);
-			g_free(truncated);
-		} else {
-			/* Mode sam za długi */
-			g_free(current_nick);
-			current_nick = g_strdup(">>");
-		}
 		padding = 0;
 	} else {
 		padding = width - total_chars;
@@ -107,12 +94,58 @@ static char *expando_nickalign(SERVER_REC *server, void *item, int *free_ret)
 
 	/* Debug output */
 	if (settings_get_bool("debug_nick_column")) {
-		printf("DEBUG nickalign: nick='%s', mode='%s', width=%d, mode_chars=%d, nick_chars=%d, padding=%d\n",
-		       current_nick, mode, width, mode_chars, nick_chars, padding);
+		printf("DEBUG nickalign: nick='%s', mode='%s', width=%d, mode_chars=%d, nick_chars=%d, total_chars=%d, padding=%d\n",
+		       current_nick, mode, width, mode_chars, nick_chars, total_chars, padding);
 	}
 
 	*free_ret = TRUE;
 	return g_strnfill(padding, ' ');
+}
+
+/* Nick truncated - returns truncated nick with >> indicator */
+static char *expando_nicktrunc(SERVER_REC *server, void *item, int *free_ret)
+{
+	int width, mode_chars, nick_chars, total_chars;
+	const char *mode;
+	char *result;
+
+	if (!settings_get_bool("nick_column_enabled") || !nick_context_valid || !current_nick) {
+		return current_nick ? current_nick : "";
+	}
+
+	width = settings_get_int("nick_column_width");
+	mode = current_mode ? current_mode : "";
+
+	/* Zawsze 1 miejsce na mode (nawet spacja) */
+	mode_chars = strlen(mode) > 0 ? strlen(mode) : 1;
+	nick_chars = count_nick_chars(current_nick);
+	total_chars = mode_chars + nick_chars;
+
+	if (total_chars > width) {
+		/* Nick za długi - przytnij z >> */
+		int available_for_nick = width - mode_chars - 2; /* -2 dla >> */
+		if (available_for_nick > 0) {
+			/* Przytnij nick i dodaj >> */
+			result = g_strdup_printf("%.*s>>", available_for_nick, current_nick);
+
+			if (settings_get_bool("debug_nick_column")) {
+				printf("DEBUG nicktrunc TRUNCATED: original='%s', truncated='%s', available_for_nick=%d\n",
+				       current_nick, result, available_for_nick);
+			}
+		} else {
+			/* Mode sam za długi */
+			result = g_strdup(">>");
+
+			if (settings_get_bool("debug_nick_column")) {
+				printf("DEBUG nicktrunc MODE_TOO_LONG: result='%s'\n", result);
+			}
+		}
+		*free_ret = TRUE;
+		return result;
+	} else {
+		/* Nick się zmieści - zwróć oryginalny */
+		return current_nick;
+	}
 }
 
 /* Update nick context for expandos */
@@ -142,6 +175,9 @@ void fe_expandos_init(void)
 	expando_create("nickalign", expando_nickalign,
 		       "message public", EXPANDO_ARG_NONE,
 		       "message own_public", EXPANDO_ARG_NONE, NULL);
+	expando_create("nicktrunc", expando_nicktrunc,
+		       "message public", EXPANDO_ARG_NONE,
+		       "message own_public", EXPANDO_ARG_NONE, NULL);
 }
 
 void fe_expandos_deinit(void)
@@ -149,4 +185,5 @@ void fe_expandos_deinit(void)
 	expando_destroy("winref", expando_winref);
 	expando_destroy("winname", expando_winname);
 	expando_destroy("nickalign", expando_nickalign);
+	expando_destroy("nicktrunc", expando_nicktrunc);
 }
