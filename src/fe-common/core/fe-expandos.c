@@ -58,9 +58,10 @@ static int count_nick_chars(const char *str)
 		if (isalnum(*p)) {
 			count++;
 		}
-		/* Specjalne znaki nicka */
-		else if (*p == '-' || *p == '[' || *p == ']' || *p == '\\' ||
-		         *p == '`' || *p == '^' || *p == '{' || *p == '}') {
+		/* Specjalne znaki nicka - zgodnie z isnickchar z fe-messages.c */
+		else if (*p == '`' || *p == '-' || *p == '_' ||
+		         *p == '[' || *p == ']' || *p == '{' || *p == '}' ||
+		         *p == '|' || *p == '\\' || *p == '^') {
 			count++;
 		}
 		/* Ignoruje kody kolorów %B %N %Y %n itp. */
