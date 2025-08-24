@@ -45,7 +45,6 @@
 # at start, the normal behaviour of %n would occur. If you _really_ want
 # to use the terminal's default color, use %N.
 
-#############################################################################
 
 # default foreground color (%N) - -1 is the "default terminal color"
 default_color = "-1";
@@ -66,7 +65,7 @@ abstracts = {
   line_start = "%N";
 
   # timestamp styling, nothing by default
-  timestamp = "%b$*%C❱%N";
+  timestamp = "%b$*%C>%N";
 
   # any kind of text that needs hilighting, default is to bold
   hilight = "%Y%_$*%_%N";
@@ -112,14 +111,15 @@ abstracts = {
   # ban/ban exception/invite list mask is printed
   ban = "%c$*%n";
 
+
   ##
   ## messages
   ##
 
   # the basic styling of how to print message, $0 = nick mode, $1 = nick
-  msgnick = "%K<%n$0$[10]1-%K>%n %|";
+  msgnick = "%K<%n$0$1-%K>%n %|";
 
-  # message from you is printed. "ownnick" specifies the styling of the
+  # message from you is printed. "msgownnick" specifies the styling of the
   # nick ($0 part in msgnick) and "ownmsgnick" specifies the styling of the
   # whole line.
 
@@ -136,15 +136,15 @@ abstracts = {
   #  privmsgnick = "%K{msgnick  %R$*%K}%n";
 
   # $0 = nick mode, $1 = nick
-  ownmsgnick = "{msgnick $0 $[10]1-}";
+  ownmsgnick = "{msgnick $0 $1-}";
   ownnick = "%_$*%n";
 
   # public message in channel, $0 = nick mode, $1 = nick
-  pubmsgnick = "{msgnick $0 $[10]1-}";
+  pubmsgnick = "{msgnick $0 $1-}";
   pubnick = "%N$*%n";
 
   # public message in channel meant for me, $0 = nick mode, $1 = nick
-  pubmsgmenick = "{msgnick $0 $[10]1-}";
+  pubmsgmenick = "{msgnick $0 $1-}";
   menick = "%Y$*%n";
 
   # public highlighted message in channel
@@ -166,6 +166,9 @@ abstracts = {
 
   # private message in query
   privmsgnick = "{msgnick  %R$*%n}";
+
+  # channel name is printed with message
+  msgchannel = "%K:%c$*%n";
 
   ##
   ## Actions (/ME stuff)
@@ -251,20 +254,20 @@ abstracts = {
   # Statusbar background and styling elements
   sb_background = "%K";
   # Void black background
-  window_border = "%B│%N";
+  window_border = "%B|%N";
   # Electric blue cyberpunk border character
   sb_topic_bg = "%B%W";
   # Electric blue + white for topic
-  sb = "%B⚡%N $0-%B ⚬%N";
+  sb = " %c[%n$*%c]%n";
   # Electric blue lightning + bullet
-  sbmode = "$0-";
+  sbmode = "(%c+%n$*)";
   # Mode display
-  sbservertag = ":$0 %N(%Gchange with ^X%N)";
+  sbservertag = ":$0 (change with ^X)";
   # Server tag with green hint
-  sbmore = " %R❰%r❰%k❰ %Nmore %k❱%r❱%R❱ ";
+  sbmore = " %R<%r<%k< %Nmore %k>%r>%R> ";
   # Triple-layered more indicator
-  sblag = "%R☠%N %RLAG%N %w$0-%N seconds";
-  # Skull + lag in crimson red
+  sblag = "%R!%N %RLAG%N %w$0-%N seconds";
+  # Exclamation + lag in crimson red
   sb_default_bg = "%K";
   # Default void black background
   sb_info1_bg = "%B";
@@ -288,10 +291,7 @@ abstracts = {
 
   prompt = "[$*] ";
 
-  sb = " %c[%n$*%c]%n";
-  sbmode = "(%c+%n$*)";
   sbaway = " (%GzZzZ%n)";
-  sbservertag = ":$0 (change with ^X)";
   sbnickmode = "$0";
 
   # activity in statusbar
@@ -306,35 +306,52 @@ abstracts = {
   sb_act_hilight = "%g$*";
   # Sky blue highlight with color
   sb_act_hilight_color = "%b$0$1-%N";
+
 };
 formats = {
-    "fe-text" = {
+  "fe-common/core" = {
+
+    own_msg = "{ownmsgnick $2 {ownnick $0}}$1";
+    own_msg_channel = "{ownmsgnick $3 {ownnick $0}{msgchannel $1}}$2";
+    own_msg_private = "{ownprivmsg msg $0}$1";
+    own_msg_private_query = "{ownprivmsgnick {ownprivnick $2}}$1";
+    pubmsg_me = "{pubmsgmenick $2 {menick $0}}$1";
+    pubmsg_me_channel = "{pubmsgmenick $3 {menick $0}{msgchannel $1}}$2";
+    pubmsg_hilight = "{pubmsghinick $0 $3 $1}$2";
+    pubmsg_hilight_channel = "{pubmsghinick $0 $4 $1{msgchannel $2}}$3";
+    pubmsg = "{pubmsgnick $2 {pubnick $0}}$1";
+    pubmsg_channel = "{pubmsgnick $3 {pubnick $0}{msgchannel $1}}$2";
+    msg_private = "{privmsg $0 $1}$2";
+    msg_private_query = "{privmsgnick $0}$2";
+
+  };
+  "fe-text" = {
     # === LEFT PANEL (Window List) ===
-    # Server headers - electric blue with power symbol (consistent with theme primary)
-    sidepanel_header = "%B⚡%B$0%N";
+    # Server headers - electric blue with asterisk symbol (consistent with theme primary)
+    sidepanel_header = "%B*%B$0%N";
 
     # Normal items - steel gray (consistent with theme secondary text)
     sidepanel_item = "%W %W$0%N";
 
     # Selected items - neon green highlight (consistent with theme highlights)
-    sidepanel_item_selected = "%g%k❱ %g%k$0%N";
+    sidepanel_item_selected = "%g%k> %g%k$0%N";
 
     # === ACTIVITY HIERARCHY (by priority) ===
 
     # PRIORITY 4 (Highest): NICK MENTION - magenta alert (when your nick is mentioned on channel)
-    sidepanel_item_nick_mention = "%M⬢ %M$0%N";
+    sidepanel_item_nick_mention = "%M# %M$0%N";
 
     # PRIORITY 4 (Highest): QUERY MESSAGE - magenta alert (new messages in query/private)
-    sidepanel_item_query_msg = "%M◆ %M$0%N";
+    sidepanel_item_query_msg = "%M+ %M$0%N";
 
     # PRIORITY 3: CHANNEL ACTIVITY - yellow warning (messages on channel without mention)
-    sidepanel_item_activity = "%y● %y$0%N";
+    sidepanel_item_activity = "%y* %y$0%N";
 
     # PRIORITY 1 (Lowest): EVENTS - green info (join/part/quit/nick changes)
-    sidepanel_item_events = "%G○%N %G$0%N";
+    sidepanel_item_events = "%Go%N %G$0%N";
 
     # PRIORITY 2: HIGHLIGHTS - red alert (keyword highlights, fallback)
-    sidepanel_item_highlight = "%R☠ %R$0%N";
+    sidepanel_item_highlight = "%R! %R$0%N";
 
     # New dual-parameter formats - status and nick separated for theme flexibility
     # Operators - gold status symbol with steel nick (power users)
@@ -345,5 +362,5 @@ formats = {
 
     # Normal users - subtle gray for clean appearance
     sidepanel_nick_normal_status = "%k$0%N%w$1%N";
-    };
+  };
 };
