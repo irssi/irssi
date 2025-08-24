@@ -317,6 +317,7 @@ settings = {
     window_auto_change = "yes";
     print_active_channel = "yes";
     theme = "default.theme";
+    nick_column_enabled = "yes";
   };
   "fe-text" = {
     lag_min_show = "1s";

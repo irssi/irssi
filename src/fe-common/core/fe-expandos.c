@@ -47,12 +47,32 @@ static char *expando_winname(SERVER_REC *server, void *item, int *free_ret)
 	return active_win->name;
 }
 
-/* Nick column aligned - returns padded string with mode and nick */
-static char *expando_nickaligned(SERVER_REC *server, void *item, int *free_ret)
+/* Count only valid nick characters (ignore color codes) */
+static int count_nick_chars(const char *str)
 {
-	int width, mode_len, nick_len, available_for_nick;
+	int count = 0;
+	if (!str) return 0;
+
+	for (const char *p = str; *p; p++) {
+		/* Alfanumeryczne */
+		if (isalnum(*p)) {
+			count++;
+		}
+		/* Specjalne znaki nicka */
+		else if (*p == '-' || *p == '[' || *p == ']' || *p == '\\' ||
+		         *p == '`' || *p == '^' || *p == '{' || *p == '}') {
+			count++;
+		}
+		/* Ignoruje kody kolorów %B %N %Y %n itp. */
+	}
+	return count;
+}
+
+/* Nick column align - returns only padding spaces */
+static char *expando_nickalign(SERVER_REC *server, void *item, int *free_ret)
+{
+	int width, mode_chars, nick_chars, total_chars, padding;
 	const char *mode;
-	char *result;
 
 	if (!settings_get_bool("nick_column_enabled") || !nick_context_valid || !current_nick) {
 		return "";
@@ -60,49 +80,25 @@ static char *expando_nickaligned(SERVER_REC *server, void *item, int *free_ret)
 
 	width = settings_get_int("nick_column_width");
 	mode = current_mode ? current_mode : "";
-	mode_len = strlen(mode);
-	nick_len = strlen(current_nick);
 
-	/* Always reserve 1 space for mode (even if empty) */
-	available_for_nick = width - 1;
+	/* Zawsze 1 miejsce na mode (nawet spacja) */
+	mode_chars = strlen(mode) > 0 ? strlen(mode) : 1;
+	nick_chars = count_nick_chars(current_nick);
+	total_chars = mode_chars + nick_chars;
 
-	if (mode_len == 0) {
-		/* No mode - use space + nick */
-		if (nick_len <= available_for_nick) {
-			/* Nick fits - pad from left */
-			int padding = width - 1 - nick_len; /* -1 for space */
-			result = g_strdup_printf("%*s %s", padding, "", current_nick);
-		} else {
-			/* Nick too long - truncate with >> */
-			result = g_strdup_printf(" %.*s>>", available_for_nick - 2, current_nick);
-		}
-	} else {
-		/* Has mode */
-		int total_len = mode_len + nick_len;
-		if (total_len <= width) {
-			/* Mode + nick fits - pad from left */
-			int padding = width - total_len;
-			result = g_strdup_printf("%*s%s%s", padding, "", mode, current_nick);
-		} else {
-			/* Too long - truncate nick with >> */
-			int available_for_nick_with_mode = width - mode_len - 2; /* -2 for >> */
-			if (available_for_nick_with_mode > 0) {
-				result = g_strdup_printf("%s%.*s>>", mode, available_for_nick_with_mode, current_nick);
-			} else {
-				/* Mode itself too long */
-				result = g_strdup_printf("%.*s>>", width - 2, mode);
-			}
-		}
+	padding = width - total_chars;
+	if (padding < 0) {
+		padding = 0; /* Nie może być ujemny */
 	}
 
 	/* Debug output */
 	if (settings_get_bool("debug_nick_column")) {
-		printf("DEBUG nickaligned: nick='%s', mode='%s', width=%d, result='%s'\n",
-		       current_nick, mode, width, result);
+		printf("DEBUG nickalign: nick='%s', mode='%s', width=%d, mode_chars=%d, nick_chars=%d, padding=%d\n",
+		       current_nick, mode, width, mode_chars, nick_chars, padding);
 	}
 
 	*free_ret = TRUE;
-	return result;
+	return g_strnfill(padding, ' ');
 }
 
 /* Update nick context for expandos */
@@ -129,7 +125,7 @@ void fe_expandos_init(void)
 	expando_create("winname", expando_winname,
 		       "window changed", EXPANDO_ARG_NONE,
 		       "window name changed", EXPANDO_ARG_WINDOW, NULL);
-	expando_create("nickaligned", expando_nickaligned,
+	expando_create("nickalign", expando_nickalign,
 		       "message public", EXPANDO_ARG_NONE,
 		       "message own_public", EXPANDO_ARG_NONE, NULL);
 }
@@ -138,5 +134,5 @@ void fe_expandos_deinit(void)
 {
 	expando_destroy("winref", expando_winref);
 	expando_destroy("winname", expando_winname);
-	expando_destroy("nickaligned", expando_nickaligned);
+	expando_destroy("nickalign", expando_nickalign);
 }
