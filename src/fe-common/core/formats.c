@@ -828,12 +828,79 @@ char *format_get_text_theme_args(THEME_REC *theme, const char *module,
 					      formatnum, arglist);
 }
 
+/* Check if format number is a message format that needs nick column */
+static gboolean is_message_format(int formatnum)
+{
+	return (formatnum == TXT_OWN_MSG || formatnum == TXT_OWN_MSG_CHANNEL ||
+	        formatnum == TXT_PUBMSG || formatnum == TXT_PUBMSG_CHANNEL ||
+	        formatnum == TXT_PUBMSG_ME || formatnum == TXT_PUBMSG_ME_CHANNEL ||
+	        formatnum == TXT_PUBMSG_HILIGHT || formatnum == TXT_PUBMSG_HILIGHT_CHANNEL);
+}
+
+/* Apply nick column formatting to format string */
+static char *apply_nick_column_formatting(const char *format)
+{
+	GString *result;
+	char *modified;
+	char *pos, *before, *after, *temp;
+
+	if (!format) return NULL;
+
+	result = g_string_new("");
+
+	/* Add $nickalign at the beginning if not already present */
+	if (!strstr(format, "$nickalign")) {
+		g_string_append(result, "$nickalign");
+	}
+
+	/* Replace nick templates with truncated versions */
+	modified = g_strdup(format);
+
+	/* Replace {ownnick $0} with {ownnick $nicktrunc} */
+	pos = strstr(modified, "{ownnick $0}");
+	if (pos) {
+		before = g_strndup(modified, pos - modified);
+		after = pos + strlen("{ownnick $0}");
+		g_free(modified);
+		modified = g_strdup_printf("%s{ownnick $nicktrunc}%s", before, after);
+		g_free(before);
+	}
+
+	/* Replace {pubnick $0} with {pubnick $nicktrunc} */
+	pos = strstr(modified, "{pubnick $0}");
+	if (pos) {
+		before = g_strndup(modified, pos - modified);
+		after = pos + strlen("{pubnick $0}");
+		temp = modified;
+		modified = g_strdup_printf("%s{pubnick $nicktrunc}%s", before, after);
+		g_free(temp);
+		g_free(before);
+	}
+
+	/* Replace {menick $0} with {menick $nicktrunc} */
+	pos = strstr(modified, "{menick $0}");
+	if (pos) {
+		before = g_strndup(modified, pos - modified);
+		after = pos + strlen("{menick $0}");
+		temp = modified;
+		modified = g_strdup_printf("%s{menick $nicktrunc}%s", before, after);
+		g_free(temp);
+		g_free(before);
+	}
+
+	g_string_append(result, modified);
+	g_free(modified);
+
+	return g_string_free_and_steal(result);
+}
+
 char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 				     TEXT_DEST_REC *dest, int formatnum,
 				     char **args)
 {
 	MODULE_THEME_REC *module_theme;
-	char *text;
+	char *text, *modified_text = NULL;
+	char *result;
 
 	if (module == NULL)
 		return NULL;
@@ -843,7 +910,21 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 		return NULL;
 
 	text = module_theme->expanded_formats[formatnum];
-	return format_get_text_args(dest, text, args);
+
+	/* Apply nick column formatting if enabled and this is a message format */
+	if (settings_get_bool("nick_column_enabled") &&
+	    g_strcmp0(module, "fe-common/core") == 0 &&
+	    is_message_format(formatnum)) {
+		modified_text = apply_nick_column_formatting(text);
+		text = modified_text;
+	}
+
+	result = format_get_text_args(dest, text, args);
+
+	if (modified_text)
+		g_free(modified_text);
+
+	return result;
 }
 
 char *format_get_text(const char *module, WINDOW_REC *window,

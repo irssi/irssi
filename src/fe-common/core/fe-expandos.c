@@ -75,7 +75,12 @@ static char *expando_nickalign(SERVER_REC *server, void *item, int *free_ret)
 	int width, mode_chars, nick_chars, total_chars, padding;
 	const char *mode;
 
-	if (!settings_get_bool("nick_column_enabled") || !nick_context_valid || !current_nick) {
+	/* Gdy wyłączone - zwróć pusty string */
+	if (!settings_get_bool("nick_column_enabled")) {
+		return "";
+	}
+
+	if (!nick_context_valid || !current_nick) {
 		return "";
 	}
 
@@ -110,7 +115,12 @@ static char *expando_nicktrunc(SERVER_REC *server, void *item, int *free_ret)
 	const char *mode;
 	char *result;
 
-	if (!settings_get_bool("nick_column_enabled") || !nick_context_valid || !current_nick) {
+	/* Gdy wyłączone - zwróć oryginalny nick */
+	if (!settings_get_bool("nick_column_enabled")) {
+		return current_nick ? current_nick : "";
+	}
+
+	if (!nick_context_valid || !current_nick) {
 		return current_nick ? current_nick : "";
 	}
 
