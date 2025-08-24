@@ -166,26 +166,32 @@ Fundamentalny konflikt:
 2. **Wymóg kolorów**: Tryb i nick potrzebują osobnego formatowania kolorów z abstrakcji motywu
 3. **Obecne ograniczenie**: Po połączeniu w C, motyw widzi pojedynczy string i nie może zastosować osobnych kolorów
 
+## HISTORIA PRÓB IMPLEMENTACJI
+
+### PRÓBA 1: Parse Special + ALIGN_COMBINE_MODE (2025-01-24)
+**Podejście**: Modyfikacja `parse_special()` z flagą `&` do łączenia mode+nick przed wyrównaniem.
+**Problem**: Ograniczenie interpretacji kolorów - po połączeniu mode+nick w jeden string, theme nie może zastosować osobnych kolorów.
+**Status**: ❌ Niepowodzenie
+
+### PRÓBA 2: Expandos bez kontekstu (wcześniej)
+**Podejście**: Tworzenie expandos `nick_with_mode`, `nick_padding` itp.
+**Problem**: Expandos nie mają dostępu do `arglist` z formatowania - zwracają puste stringi.
+**Status**: ❌ Niepowodzenie
+
+### PRÓBA 3: Modyfikacja format_get_text_args (2025-01-24)
+**Podejście**: Wstrzyknięcie dodatkowego parametru padding do `arglist` w `format_get_text_args()`.
+**Problem**: Błędna analiza argumentów - myślałem że `$0=nick`, ale `$0=mode`, `$1=nick`. Przesuwanie argumentów psuło mapowanie.
+**Status**: ❌ Niepowodzenie - fundamentalnie błędne założenia
+
+### WNIOSKI Z NIEPOWODZEŃ:
+1. **Modyfikacja argumentów formatowania jest ryzykowna** - łatwo zepsuć istniejące mapowanie
+2. **Expandos bez kontekstu nie działają** - potrzebują dostępu do aktualnych danych message
+3. **Analiza flow musi być dokładna** - błędne założenia prowadzą do niefunkcjonalnych rozwiązań
+
 ## AKTUALNE USTALENIA (2025-01-24)
 
-### Analiza Flow Wiadomości
-Przeprowadzono szczegółową analizę flow wiadomości w Irssi od otrzymania z serwera do wyświetlenia (dokumentacja w `msg_flow.md`). Zidentyfikowano fundamentalny problem z podejściem expandos.
+### Rekomendowane Rozwiązanie: Expandos z kontekstem sygnałów
+**INSPIRACJA**: Skrypt nm2.pl pokazuje właściwe podejście - expandos + sygnały + dynamiczne przepisywanie formatów.
 
-### Problem z Expandos
-Expandos nie mają dostępu do `arglist` z formatowania - są wywoływane globalnie bez kontekstu lokalnego formatowania. To powoduje, że zwracają puste stringi zamiast rzeczywistych wartości mode i nick.
-
-### Rekomendowane Rozwiązanie
-**Rozszerzenie systemu wyrównania w `parse_special`** zamiast expandos:
-
-1. **Nowa składnia**: `$[~&nick_column]0` - wyrównanie z flagą nick_column
-2. **Zachowuje osobne parametry** - mode ($0) i nick ($1) pozostają oddzielne dla kolorowania
-3. **Zgodne z roadmapą Irssi** - "variable/dynamic expandos with arguments"
-4. **Eleganckie kodowo** - rozszerza istniejący system zamiast go obchodzić
-
-### Wymagania Implementacji
-
-- Rozszerzyć `get_alignment_args()` o flagę `&nick_column`
-- Dodać `ALIGN_NICK_COLUMN` do special-vars.h
-- Implementować logikę kombinowania mode+nick przed wyrównaniem
-- Zachować osobne parametry po wyrównaniu dla theme
-- Ustawienia: `nick_column_enabled` i `nick_column_width`
+**KLUCZOWA IDEA**:
+Zamiast modyfikować argumenty, stworzyć expando który zwraca gotowy string z paddingiem, mode i nickiem.

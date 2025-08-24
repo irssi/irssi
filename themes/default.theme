@@ -111,7 +111,6 @@ abstracts = {
   # ban/ban exception/invite list mask is printed
   ban = "%c$*%n";
 
-
   ##
   ## messages
   ##
@@ -167,9 +166,6 @@ abstracts = {
   # private message in query
   privmsgnick = "{msgnick  %R$*%n}";
 
-  # channel name is printed with message
-  msgchannel = "%K:%c$*%n";
-
   ##
   ## Actions (/ME stuff)
   ##
@@ -192,7 +188,6 @@ abstracts = {
 
   # public action sent by others
   pubaction = "{action $*}";
-
 
   ##
   ## other IRC events
