@@ -135,15 +135,15 @@ abstracts = {
   #  privmsgnick = "%K{msgnick  %R$*%K}%n";
 
   # $0 = nick mode, $1 = nick
-  ownmsgnick = "{msgnick %B$0 $1-}";
+  ownmsgnick = "{msgnick %B$0$1-}";
   ownnick = "%_%Y$*%n";
 
   # public message in channel, $0 = nick mode, $1 = nick
-  pubmsgnick = "{msgnick %M$0%N $1%n }";
+  pubmsgnick = "{msgnick %M$0%N$1-%n}";
   pubnick = "%G$*%n";
 
   # public message in channel meant for me, $0 = nick mode, $1 = nick
-  pubmsgmenick = "{msgnick $0 $1-}";
+  pubmsgmenick = "{msgnick $0$1-}";
   menick = "%Y$*%n";
 
   # public highlighted message in channel
@@ -307,15 +307,13 @@ formats = {
   "fe-common/core" = {
 
     own_msg = "$nickalign{ownmsgnick $2 {ownnick $0}}$1";
-    own_msg_channel = "{ownmsgnick $3 {ownnick $0}{msgchannel $1}}$2";
-    own_msg_private = "{ownprivmsg msg $0}$1";
-    own_msg_private_query = "{ownprivmsgnick {ownprivnick $2}}$1";
-    pubmsg_me = "{pubmsgmenick $2 {menick $0}}$1";
-    pubmsg_me_channel = "{pubmsgmenick $3 {menick $0}{msgchannel $1}}$2";
-    pubmsg_hilight = "{pubmsghinick $0 $3 $1}$2";
-    pubmsg_hilight_channel = "{pubmsghinick $0 $4 $1{msgchannel $2}}$3";
+    own_msg_channel = "$nickalign{ownmsgnick $3 {ownnick $0}{msgchannel $1}}$2";
+    pubmsg_me = "$nickalign{pubmsgmenick $2 {menick $0}}$1";
+    pubmsg_me_channel = "$nickalign{pubmsgmenick $3 {menick $0}{msgchannel $1}}$2";
+    pubmsg_hilight = "$nickalign{pubmsghinick $0 $3 $1}$2";
+    pubmsg_hilight_channel = "$nickalign{pubmsghinick $0 $4 $1{msgchannel $2}}$3";
     pubmsg = "$nickalign{pubmsgnick $2 {pubnick $0}}$1";
-    pubmsg_channel = "{pubmsgnick $3 {pubnick $0}{msgchannel $1}}$2";
+    pubmsg_channel = "$nickalign{pubmsgnick $3 {pubnick $0}{msgchannel $1}}$2";
     msg_private = "{privmsg $0 $1}$2";
     msg_private_query = "{privmsgnick $0}$2";
 

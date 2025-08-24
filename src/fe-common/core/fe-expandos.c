@@ -86,9 +86,23 @@ static char *expando_nickalign(SERVER_REC *server, void *item, int *free_ret)
 	nick_chars = count_nick_chars(current_nick);
 	total_chars = mode_chars + nick_chars;
 
-	padding = width - total_chars;
-	if (padding < 0) {
-		padding = 0; /* Nie może być ujemny */
+	if (total_chars > width) {
+		/* Nick za długi - przytnij z >> */
+		int available_for_nick = width - mode_chars - 2; /* -2 dla >> */
+		if (available_for_nick > 0) {
+			/* Przytnij nick i dodaj >> */
+			char *truncated = g_strndup(current_nick, available_for_nick);
+			g_free(current_nick);
+			current_nick = g_strdup_printf("%s>>", truncated);
+			g_free(truncated);
+		} else {
+			/* Mode sam za długi */
+			g_free(current_nick);
+			current_nick = g_strdup(">>");
+		}
+		padding = 0;
+	} else {
+		padding = width - total_chars;
 	}
 
 	/* Debug output */
