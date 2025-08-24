@@ -37,6 +37,10 @@
 #include <irssip/src/fe-common/core/hilight-text.h>
 #include <irssip/src/fe-common/core/printtext.h>
 
+/* Forward declarations for nick column functions */
+void update_nick_context(const char *nick, const char *mode);
+void clear_nick_context(void);
+
 #define ishighalnum(c) ((unsigned char) (c) >= 128 || i_isalnum(c))
 #define isnickchar(a) \
 	(i_isalnum(a) || (a) == '`' || (a) == '-' || (a) == '_' || \
@@ -218,6 +222,11 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	if (printnick == NULL)
 		printnick = nick;
 
+	/* Update nick context for expandos */
+	if (settings_get_bool("nick_column_enabled")) {
+		update_nick_context(printnick, nickmode);
+	}
+
 	format_create_dest(&dest, server, target, level, NULL);
 	dest.address = address;
 	dest.nick = nick;
@@ -291,6 +300,11 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 		target = channel->visible_name;
 
 	nickmode = channel_get_nickmode(channel, server->nick);
+
+	/* Update nick context for expandos */
+	if (settings_get_bool("nick_column_enabled")) {
+		update_nick_context(server->nick, nickmode);
+	}
 
 	window = channel == NULL ? NULL :
 		window_item_window((WI_ITEM_REC *) channel);
@@ -801,6 +815,11 @@ void fe_messages_init(void)
 	settings_add_bool("lookandfeel", "away_notify_public", FALSE);
 	settings_add_bool("lookandfeel", "show_extended_join", FALSE);
 	settings_add_bool("lookandfeel", "show_account_notify", FALSE);
+
+	/* Nick column feature settings */
+	settings_add_bool("lookandfeel", "nick_column_enabled", FALSE);
+	settings_add_int("lookandfeel", "nick_column_width", 12);
+	settings_add_bool("lookandfeel", "debug_nick_column", FALSE);
 
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);

@@ -9,4 +9,8 @@ char *channel_get_nickmode(CHANNEL_REC *channel, const char *nick);
 
 extern GHashTable *printnicks;
 
+/* Nick column context functions */
+void update_nick_context(const char *nick, const char *mode);
+void clear_nick_context(void);
+
 #endif
