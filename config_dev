@@ -319,7 +319,7 @@ settings = {
     theme = "default.theme";
     nick_column_enabled = "yes";
     nick_column_width = "10";
-    debug_nick_column = "no";
+    debug_nick_column = "yes";
   };
   "fe-text" = {
     lag_min_show = "1s";

@@ -22,6 +22,8 @@
 #include <irssip/src/core/expandos.h>
 #include <irssip/src/fe-common/core/fe-windows.h>
 #include <irssip/src/core/settings.h>
+#include <irssip/src/fe-common/core/printtext.h>
+#include <irssip/src/core/levels.h>
 
 /* Nick column context variables */
 static char *current_nick = NULL;
@@ -100,8 +102,9 @@ static char *expando_nickalign(SERVER_REC *server, void *item, int *free_ret)
 
 	/* Debug output */
 	if (settings_get_bool("debug_nick_column")) {
-		printf("DEBUG nickalign: nick='%s', mode='%s', width=%d, mode_chars=%d, nick_chars=%d, total_chars=%d, padding=%d\n",
-		       current_nick, mode, width, mode_chars, nick_chars, total_chars, padding);
+		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		         "DEBUG nickalign: nick='%s', mode='%s', width=%d, mode_chars=%d, nick_chars=%d, total_chars=%d, padding=%d",
+		         current_nick, mode, width, mode_chars, nick_chars, total_chars, padding);
 	}
 
 	*free_ret = TRUE;
@@ -114,6 +117,15 @@ static char *expando_nicktrunc(SERVER_REC *server, void *item, int *free_ret)
 	int width, mode_chars, nick_chars, total_chars;
 	const char *mode;
 	char *result;
+
+	/* Debug entry */
+	if (settings_get_bool("debug_nick_column")) {
+		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+		         "DEBUG nicktrunc CALLED: enabled=%s, valid=%s, nick='%s'",
+		         settings_get_bool("nick_column_enabled") ? "yes" : "no",
+		         nick_context_valid ? "yes" : "no",
+		         current_nick ? current_nick : "NULL");
+	}
 
 	/* Gdy wyłączone - zwróć oryginalny nick */
 	if (!settings_get_bool("nick_column_enabled")) {
@@ -140,21 +152,28 @@ static char *expando_nicktrunc(SERVER_REC *server, void *item, int *free_ret)
 			result = g_strdup_printf("%.*s>>", available_for_nick, current_nick);
 
 			if (settings_get_bool("debug_nick_column")) {
-				printf("DEBUG nicktrunc TRUNCATED: original='%s', truncated='%s', available_for_nick=%d\n",
-				       current_nick, result, available_for_nick);
+				printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+				         "DEBUG nicktrunc TRUNCATED: original='%s', truncated='%s', available_for_nick=%d",
+				         current_nick, result, available_for_nick);
 			}
 		} else {
 			/* Mode sam za długi */
 			result = g_strdup(">>");
 
 			if (settings_get_bool("debug_nick_column")) {
-				printf("DEBUG nicktrunc MODE_TOO_LONG: result='%s'\n", result);
+				printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+				         "DEBUG nicktrunc MODE_TOO_LONG: result='%s'", result);
 			}
 		}
 		*free_ret = TRUE;
 		return result;
 	} else {
 		/* Nick się zmieści - zwróć oryginalny */
+		if (settings_get_bool("debug_nick_column")) {
+			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
+			         "DEBUG nicktrunc NO_TRUNCATION: nick='%s', total_chars=%d <= width=%d",
+			         current_nick, total_chars, width);
+		}
 		return current_nick;
 	}
 }

@@ -31,6 +31,7 @@
 #include <irssip/src/fe-common/core/window-items.h>
 #include <irssip/src/fe-common/core/formats.h>
 #include <irssip/src/fe-common/core/themes.h>
+#include <irssip/src/fe-common/core/printtext.h>
 #include <irssip/src/core/recode.h>
 #include <irssip/src/core/utf8.h>
 #include <irssip/src/core/misc.h>
@@ -837,61 +838,55 @@ static gboolean is_message_format(int formatnum)
 	        formatnum == TXT_PUBMSG_HILIGHT || formatnum == TXT_PUBMSG_HILIGHT_CHANNEL);
 }
 
-/* Apply nick column formatting to format string */
-static char *apply_nick_column_formatting(const char *format)
+/* Get nick parameter number for specific format */
+static int get_nick_param_for_format(int formatnum)
 {
-	GString *result;
-	char *modified;
-	char *pos, *before, *after, *temp;
+	switch (formatnum) {
+		case TXT_OWN_MSG:
+		case TXT_OWN_MSG_CHANNEL:
+		case TXT_PUBMSG:
+		case TXT_PUBMSG_CHANNEL:
+		case TXT_PUBMSG_ME:
+		case TXT_PUBMSG_ME_CHANNEL:
+			return 0; /* $0 = nick */
+
+		case TXT_PUBMSG_HILIGHT:
+		case TXT_PUBMSG_HILIGHT_CHANNEL:
+			return 1; /* $1 = nick (because $0 = color) */
+
+		default:
+			return 0; /* fallback */
+	}
+}
+
+/* Apply nick column formatting to format string */
+static char *apply_nick_column_formatting(const char *format, int formatnum)
+{
+	char *result;
+	char *pos, *before, *after;
+	char search_param[10], replace_param[20];
+	int nick_param;
 
 	if (!format) return NULL;
 
-	result = g_string_new("");
+	/* Get correct parameter number for nick in this format */
+	nick_param = get_nick_param_for_format(formatnum);
+	g_snprintf(search_param, sizeof(search_param), "${%d}", nick_param);
+	g_snprintf(replace_param, sizeof(replace_param), "${nicktrunc}");
 
-	/* Add $nickalign at the beginning if not already present */
-	if (!strstr(format, "$nickalign")) {
-		g_string_append(result, "$nickalign");
-	}
-
-	/* Replace nick templates with truncated versions */
-	modified = g_strdup(format);
-
-	/* Replace {ownnick $0} with {ownnick $nicktrunc} */
-	pos = strstr(modified, "{ownnick $0}");
+	/* Replace ${X} with ${nicktrunc} where X is the nick parameter */
+	pos = strstr(format, search_param);
 	if (pos) {
-		before = g_strndup(modified, pos - modified);
-		after = pos + strlen("{ownnick $0}");
-		g_free(modified);
-		modified = g_strdup_printf("%s{ownnick $nicktrunc}%s", before, after);
+		before = g_strndup(format, pos - format);
+		after = pos + strlen(search_param);
+		result = g_strdup_printf("$nickalign%s%s%s", before, replace_param, after);
 		g_free(before);
+	} else {
+		/* No replacement needed, just add nickalign */
+		result = g_strdup_printf("$nickalign%s", format);
 	}
 
-	/* Replace {pubnick $0} with {pubnick $nicktrunc} */
-	pos = strstr(modified, "{pubnick $0}");
-	if (pos) {
-		before = g_strndup(modified, pos - modified);
-		after = pos + strlen("{pubnick $0}");
-		temp = modified;
-		modified = g_strdup_printf("%s{pubnick $nicktrunc}%s", before, after);
-		g_free(temp);
-		g_free(before);
-	}
-
-	/* Replace {menick $0} with {menick $nicktrunc} */
-	pos = strstr(modified, "{menick $0}");
-	if (pos) {
-		before = g_strndup(modified, pos - modified);
-		after = pos + strlen("{menick $0}");
-		temp = modified;
-		modified = g_strdup_printf("%s{menick $nicktrunc}%s", before, after);
-		g_free(temp);
-		g_free(before);
-	}
-
-	g_string_append(result, modified);
-	g_free(modified);
-
-	return g_string_free_and_steal(result);
+	return result;
 }
 
 char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
@@ -915,8 +910,14 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 	if (settings_get_bool("nick_column_enabled") &&
 	    g_strcmp0(module, "fe-common/core") == 0 &&
 	    is_message_format(formatnum)) {
-		modified_text = apply_nick_column_formatting(text);
+		modified_text = apply_nick_column_formatting(text, formatnum);
 		text = modified_text;
+
+		/* Debug output - use printf to avoid recursion */
+		if (settings_get_bool("debug_nick_column")) {
+			printf("DEBUG format_auto: formatnum=%d, original='%s'\n", formatnum, module_theme->expanded_formats[formatnum]);
+			printf("DEBUG format_auto: modified='%s'\n", text);
+		}
 	}
 
 	result = format_get_text_args(dest, text, args);
