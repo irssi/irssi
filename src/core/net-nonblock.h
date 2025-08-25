@@ -1,7 +1,7 @@
 #ifndef IRSSI_CORE_NET_NONBLOCK_H
 #define IRSSI_CORE_NET_NONBLOCK_H
 
-#include <irssip/src/core/network.h>
+#include <irssi/src/core/network.h>
 
 typedef struct {
 	IPADDR ip4, ip6; /* resolved ip addresses */

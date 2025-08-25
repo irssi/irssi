@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/servers-setup.h>
-#include <irssip/src/lib-config/iconfig.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc-chatnets.h>
-#include <irssip/src/irc/core/irc-servers-setup.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/sasl.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
+#include <irssi/src/irc/core/irc-servers-setup.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/sasl.h>
 
 /* Fill information to connection from server setup record */
 static void sig_server_setup_fill_reconn(IRC_SERVER_CONNECT_REC *conn,

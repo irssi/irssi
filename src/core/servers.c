@@ -19,22 +19,22 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/net-disconnect.h>
-#include <irssip/src/core/net-nonblock.h>
-#include <irssip/src/core/net-sendbuffer.h>
-#include <irssip/src/core/rawlog.h>
-#include <irssip/src/core/refstrings.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/net-disconnect.h>
+#include <irssi/src/core/net-nonblock.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/refstrings.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/signals.h>
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/servers-reconnect.h>
-#include <irssip/src/core/servers-setup.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/queries.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
 
 GSList *servers, *lookup_servers;
 

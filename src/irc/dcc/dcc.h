@@ -1,15 +1,15 @@
 #ifndef IRSSI_IRC_DCC_DCC_H
 #define IRSSI_IRC_DCC_DCC_H
 
-#include <irssip/src/core/modules.h>
-#include <irssip/src/core/network.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/network.h>
 
 #define DCC(dcc) ((DCC_REC *) (dcc))
 
 typedef struct CHAT_DCC_REC CHAT_DCC_REC;
 
 typedef struct {
-#include <irssip/src/irc/dcc/dcc-rec.h>
+#include <irssi/src/irc/dcc/dcc-rec.h>
 } DCC_REC;
 
 /* fully connected? */

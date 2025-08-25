@@ -1,8 +1,8 @@
 #ifndef IRSSI_FE_TEXT_TEXTBUFFER_VIEW_H
 #define IRSSI_FE_TEXT_TEXTBUFFER_VIEW_H
 
-#include <irssip/src/fe-text/textbuffer.h>
-#include <irssip/src/fe-text/term.h>
+#include <irssi/src/fe-text/textbuffer.h>
+#include <irssi/src/fe-text/term.h>
 
 typedef struct _TEXT_BUFFER_VIEW_REC TEXT_BUFFER_VIEW_REC;
 

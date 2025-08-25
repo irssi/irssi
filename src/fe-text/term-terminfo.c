@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/fe-text/term.h>
-#include <irssip/src/fe-text/terminfo-core.h>
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/fe-text/gui-printtext.h>
-#include <irssip/src/core/utf8.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/fe-text/terminfo-core.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-text/gui-printtext.h>
+#include <irssi/src/core/utf8.h>
 
 #include <signal.h>
 #include <termios.h>

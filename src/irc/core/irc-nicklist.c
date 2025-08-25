@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/irc/core/irc-masks.h>
-#include <irssip/src/irc/core/irc-nicklist.h>
-#include <irssip/src/irc/core/modes.h>
-#include <irssip/src/core/servers.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-masks.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/core/servers.h>
 
 static void nicklist_set_modes(IRC_CHANNEL_REC *channel, NICK_REC *rec, gboolean op,
                                gboolean halfop, gboolean voice, const char *prefixes,

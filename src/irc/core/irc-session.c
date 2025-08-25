@@ -19,18 +19,18 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/net-sendbuffer.h>
-#include <irssip/src/lib-config/iconfig.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/network.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/network.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-servers-setup.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-servers-setup.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
 
-#include <irssip/src/irc/core/sasl.h>
+#include <irssi/src/irc/core/sasl.h>
 
 struct _isupport_data { CONFIG_REC *config; CONFIG_NODE *node; };
 

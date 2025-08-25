@@ -18,17 +18,17 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <irssip/src/perl/module-fe.h>
-#include <irssip/src/core/modules.h>
-#include <irssip/src/perl/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/levels.h>
+#include <irssi/src/perl/module-fe.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/perl/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
 
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/completion.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/completion.h>
 
-#include <irssip/src/perl/perl-core.h>
+#include <irssi/src/perl/perl-core.h>
 
 static void cmd_script(const char *data, SERVER_REC *server, void *item)
 {

@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/channels.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/channels.h>
 
 void irc_channels_setup_init(void)
 {

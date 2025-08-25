@@ -19,14 +19,14 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/queries.h>
-#include <irssip/src/core/nicklist.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-queries.h>
-#include <irssip/src/fe-common/core/fe-windows.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
 
 int query_type;
 

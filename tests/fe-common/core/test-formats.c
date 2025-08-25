@@ -1,5 +1,5 @@
-#include <irssip/src/common.h>
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/common.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 #define MAX_LENGTH 5
 

@@ -18,18 +18,18 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <irssip/src/common.h>
-#include <irssip/src/core/args.h>
-#include <irssip/src/core/core.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/servers-setup.h>
+#include <irssi/src/common.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/servers-setup.h>
 
-#include <irssip/src/fe-common/core/formats.h>
-#include <irssip/src/fe-common/core/fe-common-core.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/fe-common-core.h>
 
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
 
 /* flood.c */
 void irc_flood_init(void);

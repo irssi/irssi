@@ -19,18 +19,18 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/irc/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/modes.h>
-#include <irssip/src/core/ignore.h>
-#include <irssip/src/irc/core/netsplit.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/irc/core/netsplit.h>
 
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 #define NETJOIN_WAIT_TIME 5 /* how many seconds to wait for the netsplitted JOIN messages to stop */
 #define NETJOIN_MAX_WAIT 30 /* how many seconds to wait for nick to join to the rest of the channels she was before the netsplit */

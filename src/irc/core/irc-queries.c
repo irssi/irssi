@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/irc/core/irc-nicklist.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
 
 QUERY_REC *irc_query_create(const char *server_tag,
 			    const char *nick, int automatic)

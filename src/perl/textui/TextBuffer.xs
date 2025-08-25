@@ -1,7 +1,7 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
 #include "wrapper_buffer_line.h"
-#include <irssip/src/fe-text/textbuffer-formats.h>
+#include <irssi/src/fe-text/textbuffer-formats.h>
 
 MODULE = Irssi::TextUI::TextBuffer  PACKAGE = Irssi
 PROTOTYPES: ENABLE

@@ -19,27 +19,27 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/irc/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/irc/core/mode-lists.h>
-#include <irssip/src/core/nicklist.h>
-#include <irssip/src/irc/core/irc-commands.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/irc/core/irc-queries.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/irc/core/mode-lists.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/irc/core/irc-commands.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-queries.h>
 
-#include <irssip/src/fe-common/core/fe-queries.h>
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/fe-common/core/window-items.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/keyboard.h>
-#include <irssip/src/fe-common/irc/fe-irc-channels.h>
+#include <irssi/src/fe-common/core/fe-queries.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/keyboard.h>
+#include <irssi/src/fe-common/irc/fe-irc-channels.h>
 
 /* SYNTAX: ME <message> */
 static void cmd_me(const char *data, IRC_SERVER_REC *server, WI_ITEM_REC *item)

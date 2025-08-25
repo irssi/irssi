@@ -19,18 +19,18 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/irc/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/chatnets.h>
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/chatnets.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-chatnets.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/core/servers-setup.h>
-#include <irssip/src/core/channels-setup.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/channels-setup.h>
 
 static void cmd_network_list(void)
 {

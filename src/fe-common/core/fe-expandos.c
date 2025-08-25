@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/expandos.h>
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/core/levels.h>
+#include <irssi/src/core/expandos.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/core/levels.h>
 
 /* Nick column context variables */
 static char *current_nick = NULL;

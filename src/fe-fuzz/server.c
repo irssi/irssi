@@ -18,20 +18,20 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <irssip/src/irc/core/module.h>
-#include <irssip/src/core/modules-load.h>
-#include <irssip/src/fe-text/module-formats.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/fe-common/core/themes.h>
-#include <irssip/src/core/core.h>
-#include <irssip/src/fe-common/core/fe-common-core.h>
-#include <irssip/src/core/args.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/servers-setup.h>
-#include <irssip/src/core/rawlog.h>
-#include <irssip/src/core/network-openssl.h>
-#include <irssip/src/core/net-sendbuffer.h>
+#include <irssi/src/irc/core/module.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/fe-common/core/fe-common-core.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/network-openssl.h>
+#include <irssi/src/core/net-sendbuffer.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -39,10 +39,10 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/fe-fuzz/null-logger.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/fe-fuzz/null-logger.h>
 
 /* irc-core.c */
 void irc_core_init(void);

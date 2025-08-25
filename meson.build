@@ -20,7 +20,7 @@ if host_machine.system() == 'android'
 endif
 
 includedir          = get_option('includedir')
-incdir              = 'irssip'
+incdir              = 'irssi'
 moduledir           = get_option('libdir') / incdir / 'modules'
 helpdir             = get_option('datadir') / incdir / 'help'
 themedir            = get_option('datadir') / incdir / 'themes'

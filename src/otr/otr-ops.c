@@ -17,17 +17,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,USA
  */
 
-#include <irssip/src/common.h>
+#include <irssi/src/common.h>
 
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/fe-windows.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
 
-#include <irssip/src/otr/key.h>
+#include <irssi/src/otr/key.h>
 #include "module.h"
-#include <irssip/src/otr/otr-formats.h>
-#include <irssip/src/otr/irssi-otr.h>
+#include <irssi/src/otr/otr-formats.h>
+#include <irssi/src/otr/irssi-otr.h>
 
 static OtrlPolicy OTR_DEFAULT_POLICY = OTRL_POLICY_MANUAL | OTRL_POLICY_WHITESPACE_START_AKE;
 

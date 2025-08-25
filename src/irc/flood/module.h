@@ -1,5 +1,5 @@
-#include <irssip/src/common.h>
-#include <irssip/src/irc/core/irc.h>
+#include <irssi/src/common.h>
+#include <irssi/src/irc/core/irc.h>
 
 typedef struct {
 	/* Flood protection */

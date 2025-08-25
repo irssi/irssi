@@ -19,23 +19,23 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/core/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/servers.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/servers.h>
 
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/fe-common/core/window-items.h>
-#include <irssip/src/fe-common/core/formats.h>
-#include <irssip/src/fe-common/core/themes.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/core/recode.h>
-#include <irssip/src/core/utf8.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/refstrings.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/core/recode.h>
+#include <irssi/src/core/utf8.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/refstrings.h>
 
 static const char *format_backs = "04261537";
 static const char *format_fores = "kbgcrmyw";

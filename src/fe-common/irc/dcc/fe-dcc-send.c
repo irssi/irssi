@@ -19,20 +19,20 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/dcc/dcc-file.h>
-#include <irssip/src/irc/dcc/dcc-send.h>
-#include <irssip/src/irc/dcc/dcc-queue.h>
+#include <irssi/src/irc/dcc/dcc-file.h>
+#include <irssi/src/irc/dcc/dcc-send.h>
+#include <irssi/src/irc/dcc/dcc-queue.h>
 
-#include <irssip/src/fe-common/irc/dcc/module-formats.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/completion.h>
+#include <irssi/src/fe-common/irc/dcc/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/completion.h>
 
-#include <irssip/src/fe-common/irc/dcc/fe-dcc.h>
+#include <irssi/src/fe-common/irc/dcc/fe-dcc.h>
 
 static void dcc_connected(SEND_DCC_REC *dcc)
 {

@@ -1,16 +1,16 @@
 /* Copyright (C) 1999-2004 Timo Sirainen */
 
 #include "module.h"
-#include <irssip/src/fe-common/irc/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/recode.h>
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/recode.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-servers.h>
 
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 /* When enabled, prints WHOIS replies into active window while preserving
  * formatting and theming. */

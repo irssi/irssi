@@ -19,13 +19,13 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/expandos.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/expandos.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/core/nicklist.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/core/nicklist.h>
 
 #ifndef HOST_NAME_MAX
 #define HOST_NAME_MAX 255

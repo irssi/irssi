@@ -60,7 +60,7 @@ void irc_send_cmd_full(IRC_SERVER_REC *server, const char *cmd, int irc_send_whe
 GHashTable *irc_parse_message_tags(const char *tags);
 
 /* Get count parameters from data */
-#include <irssip/src/core/commands.h>
+#include <irssi/src/core/commands.h>
 char *event_get_param(char **data);
 char *event_get_params(const char *data, int count, ...);
 

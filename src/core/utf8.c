@@ -22,11 +22,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <irssip/src/core/utf8.h>
+#include <irssi/src/core/utf8.h>
 #include "module.h"
 
 /* Provide is_utf8(): */
-#include <irssip/src/core/recode.h>
+#include <irssi/src/core/recode.h>
 
 int string_advance(char const **str, int policy)
 {

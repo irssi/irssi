@@ -1,7 +1,7 @@
 #include <glib.h>
 #include <string.h>
 
-#include <irssip/src/core/refstrings.h>
+#include <irssi/src/core/refstrings.h>
 
 #if GLIB_CHECK_VERSION(2, 58, 0)
 

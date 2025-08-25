@@ -19,24 +19,24 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/lib-config/iconfig.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/core/chatnets.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/servers-setup.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/channels-setup.h>
-#include <irssip/src/core/queries.h>
-#include <irssip/src/core/nicklist.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/channels-setup.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/nicklist.h>
 
-#include <irssip/src/fe-common/core/completion.h>
-#include <irssip/src/fe-common/core/chat-completion.h>
-#include <irssip/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/completion.h>
+#include <irssi/src/fe-common/core/chat-completion.h>
+#include <irssi/src/fe-common/core/window-items.h>
 
 enum {
 	COMPLETE_MCASE_NEVER = 0,

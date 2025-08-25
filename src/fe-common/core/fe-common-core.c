@@ -19,35 +19,35 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/core/module-formats.h>
-#include <irssip/src/core/args.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/servers-setup.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/servers-setup.h>
 
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/fe-common/core/fe-core-commands.h>
-#include <irssip/src/fe-common/core/fe-queries.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/fe-common/core/fe-core-commands.h>
+#include <irssi/src/fe-common/core/fe-queries.h>
 #ifdef HAVE_CAPSICUM
-#include <irssip/src/fe-common/core/fe-capsicum.h>
+#include <irssi/src/fe-common/core/fe-capsicum.h>
 #endif
-#include <irssip/src/fe-common/core/hilight-text.h>
-#include <irssip/src/fe-common/core/command-history.h>
-#include <irssip/src/fe-common/core/completion.h>
-#include <irssip/src/fe-common/core/keyboard.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/formats.h>
-#include <irssip/src/fe-common/core/themes.h>
-#include <irssip/src/fe-common/core/fe-channels.h>
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/fe-common/core/window-activity.h>
-#include <irssip/src/fe-common/core/window-items.h>
-#include <irssip/src/fe-common/core/windows-layout.h>
-#include <irssip/src/fe-common/core/fe-recode.h>
+#include <irssi/src/fe-common/core/hilight-text.h>
+#include <irssi/src/fe-common/core/command-history.h>
+#include <irssi/src/fe-common/core/completion.h>
+#include <irssi/src/fe-common/core/keyboard.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/fe-channels.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-activity.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/windows-layout.h>
+#include <irssi/src/fe-common/core/fe-recode.h>
 
 #include <signal.h>
 

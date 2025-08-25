@@ -27,7 +27,7 @@ typedef struct _TERM_WINDOW TERM_WINDOW;
 #define TERM_TYPE_UTF8		1
 #define TERM_TYPE_BIG5		2
 
-#include <irssip/src/core/utf8.h>
+#include <irssi/src/core/utf8.h>
 
 extern TERM_WINDOW *root_window;
 extern int term_width, term_height;

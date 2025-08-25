@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/rawlog.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/rawlog.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/servers-redirect.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/servers-redirect.h>
 
 #define DEFAULT_REDIRECT_TIMEOUT 60
 

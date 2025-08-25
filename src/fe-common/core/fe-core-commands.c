@@ -18,22 +18,22 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <irssip/src/core/core.h>
+#include <irssi/src/core/core.h>
 #include "module.h"
-#include <irssip/src/fe-common/core/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/irssi-version.h>
-#include <irssip/src/core/servers.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/irssi-version.h>
+#include <irssi/src/core/servers.h>
 #ifdef HAVE_CAPSICUM
-#include <irssip/src/core/capsicum.h>
+#include <irssi/src/core/capsicum.h>
 #endif
 
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 #define PASTE_CHECK_SPEED 200 /* 0.2 sec */
 

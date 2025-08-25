@@ -24,15 +24,15 @@
 #include <gcrypt.h>
 #include <unistd.h>
 
-#include <irssip/src/common.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-text/statusbar-item.h>
+#include <irssi/src/common.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-text/statusbar-item.h>
 
-#include <irssip/src/otr/irssi-otr.h>
-#include <irssip/src/otr/otr-formats.h>
-#include <irssip/src/otr/key.h>
+#include <irssi/src/otr/irssi-otr.h>
+#include <irssi/src/otr/otr-formats.h>
+#include <irssi/src/otr/key.h>
 
 static int otr_debug = 0;
 

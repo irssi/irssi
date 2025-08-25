@@ -1,7 +1,7 @@
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/fe-text/terminfo-core.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/fe-text/terminfo-core.h>
 
 #ifndef _POSIX_VDISABLE
 #  define _POSIX_VDISABLE 0

@@ -19,14 +19,14 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/servers.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/servers.h>
 
-#include <irssip/src/fe-common/core/themes.h>
-#include <irssip/src/fe-text/statusbar.h>
-#include <irssip/src/fe-text/gui-entry.h>
-#include <irssip/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-text/statusbar.h>
+#include <irssi/src/fe-text/gui-entry.h>
+#include <irssi/src/fe-text/gui-windows.h>
 
 /* how often to redraw lagging time (seconds) */
 #define LAG_REFRESH_TIME 10

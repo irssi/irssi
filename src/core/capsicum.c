@@ -23,14 +23,14 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/capsicum.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/log.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/network-openssl.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/signals.h>
+#include <irssi/src/core/capsicum.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/network-openssl.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/signals.h>
 
 #include <sys/param.h>
 #include <sys/capsicum.h>

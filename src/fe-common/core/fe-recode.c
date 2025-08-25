@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/modules.h>
-#include <irssip/src/fe-common/core/module-formats.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/lib-config/iconfig.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/formats.h>
-#include <irssip/src/core/recode.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/core/recode.h>
 
 static char *recode_fallback = NULL;
 static char *recode_out_default = NULL;

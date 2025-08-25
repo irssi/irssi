@@ -1,7 +1,7 @@
 #ifndef IRSSI_CORE_SERVERS_H
 #define IRSSI_CORE_SERVERS_H
 
-#include <irssip/src/core/modules.h>
+#include <irssi/src/core/modules.h>
 
 /* Returns SERVER_REC if it's server, NULL if it isn't. */
 #define SERVER(server) \
@@ -23,12 +23,12 @@
 /* all strings should be either NULL or dynamically allocated */
 /* address and nick are mandatory, rest are optional */
 struct _SERVER_CONNECT_REC {
-#include <irssip/src/core/server-connect-rec.h>
+#include <irssi/src/core/server-connect-rec.h>
 };
 
 #define STRUCT_SERVER_CONNECT_REC SERVER_CONNECT_REC
 struct _SERVER_REC {
-#include <irssip/src/core/server-rec.h>
+#include <irssi/src/core/server-rec.h>
 };
 
 #define SEND_TARGET_CHANNEL	0

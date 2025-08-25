@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/modules.h>
-#include <irssip/src/core/modules-load.h>
-#include <irssip/src/core/args.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/core.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/core.h>
 
 static GMainLoop *main_loop;
 static char *autoload_module;

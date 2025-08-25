@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/expandos.h>
-#include <irssip/src/core/special-vars.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/expandos.h>
+#include <irssi/src/core/special-vars.h>
 
-#include <irssip/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/themes.h>
 
-#include <irssip/src/fe-text/statusbar.h>
-#include <irssip/src/fe-text/statusbar-config.h>
-#include <irssip/src/fe-text/gui-windows.h>
-#include <irssip/src/fe-text/gui-printtext.h>
+#include <irssi/src/fe-text/statusbar.h>
+#include <irssi/src/fe-text/statusbar-config.h>
+#include <irssi/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-text/gui-printtext.h>
 
 void statusbar_items_init(void);
 void statusbar_items_deinit(void);

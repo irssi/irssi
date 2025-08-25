@@ -20,18 +20,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301,USA
  */
 
-#include <irssip/src/common.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-queries.h>
-#include <irssip/src/fe-text/statusbar-item.h>
+#include <irssi/src/common.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/fe-text/statusbar-item.h>
 
-#include <irssip/src/otr/otr.h>
-#include <irssip/src/otr/otr-formats.h>
-#include <irssip/src/otr/key.h>
+#include <irssi/src/otr/otr.h>
+#include <irssi/src/otr/otr-formats.h>
+#include <irssi/src/otr/key.h>
 
 static void cmd_otr(const char *data, SERVER_REC *server, void *item)
 {

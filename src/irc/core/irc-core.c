@@ -19,22 +19,22 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-chatnets.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/irc/core/irc-queries.h>
-#include <irssip/src/irc/core/irc-cap.h>
-#include <irssip/src/irc/core/sasl.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/core/irc-cap.h>
+#include <irssi/src/irc/core/sasl.h>
 
-#include <irssip/src/irc/core/irc-servers-setup.h>
-#include <irssip/src/core/channels-setup.h>
+#include <irssi/src/irc/core/irc-servers-setup.h>
+#include <irssi/src/core/channels-setup.h>
 
-#include <irssip/src/irc/core/ctcp.h>
-#include <irssip/src/irc/core/irc-commands.h>
-#include <irssip/src/irc/core/netsplit.h>
+#include <irssi/src/irc/core/ctcp.h>
+#include <irssi/src/irc/core/irc-commands.h>
+#include <irssi/src/irc/core/netsplit.h>
 
 void irc_expandos_init(void);
 void irc_expandos_deinit(void);

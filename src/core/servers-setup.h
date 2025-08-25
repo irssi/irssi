@@ -1,7 +1,7 @@
 #ifndef IRSSI_CORE_SERVERS_SETUP_H
 #define IRSSI_CORE_SERVERS_SETUP_H
 
-#include <irssip/src/core/modules.h>
+#include <irssi/src/core/modules.h>
 
 #define SERVER_SETUP(server) \
 	MODULE_CHECK_CAST(server, SERVER_SETUP_REC, type, "SERVER SETUP")
@@ -11,7 +11,7 @@
 
 /* servers */
 struct _SERVER_SETUP_REC {
-#include <irssip/src/core/server-setup-rec.h>
+#include <irssi/src/core/server-setup-rec.h>
 };
 
 extern GSList *setupservers;

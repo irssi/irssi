@@ -1,7 +1,7 @@
 #ifndef IRSSI_IRC_CORE_IRC_COMMANDS_H
 #define IRSSI_IRC_CORE_IRC_COMMANDS_H
 
-#include <irssip/src/core/commands.h>
+#include <irssi/src/core/commands.h>
 
 #define command_bind_irc(cmd, section, signal) \
         command_bind_proto(cmd, IRC_PROTOCOL, section, signal)

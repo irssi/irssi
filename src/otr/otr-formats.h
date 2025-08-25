@@ -22,7 +22,7 @@
 #ifndef IRSSI_OTR_FORMATS_H
 #define IRSSI_OTR_FORMATS_H
 
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 /*
  * Must be in sync with the fe_otr_formats array.

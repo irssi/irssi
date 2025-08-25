@@ -1,8 +1,8 @@
 #ifndef IRSSI_IRC_CORE_IRC_QUERIES_H
 #define IRSSI_IRC_CORE_IRC_QUERIES_H
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/queries.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/queries.h>
 
 /* Returns IRC_QUERY_REC if it's IRC query, NULL if it isn't. */
 #define IRC_QUERY(query) \

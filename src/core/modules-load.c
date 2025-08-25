@@ -19,13 +19,13 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/modules.h>
-#include <irssip/src/core/modules-load.h>
-#include <irssip/src/core/signals.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/core/signals.h>
 
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
 
 /* Returns the module name without path, "lib" prefix or ".so" suffix */
 static char *module_get_name(const char *path, int *start, int *end)

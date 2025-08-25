@@ -1,7 +1,7 @@
 #ifndef IRSSI_FE_TEXT_MODULE_FORMATS_H
 #define IRSSI_FE_TEXT_MODULE_FORMATS_H
 
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 /* This mirrors indices in module-formats.c order; keep in sync if changed. */
 

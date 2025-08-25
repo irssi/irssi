@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/commands.h>
 
 typedef struct {
 	int condition;

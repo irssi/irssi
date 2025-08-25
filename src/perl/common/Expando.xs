@@ -1,6 +1,6 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
-#include <irssip/src/core/expandos.h>
+#include <irssi/src/core/expandos.h>
 
 typedef struct {
 	PERL_SCRIPT_REC *script;

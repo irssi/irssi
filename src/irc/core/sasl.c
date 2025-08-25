@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc-cap.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/sasl.h>
+#include <irssi/src/irc/core/irc-cap.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/sasl.h>
 
 /*
  * Based on IRCv3 SASL Extension Specification:

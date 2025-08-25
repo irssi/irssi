@@ -20,9 +20,9 @@
 
 #include "module.h"
 
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/net-sendbuffer.h>
-#include <irssip/src/core/line-split.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/line-split.h>
 
 /* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
    is used */

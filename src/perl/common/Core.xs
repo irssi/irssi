@@ -1,12 +1,12 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
-#include <irssip/irssi-version.h>
-#include <irssip/src/core/core.h>
-#include <irssip/src/core/utf8.h>
-#include <irssip/src/core/recode.h>
+#include <irssi/irssi-version.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/core/utf8.h>
+#include <irssi/src/core/recode.h>
 
-#include <irssip/src/core/pidwait.h>
-#include <irssip/src/core/session.h>
+#include <irssi/src/core/pidwait.h>
+#include <irssi/src/core/session.h>
 
 #define DEFAULT_COMMAND_CATEGORY "Perl scripts' commands"
 

@@ -1,7 +1,7 @@
 #ifndef IRSSI_IRC_DCC_DCC_CHAT_H
 #define IRSSI_IRC_DCC_DCC_CHAT_H
 
-#include <irssip/src/irc/dcc/dcc.h>
+#include <irssi/src/irc/dcc/dcc.h>
 
 #define DCC_CHAT(dcc) \
 	MODULE_CHECK_CAST_MODULE(dcc, CHAT_DCC_REC, type, "DCC", "CHAT")
@@ -10,7 +10,7 @@
 	(DCC_CHAT(dcc) ? TRUE : FALSE)
 
 struct CHAT_DCC_REC {
-#include <irssip/src/irc/dcc/dcc-rec.h>
+#include <irssi/src/irc/dcc/dcc-rec.h>
 
 	char *id; /* unique identifier - usually same as nick. */
 	NET_SENDBUF_REC *sendbuf;

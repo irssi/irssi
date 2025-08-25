@@ -1,7 +1,7 @@
 #ifndef IRSSI_CORE_CHANNELS_SETUP_H
 #define IRSSI_CORE_CHANNELS_SETUP_H
 
-#include <irssip/src/core/modules.h>
+#include <irssi/src/core/modules.h>
 
 #define CHANNEL_SETUP(server) \
 	MODULE_CHECK_CAST(server, CHANNEL_SETUP_REC, type, "CHANNEL SETUP")
@@ -10,7 +10,7 @@
 	(CHANNEL_SETUP(server) ? TRUE : FALSE)
 
 struct _CHANNEL_SETUP_REC {
-#include <irssip/src/core/channel-setup-rec.h>
+#include <irssi/src/core/channel-setup-rec.h>
 };
 
 extern GSList *setupchannels;

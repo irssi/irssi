@@ -19,19 +19,19 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/rawlog.h>
-#include <irssip/src/core/log.h>
-#include <irssip/src/core/modules.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/write-buffer.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/write-buffer.h>
+#include <irssi/src/core/settings.h>
 #ifdef HAVE_CAPSICUM
-#include <irssip/src/core/capsicum.h>
+#include <irssi/src/core/capsicum.h>
 #endif
 
-#include <irssip/src/core/servers.h>
+#include <irssi/src/core/servers.h>
 
 static int rawlog_lines;
 static int signal_rawlog;

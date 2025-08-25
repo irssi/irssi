@@ -1,4 +1,4 @@
-#include <irssip/src/fe-fuzz/null-logger.h>
+#include <irssi/src/fe-fuzz/null-logger.h>
 
 #include <glib.h>
 

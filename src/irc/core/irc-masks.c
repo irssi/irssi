@@ -19,9 +19,9 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/network.h>
+#include <irssi/src/core/network.h>
 
-#include <irssip/src/irc/core/irc-masks.h>
+#include <irssi/src/irc/core/irc-masks.h>
 
 static char *get_domain_mask(char *host)
 {

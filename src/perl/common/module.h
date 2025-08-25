@@ -1,32 +1,32 @@
 #define NEED_PERL_H
 #define HAVE_CONFIG_H
-#include <irssip/src/perl/module.h>
+#include <irssi/src/perl/module.h>
 #include <XSUB.h>
 
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/log.h>
-#include <irssip/src/core/rawlog.h>
-#include <irssip/src/core/ignore.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/masks.h>
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/core/window-item-def.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/masks.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/window-item-def.h>
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/chatnets.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/servers-reconnect.h>
-#include <irssip/src/core/servers-setup.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/queries.h>
-#include <irssip/src/core/nicklist.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/nicklist.h>
 
-#include <irssip/src/perl/perl-core.h>
-#include <irssip/src/perl/perl-common.h>
-#include <irssip/src/perl/perl-signals.h>
-#include <irssip/src/perl/perl-sources.h>
+#include <irssi/src/perl/perl-core.h>
+#include <irssi/src/perl/perl-common.h>
+#include <irssi/src/perl/perl-signals.h>
+#include <irssi/src/perl/perl-sources.h>
 
 typedef COMMAND_REC *Irssi__Command;
 typedef LOG_REC *Irssi__Log;

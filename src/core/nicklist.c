@@ -19,13 +19,13 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/nicklist.h>
-#include <irssip/src/core/masks.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/core/masks.h>
 
 #define isalnumhigh(a) \
         (i_isalnum(a) || (unsigned char) (a) >= 128)

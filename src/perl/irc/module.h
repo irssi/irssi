@@ -1,28 +1,28 @@
-#include <irssip/src/perl/common/module.h>
+#include <irssi/src/perl/common/module.h>
 
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-chatnets.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/irc/core/irc-queries.h>
-#include <irssip/src/irc/core/irc-nicklist.h>
-#include <irssip/src/irc/core/irc-masks.h>
-#include <irssip/src/irc/core/irc-cap.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/irc-masks.h>
+#include <irssi/src/irc/core/irc-cap.h>
 
-#include <irssip/src/irc/core/bans.h>
-#include <irssip/src/irc/core/modes.h>
-#include <irssip/src/irc/core/mode-lists.h>
-#include <irssip/src/irc/core/netsplit.h>
-#include <irssip/src/irc/core/servers-redirect.h>
+#include <irssi/src/irc/core/bans.h>
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/irc/core/mode-lists.h>
+#include <irssi/src/irc/core/netsplit.h>
+#include <irssi/src/irc/core/servers-redirect.h>
 
-#include <irssip/src/irc/dcc/dcc.h>
-#include <irssip/src/irc/dcc/dcc-file.h>
-#include <irssip/src/irc/dcc/dcc-chat.h>
-#include <irssip/src/irc/dcc/dcc-get.h>
-#include <irssip/src/irc/dcc/dcc-send.h>
-#include <irssip/src/irc/notifylist/notifylist.h>
+#include <irssi/src/irc/dcc/dcc.h>
+#include <irssi/src/irc/dcc/dcc-file.h>
+#include <irssi/src/irc/dcc/dcc-chat.h>
+#include <irssi/src/irc/dcc/dcc-get.h>
+#include <irssi/src/irc/dcc/dcc-send.h>
+#include <irssi/src/irc/notifylist/notifylist.h>
 
-#include <irssip/src/irc/proxy/proxy.h>
+#include <irssi/src/irc/proxy/proxy.h>
 
 typedef IRC_SERVER_REC *Irssi__Irc__Server;
 typedef IRC_SERVER_CONNECT_REC *Irssi__Irc__Connect;

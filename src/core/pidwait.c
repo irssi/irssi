@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/modules.h>
 
 static GHashTable *child_pids;
 static GSList *pids;

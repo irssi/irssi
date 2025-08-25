@@ -19,18 +19,18 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/net-sendbuffer.h>
-#include <irssip/src/irc/core/servers-redirect.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/irc/core/servers-redirect.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-chatnets.h>
-#include <irssip/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
+#include <irssi/src/irc/core/irc-channels.h>
 
-#include <irssip/src/fe-common/core/printtext.h> /* FIXME: evil. need to do fe-proxy */
+#include <irssi/src/fe-common/core/printtext.h> /* FIXME: evil. need to do fe-proxy */
 
 #include <sys/un.h>
 

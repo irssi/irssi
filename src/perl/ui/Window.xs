@@ -1,7 +1,7 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
 
-#include <irssip/src/fe-common/core/window-activity.h>
+#include <irssi/src/fe-common/core/window-activity.h>
 
 MODULE = Irssi::UI::Window  PACKAGE = Irssi
 PROTOTYPES: ENABLE
