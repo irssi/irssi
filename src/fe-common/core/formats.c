@@ -45,6 +45,9 @@ static const char *ext_color_al = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static int signal_gui_print_text;
 static int hide_text_style, hide_server_tags, hide_colors;
 
+/* Global recursion protection for nick column formatting */
+static int nick_formatting_depth = 0;
+
 static int timestamp_level;
 static int timestamp_timeout;
 
@@ -909,25 +912,24 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 
 	/* Apply nick column formatting if enabled and this is a message format */
 	/* Additional protection: avoid recursion during timestamp formatting */
-	{
-		static int formatting_depth = 0;
-
 	if (settings_get_bool("nick_column_enabled") &&
 	    g_strcmp0(module, "fe-common/core") == 0 &&
 	    is_message_format(formatnum) &&
-	    formatting_depth == 0) {  /* Prevent recursion */
+	    nick_formatting_depth == 0) {  /* Prevent recursion */
 
-		formatting_depth++;
+		nick_formatting_depth++;
 		modified_text = apply_nick_column_formatting(text, formatnum);
 		text = modified_text;
-		formatting_depth--;
+		nick_formatting_depth--;
 
-		/* Debug output - use printf to avoid recursion */
+		/* Debug output - send to current window, not status */
 		if (settings_get_bool("debug_nick_column")) {
-			printf("DEBUG format_auto: formatnum=%d, original='%s'\n", formatnum, module_theme->expanded_formats[formatnum]);
-			printf("DEBUG format_auto: modified='%s'\n", text);
+			WINDOW_REC *window = dest && dest->window ? dest->window : active_win;
+			printtext_window(window, MSGLEVEL_CLIENTCRAP,
+			         "DEBUG format_auto: formatnum=%d, original='%s'", formatnum, module_theme->expanded_formats[formatnum]);
+			printtext_window(window, MSGLEVEL_CLIENTCRAP,
+			         "DEBUG format_auto: modified='%s'", text);
 		}
-	}
 	}
 
 	result = format_get_text_args(dest, text, args);
