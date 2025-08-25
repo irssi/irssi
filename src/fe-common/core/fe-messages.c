@@ -42,10 +42,9 @@ void update_nick_context(const char *nick, const char *mode);
 void clear_nick_context(void);
 
 #define ishighalnum(c) ((unsigned char) (c) >= 128 || i_isalnum(c))
-#define isnickchar(a) \
-	(i_isalnum(a) || (a) == '`' || (a) == '-' || (a) == '_' || \
-	(a) == '[' || (a) == ']' || (a) == '{' || (a) == '}' || \
-	(a) == '|' || (a) == '\\' || (a) == '^')
+#define isnickchar(a)                                                                              \
+	(i_isalnum(a) || (a) == '`' || (a) == '-' || (a) == '_' || (a) == '[' || (a) == ']' ||     \
+	 (a) == '{' || (a) == '}' || (a) == '|' || (a) == '\\' || (a) == '^')
 
 GHashTable *printnicks;
 
@@ -58,7 +57,7 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 	int pos;
 	int emphasis_italics;
 
-        g_return_val_if_fail(text != NULL, NULL);
+	g_return_val_if_fail(text != NULL, NULL);
 
 	emphasis_italics = settings_get_bool("emphasis_italics");
 
@@ -82,10 +81,10 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 		   that the matching end marker ends a word */
 		if ((pos > 0 && bgn[-1] != ' ') || !ishighalnum(bgn[1]))
 			continue;
-		if ((end = strchr(bgn+1, *bgn)) == NULL)
+		if ((end = strchr(bgn + 1, *bgn)) == NULL)
 			continue;
-		if (!ishighalnum(end[-1]) || ishighalnum(end[1]) ||
-		    end[1] == type || end[1] == '*' || end[1] == '_' ||
+		if (!ishighalnum(end[-1]) || ishighalnum(end[1]) || end[1] == type ||
+		    end[1] == '*' || end[1] == '_' ||
 		    /* special case for italics to not emphasise
 		       common paths by skipping /.../.X */
 		    (type == 29 && i_ispunct(end[1]) && ishighalnum(end[2])))
@@ -95,15 +94,16 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 			/* check that this isn't a _nick_, we don't want to
 			   use emphasis on them. */
 			int found;
-                        char c;
+			char c;
 			char *end2;
 
 			/* check if _foo_ is a nick */
 			c = end[1];
-                        end[1] = '\0';
-                        found = nicklist_find(CHANNEL(item), bgn) != NULL;
+			end[1] = '\0';
+			found = nicklist_find(CHANNEL(item), bgn) != NULL;
 			end[1] = c;
-			if (found) continue;
+			if (found)
+				continue;
 
 			/* check if the whole 'word' (e.g. "_foo_^") is a nick
 			   in "_foo_^ ", end will be the second _, end2 the ^ */
@@ -114,25 +114,27 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 			end2[1] = '\0';
 			found = nicklist_find(CHANNEL(item), bgn) != NULL;
 			end2[1] = c;
-			if (found) continue;
+			if (found)
+				continue;
 		}
 
 		/* allow only *word* emphasis, not *multiple words* */
 		if (!settings_get_bool("emphasis_multiword")) {
 			char *c;
-			for (c = bgn+1; c != end; c++) {
+			for (c = bgn + 1; c != end; c++) {
 				if (!ishighalnum(*c))
 					break;
 			}
-			if (c != end) continue;
+			if (c != end)
+				continue;
 		}
 
 		if (settings_get_bool("emphasis_replace")) {
 			*bgn = *end = type;
-                        pos += (end-bgn);
+			pos += (end - bgn);
 		} else {
 			g_string_insert_c(str, pos, type);
-                        pos += (end - bgn) + 2;
+			pos += (end - bgn) + 2;
 			g_string_insert_c(str, pos++, type);
 		}
 	}
@@ -143,13 +145,13 @@ char *expand_emphasis(WI_ITEM_REC *item, const char *text)
 
 static char *channel_get_nickmode_rec(NICK_REC *nickrec)
 {
-        char *emptystr;
+	char *emptystr;
 	char *nickmode;
 
 	if (!settings_get_bool("show_nickmode"))
-                return g_strdup("");
+		return g_strdup("");
 
-        emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
+	emptystr = settings_get_bool("show_nickmode_empty") ? " " : "";
 
 	if (nickrec == NULL || nickrec->prefixes[0] == '\0')
 		nickmode = g_strdup(emptystr);
@@ -165,13 +167,11 @@ char *channel_get_nickmode(CHANNEL_REC *channel, const char *nick)
 {
 	g_return_val_if_fail(nick != NULL, NULL);
 
-        return channel_get_nickmode_rec(channel == NULL ? NULL :
-					nicklist_find(channel, nick));
+	return channel_get_nickmode_rec(channel == NULL ? NULL : nicklist_find(channel, nick));
 }
 
-static void sig_message_public(SERVER_REC *server, const char *msg,
-			       const char *nick, const char *address,
-			       const char *target, NICK_REC *nickrec)
+static void sig_message_public(SERVER_REC *server, const char *msg, const char *nick,
+                               const char *address, const char *target, NICK_REC *nickrec)
 {
 	CHANNEL_REC *chanrec;
 	const char *printnick;
@@ -184,18 +184,18 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	   /WINDOW CLOSE and server still sends the few last messages */
 	chanrec = channel_find(server, target);
 	if (nickrec == NULL && chanrec != NULL)
-                nickrec = nicklist_find(chanrec, nick);
+		nickrec = nicklist_find(chanrec, nick);
 
-	for_me = !settings_get_bool("hilight_nick_matches") ? FALSE :
-		!settings_get_bool("hilight_nick_matches_everywhere") ?
-		nick_match_msg(chanrec, msg, server->nick) :
-		nick_match_msg_everywhere(chanrec, msg, server->nick);
-	hilight = for_me ? NULL :
-		hilight_match_nick(server, target, nick, address, MSGLEVEL_PUBLIC, msg);
+	for_me = !settings_get_bool("hilight_nick_matches") ?
+	             FALSE :
+	         !settings_get_bool("hilight_nick_matches_everywhere") ?
+	             nick_match_msg(chanrec, msg, server->nick) :
+	             nick_match_msg_everywhere(chanrec, msg, server->nick);
+	hilight =
+	    for_me ? NULL : hilight_match_nick(server, target, nick, address, MSGLEVEL_PUBLIC, msg);
 	color = (hilight == NULL) ? NULL : hilight_get_color(hilight);
 
-	print_channel = chanrec == NULL ||
-		!window_item_is_active((WI_ITEM_REC *) chanrec);
+	print_channel = chanrec == NULL || !window_item_is_active((WI_ITEM_REC *) chanrec);
 	if (!print_channel && settings_get_bool("print_active_channel") &&
 	    window_item_window((WI_ITEM_REC *) chanrec)->items->next != NULL)
 		print_channel = TRUE;
@@ -217,8 +217,7 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	/* get nick mode & nick what to print the msg with
 	   (in case there's multiple identical nicks) */
 	nickmode = channel_get_nickmode_rec(nickrec);
-	printnick = nickrec == NULL ? nick :
-		g_hash_table_lookup(printnicks, nickrec);
+	printnick = nickrec == NULL ? nick : g_hash_table_lookup(printnicks, nickrec);
 	if (printnick == NULL)
 		printnick = nick;
 
@@ -232,24 +231,20 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	dest.nick = nick;
 	if (color != NULL) {
 		/* highlighted nick */
-		hilight_update_text_dest(&dest,hilight);
+		hilight_update_text_dest(&dest, hilight);
 		if (!print_channel) /* message to active channel in window */
-			printformat_dest(&dest, TXT_PUBMSG_HILIGHT, color,
-				         printnick, msg, nickmode);
+			printformat_dest(&dest, TXT_PUBMSG_HILIGHT, color, printnick, msg,
+			                 nickmode);
 		else /* message to not existing/active channel */
-			printformat_dest(&dest, TXT_PUBMSG_HILIGHT_CHANNEL,
-					 color, printnick, target, msg,
-					 nickmode);
+			printformat_dest(&dest, TXT_PUBMSG_HILIGHT_CHANNEL, color, printnick,
+			                 target, msg, nickmode);
 	} else {
 		if (!print_channel)
-			printformat_dest(&dest,
-				    for_me ? TXT_PUBMSG_ME : TXT_PUBMSG,
-				    printnick, msg, nickmode);
+			printformat_dest(&dest, for_me ? TXT_PUBMSG_ME : TXT_PUBMSG, printnick, msg,
+			                 nickmode);
 		else
-			printformat_dest(&dest,
-				    for_me ? TXT_PUBMSG_ME_CHANNEL :
-				    TXT_PUBMSG_CHANNEL,
-				    printnick, target, msg, nickmode);
+			printformat_dest(&dest, for_me ? TXT_PUBMSG_ME_CHANNEL : TXT_PUBMSG_CHANNEL,
+			                 printnick, target, msg, nickmode);
 	}
 
 	g_free_not_null(nickmode);
@@ -257,11 +252,11 @@ static void sig_message_public(SERVER_REC *server, const char *msg,
 	g_free_not_null(color);
 }
 
-static void sig_message_private(SERVER_REC *server, const char *msg,
-				const char *nick, const char *address, const char *target)
+static void sig_message_private(SERVER_REC *server, const char *msg, const char *nick,
+                                const char *address, const char *target)
 {
 	QUERY_REC *query;
-        char *freemsg = NULL;
+	char *freemsg = NULL;
 	int level = MSGLEVEL_MSGS;
 
 	/* own message returned by bouncer? */
@@ -276,24 +271,23 @@ static void sig_message_private(SERVER_REC *server, const char *msg,
 
 	if (own) {
 		printformat(server, target, level,
-			    query == NULL ? TXT_OWN_MSG_PRIVATE :
-			    TXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
+		            query == NULL ? TXT_OWN_MSG_PRIVATE : TXT_OWN_MSG_PRIVATE_QUERY, target,
+		            msg, server->nick);
 	} else {
 		printformat(server, nick, level,
-			    query == NULL ? TXT_MSG_PRIVATE :
-			    TXT_MSG_PRIVATE_QUERY, nick, address, msg);
+		            query == NULL ? TXT_MSG_PRIVATE : TXT_MSG_PRIVATE_QUERY, nick, address,
+		            msg);
 	}
 
 	g_free_not_null(freemsg);
 }
 
-static void sig_message_own_public(SERVER_REC *server, const char *msg,
-				   const char *target)
+static void sig_message_own_public(SERVER_REC *server, const char *msg, const char *target)
 {
 	WINDOW_REC *window;
 	CHANNEL_REC *channel;
 	char *nickmode;
-        char *freemsg = NULL;
+	char *freemsg = NULL;
 	int print_channel;
 	channel = channel_find(server, target);
 	if (channel != NULL)
@@ -306,14 +300,12 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 		update_nick_context(server->nick, nickmode);
 	}
 
-	window = channel == NULL ? NULL :
-		window_item_window((WI_ITEM_REC *) channel);
+	window = channel == NULL ? NULL : window_item_window((WI_ITEM_REC *) channel);
 
-	print_channel = window == NULL ||
-		window->active != (WI_ITEM_REC *) channel;
+	print_channel = window == NULL || window->active != (WI_ITEM_REC *) channel;
 
-	if (!print_channel && settings_get_bool("print_active_channel") &&
-	    window != NULL && g_slist_length(window->items) > 1)
+	if (!print_channel && settings_get_bool("print_active_channel") && window != NULL &&
+	    g_slist_length(window->items) > 1)
 		print_channel = TRUE;
 
 	if (settings_get_bool("emphasis"))
@@ -321,21 +313,21 @@ static void sig_message_own_public(SERVER_REC *server, const char *msg,
 
 	if (!print_channel) {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    TXT_OWN_MSG, server->nick, msg, nickmode);
+		            TXT_OWN_MSG, server->nick, msg, nickmode);
 	} else {
 		printformat(server, target, MSGLEVEL_PUBLIC | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-			    TXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
+		            TXT_OWN_MSG_CHANNEL, server->nick, target, msg, nickmode);
 	}
 
 	g_free_not_null(nickmode);
 	g_free_not_null(freemsg);
 }
 
-static void sig_message_own_private(SERVER_REC *server, const char *msg,
-				    const char *target, const char *origtarget)
+static void sig_message_own_private(SERVER_REC *server, const char *msg, const char *target,
+                                    const char *origtarget)
 {
 	QUERY_REC *query;
-        char *freemsg = NULL;
+	char *freemsg = NULL;
 
 	g_return_if_fail(server != NULL);
 	g_return_if_fail(msg != NULL);
@@ -344,11 +336,10 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 		   we should display some error message. currently the special
 		   targets are only ',' and '.'. */
 		g_return_if_fail(g_strcmp0(origtarget, ",") == 0 ||
-				 g_strcmp0(origtarget, ".") == 0);
+		                 g_strcmp0(origtarget, ".") == 0);
 
 		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    *origtarget == ',' ? TXT_NO_MSGS_GOT :
-			    TXT_NO_MSGS_SENT);
+		            *origtarget == ',' ? TXT_NO_MSGS_GOT : TXT_NO_MSGS_SENT);
 		signal_stop();
 		return;
 	}
@@ -358,17 +349,15 @@ static void sig_message_own_private(SERVER_REC *server, const char *msg,
 	if (settings_get_bool("emphasis"))
 		msg = freemsg = expand_emphasis((WI_ITEM_REC *) query, msg);
 
-	printformat(server, target,
-		    MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
-		    query == NULL ? TXT_OWN_MSG_PRIVATE :
-		    TXT_OWN_MSG_PRIVATE_QUERY, target, msg, server->nick);
+	printformat(server, target, MSGLEVEL_MSGS | MSGLEVEL_NOHILIGHT | MSGLEVEL_NO_ACT,
+	            query == NULL ? TXT_OWN_MSG_PRIVATE : TXT_OWN_MSG_PRIVATE_QUERY, target, msg,
+	            server->nick);
 
 	g_free_not_null(freemsg);
 }
 
-static void sig_message_join(SERVER_REC *server, const char *channel,
-			     const char *nick, const char *address,
-			     const char *account, const char *realname)
+static void sig_message_join(SERVER_REC *server, const char *channel, const char *nick,
+                             const char *address, const char *account, const char *realname)
 {
 	int level = MSGLEVEL_JOINS;
 
@@ -376,37 +365,33 @@ static void sig_message_join(SERVER_REC *server, const char *channel,
 
 	if (settings_get_bool("show_extended_join")) {
 		int txt;
-		if (*account == '\0') txt = TXT_JOIN;
-		else if (g_strcmp0("*", account) == 0) txt = TXT_JOIN_EXTENDED;
-		else txt = TXT_JOIN_EXTENDED_ACCOUNT;
-		printformat(server, channel, level,
-			    txt, nick, address, channel, account, realname);
+		if (*account == '\0')
+			txt = TXT_JOIN;
+		else if (g_strcmp0("*", account) == 0)
+			txt = TXT_JOIN_EXTENDED;
+		else
+			txt = TXT_JOIN_EXTENDED_ACCOUNT;
+		printformat(server, channel, level, txt, nick, address, channel, account, realname);
 	} else {
-		printformat(server, channel, level,
-			    TXT_JOIN, nick, address, channel, account, realname);
+		printformat(server, channel, level, TXT_JOIN, nick, address, channel, account,
+		            realname);
 	}
 }
 
-static void sig_message_part(SERVER_REC *server, const char *channel,
-			     const char *nick, const char *address,
-			     const char *reason)
+static void sig_message_part(SERVER_REC *server, const char *channel, const char *nick,
+                             const char *address, const char *reason)
 {
 	int level = MSGLEVEL_PARTS;
 
 	ignore_check_plus(server, nick, address, channel, NULL, &level, FALSE);
 
-	printformat(server, channel, level,
-		    TXT_PART, nick, address, channel, reason);
+	printformat(server, channel, level, TXT_PART, nick, address, channel, reason);
 }
 
-static void spread_server_message_to_windows(SERVER_REC *server, gboolean once,
-					     gboolean in_query,
-					     int base_level,
-					     int txt, int txt_once,
-					     const char *nick, const char *address,
-					     const char *data,
-					     const char *ignore_data
-					    )
+static void spread_server_message_to_windows(SERVER_REC *server, gboolean once, gboolean in_query,
+                                             int base_level, int txt, int txt_once,
+                                             const char *nick, const char *address,
+                                             const char *data, const char *ignore_data)
 {
 	WINDOW_REC *window;
 	GString *chans;
@@ -419,7 +404,8 @@ static void spread_server_message_to_windows(SERVER_REC *server, gboolean once,
 
 	print_channel = NULL;
 
-	count = 0; windows = NULL;
+	count = 0;
+	windows = NULL;
 	chans = g_string_new(NULL);
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *rec;
@@ -430,14 +416,13 @@ static void spread_server_message_to_windows(SERVER_REC *server, gboolean once,
 			continue;
 		}
 
-		if (ignore_check_plus(server, nick, address, rec->visible_name,
-				      ignore_data, &level, TRUE)) {
+		if (ignore_check_plus(server, nick, address, rec->visible_name, ignore_data, &level,
+		                      TRUE)) {
 			count++;
 			continue;
 		}
 
-		if (print_channel == NULL ||
-		    active_win->active == (WI_ITEM_REC *) rec) {
+		if (print_channel == NULL || active_win->active == (WI_ITEM_REC *) rec) {
 			print_channel = rec->visible_name;
 		}
 
@@ -447,10 +432,8 @@ static void spread_server_message_to_windows(SERVER_REC *server, gboolean once,
 			window = window_item_window((WI_ITEM_REC *) rec);
 			if (g_slist_find(windows, window) == NULL) {
 				windows = g_slist_prepend(windows, window);
-				printformat(server, rec->visible_name,
-					    level,
-					    txt, nick, address, data,
-					    rec->visible_name);
+				printformat(server, rec->visible_name, level, txt, nick, address,
+				            data, rec->visible_name);
 			}
 		}
 		count++;
@@ -462,38 +445,30 @@ static void spread_server_message_to_windows(SERVER_REC *server, gboolean once,
 		   display the change there too */
 		QUERY_REC *query = query_find(server, nick);
 		if (query != NULL) {
-			printformat(server, nick, level,
-				    txt, nick, address, data, "");
+			printformat(server, nick, level, txt, nick, address, data, "");
 		}
 	}
 
 	if (once || count == 0) {
 		if (chans->len > 0) {
-			g_string_truncate(chans, chans->len-1);
+			g_string_truncate(chans, chans->len - 1);
 		}
-		printformat(server, print_channel, base_level,
-			    count <= 1 ? txt : txt_once,
-			    nick, address, data, chans->str);
+		printformat(server, print_channel, base_level, count <= 1 ? txt : txt_once, nick,
+		            address, data, chans->str);
 	}
 	g_string_free(chans, TRUE);
 }
 
-static void sig_message_host_changed(SERVER_REC *server, const char *nick,
-				     const char *address, const char *old_address)
+static void sig_message_host_changed(SERVER_REC *server, const char *nick, const char *address,
+                                     const char *old_address)
 {
-	spread_server_message_to_windows(
-		server,
-		settings_get_bool("show_quit_once"),
-		TRUE,
-		MSGLEVEL_JOINS,
-		TXT_HOST_CHANGED, TXT_HOST_CHANGED,
-		nick, address, old_address,
-		NULL
-	);
+	spread_server_message_to_windows(server, settings_get_bool("show_quit_once"), TRUE,
+	                                 MSGLEVEL_JOINS, TXT_HOST_CHANGED, TXT_HOST_CHANGED, nick,
+	                                 address, old_address, NULL);
 }
 
-static void sig_message_account_changed(SERVER_REC *server, const char *nick,
-					const char *address, const char *account)
+static void sig_message_account_changed(SERVER_REC *server, const char *nick, const char *address,
+                                        const char *account)
 {
 	gboolean logged_in;
 	int txt;
@@ -504,64 +479,46 @@ static void sig_message_account_changed(SERVER_REC *server, const char *nick,
 	logged_in = g_strcmp0("*", account) != 0;
 	txt = logged_in ? TXT_LOGGED_IN : TXT_LOGGED_OUT;
 
-	spread_server_message_to_windows(
-		server,
-		settings_get_bool("show_quit_once"),
-		TRUE,
-		MSGLEVEL_MODES,
-		txt, txt,
-		nick, address, account,
-		"account"
-	);
+	spread_server_message_to_windows(server, settings_get_bool("show_quit_once"), TRUE,
+	                                 MSGLEVEL_MODES, txt, txt, nick, address, account,
+	                                 "account");
 }
 
-static void sig_message_quit(SERVER_REC *server, const char *nick,
-			     const char *address, const char *reason)
+static void sig_message_quit(SERVER_REC *server, const char *nick, const char *address,
+                             const char *reason)
 {
-	spread_server_message_to_windows(
-		server,
-		settings_get_bool("show_quit_once"),
-		TRUE,
-		MSGLEVEL_QUITS,
-		TXT_QUIT, TXT_QUIT_ONCE,
-		nick, address, reason,
-		reason
-	);
+	spread_server_message_to_windows(server, settings_get_bool("show_quit_once"), TRUE,
+	                                 MSGLEVEL_QUITS, TXT_QUIT, TXT_QUIT_ONCE, nick, address,
+	                                 reason, reason);
 }
 
-static void sig_message_kick(SERVER_REC *server, const char *channel,
-			     const char *nick, const char *kicker,
-			     const char *address, const char *reason)
+static void sig_message_kick(SERVER_REC *server, const char *channel, const char *nick,
+                             const char *kicker, const char *address, const char *reason)
 {
 	int level = MSGLEVEL_KICKS;
 
 	ignore_check_plus(server, kicker, address, channel, reason, &level, FALSE);
 
-	printformat(server, channel, level,
-		    TXT_KICK, nick, channel, kicker, reason, address);
+	printformat(server, channel, level, TXT_KICK, nick, channel, kicker, reason, address);
 }
 
-static void print_nick_change_channel(SERVER_REC *server, const char *channel,
-				      const char *newnick, const char *oldnick,
-				      const char *address,
-				      int ownnick)
+static void print_nick_change_channel(SERVER_REC *server, const char *channel, const char *newnick,
+                                      const char *oldnick, const char *address, int ownnick)
 {
 	int level;
 
 	level = MSGLEVEL_NICKS;
-        if (ownnick) level |= MSGLEVEL_NO_ACT;
-	if (ignore_check_plus(server, oldnick, address,
-			      channel, newnick, &level, TRUE))
+	if (ownnick)
+		level |= MSGLEVEL_NO_ACT;
+	if (ignore_check_plus(server, oldnick, address, channel, newnick, &level, TRUE))
 		return;
 
-	printformat(server, channel, level,
-		    ownnick ? TXT_YOUR_NICK_CHANGED : TXT_NICK_CHANGED,
-		    oldnick, newnick, channel, address);
+	printformat(server, channel, level, ownnick ? TXT_YOUR_NICK_CHANGED : TXT_NICK_CHANGED,
+	            oldnick, newnick, channel, address);
 }
 
-static void print_nick_change(SERVER_REC *server, const char *newnick,
-			      const char *oldnick, const char *address,
-			      int ownnick)
+static void print_nick_change(SERVER_REC *server, const char *newnick, const char *oldnick,
+                              const char *address, int ownnick)
 {
 	GSList *tmp, *windows;
 	int msgprint;
@@ -573,59 +530,55 @@ static void print_nick_change(SERVER_REC *server, const char *newnick,
 	windows = NULL;
 	for (tmp = server->channels; tmp != NULL; tmp = tmp->next) {
 		CHANNEL_REC *channel = tmp->data;
-		WINDOW_REC *window =
-			window_item_window((WI_ITEM_REC *) channel);
+		WINDOW_REC *window = window_item_window((WI_ITEM_REC *) channel);
 
 		if (nicklist_find(channel, newnick) == NULL ||
 		    g_slist_find(windows, window) != NULL)
 			continue;
 
 		windows = g_slist_append(windows, window);
-		print_nick_change_channel(server, channel->visible_name,
-					  newnick, oldnick, address, ownnick);
+		print_nick_change_channel(server, channel->visible_name, newnick, oldnick, address,
+		                          ownnick);
 		msgprint = TRUE;
 	}
 
 	g_slist_free(windows);
 
 	if (!msgprint && ownnick) {
-		printformat(server, NULL, MSGLEVEL_NICKS,
-			    TXT_YOUR_NICK_CHANGED, oldnick, newnick, "",
-			    address);
+		printformat(server, NULL, MSGLEVEL_NICKS, TXT_YOUR_NICK_CHANGED, oldnick, newnick,
+		            "", address);
 	}
 }
 
-static void sig_message_nick(SERVER_REC *server, const char *newnick,
-			     const char *oldnick, const char *address)
+static void sig_message_nick(SERVER_REC *server, const char *newnick, const char *oldnick,
+                             const char *address)
 {
 	print_nick_change(server, newnick, oldnick, address, FALSE);
 }
 
-static void sig_message_own_nick(SERVER_REC *server, const char *newnick,
-				 const char *oldnick, const char *address)
+static void sig_message_own_nick(SERVER_REC *server, const char *newnick, const char *oldnick,
+                                 const char *address)
 {
-        if (!settings_get_bool("show_own_nickchange_once"))
+	if (!settings_get_bool("show_own_nickchange_once"))
 		print_nick_change(server, newnick, oldnick, address, TRUE);
 	else {
-		printformat(server, NULL, MSGLEVEL_NICKS,
-			    TXT_YOUR_NICK_CHANGED, oldnick, newnick, "",
-			    address);
+		printformat(server, NULL, MSGLEVEL_NICKS, TXT_YOUR_NICK_CHANGED, oldnick, newnick,
+		            "", address);
 	}
 }
 
-static void sig_message_invite(SERVER_REC *server, const char *channel,
-			       const char *nick, const char *address)
+static void sig_message_invite(SERVER_REC *server, const char *channel, const char *nick,
+                               const char *address)
 {
 	char *str;
 
 	str = show_lowascii(channel);
-	printformat(server, NULL, MSGLEVEL_INVITES,
-		    TXT_INVITE, nick, str, address);
+	printformat(server, NULL, MSGLEVEL_INVITES, TXT_INVITE, nick, str, address);
 	g_free(str);
 }
 
-static void sig_message_invite_other(SERVER_REC *server, const char *channel,
-				     const char *invited, const char *nick, const char *address)
+static void sig_message_invite_other(SERVER_REC *server, const char *channel, const char *invited,
+                                     const char *nick, const char *address)
 {
 	char *str;
 	int level = MSGLEVEL_INVITES;
@@ -633,45 +586,34 @@ static void sig_message_invite_other(SERVER_REC *server, const char *channel,
 	ignore_check_plus(server, nick, address, channel, invited, &level, FALSE);
 
 	str = show_lowascii(channel);
-	printformat(server, channel, level,
-		    TXT_INVITE_OTHER, invited, nick, str, address);
+	printformat(server, channel, level, TXT_INVITE_OTHER, invited, nick, str, address);
 	g_free(str);
 }
 
-static void sig_message_topic(SERVER_REC *server, const char *channel,
-			      const char *topic,
-			      const char *nick, const char *address)
+static void sig_message_topic(SERVER_REC *server, const char *channel, const char *topic,
+                              const char *nick, const char *address)
 {
 	int level = MSGLEVEL_TOPICS;
 
 	ignore_check_plus(server, nick, address, channel, topic, &level, FALSE);
 
-	printformat(server, channel, level,
-		    *topic != '\0' ? TXT_NEW_TOPIC : TXT_TOPIC_UNSET,
-		    nick, channel, topic, address);
+	printformat(server, channel, level, *topic != '\0' ? TXT_NEW_TOPIC : TXT_TOPIC_UNSET, nick,
+	            channel, topic, address);
 }
 
-static void sig_message_away_notify(SERVER_REC *server, const char *nick,
-				    const char *addr, const char *awaymsg)
+static void sig_message_away_notify(SERVER_REC *server, const char *nick, const char *addr,
+                                    const char *awaymsg)
 {
-	int txt = *awaymsg == '\0' ? TXT_NOTIFY_UNAWAY_CHANNEL :
-		TXT_NOTIFY_AWAY_CHANNEL;
+	int txt = *awaymsg == '\0' ? TXT_NOTIFY_UNAWAY_CHANNEL : TXT_NOTIFY_AWAY_CHANNEL;
 
 	if (!settings_get_bool("away_notify_public"))
 		return;
 
-	spread_server_message_to_windows(server, FALSE,
-					 FALSE,
-					 MSGLEVEL_CRAP,
-					 txt, txt,
-					 nick, addr,
-					 awaymsg,
-					 awaymsg
-					);
+	spread_server_message_to_windows(server, FALSE, FALSE, MSGLEVEL_CRAP, txt, txt, nick, addr,
+	                                 awaymsg, awaymsg);
 }
 
-static int printnick_exists(NICK_REC *first, NICK_REC *ignore,
-			    const char *nick)
+static int printnick_exists(NICK_REC *first, NICK_REC *ignore, const char *nick)
 {
 	char *printnick;
 
@@ -685,14 +627,14 @@ static int printnick_exists(NICK_REC *first, NICK_REC *ignore,
 		first = first->next;
 	}
 
-        return FALSE;
+	return FALSE;
 }
 
 static NICK_REC *printnick_find_original(NICK_REC *nick)
 {
 	while (nick != NULL) {
 		if (g_hash_table_lookup(printnicks, nick) == NULL)
-                        return nick;
+			return nick;
 
 		nick = nick->next;
 	}
@@ -716,31 +658,35 @@ static void sig_nicklist_new(CHANNEL_REC *channel, NICK_REC *nick)
 		   someone else having the original nick already in use.. */
 		nick = printnick_find_original(firstnick->next);
 		if (nick == NULL)
-                        return; /* nope, we have it */
+			return; /* nope, we have it */
 	}
 
 	if (nick->host == NULL)
-                return;
+		return;
 
 	/* identical nick already exists, have to change it somehow.. */
 	p = strchr(nick->host, '@');
-	if (p == NULL) p = nick->host; else p++;
+	if (p == NULL)
+		p = nick->host;
+	else
+		p++;
 
 	nickhost = g_strdup_printf("%s@%s", nick->nick, p);
-	p = strchr(nickhost+strlen(nick->nick), '.');
-	if (p != NULL) *p = '\0';
+	p = strchr(nickhost + strlen(nick->nick), '.');
+	if (p != NULL)
+		*p = '\0';
 
 	if (!printnick_exists(firstnick, nick, nickhost)) {
-                /* use nick@host */
+		/* use nick@host */
 		g_hash_table_insert(printnicks, nick, nickhost);
-                return;
+		return;
 	}
 
 	newnick = g_string_new(NULL);
-        n = 2;
+	n = 2;
 	do {
 		g_string_printf(newnick, "%s%d", nickhost, n);
-                n++;
+		n++;
 	} while (printnick_exists(firstnick, nick, newnick->str));
 
 	g_hash_table_insert(printnicks, nick, g_string_free_and_steal(newnick));
@@ -753,53 +699,52 @@ static void sig_nicklist_remove(CHANNEL_REC *channel, NICK_REC *nick)
 
 	nickname = g_hash_table_lookup(printnicks, nick);
 	if (nickname != NULL) {
-                g_free(nickname);
+		g_free(nickname);
 		g_hash_table_remove(printnicks, nick);
 	}
 }
 
 static void sig_nicklist_changed(CHANNEL_REC *channel, NICK_REC *nick)
 {
-        sig_nicklist_remove(channel, nick);
-        sig_nicklist_new(channel, nick);
+	sig_nicklist_remove(channel, nick);
+	sig_nicklist_new(channel, nick);
 }
 
 static void sig_channel_joined(CHANNEL_REC *channel)
 {
-        NICK_REC *nick;
+	NICK_REC *nick;
 	char *nickname;
 
 	/* channel->ownnick is set at this point - check if our own nick
 	   has been changed, if it was set it back to the original nick and
 	   change the previous original to something else */
 
-        nickname = g_hash_table_lookup(printnicks, channel->ownnick);
+	nickname = g_hash_table_lookup(printnicks, channel->ownnick);
 	if (nickname == NULL)
 		return;
 
-        g_free(nickname);
+	g_free(nickname);
 	g_hash_table_remove(printnicks, channel->ownnick);
 
-        /* our own nick is guaranteed to be the first in list */
-        nick = channel->ownnick->next;
+	/* our own nick is guaranteed to be the first in list */
+	nick = channel->ownnick->next;
 	while (nick != NULL) {
 		if (g_hash_table_lookup(printnicks, nick) == NULL) {
 			sig_nicklist_new(channel, nick);
-                        break;
+			break;
 		}
-                nick = nick->next;
+		nick = nick->next;
 	}
 }
 
 static void i_hash_free_value(void *key, void *value)
 {
-        g_free(value);
+	g_free(value);
 }
 
 void fe_messages_init(void)
 {
-	printnicks = g_hash_table_new((GHashFunc) g_direct_hash,
-				      (GCompareFunc) g_direct_equal);
+	printnicks = g_hash_table_new((GHashFunc) g_direct_hash, (GCompareFunc) g_direct_equal);
 
 	settings_add_bool("lookandfeel", "hilight_nick_matches", TRUE);
 	settings_add_bool("lookandfeel", "hilight_nick_matches_everywhere", FALSE);

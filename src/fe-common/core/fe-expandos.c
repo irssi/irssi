@@ -36,7 +36,7 @@ static char *expando_winref(SERVER_REC *server, void *item, int *free_ret)
 	if (active_win == NULL)
 		return "";
 
-        *free_ret = TRUE;
+	*free_ret = TRUE;
 	return g_strdup_printf("%d", active_win->refnum);
 }
 
@@ -53,7 +53,8 @@ static char *expando_winname(SERVER_REC *server, void *item, int *free_ret)
 static int count_nick_chars(const char *str)
 {
 	int count = 0;
-	if (!str) return 0;
+	if (!str)
+		return 0;
 
 	for (const char *p = str; *p; p++) {
 		/* Alfanumeryczne */
@@ -61,9 +62,8 @@ static int count_nick_chars(const char *str)
 			count++;
 		}
 		/* Specjalne znaki nicka - zgodnie z isnickchar z fe-messages.c */
-		else if (*p == '`' || *p == '-' || *p == '_' ||
-		         *p == '[' || *p == ']' || *p == '{' || *p == '}' ||
-		         *p == '|' || *p == '\\' || *p == '^') {
+		else if (*p == '`' || *p == '-' || *p == '_' || *p == '[' || *p == ']' ||
+		         *p == '{' || *p == '}' || *p == '|' || *p == '\\' || *p == '^') {
 			count++;
 		}
 		/* Ignoruje kody kolorów %B %N %Y %n itp. */
@@ -100,8 +100,6 @@ static char *expando_nickalign(SERVER_REC *server, void *item, int *free_ret)
 		padding = width - total_chars;
 	}
 
-
-
 	*free_ret = TRUE;
 	return g_strnfill(padding, ' ');
 }
@@ -112,8 +110,6 @@ static char *expando_nicktrunc(SERVER_REC *server, void *item, int *free_ret)
 	int width, mode_chars, nick_chars, total_chars;
 	const char *mode;
 	char *result;
-
-
 
 	/* Gdy wyłączone - zwróć oryginalny nick */
 	if (!settings_get_bool("nick_column_enabled")) {
@@ -139,12 +135,9 @@ static char *expando_nicktrunc(SERVER_REC *server, void *item, int *free_ret)
 			/* Przytnij nick i dodaj >> */
 			result = g_strdup_printf("%.*s>>", available_for_nick, current_nick);
 
-
 		} else {
 			/* Mode sam za długi */
 			result = g_strdup(">>");
-
-
 		}
 		*free_ret = TRUE;
 		return result;
@@ -173,18 +166,14 @@ void clear_nick_context(void)
 
 void fe_expandos_init(void)
 {
-	expando_create("winref", expando_winref,
-		       "window changed", EXPANDO_ARG_NONE,
-		       "window refnum changed", EXPANDO_ARG_WINDOW, NULL);
-	expando_create("winname", expando_winname,
-		       "window changed", EXPANDO_ARG_NONE,
-		       "window name changed", EXPANDO_ARG_WINDOW, NULL);
-	expando_create("nickalign", expando_nickalign,
-		       "message public", EXPANDO_ARG_NONE,
-		       "message own_public", EXPANDO_ARG_NONE, NULL);
-	expando_create("nicktrunc", expando_nicktrunc,
-		       "message public", EXPANDO_ARG_NONE,
-		       "message own_public", EXPANDO_ARG_NONE, NULL);
+	expando_create("winref", expando_winref, "window changed", EXPANDO_ARG_NONE,
+	               "window refnum changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("winname", expando_winname, "window changed", EXPANDO_ARG_NONE,
+	               "window name changed", EXPANDO_ARG_WINDOW, NULL);
+	expando_create("nickalign", expando_nickalign, "message public", EXPANDO_ARG_NONE,
+	               "message own_public", EXPANDO_ARG_NONE, NULL);
+	expando_create("nicktrunc", expando_nicktrunc, "message public", EXPANDO_ARG_NONE,
+	               "message own_public", EXPANDO_ARG_NONE, NULL);
 }
 
 void fe_expandos_deinit(void)

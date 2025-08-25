@@ -63,8 +63,7 @@ int format_find_tag(const char *module, const char *tag)
 		return -1;
 
 	for (n = 0; formats[n].def != NULL; n++) {
-		if (formats[n].tag != NULL &&
-		    g_ascii_strcasecmp(formats[n].tag, tag) == 0)
+		if (formats[n].tag != NULL && g_ascii_strcasecmp(formats[n].tag, tag) == 0)
 			return n;
 	}
 
@@ -89,22 +88,23 @@ static void format_expand_code(const char **format, GString *out, int *flags)
 			set = TRUE;
 		else if (**format == '-')
 			set = FALSE;
-		else switch (**format) {
-		case 's':
-		case 'S':
-			*flags |= !set ? PRINT_FLAG_UNSET_LINE_START :
-				**format == 's' ? PRINT_FLAG_SET_LINE_START :
-				PRINT_FLAG_SET_LINE_START_IRSSI;
-			break;
-		case 't':
-			*flags |= set ? PRINT_FLAG_SET_TIMESTAMP :
-				PRINT_FLAG_UNSET_TIMESTAMP;
-			break;
-		case 'T':
-			*flags |= set ? PRINT_FLAG_SET_SERVERTAG :
-				PRINT_FLAG_UNSET_SERVERTAG;
-			break;
-		}
+		else
+			switch (**format) {
+			case 's':
+			case 'S':
+				*flags |= !set            ? PRINT_FLAG_UNSET_LINE_START :
+				          **format == 's' ? PRINT_FLAG_SET_LINE_START :
+				                            PRINT_FLAG_SET_LINE_START_IRSSI;
+				break;
+			case 't':
+				*flags |=
+				    set ? PRINT_FLAG_SET_TIMESTAMP : PRINT_FLAG_UNSET_TIMESTAMP;
+				break;
+			case 'T':
+				*flags |=
+				    set ? PRINT_FLAG_SET_SERVERTAG : PRINT_FLAG_UNSET_SERVERTAG;
+				break;
+			}
 
 		(*format)++;
 	}
@@ -116,18 +116,15 @@ void format_ext_color(GString *out, int bg, int color)
 	if (bg && color < 0x10)
 		g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 	if (color < 0x10)
-		g_string_append_c(out, color+'0');
+		g_string_append_c(out, color + '0');
 	else {
 		if (color < 0x60)
-			g_string_append_c(out, bg ? FORMAT_COLOR_EXT1_BG
-					  : FORMAT_COLOR_EXT1);
+			g_string_append_c(out, bg ? FORMAT_COLOR_EXT1_BG : FORMAT_COLOR_EXT1);
 		else if (color < 0xb0)
-			g_string_append_c(out, bg ? FORMAT_COLOR_EXT2_BG
-					  : FORMAT_COLOR_EXT2);
+			g_string_append_c(out, bg ? FORMAT_COLOR_EXT2_BG : FORMAT_COLOR_EXT2);
 		else
-			g_string_append_c(out, bg ? FORMAT_COLOR_EXT3_BG
-					  : FORMAT_COLOR_EXT3);
-		g_string_append_c(out, FORMAT_COLOR_NOCHANGE + ((color-0x10)%0x50));
+			g_string_append_c(out, bg ? FORMAT_COLOR_EXT3_BG : FORMAT_COLOR_EXT3);
+		g_string_append_c(out, FORMAT_COLOR_NOCHANGE + ((color - 0x10) % 0x50));
 	}
 
 	if (!bg && color < 0x10)
@@ -166,8 +163,7 @@ void unformat_24bit_color(char **ptr, int off, int *fgcolor, int *bgcolor, int *
 	if (rgbx[3] & 0x1) {
 		*bgcolor = color;
 		*flags |= GUI_PRINT_FLAG_COLOR_24_BG;
-	}
-	else {
+	} else {
 		*fgcolor = color;
 		*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
 	}
@@ -294,7 +290,7 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		if ((*format)[1] < '0' || (*format)[1] > '7')
 			break;
 
-		tmp = 16 + ((*format)[1]-'0'-1)*36;
+		tmp = 16 + ((*format)[1] - '0' - 1) * 36;
 		if (tmp > 231) {
 			if (!isalpha((*format)[2]))
 				break;
@@ -303,8 +299,7 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 
 			if (tmp > 255)
 				break;
-		}
-		else if (tmp > 0) {
+		} else if (tmp > 0) {
 			if (!isalnum((*format)[2]))
 				break;
 
@@ -314,8 +309,7 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 				tmp += 10 + (*format)[2] - 'A';
 			else
 				tmp += (*format)[2] - '0';
-		}
-		else {
+		} else {
 			if (!isxdigit((*format)[2]))
 				break;
 
@@ -361,26 +355,28 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		if (p != NULL) {
 			g_string_append_c(out, 4);
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
-			g_string_append_c(out, (char) ((int) (p-format_backs)+'0'));
+			g_string_append_c(out, (char) ((int) (p - format_backs) + '0'));
 			break;
 		}
 
 		/* check if it's a foreground color */
-		if (fmt == 'p') fmt = 'm';
+		if (fmt == 'p')
+			fmt = 'm';
 		p = strchr(format_fores, fmt);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
-			g_string_append_c(out, (char) ((int) (p-format_fores)+'0'));
+			g_string_append_c(out, (char) ((int) (p - format_fores) + '0'));
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 			break;
 		}
 
 		/* check if it's a bold foreground color */
-		if (fmt == 'P') fmt = 'M';
+		if (fmt == 'P')
+			fmt = 'M';
 		p = strchr(format_boldfores, fmt);
 		if (p != NULL) {
 			g_string_append_c(out, 4);
-			g_string_append_c(out, (char) (8+(int) (p-format_boldfores)+'0'));
+			g_string_append_c(out, (char) (8 + (int) (p - format_boldfores) + '0'));
 			g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 			break;
 		}
@@ -391,9 +387,8 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 	return retval;
 }
 
-void format_read_arglist(va_list va, FORMAT_REC *format,
-			 char **arglist, int arglist_size,
-			 char *buffer, int buffer_size)
+void format_read_arglist(va_list va, FORMAT_REC *format, char **arglist, int arglist_size,
+                         char *buffer, int buffer_size)
 {
 	int num, len, bufpos;
 
@@ -416,10 +411,9 @@ void format_read_arglist(va_list va, FORMAT_REC *format,
 				break;
 			}
 
-			arglist[num] = buffer+bufpos;
-			len = g_snprintf(buffer+bufpos, buffer_size-bufpos,
-					 "%d", d);
-			bufpos += len+1;
+			arglist[num] = buffer + bufpos;
+			len = g_snprintf(buffer + bufpos, buffer_size - bufpos, "%d", d);
+			bufpos += len + 1;
 			break;
 		}
 		case FORMAT_LONG: {
@@ -430,10 +424,9 @@ void format_read_arglist(va_list va, FORMAT_REC *format,
 				break;
 			}
 
-			arglist[num] = buffer+bufpos;
-			len = g_snprintf(buffer+bufpos, buffer_size-bufpos,
-					 "%ld", l);
-			bufpos += len+1;
+			arglist[num] = buffer + bufpos;
+			len = g_snprintf(buffer + bufpos, buffer_size - bufpos, "%ld", l);
+			bufpos += len + 1;
 			break;
 		}
 		case FORMAT_FLOAT: {
@@ -444,10 +437,9 @@ void format_read_arglist(va_list va, FORMAT_REC *format,
 				break;
 			}
 
-			arglist[num] = buffer+bufpos;
-			len = g_snprintf(buffer+bufpos, buffer_size-bufpos,
-					 "%0.2f", f);
-			bufpos += len+1;
+			arglist[num] = buffer + bufpos;
+			len = g_snprintf(buffer + bufpos, buffer_size - bufpos, "%0.2f", f);
+			bufpos += len + 1;
 			break;
 		}
 		}
@@ -485,8 +477,7 @@ void format_create_dest_tag_meta(TEXT_DEST_REC *dest, void *server, const char *
 	dest->server_tag = server != NULL ? SERVER(server)->tag : server_tag;
 	dest->target = target;
 	dest->level = level;
-	dest->window = window != NULL ? window :
-		window_find_closest(server, target, level);
+	dest->window = window != NULL ? window : window_find_closest(server, target, level);
 	dest->meta = meta != NULL ? meta : global_meta;
 }
 
@@ -521,10 +512,10 @@ int format_get_length(const char *str)
 		if (*str == '%' && str[1] != '\0') {
 			str++;
 			if (*str != '%') {
-			     adv = format_expand_styles(tmp, &str, NULL);
-			     str += adv;
-			     if (adv)
-				continue;
+				adv = format_expand_styles(tmp, &str, NULL);
+				str += adv;
+				if (adv)
+					continue;
 			}
 
 			/* %% or unknown %code, written as-is */
@@ -561,17 +552,17 @@ int format_real_length(const char *str, int len)
 		if (*str == '%' && str[1] != '\0') {
 			str++;
 			if (*str != '%') {
-			     adv = format_expand_styles(tmp, &str, NULL);
-			     if (adv) {
-				     str += adv;
-				     continue;
-			     }
-			     /* discount for unknown % */
-			     if (--len < 0) {
-				     str = oldstr;
-				     break;
-			     }
-			     oldstr = str;
+				adv = format_expand_styles(tmp, &str, NULL);
+				if (adv) {
+					str += adv;
+					continue;
+				}
+				/* discount for unknown % */
+				if (--len < 0) {
+					str = oldstr;
+					break;
+				}
+				oldstr = str;
 			}
 		}
 
@@ -583,7 +574,7 @@ int format_real_length(const char *str, int len)
 	}
 
 	g_string_free(tmp, TRUE);
-	return (int) (str-start);
+	return (int) (str - start);
 }
 
 char *format_string_expand(const char *text, int *flags)
@@ -596,7 +587,8 @@ char *format_string_expand(const char *text, int *flags)
 
 	out = g_string_new(NULL);
 
-	if (flags != NULL) *flags = 0;
+	if (flags != NULL)
+		*flags = 0;
 	code = 0;
 	while (*text != '\0') {
 		if (code == '%') {
@@ -607,7 +599,7 @@ char *format_string_expand(const char *text, int *flags)
 				g_string_append_c(out, '%');
 				g_string_append_c(out, *text);
 			} else {
-			  text += adv - 1;
+				text += adv - 1;
 			}
 			code = 0;
 		} else {
@@ -739,8 +731,7 @@ char *format_string_unexpand(const char *text, int flags)
 	return g_string_free(out, FALSE);
 }
 
-static char *format_get_text_args(TEXT_DEST_REC *dest,
-				  const char *text, char **arglist)
+static char *format_get_text_args(TEXT_DEST_REC *dest, const char *text, char **arglist)
 {
 	GString *out;
 	char code, *ret;
@@ -767,22 +758,25 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 			char *ret;
 
 			ret = parse_special((char **) &text, dest->server,
-					    dest->target == NULL ? NULL :
-					    window_item_find(dest->server, dest->target),
-					    arglist, &need_free, NULL, 0);
+			                    dest->target == NULL ?
+			                        NULL :
+			                        window_item_find(dest->server, dest->target),
+			                    arglist, &need_free, NULL, 0);
 
 			if (ret != NULL) {
 				/* string shouldn't end with \003 or it could
 				   mess up the next one or two characters */
 				int diff;
 				int len = strlen(ret);
-				while (len > 0 && ret[len-1] == 3) len--;
-				diff = strlen(ret)-len;
+				while (len > 0 && ret[len - 1] == 3)
+					len--;
+				diff = strlen(ret) - len;
 
 				g_string_append(out, ret);
 				if (diff > 0)
-					g_string_truncate(out, out->len-diff);
-				if (need_free) g_free(ret);
+					g_string_truncate(out, out->len - diff);
+				if (need_free)
+					g_free(ret);
 			}
 			code = 0;
 		} else {
@@ -799,8 +793,8 @@ static char *format_get_text_args(TEXT_DEST_REC *dest,
 	return ret;
 }
 
-char *format_get_text_theme(THEME_REC *theme, const char *module,
-			    TEXT_DEST_REC *dest, int formatnum, ...)
+char *format_get_text_theme(THEME_REC *theme, const char *module, TEXT_DEST_REC *dest,
+                            int formatnum, ...)
 {
 	va_list va;
 	char *str;
@@ -815,21 +809,18 @@ char *format_get_text_theme(THEME_REC *theme, const char *module,
 	return str;
 }
 
-char *format_get_text_theme_args(THEME_REC *theme, const char *module,
-				 TEXT_DEST_REC *dest, int formatnum,
-				 va_list va)
+char *format_get_text_theme_args(THEME_REC *theme, const char *module, TEXT_DEST_REC *dest,
+                                 int formatnum, va_list va)
 {
 	char *arglist[MAX_FORMAT_PARAMS];
 	char buffer[DEFAULT_FORMAT_ARGLIST_SIZE];
 	FORMAT_REC *formats;
 
 	formats = g_hash_table_lookup(default_formats, module);
-	format_read_arglist(va, &formats[formatnum],
-			    arglist, sizeof(arglist)/sizeof(char *),
-			    buffer, sizeof(buffer));
+	format_read_arglist(va, &formats[formatnum], arglist, sizeof(arglist) / sizeof(char *),
+	                    buffer, sizeof(buffer));
 
-	return format_get_text_theme_charargs(theme, module, dest,
-					      formatnum, arglist);
+	return format_get_text_theme_charargs(theme, module, dest, formatnum, arglist);
 }
 
 /* Check if format number is a message format that needs nick column */
@@ -846,20 +837,20 @@ static gboolean is_message_format(int formatnum)
 static int get_nick_param_for_format(int formatnum)
 {
 	switch (formatnum) {
-		case TXT_OWN_MSG:
-		case TXT_OWN_MSG_CHANNEL:
-		case TXT_PUBMSG:
-		case TXT_PUBMSG_CHANNEL:
-		case TXT_PUBMSG_ME:
-		case TXT_PUBMSG_ME_CHANNEL:
-			return 0; /* $0 = nick */
+	case TXT_OWN_MSG:
+	case TXT_OWN_MSG_CHANNEL:
+	case TXT_PUBMSG:
+	case TXT_PUBMSG_CHANNEL:
+	case TXT_PUBMSG_ME:
+	case TXT_PUBMSG_ME_CHANNEL:
+		return 0; /* $0 = nick */
 
-		case TXT_PUBMSG_HILIGHT:
-		case TXT_PUBMSG_HILIGHT_CHANNEL:
-			return 1; /* $1 = nick (because $0 = color) */
+	case TXT_PUBMSG_HILIGHT:
+	case TXT_PUBMSG_HILIGHT_CHANNEL:
+		return 1; /* $1 = nick (because $0 = color) */
 
-		default:
-			return 0; /* fallback */
+	default:
+		return 0; /* fallback */
 	}
 }
 
@@ -871,7 +862,8 @@ static char *apply_nick_column_formatting(const char *format, int formatnum)
 	char search_param[10], replace_param[20];
 	int nick_param;
 
-	if (!format) return NULL;
+	if (!format)
+		return NULL;
 
 	/* Get correct parameter number for nick in this format */
 	nick_param = get_nick_param_for_format(formatnum);
@@ -893,9 +885,8 @@ static char *apply_nick_column_formatting(const char *format, int formatnum)
 	return result;
 }
 
-char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
-				     TEXT_DEST_REC *dest, int formatnum,
-				     char **args)
+char *format_get_text_theme_charargs(THEME_REC *theme, const char *module, TEXT_DEST_REC *dest,
+                                     int formatnum, char **args)
 {
 	MODULE_THEME_REC *module_theme;
 	char *text, *modified_text = NULL;
@@ -912,17 +903,13 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 
 	/* Apply nick column formatting if enabled and this is a message format */
 	/* Additional protection: avoid recursion during timestamp formatting */
-	if (settings_get_bool("nick_column_enabled") &&
-	    g_strcmp0(module, "fe-common/core") == 0 &&
-	    is_message_format(formatnum) &&
-	    nick_formatting_depth == 0) {  /* Prevent recursion */
+	if (settings_get_bool("nick_column_enabled") && g_strcmp0(module, "fe-common/core") == 0 &&
+	    is_message_format(formatnum) && nick_formatting_depth == 0) { /* Prevent recursion */
 
 		nick_formatting_depth++;
 		modified_text = apply_nick_column_formatting(text, formatnum);
 		text = modified_text;
 		nick_formatting_depth--;
-
-
 	}
 
 	result = format_get_text_args(dest, text, args);
@@ -933,9 +920,8 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 	return result;
 }
 
-char *format_get_text(const char *module, WINDOW_REC *window,
-		      void *server, const char *target,
-		      int formatnum, ...)
+char *format_get_text(const char *module, WINDOW_REC *window, void *server, const char *target,
+                      int formatnum, ...)
 {
 	TEXT_DEST_REC dest;
 	THEME_REC *theme;
@@ -1001,8 +987,7 @@ char *format_add_lineend(const char *text, const char *linestart)
 	return ret;
 }
 
-#define LINE_START_IRSSI_LEVEL \
-	(MSGLEVEL_CLIENTERROR | MSGLEVEL_CLIENTNOTICE)
+#define LINE_START_IRSSI_LEVEL (MSGLEVEL_CLIENTERROR | MSGLEVEL_CLIENTNOTICE)
 
 #define NOT_LINE_START_LEVEL                                                                       \
 	(MSGLEVEL_NEVER | MSGLEVEL_LASTLOG | MSGLEVEL_CLIENTCRAP | MSGLEVEL_MSGS |                 \
@@ -1049,9 +1034,8 @@ static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 		return NULL;
 
 	if ((dest->flags & PRINT_FLAG_SET_TIMESTAMP) == 0 &&
-	    (dest->level & (MSGLEVEL_NEVER|MSGLEVEL_LASTLOG)) != 0)
+	    (dest->level & (MSGLEVEL_NEVER | MSGLEVEL_LASTLOG)) != 0)
 		return NULL;
-
 
 	if (timestamp_timeout > 0) {
 		diff = t - dest->window->last_timestamp;
@@ -1061,8 +1045,7 @@ static char *get_timestamp(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 	}
 
 	tm = localtime(&t);
-	format = format_get_text_theme(theme, MODULE_NAME, dest,
-				       TXT_TIMESTAMP);
+	format = format_get_text_theme(theme, MODULE_NAME, dest, TXT_TIMESTAMP);
 	if (strftime(str, sizeof(str), format, tm) <= 0)
 		str[0] = '\0';
 	g_free(format);
@@ -1081,8 +1064,7 @@ static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 		return NULL;
 
 	if ((dest->flags & PRINT_FLAG_SET_SERVERTAG) == 0) {
-		if (dest->window->active != NULL &&
-		    dest->window->active->server == dest->server)
+		if (dest->window->active != NULL && dest->window->active->server == dest->server)
 			return NULL;
 
 		if (servers != NULL) {
@@ -1100,8 +1082,7 @@ static char *get_server_tag(THEME_REC *theme, TEXT_DEST_REC *dest)
 			return NULL;
 	}
 
-	return format_get_text_theme(theme, MODULE_NAME, dest,
-				     TXT_SERVERTAG, dest->server_tag);
+	return format_get_text_theme(theme, MODULE_NAME, dest, TXT_SERVERTAG, dest->server_tag);
 }
 
 char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
@@ -1115,8 +1096,7 @@ char *format_get_line_start(THEME_REC *theme, TEXT_DEST_REC *dest, time_t t)
 	if (timestamp == NULL && servertag == NULL)
 		return NULL;
 
-	linestart = g_strconcat(timestamp != NULL ? timestamp : "",
-				servertag, NULL);
+	linestart = g_strconcat(timestamp != NULL ? timestamp : "", servertag, NULL);
 
 	g_free_not_null(timestamp);
 	g_free_not_null(servertag);
@@ -1132,10 +1112,9 @@ void format_newline(TEXT_DEST_REC *dest)
 	               GINT_TO_POINTER(-1), GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE), "", dest);
 }
 
-
 /* parse ANSI color string */
-static const char *get_ansi_color(THEME_REC *theme, const char *str,
-				  int *fg_ret, int *bg_ret, int *flags_ret)
+static const char *get_ansi_color(THEME_REC *theme, const char *str, int *fg_ret, int *bg_ret,
+                                  int *flags_ret)
 {
 	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	const char *start;
@@ -1153,7 +1132,8 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 
 	num = 0;
 	for (;; str++) {
-		if (*str == '\0') return start;
+		if (*str == '\0')
+			return start;
 
 		if (i_isdigit(*str)) {
 			if (!parse_uint(str, &endptr, 10, &num)) {
@@ -1170,10 +1150,10 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 			/* reset colors and attributes back to default */
 			fg = theme->default_color;
 			bg = -1;
-			flags &= ~(GUI_PRINT_FLAG_INDENT |
-				   GUI_PRINT_FLAG_BOLD | GUI_PRINT_FLAG_ITALIC | GUI_PRINT_FLAG_UNDERLINE |
-				   GUI_PRINT_FLAG_BLINK | GUI_PRINT_FLAG_REVERSE |
-				   GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG);
+			flags &= ~(GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_BOLD |
+			           GUI_PRINT_FLAG_ITALIC | GUI_PRINT_FLAG_UNDERLINE |
+			           GUI_PRINT_FLAG_BLINK | GUI_PRINT_FLAG_REVERSE |
+			           GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG);
 			break;
 		case 1:
 			/* hilight */
@@ -1228,7 +1208,8 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 		case 38:
 		case 48:
 			/* ANSI indexed color or RGB color */
-			if (*str != ';') break;
+			if (*str != ';')
+				break;
 			str++;
 
 			if (!parse_uint(str, &endptr, 10, &num2)) {
@@ -1236,7 +1217,8 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 			}
 			str = endptr;
 
-			if (*str == '\0') return start;
+			if (*str == '\0')
+				return start;
 
 			switch (num2) {
 			case 2:
@@ -1252,13 +1234,15 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 					}
 					str++;
 					for (; i_isdigit(*str); str++)
-						num2 = (num2&~0xff) |
-							(((num2&0xff) * 10 + (*str-'0'))&0xff);
+						num2 = (num2 & ~0xff) |
+						       (((num2 & 0xff) * 10 + (*str - '0')) & 0xff);
 
-					if (*str == '\0') return start;
+					if (*str == '\0')
+						return start;
 				}
 
-				if (i == -1) break;
+				if (i == -1)
+					break;
 
 				if (num == 38) {
 					flags |= GUI_PRINT_FLAG_COLOR_24_FG;
@@ -1271,7 +1255,8 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 				break;
 			case 5:
 				/* indexed */
-				if (*str != ';') break;
+				if (*str != ';')
+					break;
 				str++;
 
 				if (!parse_uint(str, &endptr, 10, &num2)) {
@@ -1279,7 +1264,8 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 				}
 				str = endptr;
 
-				if (*str == '\0') return start;
+				if (*str == '\0')
+					return start;
 
 				if (num == 38) {
 					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
@@ -1295,25 +1281,28 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 		default:
 			if (num >= 30 && num <= 37) {
 				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
-				fg = ansitab[num-30];
+				fg = ansitab[num - 30];
 			} else if (num >= 40 && num <= 47) {
 				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-				bg = ansitab[num-40];
+				bg = ansitab[num - 40];
 			} else if (num >= 90 && num <= 97) {
 				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
-				fg = 8 + ansitab[num-90];
+				fg = 8 + ansitab[num - 90];
 			} else if (num >= 100 && num <= 107) {
 				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-				bg = 8 + ansitab[num-100];
+				bg = 8 + ansitab[num - 100];
 			}
 			break;
 		}
 		num = 0;
 
 		if (*str == 'm') {
-			if (fg_ret != NULL) *fg_ret = fg;
-			if (bg_ret != NULL) *bg_ret = bg;
-			if (flags_ret != NULL) *flags_ret = flags;
+			if (fg_ret != NULL)
+				*fg_ret = fg;
+			if (bg_ret != NULL)
+				*bg_ret = bg;
+			if (flags_ret != NULL)
+				*flags_ret = flags;
 
 			str++;
 			break;
@@ -1337,37 +1326,38 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 		bg = -1;
 	} else {
 		/* foreground color */
-		fg = **str-'0';
+		fg = **str - '0';
 		(*str)++;
 		if (i_isdigit(**str)) {
-			fg = fg*10 + (**str-'0');
+			fg = fg * 10 + (**str - '0');
 			(*str)++;
 		}
 
 		if ((*str)[0] == ',' && i_isdigit((*str)[1])) {
 			/* background color */
 			(*str)++;
-			bg = **str-'0';
+			bg = **str - '0';
 			(*str)++;
 			if (i_isdigit(**str)) {
-				bg = bg*10 + (**str-'0');
+				bg = bg * 10 + (**str - '0');
 				(*str)++;
 			}
 		}
 	}
 
-	if (fg_ret) *fg_ret = fg;
-	if (bg_ret) *bg_ret = bg;
+	if (fg_ret)
+		*fg_ret = fg;
+	if (bg_ret)
+		*bg_ret = bg;
 }
 
-#define IS_COLOR_CODE(c) \
-	((c) == 2 || (c) == 3 || (c) == 4 || (c) == 6 || (c) == 7 || \
-	(c) == 15 || (c) == 17 || (c) == 22 || (c) == 27 || (c) == 29 || (c) == 31)
+#define IS_COLOR_CODE(c)                                                                           \
+	((c) == 2 || (c) == 3 || (c) == 4 || (c) == 6 || (c) == 7 || (c) == 15 || (c) == 17 ||     \
+	 (c) == 22 || (c) == 27 || (c) == 29 || (c) == 31)
 
 /* Return how many characters in `str' must be skipped before `len'
    characters of text is skipped. */
-int strip_real_length(const char *str, int len,
-		      int *last_color_pos, int *last_color_len)
+int strip_real_length(const char *str, int len, int *last_color_pos, int *last_color_len)
 {
 	const char *start = str;
 
@@ -1381,36 +1371,39 @@ int strip_real_length(const char *str, int len,
 			const char *mircstart = str;
 
 			if (last_color_pos != NULL)
-				*last_color_pos = (int) (str-start);
+				*last_color_pos = (int) (str - start);
 			str++;
 			get_mirc_color(&str, NULL, NULL);
 			if (last_color_len != NULL)
-				*last_color_len = (int) (str-mircstart);
+				*last_color_len = (int) (str - mircstart);
 
 		} else if (*str == 4 && str[1] != '\0') {
 			/* We expect 4 to indicate an internal Irssi color code. However 4
 			 * also means hex color, an alternative to mIRC color codes. We
 			 * don't support those. */
 			if (str[1] == FORMAT_COLOR_24 && str[2] != '\0') {
-				if (str[3] == '\0') str++;
-				else if (str[4] == '\0') str += 2;
-				else if (str[5] == '\0') str += 3;
+				if (str[3] == '\0')
+					str++;
+				else if (str[4] == '\0')
+					str += 2;
+				else if (str[5] == '\0')
+					str += 3;
 				else {
 					if (last_color_pos != NULL)
-						*last_color_pos = (int) (str-start);
+						*last_color_pos = (int) (str - start);
 					if (last_color_len != NULL)
 						*last_color_len = 6;
-					str+=4;
+					str += 4;
 				}
 			} else if (str[1] < FORMAT_STYLE_SPECIAL && str[2] != '\0') {
 				if (last_color_pos != NULL)
-					*last_color_pos = (int) (str-start);
+					*last_color_pos = (int) (str - start);
 				if (last_color_len != NULL)
 					*last_color_len = 3;
 				str++;
 			} else if (str[1] == FORMAT_STYLE_DEFAULTS) {
 				if (last_color_pos != NULL)
-					*last_color_pos = (int) (str-start);
+					*last_color_pos = (int) (str - start);
 				if (last_color_len != NULL)
 					*last_color_len = 2;
 			}
@@ -1424,7 +1417,7 @@ int strip_real_length(const char *str, int len,
 		}
 	}
 
-	return (int) (str-start);
+	return (int) (str - start);
 }
 
 char *strip_codes(const char *input)
@@ -1452,12 +1445,16 @@ char *strip_codes(const char *input)
 			/* irssi color */
 			if (p[2] != '\0') {
 				if (p[1] == FORMAT_COLOR_24) {
-					if (p[3] == '\0') p += 2;
-					else if (p[4] == '\0') p += 3;
-					else if (p[5] == '\0') p += 4;
-					else p += 5;
+					if (p[3] == '\0')
+						p += 2;
+					else if (p[4] == '\0')
+						p += 3;
+					else if (p[5] == '\0')
+						p += 4;
+					else
+						p += 5;
 				} else
-				p += 2;
+					p += 2;
 				continue;
 			}
 		}
@@ -1492,7 +1489,9 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 
 	dup = str = g_strdup(text);
 
-	flags = 0; fgcolor = theme->default_color; bgcolor = -1;
+	flags = 0;
+	fgcolor = theme->default_color;
+	bgcolor = -1;
 
 	if (*str == '\0') {
 		/* empty line, write line info only */
@@ -1519,7 +1518,7 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			/* send the text to gui handler */
 			handler(dest->window, GINT_TO_POINTER(fgcolor), GINT_TO_POINTER(bgcolor),
 			        GINT_TO_POINTER(flags), str, dest);
-			flags &= ~(GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_CLRTOEOL);
+			flags &= ~(GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_CLRTOEOL);
 		}
 
 		if (type == '\n') {
@@ -1527,14 +1526,13 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			        GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE), "", dest);
 			fgcolor = theme->default_color;
 			bgcolor = -1;
-			flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
+			flags &= GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_MONOSPACE;
 		}
 
 		if (*ptr == '\0')
 			break;
 
-		switch (type)
-		{
+		switch (type) {
 		case 2:
 			/* bold */
 			if (!hide_text_style)
@@ -1542,9 +1540,8 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			break;
 		case 3:
 			/* MIRC color */
-			get_mirc_color((const char **) &ptr,
-					hide_colors ? NULL : &fgcolor,
-					hide_colors ? NULL : &bgcolor);
+			get_mirc_color((const char **) &ptr, hide_colors ? NULL : &fgcolor,
+			               hide_colors ? NULL : &bgcolor);
 			if (!hide_colors)
 				flags |= GUI_PRINT_FLAG_MIRC_COLOR;
 			break;
@@ -1576,7 +1573,7 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			case FORMAT_STYLE_DEFAULTS:
 				fgcolor = theme->default_color;
 				bgcolor = -1;
-				flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
+				flags &= GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_MONOSPACE;
 				break;
 			case FORMAT_STYLE_CLRTOEOL:
 				break;
@@ -1610,7 +1607,8 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			default:
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
 					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
-					fgcolor = *ptr==(char)0xff ? -1 : (unsigned char) *ptr-'0';
+					fgcolor =
+					    *ptr == (char) 0xff ? -1 : (unsigned char) *ptr - '0';
 				}
 				if (ptr[1] == '\0')
 					break;
@@ -1618,7 +1616,7 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 				ptr++;
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
 					flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-					bgcolor = *ptr==(char)0xff ? -1 : *ptr-'0';
+					bgcolor = *ptr == (char) 0xff ? -1 : *ptr - '0';
 				}
 			}
 			if (*ptr == '\0')
@@ -1635,7 +1633,7 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			/* remove all styling */
 			fgcolor = theme->default_color;
 			bgcolor = -1;
-			flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
+			flags &= GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_MONOSPACE;
 			break;
 		case 17:
 			if (!hide_text_style)
@@ -1658,11 +1656,9 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			break;
 		case 27:
 			/* ansi color code */
-			ptr = (char *)
-				get_ansi_color(theme, ptr,
-					       hide_colors ? NULL : &fgcolor,
-					       hide_colors ? NULL : &bgcolor,
-					       hide_colors ? NULL : &flags);
+			ptr = (char *) get_ansi_color(theme, ptr, hide_colors ? NULL : &fgcolor,
+			                              hide_colors ? NULL : &bgcolor,
+			                              hide_colors ? NULL : &flags);
 			break;
 		}
 
@@ -1767,7 +1763,7 @@ static void read_settings(void)
 	timestamp_level = settings_get_bool("timestamps") ? MSGLEVEL_ALL : 0;
 	if (timestamp_level > 0)
 		timestamp_level = settings_get_level("timestamp_level");
-	timestamp_timeout = settings_get_time("timestamp_timeout")/1000;
+	timestamp_timeout = settings_get_time("timestamp_timeout") / 1000;
 
 	hide_server_tags = settings_get_bool("hide_server_tags");
 	hide_text_style = settings_get_bool("hide_text_style");
