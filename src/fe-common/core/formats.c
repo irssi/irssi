@@ -922,14 +922,7 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 		text = modified_text;
 		nick_formatting_depth--;
 
-		/* Debug output - send to current window, not status */
-		if (settings_get_bool("debug_nick_column")) {
-			WINDOW_REC *window = dest && dest->window ? dest->window : active_win;
-			printtext_window(window, MSGLEVEL_CLIENTCRAP,
-			         "DEBUG format_auto: formatnum=%d, original='%s'", formatnum, module_theme->expanded_formats[formatnum]);
-			printtext_window(window, MSGLEVEL_CLIENTCRAP,
-			         "DEBUG format_auto: modified='%s'", text);
-		}
+
 	}
 
 	result = format_get_text_args(dest, text, args);

@@ -819,7 +819,6 @@ void fe_messages_init(void)
 	/* Nick column feature settings */
 	settings_add_bool("lookandfeel", "nick_column_enabled", FALSE);
 	settings_add_int("lookandfeel", "nick_column_width", 12);
-	settings_add_bool("lookandfeel", "debug_nick_column", FALSE);
 
 	signal_add_last("message public", (SIGNAL_FUNC) sig_message_public);
 	signal_add_last("message private", (SIGNAL_FUNC) sig_message_private);

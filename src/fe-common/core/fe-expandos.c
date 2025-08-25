@@ -100,12 +100,7 @@ static char *expando_nickalign(SERVER_REC *server, void *item, int *free_ret)
 		padding = width - total_chars;
 	}
 
-	/* Debug output */
-	if (settings_get_bool("debug_nick_column")) {
-		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-		         "DEBUG nickalign: nick='%s', mode='%s', width=%d, mode_chars=%d, nick_chars=%d, total_chars=%d, padding=%d",
-		         current_nick, mode, width, mode_chars, nick_chars, total_chars, padding);
-	}
+
 
 	*free_ret = TRUE;
 	return g_strnfill(padding, ' ');
@@ -118,14 +113,7 @@ static char *expando_nicktrunc(SERVER_REC *server, void *item, int *free_ret)
 	const char *mode;
 	char *result;
 
-	/* Debug entry */
-	if (settings_get_bool("debug_nick_column")) {
-		printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-		         "DEBUG nicktrunc CALLED: enabled=%s, valid=%s, nick='%s'",
-		         settings_get_bool("nick_column_enabled") ? "yes" : "no",
-		         nick_context_valid ? "yes" : "no",
-		         current_nick ? current_nick : "NULL");
-	}
+
 
 	/* Gdy wyłączone - zwróć oryginalny nick */
 	if (!settings_get_bool("nick_column_enabled")) {
@@ -151,29 +139,18 @@ static char *expando_nicktrunc(SERVER_REC *server, void *item, int *free_ret)
 			/* Przytnij nick i dodaj >> */
 			result = g_strdup_printf("%.*s>>", available_for_nick, current_nick);
 
-			if (settings_get_bool("debug_nick_column")) {
-				printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-				         "DEBUG nicktrunc TRUNCATED: original='%s', truncated='%s', available_for_nick=%d",
-				         current_nick, result, available_for_nick);
-			}
+
 		} else {
 			/* Mode sam za długi */
 			result = g_strdup(">>");
 
-			if (settings_get_bool("debug_nick_column")) {
-				printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-				         "DEBUG nicktrunc MODE_TOO_LONG: result='%s'", result);
-			}
+
 		}
 		*free_ret = TRUE;
 		return result;
 	} else {
 		/* Nick się zmieści - zwróć oryginalny */
-		if (settings_get_bool("debug_nick_column")) {
-			printtext(NULL, NULL, MSGLEVEL_CLIENTCRAP,
-			         "DEBUG nicktrunc NO_TRUNCATION: nick='%s', total_chars=%d <= width=%d",
-			         current_nick, total_chars, width);
-		}
+
 		return current_nick;
 	}
 }
