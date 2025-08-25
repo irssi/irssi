@@ -76,10 +76,9 @@ int quitting;
 static int display_firsttimer = FALSE;
 static unsigned int user_settings_changed = 0;
 
-
 static void sig_exit(void)
 {
-        quitting = TRUE;
+	quitting = TRUE;
 }
 
 static void sig_settings_userinfo_changed(gpointer changedp)
@@ -106,12 +105,12 @@ static void sig_autoload_modules(void)
 void irssi_redraw(void)
 {
 	dirty = TRUE;
-        full_redraw = TRUE;
+	full_redraw = TRUE;
 }
 
 void irssi_set_dirty(void)
 {
-        dirty = TRUE;
+	dirty = TRUE;
 }
 
 static void dirty_check(void)
@@ -119,10 +118,10 @@ static void dirty_check(void)
 	if (!dirty)
 		return;
 
-        term_resize_dirty();
+	term_resize_dirty();
 
 	if (full_redraw) {
-                full_redraw = FALSE;
+		full_redraw = FALSE;
 
 		/* first clear the screen so curses will be
 		   forced to redraw the screen */
@@ -134,10 +133,10 @@ static void dirty_check(void)
 	}
 
 	mainwindows_redraw_dirty();
-        statusbar_redraw_dirty();
+	statusbar_redraw_dirty();
 	term_refresh(NULL);
 
-        dirty = FALSE;
+	dirty = FALSE;
 }
 
 static void textui_init(void)
@@ -212,11 +211,11 @@ static void textui_finish_init(void)
 	statusbar_redraw(NULL, TRUE);
 
 	if (servers == NULL && lookup_servers == NULL) {
-		printformat(NULL, NULL, MSGLEVEL_CRAP|MSGLEVEL_NO_ACT, TXT_IRSSI_BANNER);
+		printformat(NULL, NULL, MSGLEVEL_CRAP | MSGLEVEL_NO_ACT, TXT_IRSSI_BANNER);
 	}
 
 	if (display_firsttimer) {
-		printformat(NULL, NULL, MSGLEVEL_CRAP|MSGLEVEL_NO_ACT, TXT_WELCOME_FIRSTTIME);
+		printformat(NULL, NULL, MSGLEVEL_CRAP | MSGLEVEL_NO_ACT, TXT_WELCOME_FIRSTTIME);
 	}
 
 	/* see irc-servers-setup.c:init_userinfo */
@@ -238,7 +237,7 @@ static void textui_deinit(void)
 {
 	signal(SIGINT, SIG_DFL);
 
-        term_refresh_freeze();
+	term_refresh_freeze();
 	while (modules != NULL)
 		module_unload(modules->data);
 
@@ -285,10 +284,9 @@ static void check_files(void)
 int main(int argc, char **argv)
 {
 	static int version = 0;
-	static GOptionEntry options[] = {
-		{ "version", 'v', 0, G_OPTION_ARG_NONE, &version, "Display Irssi version", NULL },
-		{ NULL }
-	};
+	static GOptionEntry options[] = { { "version", 'v', 0, G_OPTION_ARG_NONE, &version,
+		                            "Display Irssi version", NULL },
+		                          { NULL } };
 	int loglev;
 
 	core_register_options();
@@ -296,9 +294,9 @@ int main(int argc, char **argv)
 	args_register(options);
 	args_execute(argc, argv);
 
- 	if (version) {
-		printf(PACKAGE_TARNAME" " PACKAGE_VERSION" (%d %04d)\n",
-		       IRSSI_VERSION_DATE, IRSSI_VERSION_TIME);
+	if (version) {
+		printf(PACKAGE_TARNAME " " PACKAGE_VERSION " (%d %04d)\n", IRSSI_VERSION_DATE,
+		       IRSSI_VERSION_TIME);
 		return 0;
 	}
 
@@ -347,8 +345,7 @@ int main(int argc, char **argv)
 
 			if (settings_get_bool("quit_on_hup")) {
 				signal_emit("gui exit", 0);
-			} 
-			else {
+			} else {
 				signal_emit("command reload", 1, "");
 			}
 		}

@@ -44,12 +44,13 @@
 /* After LINE_SPLIT_LIMIT characters, the message will be split into multiple lines */
 #define LINE_SPLIT_LIMIT 400
 
-typedef void (*ENTRY_REDIRECT_KEY_FUNC) (int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
-typedef void (*ENTRY_REDIRECT_ENTRY_FUNC) (const char *line, void *data, SERVER_REC *server, WI_ITEM_REC *item);
+typedef void (*ENTRY_REDIRECT_KEY_FUNC)(int key, void *data, SERVER_REC *server, WI_ITEM_REC *item);
+typedef void (*ENTRY_REDIRECT_ENTRY_FUNC)(const char *line, void *data, SERVER_REC *server,
+                                          WI_ITEM_REC *item);
 
 typedef struct {
 	SIGNAL_FUNC func;
-        int flags;
+	int flags;
 	void *data;
 } ENTRY_REDIRECT_REC;
 
@@ -81,7 +82,7 @@ static int previous_yank_preceded;
  * bracketed paste mode active. Fror more details see
  * https://cirw.in/blog/bracketed-paste */
 static const unichar bp_start[] = { 0x1b, '[', '2', '0', '0', '~' };
-static const unichar bp_end[]   = { 0x1b, '[', '2', '0', '1', '~' };
+static const unichar bp_end[] = { 0x1b, '[', '2', '0', '1', '~' };
 
 #define BRACKETED_PASTE_TIMEOUT (5 * 1000) // ms
 
@@ -114,7 +115,7 @@ void input_listen_init(int handle)
 void input_listen_deinit(void)
 {
 	g_source_remove(readtag);
-        readtag = -1;
+	readtag = -1;
 }
 
 static void handle_key_redirect(int key)
@@ -137,7 +138,7 @@ static void handle_entry_redirect(const char *line)
 	ENTRY_REDIRECT_ENTRY_FUNC func;
 	void *data;
 
-        gui_entry_set_hidden(active_entry, FALSE);
+	gui_entry_set_hidden(active_entry, FALSE);
 
 	func = (ENTRY_REDIRECT_ENTRY_FUNC) redir->func;
 	data = redir->data;
@@ -146,8 +147,7 @@ static void handle_entry_redirect(const char *line)
 	gui_entry_set_prompt(active_entry, "");
 
 	if (func != NULL) {
-		func(line, data, active_win->active_server,
-		     active_win->active);
+		func(line, data, active_win->active_server, active_win->active);
 	}
 }
 
@@ -161,14 +161,14 @@ static int get_scroll_count(void)
 	if (count == 0)
 		count = 1;
 	else if (count < 0)
-		count = active_mainwin->height-active_mainwin->statusbar_lines+count;
+		count = active_mainwin->height - active_mainwin->statusbar_lines + count;
 	else if (count < 1)
-                count = 1.0/count;
+		count = 1.0 / count;
 
 	if (*str == '/' || *str == '.') {
-		count = (active_mainwin->height-active_mainwin->statusbar_lines)/count;
+		count = (active_mainwin->height - active_mainwin->statusbar_lines) / count;
 	}
-	return (int)count;
+	return (int) count;
 }
 
 static void window_prev_page(void)
@@ -213,7 +213,7 @@ static void paste_buffer_join_lines(GArray *buf)
 	if (buf->len == 0)
 		return;
 
-	arr = (unichar *)buf->data;
+	arr = (unichar *) buf->data;
 
 	/* first line */
 	if (isblank(arr[0]))
@@ -221,7 +221,7 @@ static void paste_buffer_join_lines(GArray *buf)
 
 	/* find the first beginning of indented line */
 	for (i = 1; i < buf->len; i++) {
-		if (isnewline(arr[i-1]) && isblank(arr[i]))
+		if (isnewline(arr[i - 1]) && isblank(arr[i]))
 			break;
 	}
 	if (i == buf->len)
@@ -236,7 +236,8 @@ static void paste_buffer_join_lines(GArray *buf)
 		return;
 
 	/* now, enforce these to all subsequent lines */
-	count = indent; last_lf = TRUE;
+	count = indent;
+	last_lf = TRUE;
 	for (; i < buf->len; i++) {
 		if (last_lf) {
 			if (isblank(arr[i]))
@@ -254,15 +255,17 @@ static void paste_buffer_join_lines(GArray *buf)
 
 	/* all looks fine - now remove the whitespace, but don't let lines
 	   get longer than LINE_SPLIT_LIMIT chars */
-	dest = arr; last_lf = TRUE; last_lf_pos = NULL; line_len = 0;
+	dest = arr;
+	last_lf = TRUE;
+	last_lf_pos = NULL;
+	line_len = 0;
 	for (i = 0; i < buf->len; i++) {
 		if (last_lf && isblank(arr[i])) {
 			/* whitespace, ignore */
 		} else if (isnewline(arr[i])) {
-			if (!last_lf && i+1 != buf->len &&
-			    isblank(arr[i+1])) {
+			if (!last_lf && i + 1 != buf->len && isblank(arr[i + 1])) {
 				last_lf_pos = dest;
-				if (i != 0 && !isblank(arr[i-1]))
+				if (i != 0 && !isblank(arr[i - 1]))
 					*dest++ = ' ';
 			} else {
 				*dest++ = '\n'; /* double-LF */
@@ -273,9 +276,10 @@ static void paste_buffer_join_lines(GArray *buf)
 		} else {
 			last_lf = FALSE;
 			if (++line_len >= LINE_SPLIT_LIMIT && last_lf_pos != NULL) {
-				memmove(last_lf_pos+1, last_lf_pos,
-					(dest - last_lf_pos) * sizeof(unichar));
-				*last_lf_pos = '\n'; last_lf_pos = NULL;
+				memmove(last_lf_pos + 1, last_lf_pos,
+				        (dest - last_lf_pos) * sizeof(unichar));
+				*last_lf_pos = '\n';
+				last_lf_pos = NULL;
 				line_len = 0;
 				dest++;
 			}
@@ -370,9 +374,9 @@ static void paste_flush(void (*send)(void))
 		g_array_set_size(paste_buffer_rest, 0);
 	}
 
-	gui_entry_set_prompt(active_entry,
-			     paste_old_prompt == NULL ? "" : paste_old_prompt);
-	g_free(paste_old_prompt); paste_old_prompt = NULL;
+	gui_entry_set_prompt(active_entry, paste_old_prompt == NULL ? "" : paste_old_prompt);
+	g_free(paste_old_prompt);
+	paste_old_prompt = NULL;
 	paste_prompt = FALSE;
 
 	paste_line_count = 0;
@@ -514,21 +518,17 @@ static void insert_paste_prompt(void)
 	   number of lines obtained from this. The number isn't entirely accurate;
 	   we just choose the greater of the two since the exact value isn't
 	   important */
-	if (split_lines > paste_verify_line_count &&
-		split_lines > paste_line_count) {
+	if (split_lines > paste_verify_line_count && split_lines > paste_line_count) {
 		actual_line_count = split_lines;
 	}
 
 	paste_prompt = TRUE;
 	paste_old_prompt = g_strdup(active_entry->prompt);
-	printformat_window(active_win, MSGLEVEL_CLIENTNOTICE,
-			   TXT_PASTE_WARNING,
-			   actual_line_count,
-			   active_win->active == NULL ? "window" :
-			   active_win->active->visible_name);
+	printformat_window(active_win, MSGLEVEL_CLIENTNOTICE, TXT_PASTE_WARNING, actual_line_count,
+	                   active_win->active == NULL ? "window" :
+	                                                active_win->active->visible_name);
 
-	str = format_get_text(MODULE_NAME, active_win, NULL, NULL,
-			      TXT_PASTE_PROMPT, 0, 0);
+	str = format_get_text(MODULE_NAME, active_win, NULL, NULL, TXT_PASTE_PROMPT, 0, 0);
 	gui_entry_set_prompt(active_entry, str);
 	paste_entry = gui_entry_get_text(active_entry);
 	paste_entry_pos = gui_entry_get_pos(active_entry);
@@ -559,16 +559,16 @@ static void sig_gui_key_pressed(gpointer keyp)
 
 	if (key < 32) {
 		/* control key */
-                str[0] = '^';
-		str[1] = (char)key+'@';
-                str[2] = '\0';
+		str[0] = '^';
+		str[1] = (char) key + '@';
+		str[2] = '\0';
 	} else if (key == 127) {
-                str[0] = '^';
+		str[0] = '^';
 		str[1] = '?';
-                str[2] = '\0';
+		str[2] = '\0';
 	} else if (!active_entry->utf8) {
 		if (key <= 0xff) {
-			str[0] = (char)key;
+			str[0] = (char) key;
 			str[1] = '\0';
 		} else {
 			str[0] = (char) (key >> 8);
@@ -576,7 +576,7 @@ static void sig_gui_key_pressed(gpointer keyp)
 			str[2] = '\0';
 		}
 	} else {
-                /* need to convert to utf8 */
+		/* need to convert to utf8 */
 		str[g_unichar_to_utf8(key, str)] = '\0';
 	}
 
@@ -640,9 +640,7 @@ static void key_send_line(void)
 	}
 
 	if (redir == NULL) {
-		signal_emit("send command", 3, str,
-			    active_win->active_server,
-			    active_win->active);
+		signal_emit("send command", 3, str, active_win->active_server, active_win->active);
 	} else {
 		handle_entry_redirect(str);
 	}
@@ -651,22 +649,20 @@ static void key_send_line(void)
 		gui_entry_set_text(active_entry, "");
 	command_history_clear_pos(active_win);
 
-        g_free(str);
+	g_free(str);
 }
 
-static void key_combo(void)
-{
-}
+static void key_combo(void) {}
 
 static void key_backward_history(void)
 {
 	const char *text;
-        char *line;
+	char *line;
 
 	line = gui_entry_get_text(active_entry);
 	text = command_history_prev(active_win, line);
 	gui_entry_set_text(active_entry, text);
-        g_free(line);
+	g_free(line);
 }
 
 static void key_forward_history(void)
@@ -677,7 +673,7 @@ static void key_forward_history(void)
 	line = gui_entry_get_text(active_entry);
 	text = command_history_next(active_win, line);
 	gui_entry_set_text(active_entry, text);
-        g_free(line);
+	g_free(line);
 }
 
 static void key_backward_global_history(void)
@@ -715,7 +711,7 @@ static void key_erase_history_entry(void)
 
 static void key_beginning_of_line(void)
 {
-        gui_entry_set_pos(active_entry, 0);
+	gui_entry_set_pos(active_entry, 0);
 }
 
 static void key_end_of_line(void)
@@ -780,7 +776,7 @@ static void key_yank_from_cutbuffer(void)
 {
 	char *cutbuffer;
 
-        cutbuffer = gui_entry_get_cutbuffer(active_entry);
+	cutbuffer = gui_entry_get_cutbuffer(active_entry);
 	if (cutbuffer != NULL) {
 		gui_entry_insert_text(active_entry, cutbuffer);
 		active_entry->yank_preceded = TRUE;
@@ -801,7 +797,8 @@ static void key_yank_next_cutbuffer(void)
 		return;
 
 	rec = active_entry->kill_ring->data;
-	if (rec != NULL) length = rec->cutbuffer_len;
+	if (rec != NULL)
+		length = rec->cutbuffer_len;
 
 	cutbuffer = gui_entry_get_next_cutbuffer(active_entry);
 	if (cutbuffer != NULL) {
@@ -902,9 +899,9 @@ static gboolean paste_timeout(gpointer data)
 		}
 		g_array_set_size(paste_buffer, 0);
 	} else if (paste_verify_line_count > 0 &&
-				(paste_line_count >= paste_verify_line_count ||
-				split_lines > paste_verify_line_count) &&
-				active_win->active != NULL)
+	           (paste_line_count >= paste_verify_line_count ||
+	            split_lines > paste_verify_line_count) &&
+	           active_win->active != NULL)
 		insert_paste_prompt();
 	else
 		paste_flush(paste_send);
@@ -957,12 +954,10 @@ static void paste_bracketed_middle(void)
 
 	for (i = 0; i <= len; i++, ptr++) {
 		if (ptr[0] == bp_end[0] && memcmp(ptr, bp_end, sizeof(bp_end)) == 0) {
-
 			/* if there are at least 6 bytes after the end,
 			 * check for another start marker right afterwards */
 			if (i <= (len - marklen) &&
 			    memcmp(ptr + marklen, bp_start, sizeof(bp_start)) == 0) {
-
 				/* remove both markers*/
 				g_array_remove_range(paste_buffer, i, marklen * 2);
 				len -= marklen * 2;
@@ -981,7 +976,7 @@ static void paste_bracketed_middle(void)
 static void sig_input(void)
 {
 	if (!active_entry) {
-                /* no active entry yet - wait until we have it */
+		/* no active entry yet - wait until we have it */
 		return;
 	}
 
@@ -1005,7 +1000,8 @@ static void sig_input(void)
 		if (paste_bracketed_mode) {
 			paste_bracketed_middle();
 
-		} else if (!paste_use_bracketed_mode && paste_detect_time > 0 && paste_buffer->len >= 3) {
+		} else if (!paste_use_bracketed_mode && paste_detect_time > 0 &&
+		           paste_buffer->len >= 3) {
 			if (paste_timeout_id != -1)
 				g_source_remove(paste_timeout_id);
 			paste_timeout_id = g_timeout_add(paste_detect_time, paste_timeout, NULL);
@@ -1017,7 +1013,8 @@ static void sig_input(void)
 				signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
 
 				if (paste_bracketed_mode) {
-					/* just enabled by the signal, remove what was processed so far */
+					/* just enabled by the signal, remove what was processed so
+					 * far */
 					g_array_remove_range(paste_buffer, 0, i + 1);
 
 					/* handle single-line / small pastes here */
@@ -1093,12 +1090,14 @@ static void key_scroll_forward(void)
 
 static void key_scroll_start(void)
 {
-	signal_emit("command scrollback home", 3, NULL, active_win->active_server, active_win->active);
+	signal_emit("command scrollback home", 3, NULL, active_win->active_server,
+	            active_win->active);
 }
 
 static void key_scroll_end(void)
 {
-	signal_emit("command scrollback end", 3, NULL, active_win->active_server, active_win->active);
+	signal_emit("command scrollback end", 3, NULL, active_win->active_server,
+	            active_win->active);
 }
 
 static void key_change_window(const char *data)
@@ -1111,7 +1110,7 @@ static void key_completion(int erase, int backward)
 	char *text, *line;
 	int pos;
 
-        text = gui_entry_get_text_and_pos(active_entry, &pos);
+	text = gui_entry_get_text_and_pos(active_entry, &pos);
 	line = word_complete(active_win, text, &pos, erase, backward);
 	g_free(text);
 
@@ -1123,17 +1122,17 @@ static void key_completion(int erase, int backward)
 
 static void key_word_completion_backward(void)
 {
-        key_completion(FALSE, TRUE);
+	key_completion(FALSE, TRUE);
 }
 
 static void key_word_completion(void)
 {
-        key_completion(FALSE, FALSE);
+	key_completion(FALSE, FALSE);
 }
 
 static void key_erase_completion(void)
 {
-        key_completion(TRUE, FALSE);
+	key_completion(TRUE, FALSE);
 }
 
 static void key_check_replaces(void)
@@ -1141,7 +1140,7 @@ static void key_check_replaces(void)
 	char *text, *line;
 	int pos;
 
-        text = gui_entry_get_text_and_pos(active_entry, &pos);
+	text = gui_entry_get_text_and_pos(active_entry, &pos);
 	line = auto_word_complete(text, &pos);
 	g_free(text);
 
@@ -1153,7 +1152,8 @@ static void key_check_replaces(void)
 
 static void key_previous_window(void)
 {
-	signal_emit("command window previous", 3, "", active_win->active_server, active_win->active);
+	signal_emit("command window previous", 3, "", active_win->active_server,
+	            active_win->active);
 }
 
 static void key_next_window(void)
@@ -1183,7 +1183,8 @@ static void key_lower_window(void)
 
 static void key_active_window(void)
 {
-	signal_emit("command window goto", 3, "active", active_win->active_server, active_win->active);
+	signal_emit("command window goto", 3, "active", active_win->active_server,
+	            active_win->active);
 }
 
 static SERVER_REC *get_prev_server(SERVER_REC *current)
@@ -1191,9 +1192,9 @@ static SERVER_REC *get_prev_server(SERVER_REC *current)
 	int pos;
 
 	if (current == NULL) {
-		return servers != NULL ? g_slist_last(servers)->data :
-			lookup_servers != NULL ?
-			g_slist_last(lookup_servers)->data : NULL;
+		return servers != NULL        ? g_slist_last(servers)->data :
+		       lookup_servers != NULL ? g_slist_last(lookup_servers)->data :
+		                                NULL;
 	}
 
 	/* connect2 -> connect1 -> server2 -> server1 -> connect2 -> .. */
@@ -1201,7 +1202,7 @@ static SERVER_REC *get_prev_server(SERVER_REC *current)
 	pos = g_slist_index(servers, current);
 	if (pos != -1) {
 		if (pos > 0)
-			return g_slist_nth(servers, pos-1)->data;
+			return g_slist_nth(servers, pos - 1)->data;
 		if (lookup_servers != NULL)
 			return g_slist_last(lookup_servers)->data;
 		return g_slist_last(servers)->data;
@@ -1211,7 +1212,7 @@ static SERVER_REC *get_prev_server(SERVER_REC *current)
 	g_assert(pos >= 0);
 
 	if (pos > 0)
-		return g_slist_nth(lookup_servers, pos-1)->data;
+		return g_slist_nth(lookup_servers, pos - 1)->data;
 	if (servers != NULL)
 		return g_slist_last(servers)->data;
 	return g_slist_last(lookup_servers)->data;
@@ -1222,8 +1223,9 @@ static SERVER_REC *get_next_server(SERVER_REC *current)
 	GSList *pos;
 
 	if (current == NULL) {
-		return servers != NULL ? servers->data :
-			lookup_servers != NULL ? lookup_servers->data : NULL;
+		return servers != NULL        ? servers->data :
+		       lookup_servers != NULL ? lookup_servers->data :
+		                                NULL;
 	}
 
 	/* server1 -> server2 -> connect1 -> connect2 -> server1 -> .. */
@@ -1252,16 +1254,16 @@ static void key_previous_window_item(void)
 	SERVER_REC *server;
 
 	if (active_win->items != NULL) {
-		signal_emit("command window item prev", 3, "",
-			    active_win->active_server, active_win->active);
+		signal_emit("command window item prev", 3, "", active_win->active_server,
+		            active_win->active);
 	} else if (servers != NULL || lookup_servers != NULL) {
 		/* change server */
 		server = active_win->active_server;
 		if (server == NULL)
 			server = active_win->connect_server;
 		server = get_prev_server(server);
-		signal_emit("command window server", 3, server->tag,
-			    active_win->active_server, active_win->active);
+		signal_emit("command window server", 3, server->tag, active_win->active_server,
+		            active_win->active);
 	}
 }
 
@@ -1270,37 +1272,37 @@ static void key_next_window_item(void)
 	SERVER_REC *server;
 
 	if (active_win->items != NULL) {
-		signal_emit("command window item next", 3, "",
-			    active_win->active_server, active_win->active);
+		signal_emit("command window item next", 3, "", active_win->active_server,
+		            active_win->active);
 	} else if (servers != NULL || lookup_servers != NULL) {
 		/* change server */
 		server = active_win->active_server;
 		if (server == NULL)
 			server = active_win->connect_server;
 		server = get_next_server(server);
-		signal_emit("command window server", 3, server->tag,
-			    active_win->active_server, active_win->active);
+		signal_emit("command window server", 3, server->tag, active_win->active_server,
+		            active_win->active);
 	}
 }
 
 static void key_escape(void)
 {
-        escape_next_key = TRUE;
+	escape_next_key = TRUE;
 }
 
 static void key_insert_text(const char *data)
 {
 	char *str;
 
-	str = parse_special_string(data, active_win->active_server,
-				   active_win->active, "", NULL, 0);
+	str =
+	    parse_special_string(data, active_win->active_server, active_win->active, "", NULL, 0);
 	gui_entry_insert_text(active_entry, str);
-        g_free(str);
+	g_free(str);
 }
 
 static void key_sig_stop(void)
 {
-        term_stop();
+	term_stop();
 }
 
 static void sig_window_auto_changed(void)
@@ -1310,14 +1312,13 @@ static void sig_window_auto_changed(void)
 	if (active_entry == NULL)
 		return;
 
-        text = gui_entry_get_text(active_entry);
+	text = gui_entry_get_text(active_entry);
 	command_history_next(active_win, text);
 	gui_entry_set_text(active_entry, "");
-        g_free(text);
+	g_free(text);
 }
 
-static void sig_gui_entry_redirect(SIGNAL_FUNC func, const char *entry,
-				   void *flags, void *data)
+static void sig_gui_entry_redirect(SIGNAL_FUNC func, const char *entry, void *flags, void *data)
 {
 	redir = g_new0(ENTRY_REDIRECT_REC, 1);
 	redir->func = func;
@@ -1351,13 +1352,13 @@ void gui_readline_init(void)
 	char *key, data[MAX_INT_STRLEN];
 	int n;
 
-        escape_next_key = FALSE;
+	escape_next_key = FALSE;
 	redir = NULL;
 	paste_entry = NULL;
 	paste_entry_pos = 0;
 	paste_buffer = g_array_new(FALSE, FALSE, sizeof(unichar));
 	paste_buffer_rest = g_array_new(FALSE, FALSE, sizeof(unichar));
-        paste_old_prompt = NULL;
+	paste_old_prompt = NULL;
 	paste_timeout_id = -1;
 	paste_bracketed_mode = FALSE;
 	last_keypress = g_get_real_time();
@@ -1375,7 +1376,7 @@ void gui_readline_init(void)
 	setup_changed();
 
 	keyboard = keyboard_create(NULL);
-        key_configure_freeze();
+	key_configure_freeze();
 
 	key_bind("key", NULL, " ", "space", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "^M", "return", (SIGNAL_FUNC) key_combo);
@@ -1385,13 +1386,13 @@ void gui_readline_init(void)
 	key_bind("key", NULL, "^I", "tab", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-Z", "stab", (SIGNAL_FUNC) key_combo);
 
-        /* meta */
+	/* meta */
 	key_bind("key", NULL, "^[", "meta", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta-[", "meta2", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta-O", "meta2", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta-[O", "meta2", (SIGNAL_FUNC) key_combo);
 
-        /* arrow keys */
+	/* arrow keys */
 	key_bind("key", NULL, "meta2-A", "up", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-B", "down", (SIGNAL_FUNC) key_combo);
 	key_bind("key", NULL, "meta2-C", "right", (SIGNAL_FUNC) key_combo);
@@ -1527,18 +1528,19 @@ void gui_readline_init(void)
 	key_bind("multi", NULL, "return", "check_replaces;send_line", NULL);
 	key_bind("multi", NULL, "space", "check_replaces;insert_text  ", NULL);
 
-        /* moving between windows */
+	/* moving between windows */
 	for (n = 0; changekeys[n] != '\0'; n++) {
 		key = g_strdup_printf("meta-%c", changekeys[n]);
-		ltoa(data, n+1);
-		key_bind("change_window", "Change window", key, data, (SIGNAL_FUNC) key_change_window);
+		ltoa(data, n + 1);
+		key_bind("change_window", "Change window", key, data,
+		         (SIGNAL_FUNC) key_change_window);
 		g_free(key);
 	}
 
-        /* misc */
+	/* misc */
 	key_bind("stop_irc", "Send SIGSTOP to client", "^Z", NULL, (SIGNAL_FUNC) key_sig_stop);
 
-        key_configure_thaw();
+	key_configure_thaw();
 
 	signal_add("window changed automatic", (SIGNAL_FUNC) sig_window_auto_changed);
 	signal_add("gui entry redirect", (SIGNAL_FUNC) sig_gui_entry_redirect);
@@ -1548,9 +1550,9 @@ void gui_readline_init(void)
 
 void gui_readline_deinit(void)
 {
-        input_listen_deinit();
+	input_listen_deinit();
 
-        key_configure_freeze();
+	key_configure_freeze();
 
 	key_unbind("paste_start", (SIGNAL_FUNC) key_paste_start);
 	key_unbind("paste_cancel", (SIGNAL_FUNC) key_paste_cancel);
@@ -1561,9 +1563,9 @@ void gui_readline_deinit(void)
 
 	key_unbind("backward_character", (SIGNAL_FUNC) key_backward_character);
 	key_unbind("forward_character", (SIGNAL_FUNC) key_forward_character);
- 	key_unbind("backward_word", (SIGNAL_FUNC) key_backward_word);
+	key_unbind("backward_word", (SIGNAL_FUNC) key_backward_word);
 	key_unbind("forward_word", (SIGNAL_FUNC) key_forward_word);
- 	key_unbind("backward_to_space", (SIGNAL_FUNC) key_backward_to_space);
+	key_unbind("backward_to_space", (SIGNAL_FUNC) key_backward_to_space);
 	key_unbind("forward_to_space", (SIGNAL_FUNC) key_forward_to_space);
 	key_unbind("beginning_of_line", (SIGNAL_FUNC) key_beginning_of_line);
 	key_unbind("end_of_line", (SIGNAL_FUNC) key_end_of_line);
@@ -1620,10 +1622,10 @@ void gui_readline_deinit(void)
 	key_unbind("change_window", (SIGNAL_FUNC) key_change_window);
 	key_unbind("stop_irc", (SIGNAL_FUNC) key_sig_stop);
 	keyboard_destroy(keyboard);
-        g_array_free(paste_buffer, TRUE);
-        g_array_free(paste_buffer_rest, TRUE);
+	g_array_free(paste_buffer, TRUE);
+	g_array_free(paste_buffer_rest, TRUE);
 
-        key_configure_thaw();
+	key_configure_thaw();
 
 	signal_remove("window changed automatic", (SIGNAL_FUNC) sig_window_auto_changed);
 	signal_remove("gui entry redirect", (SIGNAL_FUNC) sig_gui_entry_redirect);

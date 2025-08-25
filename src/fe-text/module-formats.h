@@ -70,21 +70,22 @@ enum {
 };
 
 /* Sidepanel format indices appended at the end of gui_text_formats: we declare explicit macros. */
-#define TXT_SIDEPANEL_HEADER           format_find_tag(MODULE_NAME, "sidepanel_header")
-#define TXT_SIDEPANEL_ITEM             format_find_tag(MODULE_NAME, "sidepanel_item")
-#define TXT_SIDEPANEL_ITEM_SELECTED    format_find_tag(MODULE_NAME, "sidepanel_item_selected")
-#define TXT_SIDEPANEL_ITEM_ACTIVITY    format_find_tag(MODULE_NAME, "sidepanel_item_activity")
+#define TXT_SIDEPANEL_HEADER format_find_tag(MODULE_NAME, "sidepanel_header")
+#define TXT_SIDEPANEL_ITEM format_find_tag(MODULE_NAME, "sidepanel_item")
+#define TXT_SIDEPANEL_ITEM_SELECTED format_find_tag(MODULE_NAME, "sidepanel_item_selected")
+#define TXT_SIDEPANEL_ITEM_ACTIVITY format_find_tag(MODULE_NAME, "sidepanel_item_activity")
 #define TXT_SIDEPANEL_ITEM_NICK_MENTION format_find_tag(MODULE_NAME, "sidepanel_item_nick_mention")
-#define TXT_SIDEPANEL_ITEM_QUERY_MSG   format_find_tag(MODULE_NAME, "sidepanel_item_query_msg")
-#define TXT_SIDEPANEL_ITEM_EVENTS      format_find_tag(MODULE_NAME, "sidepanel_item_events")
-#define TXT_SIDEPANEL_ITEM_HIGHLIGHT   format_find_tag(MODULE_NAME, "sidepanel_item_highlight")
-#define TXT_SIDEPANEL_NICK_OP          format_find_tag(MODULE_NAME, "sidepanel_nick_op")
-#define TXT_SIDEPANEL_NICK_VOICE       format_find_tag(MODULE_NAME, "sidepanel_nick_voice")
-#define TXT_SIDEPANEL_NICK_NORMAL      format_find_tag(MODULE_NAME, "sidepanel_nick_normal")
-#define TXT_SIDEPANEL_NICK_OP_STATUS   format_find_tag(MODULE_NAME, "sidepanel_nick_op_status")
+#define TXT_SIDEPANEL_ITEM_QUERY_MSG format_find_tag(MODULE_NAME, "sidepanel_item_query_msg")
+#define TXT_SIDEPANEL_ITEM_EVENTS format_find_tag(MODULE_NAME, "sidepanel_item_events")
+#define TXT_SIDEPANEL_ITEM_HIGHLIGHT format_find_tag(MODULE_NAME, "sidepanel_item_highlight")
+#define TXT_SIDEPANEL_NICK_OP format_find_tag(MODULE_NAME, "sidepanel_nick_op")
+#define TXT_SIDEPANEL_NICK_VOICE format_find_tag(MODULE_NAME, "sidepanel_nick_voice")
+#define TXT_SIDEPANEL_NICK_NORMAL format_find_tag(MODULE_NAME, "sidepanel_nick_normal")
+#define TXT_SIDEPANEL_NICK_OP_STATUS format_find_tag(MODULE_NAME, "sidepanel_nick_op_status")
 #define TXT_SIDEPANEL_NICK_VOICE_STATUS format_find_tag(MODULE_NAME, "sidepanel_nick_voice_status")
-#define TXT_SIDEPANEL_NICK_NORMAL_STATUS format_find_tag(MODULE_NAME, "sidepanel_nick_normal_status")
+#define TXT_SIDEPANEL_NICK_NORMAL_STATUS                                                           \
+	format_find_tag(MODULE_NAME, "sidepanel_nick_normal_status")
 
-extern FORMAT_REC gui_text_formats[TXT_COUNT+1];
+extern FORMAT_REC gui_text_formats[TXT_COUNT + 1];
 
 #endif

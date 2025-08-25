@@ -32,9 +32,9 @@
 static void sig_layout_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 {
 	WINDOW_REC *active;
-        GUI_WINDOW_REC *gui;
+	GUI_WINDOW_REC *gui;
 
-        gui = WINDOW_GUI(window);
+	gui = WINDOW_GUI(window);
 	if (gui->sticky) {
 		iconfig_node_set_bool(node, "sticky", TRUE);
 		active = gui->parent->active;
@@ -51,7 +51,7 @@ static void sig_layout_window_save(WINDOW_REC *window, CONFIG_NODE *node)
 	}
 
 	if (gui->use_scroll)
-                iconfig_node_set_bool(node, "scroll", gui->scroll);
+		iconfig_node_set_bool(node, "scroll", gui->scroll);
 }
 
 static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
@@ -69,7 +69,8 @@ static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
 	if (config_node_get_bool(node, "sticky", FALSE))
 		gui_window_set_sticky(window);
 
-	textbuffer_view_set_hidden_level(gui->view, level2bits(config_node_get_str(node, "hidelevel", default_hidelevel), NULL));
+	textbuffer_view_set_hidden_level(
+	    gui->view, level2bits(config_node_get_str(node, "hidelevel", default_hidelevel), NULL));
 
 	if (config_node_get_str(node, "scroll", NULL) != NULL) {
 		gui->use_scroll = TRUE;
@@ -80,9 +81,9 @@ static void sig_layout_window_restore(WINDOW_REC *window, CONFIG_NODE *node)
 
 static void main_window_save(MAIN_WINDOW_REC *window, CONFIG_NODE *node)
 {
-        char num[MAX_INT_STRLEN];
+	char num[MAX_INT_STRLEN];
 
-        ltoa(num, window->active->refnum);
+	ltoa(num, window->active->refnum);
 	node = iconfig_node_section(node, num, NODE_TYPE_BLOCK);
 
 	iconfig_node_set_int(node, "first_line", window->first_line);
@@ -104,15 +105,13 @@ static void sig_layout_save(void)
 static int window_node_cmp(CONFIG_NODE *n1, CONFIG_NODE *n2)
 {
 	return (config_node_get_int(n1, "first_line", 0) ==
-		config_node_get_int(n2, "first_line", 0)
-		&&
-		config_node_get_int(n1, "first_column", 0) >
-		config_node_get_int(n2, "first_column", 0)
-	       ) ||
-		config_node_get_int(n1, "first_line", 0) >
-		config_node_get_int(n2, "first_line", 0)
-		? -1
-		: 1;
+	            config_node_get_int(n2, "first_line", 0) &&
+	        config_node_get_int(n1, "first_column", 0) >
+	            config_node_get_int(n2, "first_column", 0)) ||
+	               config_node_get_int(n1, "first_line", 0) >
+	                   config_node_get_int(n2, "first_line", 0) ?
+	           -1 :
+	           1;
 }
 
 /* Returns list of mainwindow nodes sorted by first_line
@@ -121,14 +120,13 @@ static GSList *get_sorted_windows_config(CONFIG_NODE *node)
 {
 	GSList *tmp, *output;
 
-        output = NULL;
+	output = NULL;
 	tmp = config_node_first(node->value);
 	for (; tmp != NULL; tmp = config_node_next(tmp)) {
-		output = g_slist_insert_sorted(output, tmp->data,
-					       (GCompareFunc) window_node_cmp);
+		output = g_slist_insert_sorted(output, tmp->data, (GCompareFunc) window_node_cmp);
 	}
 
-        return output;
+	return output;
 }
 
 static GSList *get_windows_config_filter_line(GSList *in)
@@ -172,17 +170,18 @@ static void sig_layout_restore(void)
 	int i, lower_size, lines_count, columns_count, diff;
 
 	node = iconfig_node_traverse("mainwindows", FALSE);
-	if (node == NULL) return;
+	if (node == NULL)
+		return;
 
 	sorted_config = get_sorted_windows_config(node);
-	if (sorted_config == NULL) return;
+	if (sorted_config == NULL)
+		return;
 
 	lines_config = get_windows_config_filter_line(sorted_config);
 	lines_count = g_slist_length(lines_config);
 
 	/* calculate the saved terminal height */
-	avail_height = term_height -
-		screen_reserved_top - screen_reserved_bottom;
+	avail_height = term_height - screen_reserved_top - screen_reserved_bottom;
 	height = 0;
 	heights = g_new0(int, lines_count);
 	for (i = 0, tmp = lines_config; tmp != NULL; tmp = tmp->next, i++) {
@@ -196,7 +195,7 @@ static void sig_layout_restore(void)
 	if (max_wins_line < 1)
 		max_wins_line = 1;
 
-	if (avail_height <= (WINDOW_MIN_SIZE*2)+1) {
+	if (avail_height <= (WINDOW_MIN_SIZE * 2) + 1) {
 		/* we can fit only one window to screen -
 		   give it all the height we can */
 		lines_count = 1;
@@ -205,7 +204,7 @@ static void sig_layout_restore(void)
 		/* Terminal's height is different from the saved one.
 		   Resize the windows so they fit to screen. */
 		while (height > avail_height &&
-		       lines_count*(WINDOW_MIN_SIZE+1) > avail_height) {
+		       lines_count * (WINDOW_MIN_SIZE + 1) > avail_height) {
 			/* all windows can't fit into screen,
 			   remove the lowest ones */
 			lines_count--;
@@ -213,9 +212,9 @@ static void sig_layout_restore(void)
 
 		/* try to keep the windows' size about the same in percents */
 		for (i = 0; i < lines_count; i++) {
-			int size = avail_height*heights[i]/height;
-			if (size < WINDOW_MIN_SIZE+1)
-				size = WINDOW_MIN_SIZE+1;
+			int size = avail_height * heights[i] / height;
+			if (size < WINDOW_MIN_SIZE + 1)
+				size = WINDOW_MIN_SIZE + 1;
 			heights[i] = size;
 		}
 
@@ -229,7 +228,7 @@ static void sig_layout_restore(void)
 			if (i == lines_count)
 				i = 0;
 
-			if (heights[i] > WINDOW_MIN_SIZE+1) {
+			if (heights[i] > WINDOW_MIN_SIZE + 1) {
 				height += diff;
 				heights[i] += diff;
 			}
@@ -237,28 +236,35 @@ static void sig_layout_restore(void)
 	}
 
 	/* create all the visible windows with correct size */
-	lower_window = NULL; lower_size = 0; first = NULL;
+	lower_window = NULL;
+	lower_size = 0;
+	first = NULL;
 	for (i = 0, tmp = lines_config; i < lines_count; tmp = tmp->next, i++) {
 		GSList *tmp2, *columns_config, *line;
 		int j, l1, l2;
 		CONFIG_NODE *node = tmp->data;
-		if (node->key == NULL) continue;
+		if (node->key == NULL)
+			continue;
 
 		l1 = config_node_get_int(node, "first_line", -1);
 		l2 = l1 + config_node_get_int(node, "lines", 0) - 1;
 		columns_config = get_windows_config_filter_column(sorted_config, l1, l2);
 
-		window = NULL; columns_count = 0;
+		window = NULL;
+		columns_count = 0;
 		widths = g_new0(int, max_wins_line);
-		for (j = 0, tmp2 = columns_config; j < max_wins_line && tmp2 != NULL; tmp2 = tmp2->next, j++) {
+		for (j = 0, tmp2 = columns_config; j < max_wins_line && tmp2 != NULL;
+		     tmp2 = tmp2->next, j++) {
 			int width;
 			WINDOW_REC *new_win;
 			CONFIG_NODE *node2 = tmp2->data;
-			if (node2->key == NULL) continue;
+			if (node2->key == NULL)
+				continue;
 
 			/* create a new window + mainwindow */
 			signal_emit("gui window create override", 1,
-				    GINT_TO_POINTER(window == NULL ? MAIN_WINDOW_TYPE_SPLIT : MAIN_WINDOW_TYPE_RSPLIT));
+			            GINT_TO_POINTER(window == NULL ? MAIN_WINDOW_TYPE_SPLIT :
+			                                             MAIN_WINDOW_TYPE_RSPLIT));
 
 			new_win = window_create(NULL, TRUE);
 
@@ -279,7 +285,8 @@ static void sig_layout_restore(void)
 			continue;
 		line = g_slist_reverse(mainwindows_get_line(WINDOW_MAIN(window)));
 		for (j = g_slist_length(line), tmp2 = line; tmp2 != NULL; tmp2 = tmp2->next, j--) {
-			int width = MAX(NEW_WINDOW_WIDTH, widths[j-1] * term_width / columns_count);
+			int width =
+			    MAX(NEW_WINDOW_WIDTH, widths[j - 1] * term_width / columns_count);
 			MAIN_WINDOW_REC *rec = tmp2->data;
 			mainwindow_set_rsize(rec, width);
 		}
@@ -291,8 +298,8 @@ static void sig_layout_restore(void)
 
 		lower_window = WINDOW_MAIN(window);
 		lower_size = heights[i];
-		if (lower_size < WINDOW_MIN_SIZE+1)
-			lower_size = WINDOW_MIN_SIZE+1;
+		if (lower_size < WINDOW_MIN_SIZE + 1)
+			lower_size = WINDOW_MIN_SIZE + 1;
 	}
 	g_slist_free(sorted_config);
 	g_free(heights);
