@@ -832,6 +832,7 @@ char *format_get_text_theme_args(THEME_REC *theme, const char *module,
 /* Check if format number is a message format that needs nick column */
 static gboolean is_message_format(int formatnum)
 {
+	/* Only apply to actual message formats, NOT timestamps or other formats */
 	return (formatnum == TXT_OWN_MSG || formatnum == TXT_OWN_MSG_CHANNEL ||
 	        formatnum == TXT_PUBMSG || formatnum == TXT_PUBMSG_CHANNEL ||
 	        formatnum == TXT_PUBMSG_ME || formatnum == TXT_PUBMSG_ME_CHANNEL ||
@@ -907,17 +908,26 @@ char *format_get_text_theme_charargs(THEME_REC *theme, const char *module,
 	text = module_theme->expanded_formats[formatnum];
 
 	/* Apply nick column formatting if enabled and this is a message format */
+	/* Additional protection: avoid recursion during timestamp formatting */
+	{
+		static int formatting_depth = 0;
+
 	if (settings_get_bool("nick_column_enabled") &&
 	    g_strcmp0(module, "fe-common/core") == 0 &&
-	    is_message_format(formatnum)) {
+	    is_message_format(formatnum) &&
+	    formatting_depth == 0) {  /* Prevent recursion */
+
+		formatting_depth++;
 		modified_text = apply_nick_column_formatting(text, formatnum);
 		text = modified_text;
+		formatting_depth--;
 
 		/* Debug output - use printf to avoid recursion */
 		if (settings_get_bool("debug_nick_column")) {
 			printf("DEBUG format_auto: formatnum=%d, original='%s'\n", formatnum, module_theme->expanded_formats[formatnum]);
 			printf("DEBUG format_auto: modified='%s'\n", text);
 		}
+	}
 	}
 
 	result = format_get_text_args(dest, text, args);
