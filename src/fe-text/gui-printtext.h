@@ -1,9 +1,9 @@
 #ifndef IRSSI_FE_TEXT_GUI_PRINTTEXT_H
 #define IRSSI_FE_TEXT_GUI_PRINTTEXT_H
 
-#include <irssip/src/fe-text/gui-windows.h>
-#include <irssip/src/fe-text/textbuffer-view.h>
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-text/textbuffer-view.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 extern int mirc_colors[];
 

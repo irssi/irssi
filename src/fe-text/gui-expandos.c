@@ -19,10 +19,10 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/expandos.h>
+#include <irssi/src/core/expandos.h>
 
-#include <irssip/src/fe-text/gui-entry.h>
-#include <irssip/src/fe-text/gui-readline.h>
+#include <irssi/src/fe-text/gui-entry.h>
+#include <irssi/src/fe-text/gui-readline.h>
 
 /* idle time */
 static char *expando_idletime(SERVER_REC *server, void *item, int *free_ret)

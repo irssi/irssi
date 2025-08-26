@@ -1,11 +1,11 @@
 #ifndef IRSSI_IRC_PROXY_PROXY_H
 #define IRSSI_IRC_PROXY_PROXY_H
 
-#include <irssip/src/common.h>
+#include <irssi/src/common.h>
 
-#include <irssip/src/core/network.h>
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-servers.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
 
 typedef struct {
 	int port;

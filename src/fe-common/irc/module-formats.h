@@ -1,4 +1,4 @@
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 /* clang-format off */
 enum {

@@ -1,7 +1,7 @@
 #ifndef IRSSI_CORE_QUERIES_H
 #define IRSSI_CORE_QUERIES_H
 
-#include <irssip/src/core/modules.h>
+#include <irssi/src/core/modules.h>
 
 /* Returns QUERY_REC if it's query, NULL if it isn't. */
 #define QUERY(query) \
@@ -13,7 +13,7 @@
 
 #define STRUCT_SERVER_REC SERVER_REC
 struct _QUERY_REC {
-#include <irssip/src/core/query-rec.h>
+#include <irssi/src/core/query-rec.h>
 };
 
 extern GSList *queries;

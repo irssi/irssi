@@ -1,8 +1,8 @@
 #ifndef IRSSI_IRC_CORE_IRC_CHATNETS_H
 #define IRSSI_IRC_CORE_IRC_CHATNETS_H
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/chatnets.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/chatnets.h>
 
 /* returns IRC_CHATNET_REC if it's IRC network, NULL if it isn't */
 #define IRC_CHATNET(chatnet) \
@@ -15,7 +15,7 @@
 #define IRCNET(ircnet) IRC_CHATNET(ircnet)
 
 struct _IRC_CHATNET_REC {
-#include <irssip/src/core/chatnet-rec.h>
+#include <irssi/src/core/chatnet-rec.h>
 
 	char *usermode;
 	char *alternate_nick;

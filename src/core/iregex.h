@@ -1,7 +1,7 @@
 #ifndef IRSSI_CORE_IREGEX_H
 #define IRSSI_CORE_IREGEX_H
 
-#include <irssip/src/common.h>
+#include <irssi/src/common.h>
 
 #include <glib.h>
 typedef	GRegex Regex;

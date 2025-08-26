@@ -1,6 +1,6 @@
 /* CHANNEL_REC definition, used for inheritance */
 
-#include <irssip/src/core/window-item-rec.h>
+#include <irssi/src/core/window-item-rec.h>
 
 char *topic;
 char *topic_by;

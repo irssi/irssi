@@ -1,8 +1,8 @@
 #ifndef IRSSI_FE_COMMON_CORE_HILIGHT_TEXT_H
 #define IRSSI_FE_COMMON_CORE_HILIGHT_TEXT_H
 
-#include <irssip/src/core/iregex.h>
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/core/iregex.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 struct _HILIGHT_REC {
 	char *text;

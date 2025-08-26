@@ -19,13 +19,13 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/masks.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/masks.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/irc/dcc/dcc-get.h>
+#include <irssi/src/irc/dcc/dcc-get.h>
 
 static void sig_dcc_request(GET_DCC_REC *dcc, const char *nickaddr)
 {

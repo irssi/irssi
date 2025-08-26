@@ -19,18 +19,18 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/servers.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/servers.h>
 
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/dcc/dcc-file.h>
-#include <irssip/src/irc/dcc/dcc-get.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/dcc/dcc-file.h>
+#include <irssi/src/irc/dcc/dcc-get.h>
 
-#include <irssip/src/fe-common/irc/dcc/module-formats.h>
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/irc/dcc/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
-#include <irssip/src/fe-common/irc/dcc/fe-dcc.h>
+#include <irssi/src/fe-common/irc/dcc/fe-dcc.h>
 
 static void dcc_request(GET_DCC_REC *dcc)
 {

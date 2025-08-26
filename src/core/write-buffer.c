@@ -19,10 +19,10 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/write-buffer.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/write-buffer.h>
 
 #define BUFFER_BLOCK_SIZE 2048
 

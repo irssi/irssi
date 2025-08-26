@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/modules.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/core/ignore.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/core/ignore.h>
 
 void autoignore_init(void);
 void autoignore_deinit(void);

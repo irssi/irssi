@@ -1,6 +1,6 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/misc.h>
 
 static GHashTable *perl_settings;
 

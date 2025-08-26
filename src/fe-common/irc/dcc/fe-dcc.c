@@ -19,20 +19,20 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/dcc/dcc-chat.h>
-#include <irssip/src/irc/dcc/dcc-file.h>
-#include <irssip/src/irc/dcc/dcc-get.h>
-#include <irssip/src/irc/dcc/dcc-send.h>
+#include <irssi/src/irc/dcc/dcc-chat.h>
+#include <irssi/src/irc/dcc/dcc-file.h>
+#include <irssi/src/irc/dcc/dcc-get.h>
+#include <irssi/src/irc/dcc/dcc-send.h>
 
-#include <irssip/src/fe-common/irc/dcc/module-formats.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/irc/dcc/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/themes.h>
 
 void fe_dcc_chat_init(void);
 void fe_dcc_chat_deinit(void);

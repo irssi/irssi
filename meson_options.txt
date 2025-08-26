@@ -14,3 +14,4 @@ option('install-glib',      type : 'combo',  description : 'Download and install
 option('docdir',            type : 'string', description : 'Documentation directory')
 option('fhs-prefix',        type : 'string', description : 'System prefix for Termux')
 option('PACKAGE_VERSION',   type : 'string', description : 'Override PACKAGE_VERSION in tarballs')
+option('pkgname', type: 'string', value: 'irssi', description: 'Name for the package library directory.')

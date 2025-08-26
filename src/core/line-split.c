@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/misc.h>
 
 /* Maximum line length - split to two lines if it's longer than this.
 

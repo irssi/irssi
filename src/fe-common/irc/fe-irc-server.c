@@ -19,22 +19,22 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/irc/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/core/servers-setup.h>
+#include <irssi/src/core/servers-setup.h>
 
-#include <irssip/src/core/levels.h>
-#include <irssip/src/irc/core/irc-chatnets.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/core/servers-reconnect.h>
-#include <irssip/src/irc/core/irc-servers-setup.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/irc/core/irc-servers-setup.h>
 
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 const char *get_visible_target(IRC_SERVER_REC *server, const char *target)
 {

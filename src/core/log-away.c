@@ -19,12 +19,12 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/log.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/write-buffer.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/write-buffer.h>
 
 static LOG_REC *awaylog;
 static int away_filepos;

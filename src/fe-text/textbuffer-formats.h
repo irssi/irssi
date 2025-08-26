@@ -1,8 +1,8 @@
 #ifndef IRSSI_FE_TEXT_TEXTBUFFER_FORMATS_H
 #define IRSSI_FE_TEXT_TEXTBUFFER_FORMATS_H
 
-#include <irssip/src/fe-text/textbuffer.h>
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/fe-text/textbuffer.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 typedef struct _TEXT_BUFFER_FORMAT_REC {
 	char *module;

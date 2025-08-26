@@ -1,7 +1,7 @@
 #ifndef IRSSI_IRC_DCC_DCC_GET_H
 #define IRSSI_IRC_DCC_DCC_GET_H
 
-#include <irssip/src/irc/dcc/dcc.h>
+#include <irssi/src/irc/dcc/dcc.h>
 
 #define DCC_GET(dcc) \
 	MODULE_CHECK_CAST_MODULE(dcc, GET_DCC_REC, type, "DCC", "GET")
@@ -18,7 +18,7 @@ enum {
 };
 
 typedef struct {
-#include <irssip/src/irc/dcc/dcc-file-rec.h>
+#include <irssi/src/irc/dcc/dcc-file-rec.h>
 
 	int get_type; /* what to do if file exists? */
 	char *file; /* file name we're really moving, arg is just the reference */

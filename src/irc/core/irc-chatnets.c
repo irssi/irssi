@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/lib-config/iconfig.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc-chatnets.h>
+#include <irssi/src/irc/core/irc-chatnets.h>
 
 void ircnet_create(IRC_CHATNET_REC *rec)
 {

@@ -1,7 +1,7 @@
 #ifndef IRSSI_FE_COMMON_CORE_COMMAND_HISTORY_H
 #define IRSSI_FE_COMMON_CORE_COMMAND_HISTORY_H
 
-#include <irssip/src/common.h>
+#include <irssi/src/common.h>
 
 typedef struct {
 	char *name;

@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/network.h>
-#include <irssip/src/lib-config/iconfig.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/chatnets.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/servers-setup.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-setup.h>
 
 GSList *setupservers;
 

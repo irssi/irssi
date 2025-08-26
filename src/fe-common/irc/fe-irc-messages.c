@@ -19,26 +19,26 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/ignore.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-queries.h>
 
-#include <irssip/src/fe-common/core/module-formats.h>
-#include <irssip/src/fe-common/irc/module-formats.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/fe-messages.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/fe-common/irc/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-messages.h>
 
-#include <irssip/src/fe-common/core/fe-queries.h>
-#include <irssip/src/fe-common/core/hilight-text.h>
-#include <irssip/src/fe-common/core/window-items.h>
-#include <irssip/src/fe-common/irc/fe-irc-channels.h>
-#include <irssip/src/fe-common/irc/fe-irc-server.h>
+#include <irssi/src/fe-common/core/fe-queries.h>
+#include <irssi/src/fe-common/core/hilight-text.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/irc/fe-irc-channels.h>
+#include <irssi/src/fe-common/irc/fe-irc-server.h>
 
 static void sig_message_own_public(SERVER_REC *server, const char *msg,
 				   const char *target, const char *origtarget)

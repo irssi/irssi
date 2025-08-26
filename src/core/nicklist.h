@@ -11,7 +11,7 @@
 #define	MAX_USER_PREFIXES 7 /* Max prefixes kept for any user-in-chan. 7+1 is a memory unit */
 
 struct _NICK_REC {
-#include <irssip/src/core/nick-rec.h>
+#include <irssi/src/core/nick-rec.h>
 };
 
 /* Add new nick to list */

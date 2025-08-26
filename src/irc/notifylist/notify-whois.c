@@ -19,14 +19,14 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/expandos.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/expandos.h>
 
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/core/masks.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/core/masks.h>
 
-#include <irssip/src/irc/notifylist/notifylist.h>
+#include <irssi/src/irc/notifylist/notifylist.h>
 
 static char *last_notify_nick;
 

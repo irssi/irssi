@@ -19,13 +19,13 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/network-openssl.h>
-#include <irssip/src/core/net-sendbuffer.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/tls.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/network-openssl.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/tls.h>
 
 #include <openssl/crypto.h>
 #include <openssl/objects.h>

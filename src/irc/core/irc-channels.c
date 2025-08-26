@@ -19,18 +19,18 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/channels-setup.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/channels-setup.h>
 
-#include <irssip/src/irc/core/bans.h>
-#include <irssip/src/irc/core/modes.h>
-#include <irssip/src/irc/core/mode-lists.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/irc/core/irc-nicklist.h>
-#include <irssip/src/irc/core/channel-rejoin.h>
+#include <irssi/src/irc/core/bans.h>
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/irc/core/mode-lists.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/channel-rejoin.h>
 
 void channels_query_init(void);
 void channels_query_deinit(void);

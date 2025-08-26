@@ -19,24 +19,24 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/modules.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/pidwait.h>
-#include <irssip/src/core/line-split.h>
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/net-sendbuffer.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/levels.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/pidwait.h>
+#include <irssi/src/core/line-split.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
 
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/queries.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
 
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/fe-exec.h>
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-exec.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
 
 #include <signal.h>
 #include <stdlib.h>

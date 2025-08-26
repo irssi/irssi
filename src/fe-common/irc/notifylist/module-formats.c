@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 FORMAT_REC fecommon_irc_notifylist_formats[] =
 {

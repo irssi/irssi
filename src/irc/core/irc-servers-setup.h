@@ -1,8 +1,8 @@
 #ifndef IRSSI_IRC_CORE_IRC_SERVERS_SETUP_H
 #define IRSSI_IRC_CORE_IRC_SERVERS_SETUP_H
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/servers-setup.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers-setup.h>
 
 #define IRC_SERVER_SETUP(server) \
 	PROTO_CHECK_CAST(SERVER_SETUP(server), IRC_SERVER_SETUP_REC, \
@@ -18,7 +18,7 @@ enum {
 };
 
 typedef struct {
-#include <irssip/src/core/server-setup-rec.h>
+#include <irssi/src/core/server-setup-rec.h>
 
         /* override the default if > 0 */
 	int max_cmds_at_once;

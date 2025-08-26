@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 FORMAT_REC fecommon_core_formats[] = {
 	/* clang-format off */

@@ -19,24 +19,24 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-text/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/servers.h>
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/servers.h>
 
-#include <irssip/src/fe-common/core/completion.h>
-#include <irssip/src/fe-common/core/command-history.h>
-#include <irssip/src/fe-common/core/keyboard.h>
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/completion.h>
+#include <irssi/src/fe-common/core/command-history.h>
+#include <irssi/src/fe-common/core/keyboard.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
-#include <irssip/src/fe-text/term.h>
-#include <irssip/src/fe-text/gui-entry.h>
-#include <irssip/src/fe-text/gui-windows.h>
-#include <irssip/src/fe-text/sidepanels.h>
-#include <irssip/src/core/utf8.h>
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/fe-text/gui-entry.h>
+#include <irssi/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-text/sidepanels.h>
+#include <irssi/src/core/utf8.h>
 
 #include <string.h>
 #include <signal.h>

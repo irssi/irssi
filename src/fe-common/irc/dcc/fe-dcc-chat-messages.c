@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-queries.h>
-#include <irssip/src/irc/dcc/dcc-chat.h>
-#include <irssip/src/core/ignore.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/dcc/dcc-chat.h>
+#include <irssi/src/core/ignore.h>
 
-#include <irssip/src/fe-common/irc/dcc/module-formats.h>
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/irc/dcc/module-formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 static void sig_message_dcc_own(CHAT_DCC_REC *dcc, const char *msg)
 {

@@ -1,6 +1,6 @@
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
-#include <irssip/src/irc/core/ctcp.h>
+#include <irssi/src/irc/core/ctcp.h>
 
 MODULE = Irssi::Irc::Ctcp	PACKAGE = Irssi
 PROTOTYPES: ENABLE

@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/irc/dcc/dcc-file.h>
-#include <irssip/src/irc/dcc/dcc-get.h>
-#include <irssip/src/irc/dcc/dcc-send.h>
-#include <irssip/src/irc/dcc/dcc-chat.h>
+#include <irssi/src/irc/dcc/dcc-file.h>
+#include <irssi/src/irc/dcc/dcc-get.h>
+#include <irssi/src/irc/dcc/dcc-send.h>
+#include <irssi/src/irc/dcc/dcc-chat.h>
 
 static FILE_DCC_REC *dcc_resume_find(int type, const char *nick, int port)
 {

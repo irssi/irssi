@@ -39,16 +39,16 @@ loop:
 */
 
 #include "module.h"
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/modes.h>
-#include <irssip/src/irc/core/mode-lists.h>
-#include <irssip/src/core/nicklist.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/irc/core/servers-redirect.h>
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/irc/core/mode-lists.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/servers-redirect.h>
 
 /* here are the WHOX commands we send. the full spec can be found on [1].
 

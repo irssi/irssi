@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/network.h>
+#include <irssi/src/core/network.h>
 
 #include <sys/select.h>
 

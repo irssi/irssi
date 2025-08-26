@@ -19,21 +19,21 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/servers-setup.h>
-#include <irssip/src/core/servers-reconnect.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/chatnets.h>
-#include <irssip/src/core/queries.h>
-#include <irssip/src/core/window-item-def.h>
-#include <irssip/src/core/rawlog.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/window-item-def.h>
+#include <irssi/src/core/rawlog.h>
 
 static SERVER_CONNECT_REC *get_server_connect(const char *data, int *plus_addr,
 					      char **rawlog_file)

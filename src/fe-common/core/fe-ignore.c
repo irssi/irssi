@@ -20,15 +20,15 @@
 
 #include "module.h"
 #include <time.h>
-#include <irssip/src/fe-common/core/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/ignore.h>
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 static char *ignore_get_key(IGNORE_REC *rec)
 {

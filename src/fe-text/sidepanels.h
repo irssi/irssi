@@ -2,7 +2,7 @@
 #define IRSSI_FE_TEXT_SIDEPANELS_H
 
 #include <glib.h>
-#include <irssip/src/common.h>
+#include <irssi/src/common.h>
 
 void sidepanels_init(void);
 void sidepanels_deinit(void);

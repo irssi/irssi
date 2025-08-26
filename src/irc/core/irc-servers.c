@@ -20,31 +20,31 @@
 
 #include "module.h"
 
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/net-sendbuffer.h>
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/rawlog.h>
-#include <irssip/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/signals.h>
 
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/queries.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
 
-#include <irssip/src/irc/core/irc-nicklist.h>
-#include <irssip/src/irc/core/irc-queries.h>
-#include <irssip/src/irc/core/irc-servers-setup.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-cap.h>
-#include <irssip/src/irc/core/sasl.h>
+#include <irssi/src/irc/core/irc-nicklist.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/core/irc-servers-setup.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-cap.h>
+#include <irssi/src/irc/core/sasl.h>
 
-#include <irssip/src/core/channels-setup.h>
-#include <irssip/src/irc/core/channel-rejoin.h>
-#include <irssip/src/irc/core/servers-idle.h>
-#include <irssip/src/core/servers-reconnect.h>
-#include <irssip/src/irc/core/servers-redirect.h>
-#include <irssip/src/irc/core/modes.h>
+#include <irssi/src/core/channels-setup.h>
+#include <irssi/src/irc/core/channel-rejoin.h>
+#include <irssi/src/irc/core/servers-idle.h>
+#include <irssi/src/core/servers-reconnect.h>
+#include <irssi/src/irc/core/servers-redirect.h>
+#include <irssi/src/irc/core/modes.h>
 
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/recode.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/recode.h>
 
 #define DEFAULT_MAX_KICKS 1
 #define DEFAULT_MAX_MODES 3
@@ -364,7 +364,7 @@ static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
 	}
 }
 
-#include <irssip/src/core/line-split.h>
+#include <irssi/src/core/line-split.h>
 void irc_server_send_starttls(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);

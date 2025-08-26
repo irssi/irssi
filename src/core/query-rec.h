@@ -1,6 +1,6 @@
 /* QUERY_REC definition, used for inheritance */
 
-#include <irssip/src/core/window-item-rec.h>
+#include <irssi/src/core/window-item-rec.h>
 
 char *address;
 char *server_tag;

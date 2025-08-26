@@ -21,28 +21,28 @@
 #define NEED_PERL_H
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
-#include <irssip/src/core/modules.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/core.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/ignore.h>
-#include <irssip/src/core/log.h>
-#include <irssip/src/core/rawlog.h>
-#include <irssip/src/core/servers-reconnect.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/servers-reconnect.h>
 
-#include <irssip/src/core/window-item-def.h>
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/chatnets.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/queries.h>
-#include <irssip/src/core/nicklist.h>
+#include <irssi/src/core/window-item-def.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/nicklist.h>
 
-#include <irssip/src/perl/perl-core.h>
-#include <irssip/src/perl/perl-common.h>
+#include <irssi/src/perl/perl-core.h>
+#include <irssi/src/perl/perl-common.h>
 
 typedef struct {
 	char *stash;

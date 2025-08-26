@@ -21,35 +21,35 @@
 #include "module.h"
 #include <signal.h>
 
-#include <irssip/src/core/args.h>
-#include <irssip/src/core/pidwait.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/core/pidwait.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/core/net-disconnect.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/session.h>
+#include <irssi/src/core/net-disconnect.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/session.h>
 #ifdef HAVE_CAPSICUM
-#include <irssip/src/core/capsicum.h>
+#include <irssi/src/core/capsicum.h>
 #endif
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/chatnets.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/expandos.h>
-#include <irssip/src/core/ignore.h>
-#include <irssip/src/core/log.h>
-#include <irssip/src/core/rawlog.h>
-#include <irssip/src/core/recode.h>
-#include <irssip/src/core/refstrings.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/core/write-buffer.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/expandos.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/recode.h>
+#include <irssi/src/core/refstrings.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/write-buffer.h>
 
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/queries.h>
-#include <irssip/src/core/nicklist.h>
-#include <irssip/src/core/nickmatch-cache.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/core/nickmatch-cache.h>
 
 #ifdef HAVE_SYS_RESOURCE_H
 #  include <sys/resource.h>

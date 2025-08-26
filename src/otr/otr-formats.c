@@ -19,8 +19,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301,USA
  */
 
-#include <irssip/src/otr/otr.h>
-#include <irssip/src/otr/otr-formats.h>
+#include <irssi/src/otr/otr.h>
+#include <irssi/src/otr/otr-formats.h>
 
 FORMAT_REC fe_otr_formats[] = {
 	/* clang-format off */

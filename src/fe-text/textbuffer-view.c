@@ -21,12 +21,12 @@
 #define	G_LOG_DOMAIN "TextBufferView"
 
 #include "module.h"
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/utf8.h>
-#include <irssip/src/fe-common/core/formats.h>
-#include <irssip/src/fe-text/textbuffer-formats.h>
-#include <irssip/src/fe-text/textbuffer-view.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/utf8.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-text/textbuffer-formats.h>
+#include <irssi/src/fe-text/textbuffer-view.h>
 
 typedef struct {
 	char *name;

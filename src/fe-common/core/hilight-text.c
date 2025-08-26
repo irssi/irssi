@@ -19,23 +19,23 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/core/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/lib-config/iconfig.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/iregex.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/iregex.h>
 
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/nicklist.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/nicklist.h>
 
-#include <irssip/src/fe-common/core/hilight-text.h>
-#include <irssip/src/core/nickmatch-cache.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/hilight-text.h>
+#include <irssi/src/core/nickmatch-cache.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 static NICKMATCH_REC *nickmatch;
 static int never_hilight_level, default_hilight_level;

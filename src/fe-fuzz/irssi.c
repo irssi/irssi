@@ -18,16 +18,16 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <irssip/src/fe-text/module.h>
-#include <irssip/src/core/modules-load.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/fe-text/module-formats.h> /* need to explicitly grab from fe-text */
-#include <irssip/src/fe-common/core/themes.h>
-#include <irssip/src/core/core.h>
-#include <irssip/src/fe-common/core/fe-common-core.h>
-#include <irssip/src/core/args.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-fuzz/null-logger.h>
+#include <irssi/src/fe-text/module.h>
+#include <irssi/src/core/modules-load.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/fe-text/module-formats.h> /* need to explicitly grab from fe-text */
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/core/core.h>
+#include <irssi/src/fe-common/core/fe-common-core.h>
+#include <irssi/src/core/args.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-fuzz/null-logger.h>
 
 #include <stddef.h>
 #include <stdint.h>

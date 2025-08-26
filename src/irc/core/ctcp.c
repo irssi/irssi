@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/servers-idle.h>
-#include <irssip/src/core/ignore.h>
-#include <irssip/src/irc/core/ctcp.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/servers-idle.h>
+#include <irssi/src/core/ignore.h>
+#include <irssi/src/irc/core/ctcp.h>
 
 typedef struct {
 	char *name;

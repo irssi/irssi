@@ -19,7 +19,7 @@
 */
 
 #include "module.h"
-#include <irssip/src/irc/core/scram.h>
+#include <irssi/src/irc/core/scram.h>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 

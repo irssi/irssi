@@ -19,30 +19,30 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/core/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/log.h>
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/lib-config/iconfig.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/log.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/lib-config/iconfig.h>
 #ifdef HAVE_CAPSICUM
-#include <irssip/src/core/capsicum.h>
+#include <irssi/src/core/capsicum.h>
 #endif
 
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/fe-common/core/window-items.h>
-#include <irssip/src/fe-common/core/formats.h>
-#include <irssip/src/fe-common/core/themes.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/fe-common-core.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/fe-common-core.h>
 
-#include <irssip/src/core/channels-setup.h>
+#include <irssi/src/core/channels-setup.h>
 
 /* close autologs after 5 minutes of inactivity */
 #define AUTOLOG_INACTIVITY_CLOSE (60*5)

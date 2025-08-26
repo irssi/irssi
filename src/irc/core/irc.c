@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/modules.h>
-#include <irssip/src/core/net-sendbuffer.h>
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/rawlog.h>
-#include <irssip/src/core/refstrings.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/rawlog.h>
+#include <irssi/src/core/refstrings.h>
 
-#include <irssip/src/irc/core/irc-channels.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/servers-redirect.h>
+#include <irssi/src/irc/core/irc-channels.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/servers-redirect.h>
 
 char *current_server_event;
 static int signal_default_event;

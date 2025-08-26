@@ -1,7 +1,7 @@
 #ifndef IRSSI_IRC_CORE_IRC_MASKS_H
 #define IRSSI_IRC_CORE_IRC_MASKS_H
 
-#include <irssip/src/core/masks.h>
+#include <irssi/src/core/masks.h>
 
 #define IRC_MASK_NICK   0x01
 #define IRC_MASK_USER   0x02

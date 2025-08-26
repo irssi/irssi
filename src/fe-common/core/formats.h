@@ -1,9 +1,9 @@
 #ifndef IRSSI_FE_COMMON_CORE_FORMATS_H
 #define IRSSI_FE_COMMON_CORE_FORMATS_H
 
-#include <irssip/src/core/signals.h>
-#include <irssip/src/fe-common/core/fe-windows.h>
-#include <irssip/src/fe-common/core/themes.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/fe-common/core/fe-windows.h>
+#include <irssi/src/fe-common/core/themes.h>
 
 #define GUI_PRINT_FLAG_BOLD          0x0001
 #define GUI_PRINT_FLAG_REVERSE       0x0002

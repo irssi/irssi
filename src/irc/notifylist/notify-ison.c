@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/servers-redirect.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/servers-redirect.h>
 
-#include <irssip/src/irc/notifylist/notifylist.h>
+#include <irssi/src/irc/notifylist/notifylist.h>
 
 #define DEFAULT_NOTIFY_CHECK_TIME "1min"
 #define DEFAULT_NOTIFY_WHOIS_TIME "5min"

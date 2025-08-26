@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/fe-common/core/chat-completion.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/fe-common/core/chat-completion.h>
 
 static void sig_complete_stats(GList **list, WINDOW_REC *window,
 			       const char *word, const char *line,

@@ -24,21 +24,21 @@
 
 #include "module.h"
 
-#include <irssip/src/common.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/queries.h>
-#include <irssip/src/core/commands.h>
+#include <irssi/src/common.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/queries.h>
+#include <irssi/src/core/commands.h>
 
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-queries.h>
-#include <irssip/src/irc/core/irc-commands.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/irc/core/irc-commands.h>
 
-#include <irssip/src/otr/key.h>
-#include <irssip/src/otr/otr.h>
-#include <irssip/src/otr/otr-formats.h>
-#include <irssip/src/otr/otr-fe.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/otr/key.h>
+#include <irssi/src/otr/otr.h>
+#include <irssi/src/otr/otr-formats.h>
+#include <irssi/src/otr/otr-fe.h>
+#include <irssi/src/core/misc.h>
 
 /*
  * Global state for the user. Init when the module loads.

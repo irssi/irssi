@@ -1,8 +1,8 @@
 #ifndef IRSSI_IRC_CORE_IRC_CHANNELS_H
 #define IRSSI_IRC_CORE_IRC_CHANNELS_H
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/channels.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/channels.h>
 
 /* Returns IRC_CHANNEL_REC if it's IRC channel, NULL if it isn't. */
 #define IRC_CHANNEL(channel) \
@@ -27,7 +27,7 @@ enum {
 
 #define STRUCT_SERVER_REC IRC_SERVER_REC
 struct _IRC_CHANNEL_REC {
-#include <irssip/src/core/channel-rec.h>
+#include <irssi/src/core/channel-rec.h>
 
 	GSList *banlist; /* list of bans */
 

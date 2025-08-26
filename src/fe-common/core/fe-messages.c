@@ -19,23 +19,23 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-common/core/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/special-vars.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/fe-common/core/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/special-vars.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/nicklist.h>
-#include <irssip/src/core/ignore.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/core/ignore.h>
 
-#include <irssip/src/fe-common/core/window-items.h>
-#include <irssip/src/fe-common/core/fe-queries.h>
-#include <irssip/src/fe-common/core/hilight-text.h>
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/fe-queries.h>
+#include <irssi/src/fe-common/core/hilight-text.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 /* Forward declarations for nick column functions */
 void update_nick_context(const char *nick, const char *mode);

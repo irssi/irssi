@@ -19,14 +19,14 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/modules.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/chat-protocols.h>
+#include <irssi/src/core/modules.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/chat-protocols.h>
 
-#include <irssip/src/core/chatnets.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/servers-setup.h>
-#include <irssip/src/core/channels-setup.h>
+#include <irssi/src/core/chatnets.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/servers-setup.h>
+#include <irssi/src/core/channels-setup.h>
 
 GSList *chat_protocols;
 

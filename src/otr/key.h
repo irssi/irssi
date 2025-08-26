@@ -21,10 +21,10 @@
 #ifndef IRSSI_OTR_KEY_H
 #define IRSSI_OTR_KEY_H
 
-#include <irssip/src/common.h>
-#include <irssip/src/core/servers.h>
+#include <irssi/src/common.h>
+#include <irssi/src/core/servers.h>
 
-#include <irssip/src/otr/otr.h>
+#include <irssi/src/otr/otr.h>
 
 void key_gen_run(struct otr_user_state *ustate, const char *account_name);
 void key_load(struct otr_user_state *ustate);

@@ -1,12 +1,12 @@
-#include <irssip/src/perl/ui/module.h>
+#include <irssi/src/perl/ui/module.h>
 
-#include <irssip/src/fe-text/mainwindows.h>
-#include <irssip/src/fe-text/gui-windows.h>
-#include <irssip/src/fe-text/gui-printtext.h>
-#include <irssip/src/fe-text/statusbar.h>
-#include <irssip/src/fe-text/textbuffer.h>
-#include <irssip/src/fe-text/textbuffer-view.h>
-#include <irssip/src/fe-text/gui-entry.h>
+#include <irssi/src/fe-text/mainwindows.h>
+#include <irssi/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-text/gui-printtext.h>
+#include <irssi/src/fe-text/statusbar.h>
+#include <irssi/src/fe-text/textbuffer.h>
+#include <irssi/src/fe-text/textbuffer-view.h>
+#include <irssi/src/fe-text/gui-entry.h>
 
 typedef MAIN_WINDOW_REC *Irssi__TextUI__MainWindow;
 typedef TEXT_BUFFER_REC *Irssi__TextUI__TextBuffer;

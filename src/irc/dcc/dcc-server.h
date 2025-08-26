@@ -1,7 +1,7 @@
 #ifndef IRSSI_IRC_DCC_DCC_SERVER_H
 #define IRSSI_IRC_DCC_DCC_SERVER_H
 
-#include <irssip/src/irc/dcc/dcc.h>
+#include <irssi/src/irc/dcc/dcc.h>
 
 #define DCC_SERVER(dcc) \
 	MODULE_CHECK_CAST_MODULE(dcc, SERVER_DCC_REC, type, "DCC", "SERVER")
@@ -10,7 +10,7 @@
 	(DCC_SERVER(dcc) ? TRUE : FALSE)
 
 struct SERVER_DCC_REC {
-#include <irssip/src/irc/dcc/dcc-rec.h>
+#include <irssi/src/irc/dcc/dcc-rec.h>
 	NET_SENDBUF_REC *sendbuf;
 
 	unsigned int accept_send:1;   /* Accept SEND connections */

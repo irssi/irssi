@@ -59,7 +59,7 @@
  * Latest version: http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
  */
 
-#include <irssip/src/core/utf8.h>
+#include <irssi/src/core/utf8.h>
 
 struct interval {
   int first;

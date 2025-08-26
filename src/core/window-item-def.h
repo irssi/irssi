@@ -3,7 +3,7 @@
 
 #define STRUCT_SERVER_REC SERVER_REC
 struct _WI_ITEM_REC {
-#include <irssip/src/core/window-item-rec.h>
+#include <irssi/src/core/window-item-rec.h>
 };
 
 #endif

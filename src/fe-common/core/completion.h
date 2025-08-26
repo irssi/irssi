@@ -1,7 +1,7 @@
 #ifndef IRSSI_FE_COMMON_CORE_COMPLETION_H
 #define IRSSI_FE_COMMON_CORE_COMPLETION_H
 
-#include <irssip/src/fe-common/core/window-items.h>
+#include <irssi/src/fe-common/core/window-items.h>
 
 /* automatic word completion - called when space/enter is pressed */
 char *auto_word_complete(const char *line, int *pos);

@@ -19,17 +19,17 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/levels.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/signals.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/signals.h>
 
-#include <irssip/src/fe-common/core/formats.h>
-#include <irssip/src/fe-common/core/printtext.h>
-#include <irssip/src/fe-common/core/themes.h>
+#include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-common/core/themes.h>
 
-#include <irssip/src/fe-text/term.h>
-#include <irssip/src/fe-text/gui-printtext.h>
-#include <irssip/src/fe-text/gui-windows.h>
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/fe-text/gui-printtext.h>
+#include <irssi/src/fe-text/gui-windows.h>
 
 /* Terminal indexed colour map */
 int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7,

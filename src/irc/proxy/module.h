@@ -1,12 +1,12 @@
-#include <irssip/src/common.h>
+#include <irssi/src/common.h>
 
 #define MODULE_NAME "proxy"
 
-#include <irssip/src/core/network.h>
-#include <irssip/src/irc/core/irc.h>
-#include <irssip/src/irc/core/irc-servers.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
 
-#include <irssip/src/irc/proxy/proxy.h>
+#include <irssi/src/irc/proxy/proxy.h>
 
 extern GSList *proxy_listens;
 extern GSList *proxy_clients;

@@ -1,10 +1,10 @@
 #ifndef IRSSI_IRC_CORE_IRC_SERVERS_H
 #define IRSSI_IRC_CORE_IRC_SERVERS_H
 
-#include <irssip/src/core/chat-protocols.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/irc/core/modes.h>
-#include <irssip/src/irc/core/scram.h>
+#include <irssi/src/core/chat-protocols.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/irc/core/modes.h>
+#include <irssi/src/irc/core/scram.h>
 
 /*
  * 63 is the maximum hostname length defined by the protocol.  10 is a common
@@ -46,7 +46,7 @@
 /* all strings should be either NULL or dynamically allocated */
 /* address and nick are mandatory, rest are optional */
 struct _IRC_SERVER_CONNECT_REC {
-#include <irssip/src/core/server-connect-rec.h>
+#include <irssi/src/core/server-connect-rec.h>
 
 	char *usermode;
 	char *alternate_nick;
@@ -68,7 +68,7 @@ struct _IRC_SERVER_CONNECT_REC {
 
 #define STRUCT_SERVER_CONNECT_REC IRC_SERVER_CONNECT_REC
 struct _IRC_SERVER_REC {
-#include <irssip/src/core/server-rec.h>
+#include <irssi/src/core/server-rec.h>
 
 	int max_message_len; /* Maximum message length, default = 510 = 512 - 2 (for CR+LF) */
 

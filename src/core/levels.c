@@ -19,8 +19,8 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/levels.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
 
 /* the order of these levels must match the bits in levels.h */
 static const char *levels[] = {

@@ -21,12 +21,12 @@
 #define NEED_PERL_H
 #define PERL_NO_GET_CONTEXT
 #include "module.h"
-#include <irssip/src/core/signals.h>
+#include <irssi/src/core/signals.h>
 
-#include <irssip/src/perl/perl-core.h>
-#include <irssip/src/perl/perl-common.h>
-#include <irssip/src/perl/perl-sources.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/perl/perl-core.h>
+#include <irssi/src/perl/perl-common.h>
+#include <irssi/src/perl/perl-sources.h>
+#include <irssi/src/core/misc.h>
 
 typedef struct {
         PERL_SCRIPT_REC *script;

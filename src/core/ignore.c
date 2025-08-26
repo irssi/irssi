@@ -19,20 +19,20 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/lib-config/iconfig.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/iregex.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/iregex.h>
 
-#include <irssip/src/core/masks.h>
-#include <irssip/src/core/servers.h>
-#include <irssip/src/core/channels.h>
-#include <irssip/src/core/nicklist.h>
-#include <irssip/src/core/nickmatch-cache.h>
+#include <irssi/src/core/masks.h>
+#include <irssi/src/core/servers.h>
+#include <irssi/src/core/channels.h>
+#include <irssi/src/core/nicklist.h>
+#include <irssi/src/core/nickmatch-cache.h>
 
-#include <irssip/src/core/ignore.h>
+#include <irssi/src/core/ignore.h>
 
 GSList *ignores;
 

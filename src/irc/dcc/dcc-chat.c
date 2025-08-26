@@ -19,19 +19,19 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/recode.h>
-#include <irssip/src/core/network.h>
-#include <irssip/src/core/net-sendbuffer.h>
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/recode.h>
+#include <irssi/src/core/network.h>
+#include <irssi/src/core/net-sendbuffer.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/irc-queries.h>
-#include <irssip/src/core/masks.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/irc-queries.h>
+#include <irssi/src/core/masks.h>
 
-#include <irssip/src/irc/dcc/dcc-chat.h>
+#include <irssi/src/irc/dcc/dcc-chat.h>
 
 static char *dcc_chat_get_new_id(const char *nick)
 {

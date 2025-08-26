@@ -19,11 +19,11 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/signals.h>
+#include <irssi/src/core/signals.h>
 
-#include <irssip/src/irc/core/irc-servers.h>
-#include <irssip/src/irc/core/servers-idle.h>
-#include <irssip/src/irc/core/servers-redirect.h>
+#include <irssi/src/irc/core/irc-servers.h>
+#include <irssi/src/irc/core/servers-idle.h>
+#include <irssi/src/irc/core/servers-redirect.h>
 
 typedef struct {
 	char *cmd;

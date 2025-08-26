@@ -19,15 +19,15 @@
 */
 
 #include "module.h"
-#include <irssip/src/core/misc.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/utf8.h>
-#include <irssip/src/fe-common/core/formats.h>
+#include <irssi/src/core/misc.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/utf8.h>
+#include <irssi/src/fe-common/core/formats.h>
 
-#include <irssip/src/fe-text/gui-entry.h>
-#include <irssip/src/fe-text/gui-printtext.h>
-#include <irssip/src/fe-text/term.h>
-#include <irssip/src/core/recode.h>
+#include <irssi/src/fe-text/gui-entry.h>
+#include <irssi/src/fe-text/gui-printtext.h>
+#include <irssi/src/fe-text/term.h>
+#include <irssi/src/core/recode.h>
 
 #undef i_toupper
 #undef i_tolower

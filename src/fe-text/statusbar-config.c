@@ -19,16 +19,16 @@
 */
 
 #include "module.h"
-#include <irssip/src/fe-text/module-formats.h>
-#include <irssip/src/core/signals.h>
-#include <irssip/src/core/commands.h>
-#include <irssip/src/core/settings.h>
-#include <irssip/src/core/levels.h>
-#include <irssip/src/lib-config/iconfig.h>
-#include <irssip/src/core/misc.h>
+#include <irssi/src/fe-text/module-formats.h>
+#include <irssi/src/core/signals.h>
+#include <irssi/src/core/commands.h>
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/levels.h>
+#include <irssi/src/lib-config/iconfig.h>
+#include <irssi/src/core/misc.h>
 
-#include <irssip/src/fe-text/statusbar.h>
-#include <irssip/src/fe-common/core/printtext.h>
+#include <irssi/src/fe-text/statusbar.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 static void read_statusbar_config_from_node(CONFIG_NODE *node);
 
