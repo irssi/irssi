@@ -154,8 +154,10 @@ static inline unichar read_unichar(const unsigned char *data, const unsigned cha
 		*next = data + 1;
 		*width = 1;
 	} else {
-		*next = (unsigned char *)g_utf8_next_char(data);
-		*width = unichar_isprint(chr) ? i_wcwidth(chr) : 1;
+		/* Use string_advance for proper grapheme cluster handling */
+		char const *str_ptr = (char const *)data;
+		*width = string_advance(&str_ptr, TREAT_STRING_AS_UTF8);
+		*next = (unsigned char *)str_ptr;
 	}
 	return chr;
 }
@@ -580,11 +582,21 @@ static int view_line_draw(TEXT_BUFFER_VIEW_REC *view, LINE_REC *line,
 		xpos += char_width;
 		if (xpos <= view->width) {
 			if (unichar_isprint(chr)) {
-				if (view->utf8)
-					term_add_unichar(view->window, chr);
-				else
+				if (view->utf8) {
+					/* Send entire grapheme cluster to preserve variation selectors */
+					char cluster_str[16];
+					int cluster_len = end - text;
+					if (cluster_len < sizeof(cluster_str)) {
+						memcpy(cluster_str, text, cluster_len);
+						cluster_str[cluster_len] = '\0';
+						term_addstr(view->window, cluster_str);
+					} else {
+						term_add_unichar(view->window, chr);
+					}
+				} else {
 					for (; text < end; text++)
 						term_addch(view->window, *text);
+				}
 			} else {
 				/* low-ascii */
 				term_set_color(view->window, ATTR_RESET|ATTR_REVERSE);

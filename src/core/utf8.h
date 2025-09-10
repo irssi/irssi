@@ -56,6 +56,28 @@ int string_width(const char *str, int policy);
  */
 int string_chars_for_width(const char *str, int policy, unsigned int n, unsigned int *bytes);
 
+/* Calculate display width of a single unichar, considering it might be part of
+ * a grapheme cluster. For best results, use string_advance() on UTF-8 strings. */
+int unichar_width(unichar chr);
+
+/* Advance through unichar array by one grapheme cluster, return display width.
+ * Updates *pos to point after the cluster. Use for GUI code with unichar arrays. */
+int unichar_array_advance_cluster(const unichar *text, int text_len, int *pos);
+
+/* Move backward through unichar array by one grapheme cluster, return display width.
+ * Updates *pos to point to the start of the previous cluster. */
+int unichar_array_move_cluster_backward(const unichar *text, int text_len, int *pos);
+
+/* Find the start of the grapheme cluster containing the given codepoint position.
+ * Returns the codepoint index of the cluster start. */
+int unichar_array_find_cluster_start(const unichar *text, int text_len, int pos);
+
+/* Initialize UTF-8 debugging system */
+void utf8_init(void);
+
+/* Deinitialize UTF-8 debugging system */
+void utf8_deinit(void);
+
 #define unichar_isprint(c) (((c) & ~0x80) >= 32)
 #define is_utf8_leading(c) (((c) & 0xc0) != 0x80)
 

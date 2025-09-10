@@ -23,11 +23,16 @@
 #include <irssi/src/core/settings.h>
 #include <irssi/src/core/utf8.h>
 #include <irssi/src/fe-common/core/formats.h>
+#include <irssi/src/fe-common/core/printtext.h>
 
 #include <irssi/src/fe-text/gui-entry.h>
 #include <irssi/src/fe-text/gui-printtext.h>
 #include <irssi/src/fe-text/term.h>
 #include <irssi/src/core/recode.h>
+
+#ifdef HAVE_LIBUTF8PROC
+#include <utf8proc.h>
+#endif
 
 #undef i_toupper
 #undef i_tolower
@@ -49,10 +54,24 @@ static unichar i_tolower(unichar c)
 	return c <= 255 ? tolower(c) : c;
 }
 
+static int is_combining_char(unichar c)
+{
+	if (term_type != TERM_TYPE_UTF8)
+		return 0;
+
+#ifdef HAVE_LIBUTF8PROC
+	/* Use utf8proc for precise combining character detection */
+	return unichar_isprint(c) && utf8proc_charwidth(c) == 0;
+#else
+	/* Fallback to unichar_width for compatibility */
+	return unichar_isprint(c) && unichar_width(c) == 0;
+#endif
+}
+
 static int i_isalnum(unichar c)
 {
 	if (term_type == TERM_TYPE_UTF8)
-		return (g_unichar_isalnum(c) || i_wcwidth(c) == 0);
+		return (g_unichar_isalnum(c) || is_combining_char(c));
 	return c <= 255 ? isalnum(c) : 0;
 }
 
@@ -213,16 +232,24 @@ static int pos2scrpos(GUI_ENTRY_REC *entry, int pos, int cursor)
 		xpos += scrlen_str(entry->extents[0], entry->utf8);
 	}
 
-	for (i = 0; i < entry->text_len && i < pos; i++) {
-		unichar c = entry->text[i];
+	/* Process text using grapheme cluster aware advancement when possible */
+	i = 0;
+	while (i < entry->text_len && i < pos) {
 		const char *extent = entry->uses_extents ? entry->extents[i+1] : NULL;
+		int char_width;
 
-		if (term_type == TERM_TYPE_BIG5)
-			xpos += big5_width(c);
-		else if (entry->utf8)
-			xpos += unichar_isprint(c) ? i_wcwidth(c) : 1;
-		else
-			xpos++;
+		if (term_type == TERM_TYPE_BIG5) {
+			char_width = big5_width(entry->text[i]);
+			i++;
+		} else if (entry->utf8) {
+			/* Use grapheme cluster aware advancement */
+			char_width = unichar_array_advance_cluster(entry->text, entry->text_len, &i);
+		} else {
+			char_width = 1;
+			i++;
+		}
+
+		xpos += char_width;
 
 		if (extent != NULL) {
 			xpos += scrlen_str(extent, entry->utf8);
@@ -239,16 +266,21 @@ static int scrpos2pos(GUI_ENTRY_REC *entry, int pos)
 		xpos += scrlen_str(entry->extents[0], entry->utf8);
 	}
 
-	for (i = 0; i < entry->text_len && xpos < pos; i++) {
-		unichar c = entry->text[i];
+	/* Process text using grapheme cluster aware advancement when possible */
+	i = 0;
+	while (i < entry->text_len && xpos < pos) {
 		const char *extent = entry->uses_extents ? entry->extents[i+1] : NULL;
 
-		if (term_type == TERM_TYPE_BIG5)
-			width = big5_width(c);
-		else if (entry->utf8)
-			width = unichar_isprint(c) ? i_wcwidth(c) : 1;
-		else
+		if (term_type == TERM_TYPE_BIG5) {
+			width = big5_width(entry->text[i]);
+			i++;
+		} else if (entry->utf8) {
+			/* Use grapheme cluster aware advancement */
+			width = unichar_array_advance_cluster(entry->text, entry->text_len, &i);
+		} else {
 			width = 1;
+			i++;
+		}
 
 		xpos += width;
 
@@ -359,25 +391,46 @@ static void gui_entry_draw_from(GUI_ENTRY_REC *entry, int pos)
 		g_free(tmp);
 	}
 
-	for (; i < entry->text_len; i++) {
-		unichar c = entry->text[i];
+	/* Process remaining text using grapheme cluster aware advancement */
+	while (i < entry->text_len) {
 		const char *extent = entry->uses_extents ? entry->extents[i+1] : NULL;
+		int char_width;
+		int cluster_start = i;
+		unichar c;
 		new_xpos = xpos;
 
-		if (entry->hidden)
-			new_xpos++;
-		else if (term_type == TERM_TYPE_BIG5)
-			new_xpos += big5_width(c);
-		else if (entry->utf8)
-			new_xpos += unichar_isprint(c) ? i_wcwidth(c) : 1;
-		else
-			new_xpos++;
+		c = entry->text[i];
+
+		if (entry->hidden) {
+			char_width = 1;
+			i++;
+		} else if (term_type == TERM_TYPE_BIG5) {
+			char_width = big5_width(c);
+			i++;
+		} else if (entry->utf8) {
+			/* Use grapheme cluster aware advancement */
+			char_width = unichar_array_advance_cluster(entry->text, entry->text_len, &i);
+		} else {
+			char_width = 1;
+			i++;
+		}
+
+		new_xpos += char_width;
 
 		if (new_xpos > end_xpos)
 			break;
 
 		if (entry->hidden) {
                         g_string_append_c(str, ' ');
+		} else if (entry->utf8 && cluster_start != i) {
+			/* Render entire grapheme cluster for UTF-8 */
+			for (int j = cluster_start; j < i; j++) {
+				unichar cluster_char = entry->text[j];
+				if (unichar_isprint(cluster_char))
+					g_string_append_unichar(str, cluster_char);
+				else if (cluster_char == 0)
+					break;
+			}
 		} else if (unichar_isprint(c)) {
 			if (entry->utf8) {
 				g_string_append_unichar(str, c);
@@ -651,7 +704,7 @@ void gui_entry_insert_char(GUI_ENTRY_REC *entry, unichar chr)
 	if (chr == 0 || chr == 13 || chr == 10)
 		return; /* never insert NUL, CR or LF characters */
 
-	if (entry->utf8 && entry->pos == 0 && unichar_isprint(chr) && i_wcwidth(chr) == 0)
+	if (entry->utf8 && entry->pos == 0 && is_combining_char(chr))
 		return;
 
 	gui_entry_redraw_from(entry, entry->pos);
@@ -839,7 +892,7 @@ void gui_entry_erase(GUI_ENTRY_REC *entry, int size, CUTBUFFER_UPDATE_OP update_
 	}
 
 	if (entry->utf8)
-		while (entry->pos > size + w && i_wcwidth(entry->text[entry->pos - size - w]) == 0)
+		while (entry->pos > size + w && is_combining_char(entry->text[entry->pos - size - w]))
 			w++;
 
 	memmove(entry->text + entry->pos - size, entry->text + entry->pos,
@@ -878,7 +931,7 @@ void gui_entry_erase_cell(GUI_ENTRY_REC *entry)
 
 	if (entry->utf8)
 		while (entry->pos+size < entry->text_len &&
-		       i_wcwidth(entry->text[entry->pos+size]) == 0) size++;
+		       is_combining_char(entry->text[entry->pos+size])) size++;
 
 	memmove(entry->text + entry->pos, entry->text + entry->pos + size,
 	        (entry->text_len-entry->pos-size+1) * sizeof(unichar));
@@ -1144,8 +1197,14 @@ void gui_entry_set_pos(GUI_ENTRY_REC *entry, int pos)
 {
         g_return_if_fail(entry != NULL);
 
-	if (pos >= 0 && pos <= entry->text_len)
+	if (pos >= 0 && pos <= entry->text_len) {
 		entry->pos = pos;
+
+		/* For UTF-8, ensure we're at the start of a grapheme cluster */
+		if (entry->utf8) {
+			entry->pos = unichar_array_find_cluster_start(entry->text, entry->text_len, entry->pos);
+		}
+	}
 
 	gui_entry_fix_cursor(entry);
 	gui_entry_draw(entry);
@@ -1194,14 +1253,33 @@ void gui_entry_move_pos(GUI_ENTRY_REC *entry, int pos)
 {
         g_return_if_fail(entry != NULL);
 
-	if (entry->pos + pos >= 0 && entry->pos + pos <= entry->text_len)
-		entry->pos += pos;
+	if (!entry->utf8) {
+		/* Legacy behavior for non-UTF8 */
+		if (entry->pos + pos >= 0 && entry->pos + pos <= entry->text_len)
+			entry->pos += pos;
+	} else {
+		/* UTF-8: Move by grapheme clusters for proper UX */
+		int i, before_advance, cluster_start;
 
-	if (entry->utf8) {
-		int step = pos < 0 ? -1 : 1;
-		while(i_wcwidth(entry->text[entry->pos]) == 0 &&
-		      entry->pos + step >= 0 && entry->pos + step <= entry->text_len)
-			entry->pos += step;
+		if (pos > 0) {
+			/* Move forward by grapheme clusters */
+			for (i = 0; i < pos && entry->pos < entry->text_len; i++) {
+				before_advance = entry->pos;
+				unichar_array_advance_cluster(entry->text, entry->text_len, &entry->pos);
+				/* Safety: if position didn't change and we're not at end, stop */
+				if (entry->pos == before_advance && entry->pos < entry->text_len)
+					break;
+			}
+		} else if (pos < 0) {
+			/* Move backward by grapheme clusters */
+			for (i = 0; i > pos && entry->pos > 0; i--) {
+				unichar_array_move_cluster_backward(entry->text, entry->text_len, &entry->pos);
+			}
+		}
+
+		/* Ensure we're always at the start of a grapheme cluster */
+		cluster_start = unichar_array_find_cluster_start(entry->text, entry->text_len, entry->pos);
+		entry->pos = cluster_start;
 	}
 
 	gui_entry_fix_cursor(entry);
