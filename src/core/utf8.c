@@ -42,6 +42,7 @@ static int string_advance_with_grapheme_support(char const **str, int policy)
 	const char *start = *str;
 	const char *pos = *str;
 	int cluster_width = 0;
+	int has_variation_selector = 0;
 	utf8proc_ssize_t bytes;
 
 	if (policy != TREAT_STRING_AS_UTF8) {
@@ -69,6 +70,11 @@ static int string_advance_with_grapheme_support(char const **str, int policy)
 			break;
 		}
 
+		/* Check for variation selector */
+		if (codepoint == 0xFE0F) {
+			has_variation_selector = 1;
+		}
+
 		/* Add this codepoint's width to the cluster */
 		if (unichar_isprint(codepoint)) {
 			int char_width = i_wcwidth(codepoint);
@@ -79,6 +85,12 @@ static int string_advance_with_grapheme_support(char const **str, int policy)
 
 		prev_codepoint = codepoint;
 		pos += bytes;
+	}
+
+	/* Special handling for emoji with variation selector */
+	if (has_variation_selector && cluster_width == 1) {
+		/* Base emoji (like ❣ U+2763, ♥ U+2665) + variation selector should have width 2 */
+		cluster_width = 2;
 	}
 
 	*str = pos;
