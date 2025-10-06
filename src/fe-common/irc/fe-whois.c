@@ -416,7 +416,7 @@ static void event_whois_default(IRC_SERVER_REC *server, const char *data)
 void fe_whois_init(void)
 {
 	settings_add_bool("lookandfeel", "whois_hide_safe_channel_id", TRUE);
-	settings_add_bool("lookandfeel", "print_whois_rpl_in_active_window", FALSE);
+	settings_add_bool("lookandfeel", "whois_reply_active_window", FALSE);
 
 	signal_add("event 311", (SIGNAL_FUNC) event_whois);
 	signal_add("event 312", (SIGNAL_FUNC) event_whois_server);
