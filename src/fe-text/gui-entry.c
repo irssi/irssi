@@ -54,20 +54,6 @@ static unichar i_tolower(unichar c)
 	return c <= 255 ? tolower(c) : c;
 }
 
-static int is_combining_char(unichar c)
-{
-	if (term_type != TERM_TYPE_UTF8)
-		return 0;
-
-#ifdef HAVE_LIBUTF8PROC
-	/* Use utf8proc for precise combining character detection */
-	return unichar_isprint(c) && utf8proc_charwidth(c) == 0;
-#else
-	/* Fallback to unichar_width for compatibility */
-	return unichar_isprint(c) && unichar_width(c) == 0;
-#endif
-}
-
 static int i_isalnum(unichar c)
 {
 	if (term_type == TERM_TYPE_UTF8)

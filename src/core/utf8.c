@@ -399,6 +399,20 @@ int unichar_array_find_cluster_start(const unichar *text, int text_len, int pos)
 #endif
 }
 
+int is_combining_char(unichar c)
+{
+	if (!is_utf8())
+		return 0;
+
+#ifdef HAVE_LIBUTF8PROC
+	/* Use utf8proc for precise combining character detection */
+	return unichar_isprint(c) && utf8proc_charwidth(c) == 0;
+#else
+	/* Fallback to unichar_width for compatibility */
+	return unichar_isprint(c) && unichar_width(c) == 0;
+#endif
+}
+
 void utf8_init(void)
 {
 	/* no-op */

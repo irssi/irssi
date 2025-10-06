@@ -72,6 +72,10 @@ int unichar_array_move_cluster_backward(const unichar *text, int text_len, int *
  * Returns the codepoint index of the cluster start. */
 int unichar_array_find_cluster_start(const unichar *text, int text_len, int pos);
 
+/* Check if a unichar is a combining character (width 0).
+ * Returns 1 if the character is combining, 0 otherwise. */
+int is_combining_char(unichar c);
+
 /* Initialize UTF-8 debugging system */
 void utf8_init(void);
 
