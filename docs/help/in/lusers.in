@@ -5,7 +5,7 @@
 
 %9Parameters:%9
 
-    The server to search on and the remote sever to search on; if no arguments
+    The server to search on and the remote server to search on; if no arguments
     are given, the active server will be used.
 
 %9Description:%9
