@@ -405,7 +405,7 @@ void gui_printtext_init(void)
 	indent_functions = g_hash_table_new((GHashFunc) g_str_hash,
 					    (GCompareFunc) g_str_equal);
 
-	settings_add_int("history", "scrollback_lines", 500);
+	settings_add_int("history", "scrollback_lines", 5000);
 	settings_add_time("history", "scrollback_time", "1day");
 	settings_add_time("history", "scrollback_max_age", "0");
 	settings_add_int("history", "scrollback_burst_remove", 10);

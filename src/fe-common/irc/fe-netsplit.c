@@ -137,7 +137,7 @@ static void get_server_splits(void *key, NETSPLIT_REC *split,
 			g_string_append_printf(chanrec->nicks, "%s, ", split->nick);
 
 			if (chanrec->nick_count == netsplit_max_nicks)
-                                chanrec->maxnickpos = chanrec->nicks->len;
+				chanrec->maxnickpos = chanrec->nicks->len - 2;
 		}
 	}
 }
