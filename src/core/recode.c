@@ -120,6 +120,13 @@ char *recode_in(const SERVER_REC *server, const char *str, const char *target)
 	else
 		from = find_conversion(server, target);
 
+	/* Don't use TRANSLIT when both terminal and string are UTF-8
+	 * and no specific conversion is configured - preserves emoji variation selectors */
+	if (from == NULL && term_is_utf8 && str_is_utf8) {
+		g_debug("recode_in: UTF-8 bypass for: %s", str);
+		return g_strdup(str);
+	}
+
 	if (from)
 		recoded = g_convert_with_fallback(str, len, to, from, NULL, NULL, NULL, NULL);
 
@@ -150,7 +157,7 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 	const char *from = translit_charset;
 	const char *to = NULL;
 	char *translit_to = NULL;
-	gboolean translit, recode;
+	gboolean translit, recode, str_is_utf8;
 	int len;
 
 	if (!str)
@@ -162,6 +169,9 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 
 	len = strlen(str);
 
+	/* Check if string is valid UTF-8 */
+	str_is_utf8 = g_utf8_validate(str, len, NULL);
+
 	translit = settings_get_bool("recode_transliterate");
 
 	to = find_conversion(server, target);
@@ -170,10 +180,18 @@ char *recode_out(const SERVER_REC *server, const char *str, const char *target)
 		to = settings_get_str("recode_out_default_charset");
 
 	if (to && *to != '\0') {
-		if (translit && !is_translit(to))
+		/* Don't use TRANSLIT when both terminal and target are UTF-8
+		 * and string is valid UTF-8 - this preserves emoji variation selectors */
+		if (translit && !is_translit(to) &&
+		    !(term_is_utf8 && str_is_utf8 && g_ascii_strcasecmp(to, "UTF-8") == 0))
 			to = translit_to = g_strconcat(to ,"//TRANSLIT", NULL);
 
 		recoded = g_convert(str, len, to, from, NULL, NULL, NULL);
+	} else if (term_is_utf8 && str_is_utf8) {
+		/* When no specific charset conversion is configured and both terminal
+		 * and string are UTF-8, don't do any conversion to preserve emoji */
+		g_debug("recode_out: UTF-8 bypass for: %s", str);
+		recoded = g_strdup(str);
 	}
 	g_free(translit_to);
 	if (!recoded)
