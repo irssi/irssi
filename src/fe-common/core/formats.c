@@ -1546,9 +1546,13 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			break;
 		case 15:
 			/* remove all styling */
-			fgcolor = theme->default_color;
-			bgcolor = -1;
-			flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
+			if (!hide_text_style) {
+				if (!hide_colors) {
+					fgcolor = theme->default_color;
+					bgcolor = -1;
+				}
+				flags &= GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_MONOSPACE;
+			}
 			break;
 		case 17:
 			if (!hide_text_style)
