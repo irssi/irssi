@@ -2,6 +2,7 @@
 #define IRSSI_CORE_SERVERS_H
 
 #include <irssi/src/core/modules.h>
+#include <irssi/src/core/network.h>
 
 /* Returns SERVER_REC if it's server, NULL if it isn't. */
 #define SERVER(server) \
