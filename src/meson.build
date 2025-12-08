@@ -2,21 +2,22 @@
 
 subdir('lib-config')
 subdir('core')
-foreach s : chat_modules
-  subdir(s)
-endforeach
-subdir('fe-common')
-if have_perl
-  subdir('perl')
-endif
-if have_otr
-  subdir('otr')
-endif
+subdir('fe-common' / 'core')
 if want_bot
   subdir('fe-none')
 endif
 if want_textui
   subdir('fe-text')
+endif
+foreach s : chat_modules
+  subdir(s)
+  subdir('fe-common' / s)
+endforeach
+if have_perl
+  subdir('perl')
+endif
+if have_otr
+  subdir('otr')
 endif
 if want_fuzzer
   subdir('fe-fuzz')

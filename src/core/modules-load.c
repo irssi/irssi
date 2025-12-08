@@ -42,7 +42,7 @@ static char *module_get_name(const char *path, int *start, int *end)
 	if (name == NULL)
 		name = path;
 
-	if (strncmp(name, "lib", 3) == 0)
+	if (strncmp(name, "lib", 3) == 0 || strncmp(name, "cyg", 3) == 0)
 		name += 3;
 
 	module_name = g_strdup(name);
