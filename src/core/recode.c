@@ -25,6 +25,9 @@
 #include <irssi/src/lib-config/iconfig.h>
 #include <irssi/src/core/misc.h>
 
+#include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-servers.h>
+
 static char *translit_charset;
 static gboolean term_is_utf8;
 
@@ -64,6 +67,22 @@ gboolean is_valid_charset(const char *charset)
 static char *find_conversion(const SERVER_REC *server, const char *target)
 {
 	char *conv = NULL;
+
+	if (IS_IRC_SERVER(server))
+	{
+		IRC_SERVER_REC *irc_server = (IRC_SERVER_REC *) server;
+		if (g_hash_table_lookup(irc_server->isupport, "utf8only"))
+		{
+			/* "Clients implementing this specification MUST NOT send non-UTF-8
+			 * data to the server once they have seen this token."
+			 * "If a client implementing this specification sees this token,
+			 * they MUST set their outgoing encoding to UTF-8 without requiring
+			 * any user intervention."
+			 * -- https://ircv3.net/specs/extensions/utf8-only
+			 */
+			return NULL;
+		}
+	}
 
 	if (server != NULL && target != NULL) {
 		char *tagtarget = g_strdup_printf("%s/%s", server->tag, target);
