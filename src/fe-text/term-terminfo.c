@@ -514,7 +514,7 @@ void term_add_unichar(TERM_WINDOW *window, unichar chr)
 
 	switch (term_type) {
 	case TERM_TYPE_UTF8:
-		term_printed_text(unichar_isprint(chr) ? i_wcwidth(chr) : 1);
+		term_printed_text(unichar_isprint(chr) ? unichar_width(chr) : 1);
                 term_addch_utf8(window, chr);
 		break;
 	case TERM_TYPE_BIG5:
@@ -536,8 +536,6 @@ void term_add_unichar(TERM_WINDOW *window, unichar chr)
 int term_addstr(TERM_WINDOW *window, const char *str)
 {
 	int len, raw_len;
-	unichar tmp;
-	const char *ptr;
 
 	if (vcmove) term_move_real();
 
@@ -546,21 +544,9 @@ int term_addstr(TERM_WINDOW *window, const char *str)
 
 	/* The string length depends on the terminal encoding */
 
-	ptr = str;
-
 	if (term_type == TERM_TYPE_UTF8) {
-		while (*ptr != '\0') {
-			tmp = g_utf8_get_char_validated(ptr, -1);
-			/* On utf8 error, treat as single byte and try to
-			   continue interpreting rest of string as utf8 */
-			if (tmp == (gunichar)-1 || tmp == (gunichar)-2) {
-				len++;
-				ptr++;
-			} else {
-				len += unichar_isprint(tmp) ? i_wcwidth(tmp) : 1;
-				ptr = g_utf8_next_char(ptr);
-			}
-		}
+		/* Use string_width for proper grapheme cluster handling */
+		len = string_width(str, TREAT_STRING_AS_UTF8);
 	} else
 		len = raw_len;
 
