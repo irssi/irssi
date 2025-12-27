@@ -5,7 +5,7 @@ use Irssi;
 use strict;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "1.10";
+$VERSION = "1.11";
 %IRSSI = (
     authors     => 'Timo Sirainen & Jostein Kjønigsen',
     name        => 'autoop',
@@ -98,10 +98,11 @@ sub load_autoops {
     %opnicks = ();
     open(CONF, "<", "$file") or return;
     while (my $line = <CONF>) {
-	if ($line !=~ /^\s*$/) {
-	    cmd_autoop($line);
-	    $count++;
-	}
+        chomp($line);
+        if ($line !~ /^\s*$/) {
+            cmd_autoop($line);
+            $count++;
+        }
     }
     close(CONF);
     
