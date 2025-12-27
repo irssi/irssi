@@ -17,7 +17,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: prepare required software
         run: |
-          sudo apt install $apt_build_deps
+          sudo apt update; sudo apt install $apt_build_deps
           eval "$get_pip_build_deps"
       - name: checkout base ref
         uses: actions/checkout@main
@@ -52,7 +52,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: prepare required software
         run: |
-          sudo apt install $apt_build_deps
+          sudo apt update; sudo apt install $apt_build_deps
           eval "$get_pip_build_deps"
       - name: checkout merge ref
         uses: actions/checkout@main
@@ -87,7 +87,7 @@ jobs:
     steps:
       - name: prepare required software
         run: |
-          sudo apt install abigail-tools
+          sudo apt update; sudo apt install abigail-tools
       - name: fetch base build
         uses: actions/download-artifact@v4
         with:
