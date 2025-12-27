@@ -1,19 +1,22 @@
 #!/bin/sh -e
-# Run this to download FAQ and startup-HOWTO from irssi.org
+# Run this to download QNA and New-users from irssi.org
 
 PKG_NAME="Irssi"
+export LC_ALL=en_IE.utf8
 
 site=https://irssi.org
 
-faq=$site/documentation/faq/
-howto=$site/documentation/startup/
-design=$site/documentation/design/
+qna=$site/documentation/qna/
+howto=$site/New-users/
+#design=$site/documentation/design/
 
 # remove everything until H1 and optionally 2 DIVs before the
 # FOOTER. May need to be adjusted as the source pages change
 pageclean_regex='s{.*(?=<h1)}{}s;
-s{(\s*<script\s.*?</script>)?\s*(</div>\s*){0,3}<footer.*}{}s;
-s{(<.*?)\sclass="(?:[^"]*\s+)*(?:highlighter-rouge|highlight)"(.*?>)}{\1\2}g;'
+s{(\s*<script\s.*?</script>)?\s*(</section>(\r?\n)*\s*</article>\s*)?(</div>\s*){0,3}<footer.*}{}s;
+s{(<.*?)\sclass="(?:[^"]*\s+)*(?:highlighter-rouge|highlight)"(.*?>)}{\1\2}g;
+s{<a class="headerlink" href=".*?" title="Permalink to this heading"></a>}{}g;
+s{<span.*?>(.*?)</span>}{\1}g;'
 
 srcdir=`dirname "$0"`
 test -z "$srcdir" && srcdir=.
@@ -45,6 +48,7 @@ else
     any=false
 fi
 
+addheadermark="perl -p -e s{<h(\\d).*?>\\K}{(q:#:x\$1).q:&#32;:}ge;s{(?=</h(\\d)>)}{q:&#32;:.(q:#:x\$1)}ge"
 if type w3m >/dev/null 2>&1 ; then
     converter="w3m -o display_link_number=1 -dump -T text/html"
     any=true
@@ -83,25 +87,33 @@ download_it() {
     mv "$3".tmp "$3"
 }
 
-download_it "FAQ" "$faq" "$srcdir"/docs/faq.html
-download_it "Startup How-To" "$howto" "$srcdir"/docs/startup-HOWTO.html
-download_it "Design" "$design" "$srcdir"/docs/design.html
+download_it_nested() {
+    name=$1; shift
+    src=$1; shift
+    dest=$1; shift
+    download_it "$name" "$src" "$dest".nest
+    echo > "$dest"
+    eval $(perl -n -0777 -e 'print qq{download_it "\$name ($2)" "\${src}$1/" "\${dest}.$1";
+cat "\${dest}.$1" >> "\${dest}.tmp";
+rm "\${dest}.$1";\n}
+ while(m{<a class="reference internal" href="(.*?)/">(.*?)</a>}g)' "$dest".nest)
+    rm "$dest".nest
+    perl -i -0777 -p -e 's{<base href=.*?>}{}g;s{\A}{<base href='"'${src}multi/'"'>\n}' "$dest".tmp
+    mv "$dest".tmp "$dest"
+}
+
+download_it_nested "QNA" "$qna" "$srcdir"/docs/qna.html
+download_it "New users guide" "$howto" "$srcdir"/docs/New-users.html
+#download_it "Design" "$design" "$srcdir"/docs/design.html
 
 # .html -> .txt with lynx or elinks
-echo "Documentation: html -> txt..."
+echo "Documentation: html -> txt... [converter: $converter]"
 
-cat "$srcdir"/docs/faq.html \
-    | LC_ALL=en_IE.utf8 $converter \
-    | perl -pe '
-	s/^ *//;
-	if ($_ eq "\n" && $state eq "Q") { $_ = ""; }
-	elsif (/^([QA]):/) { $state = $1 }
-	elsif ($_ ne "\n") { $_ = "   $_"; };
-' > "$srcdir"/docs/faq.txt
+cat "$srcdir"/docs/qna.html \
+    | $addheadermark | $converter > "$srcdir"/docs/qna.txt
 
-cat "$srcdir"/docs/startup-HOWTO.html \
-    | perl -pe "s/\\bhref=([\"\'])#.*?\\1//" \
-    | LC_ALL=en_IE.utf8 $converter > "$srcdir"/docs/startup-HOWTO.txt
+cat "$srcdir"/docs/New-users.html \
+    | $addheadermark | $converter > "$srcdir"/docs/New-users.txt
 
-cat "$srcdir"/docs/design.html \
-    | LC_ALL=en_IE.utf8 $converter > "$srcdir"/docs/design.txt
+#cat "$srcdir"/docs/design.html \
+#    | $addheadermark | $converter > "$srcdir"/docs/design.txt

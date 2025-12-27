@@ -1,0 +1,52 @@
+<base href='https://irssi.org/documentation/qna/multi/'>
+
+<h1>Right-aligned nicks</h1>
+<p>To create a “tabular” effect of the chat view, or to align nick names in a column, you can use Irssi’s theme/format system. The basic commands are the following:</p>
+<div class="highlight-default notranslate"><div><pre>/format own_msg {ownmsgnick $2 {ownnick $[-9]0}}$1
+/format own_msg_channel {ownmsgnick $3 {ownnick $[-9]0}{msgchannel $1}}$2
+/format pubmsg_me {pubmsgmenick $2 {menick $[-9]0}}$1
+/format pubmsg_me_channel {pubmsgmenick $3 {menick $[-9]0}{msgchannel $1}}$2
+/format pubmsg_hilight {pubmsghinick $0 $3 $[-9]1}$2
+/format pubmsg_hilight_channel {pubmsghinick $0 $4 $[-9]1{msgchannel $2}}$3
+/format pubmsg {pubmsgnick $2 {pubnick $[-9]0}}$1
+/format pubmsg_channel {pubmsgnick $3 {pubnick $[-9]0}{msgchannel $1}}$2
+</pre></div>
+</div>
+<p>These are copied from the default theme’s default values, which are responsible for displaying your own messages sent to a channel (<code class="docutils literal notranslate">own_msg</code>) as well as received messages (<code class="docutils literal notranslate">pubmsg</code>) and the two basic highlightings (<code class="docutils literal notranslate">me</code> and <code class="docutils literal notranslate">hilight</code>).</p>
+<p>Then, in front of the argument that contains the nick name (<code class="docutils literal notranslate">$0</code> in most cases, but <code class="docutils literal notranslate">$1</code> in <code class="docutils literal notranslate">pubmsg_hilight</code>), an alignment modifier (see <a class="reference internal" href="../../settings/#a-b">Appendix B: Special Variables and Expandos</a>) has been added: <code class="docutils literal notranslate">[-9]</code>. This means that the nicks will be right-aligned and truncated to 9 characters.</p>
+<p><strong>Note</strong>: Modifiers <em>only</em> work in the <code class="docutils literal notranslate">/format</code> section of a theme (this may change in the future)</p>
+<p>There are also some scripts that try to do the alignment for you, like: <code class="docutils literal notranslate">nm</code>, <code class="docutils literal notranslate">nm2</code>.</p>
+<p>There are also some nice themes that extend the alignment to further formats, like: <a class="reference external" href="https://github.com/ronilaukkarinen/weed">weed</a>.</p>
+<h1>Automatic log-in to NickServ</h1>
+<p>Please check here =&gt; <a class="reference internal" href="../../manual/automation/#automatic-log-in-to-nickserv">Automatic log-in to NickServ</a></p>
+<h1>CertFP Log-in</h1>
+<p>CertFP, short for Certificate Finger Print, is another method to log you in to NickServ. Instead of a password, it uses a <a class="reference external" href="https://en.wikipedia.org/wiki/Client_certificate">Client Certificate</a>.</p>
+<p>In order to use it, you</p>
+<ul class="simple">
+<li><p>first need a certificate,</p></li>
+<li><p>then configure Irssi to use this certificate,</p></li>
+<li><p>and finally register the certificate with NickServ.</p></li>
+</ul>
+<p>Irssi does not have built-in certificate management commands, so you need to use an external tool like <code class="docutils literal notranslate">openssl</code> to create the certificate.</p>
+<p>A step-by-step guide for the Libera Chat network can be found here =&gt; <a class="reference external" href="https://github.com/shabble/irssi-docs/wiki/liberachat_certfp">https://github.com/shabble/irssi-docs/wiki/liberachat_certfp</a></p>
+<p>It is necessary that the certificate be available as a file; PKCS#11 is not supported.</p>
+<h1>Tor (The Onion Router)</h1>
+<p><a class="reference external" href="https://www.torproject.org/">Tor</a> is an overlay network for anonymous communication. It operates a local <a class="reference external" href="https://en.wikipedia.org/wiki/SOCKS">SOCKS</a> proxy for applications to use.</p>
+<p>Unfortunately, Irssi currently does not support SOCKS proxies natively. As a workaround, you can install the <a class="reference external" href="https://github.com/rofl0r/proxychains-ng">ProxyChains-NG</a> program (note, it must be the NG version).</p>
+<p>Afterwards, you can launch Irssi like this:</p>
+<div class="highlight-default notranslate"><div><pre>proxychains4 irssi
+</pre></div>
+</div>
+<p>Now your connections will go through the Proxy configured in ProxyChains-NG (Tor by default).</p>
+<p>IRC networks may have different requirements to be able to connect via Tor. For the Libera Chat network, you will first need to set up <a class="reference internal" href="../certfp/">CertFP Log-in</a> using a clearnet connection, and then connect to their <a class="reference external" href="https://libera.chat/guides/connect#accessing-liberachat-via-tor">Onion Service</a> <code class="docutils literal notranslate">palladium.libera.chat</code>. More detailed instructions can be found here =&gt; <a class="reference external" href="https://github.com/shabble/irssi-docs/wiki/liberator">https://github.com/shabble/irssi-docs/wiki/liberator</a></p>
+<h1>The following signatures were invalid: EXPKEYSIG</h1>
+<p>If you see such a message</p>
+<div class="highlight-default notranslate"><div><pre>Err:4 home:/ailin_nemui:/irssi-an  InRelease
+  The following signatures were invalid: EXPKEYSIG EDB7AED941EEDB57 home:ailin_nemui OBS Project &lt;home:ailin_nemui@build.opensuse.org&gt;
+</pre></div>
+</div>
+<p>this means that the automatic signing key used by the Open Build Service expired. OBS renews the key periodically, but Debian does not support this.</p>
+<section id="fix">
+<h2>Fix</h2>
+<p>Download the key again, following the regular OBS instructions. If it still does not work, verify if there is a second expired copy of the key in <code class="docutils literal notranslate">/etc/apt/trusted.gpg.d</code> or in <code class="docutils literal notranslate">apt-key list</code> and remove it as well.</p>
+</section>
