@@ -1,0 +1,110 @@
+<base href='https://irssi.org/New-users/'>
+<h1>New users guide</h1>
+<section id="new-to-irc">
+<h2>New to IRC</h2>
+<p>Internet Relay Chat was created in 1988 and has hardly changed. It can be used to exchange text messages (one message = single line) with other people, either privately (called query, PM, private message, MSG) or in a room (channel). Pictures are shared by uploading them to a temporary host like <a class="reference external" href="https://pomf.lain.la/">https://pomf.lain.la/</a> and then pasting the HTTP links. Code snippets or longer texts are shared by pasting them to a Pastebin like <a class="reference external" href="https://paste.opensuse.org/">https://paste.opensuse.org/</a> and then sharing the HTTP link.</p>
+<p>IRC does not have message history. You can only receive replies while your computer is turned on and connected to the channel you want to follow. Some people run their IRC programs on remote servers for that reason.</p>
+<p>IRC is organised into networks. Each network consists of many servers. It (mostly) does not matter which server you connect to as long as it belongs to the network you want to use. Irssi supports connections to many networks at the same time.</p>
+<p>Each network contains many channels, rooms that are often dedicated to discussing a specific topic. You can find many channels on <a class="reference external" href="https://netsplit.de/">https://netsplit.de/</a> or using a search engine with the keyword “IRC”. Irssi supports joining many channels at the same time.</p>
+<p>There is a rather large IRC network catering to free and open-source software and peer directed projects at <a class="reference external" href="https://libera.chat/">https://libera.chat/</a> and a smaller one at <a class="reference external" href="https://www.oftc.net/">https://www.oftc.net/</a> – many free software projects still have support channels on these IRC networks (although some have moved to Matrix or proprietary platforms like Discord).</p>
+</section>
+<section id="first-start">
+<h2>First start</h2>
+<p>After (compiling and) installing Irssi, to start it, open a shell (Terminal) and type:</p>
+<div class="highlight-default notranslate"><div><pre>irssi
+</pre></div>
+</div>
+<p>You should be greeted by a blinking cursor behind <code class="docutils literal notranslate">[(status)]</code>. You are now in the status window of Irssi. Window is the Irssi name for what you might nowadays call a “Web browser tab”.</p>
+<p>If you’re confused about what you are seeing on the Irssi screen, you can find an annotated screenshot of it at <a class="reference internal" href="../User-interface/">User interface</a>.</p>
+<p>If you want, you can pick a nick name (handle) that will be shown to others reading your messages now, by typing</p>
+<div class="highlight-default notranslate"><div><pre>/set nick whatyouwant
+</pre></div>
+</div>
+<p>Each command or message can be sent by pressing Enter. Commands in Irssi start with a <code class="docutils literal notranslate">/</code>. If there is no <code class="docutils literal notranslate">/</code>, then the line that you wrote will be sent as a message to the channel that you have open, for everyone to see.</p>
+<section id="leaving">
+<h3>Leaving</h3>
+<p>Type <code class="docutils literal notranslate">/quit</code> to get out of Irssi.</p>
+</section>
+</section>
+<section id="connecting-to-a-network">
+<h2>Connecting to a network</h2>
+<p>Irssi comes with some predefined networks. You can see the current list of networks by typing</p>
+<div class="highlight-default notranslate"><div><pre>/network
+</pre></div>
+</div>
+<p>(the list will be shown in your status window)</p>
+<p>To connect to one of the networks in the list, type <code class="docutils literal notranslate">/connect networkname</code>, for example:</p>
+<div class="highlight-default notranslate"><div><pre>/connect liberachat
+</pre></div>
+</div>
+<p>You should see several messages scroll by. After a while, you should be connected to the Libera Chat network.</p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Irssi version 1.2 or older may be lacking the liberachat network entry. See <a class="reference external" href="https://github.com/shabble/irssi-docs/wiki/liberachat">https://github.com/shabble/irssi-docs/wiki/liberachat</a> for how to add it.</p>
+</div>
+<section id="nickname-registration">
+<h3>Nickname registration</h3>
+<p>Many IRC networks (but not all) offer a way to register a user account. Sometimes (but not on all networks) the account registration also includes reserving a nick for you. <em>How</em> to register also differs by network. Some <em>channels</em> only allow users with registered accounts to join them, so it may be very important for you to register a user account.</p>
+<p>User accounts are always specific to a network.</p>
+<p>For the Libera Chat network, you can find instructions how to register and set up your account with Irssi on <a class="reference external" href="https://github.com/shabble/irssi-docs/wiki/liberachat#configure-sasl-automated-log-in">https://github.com/shabble/irssi-docs/wiki/liberachat#configure-sasl-automated-log-in</a></p>
+</section>
+</section>
+<section id="joining-a-channel">
+<h2>Joining a channel</h2>
+<p>Once you are connected to a network, you can join channels by typing <code class="docutils literal notranslate">/join #channelname</code>, for example:</p>
+<div class="highlight-default notranslate"><div><pre>/join #irssi
+</pre></div>
+</div>
+<p>Now, a new window will open and you can send messages to the channel.</p>
+<section id="changing-windows">
+<h3>Changing windows</h3>
+<p>You can change between windows using the <code class="docutils literal notranslate">Ctrl</code>+<code class="docutils literal notranslate">n</code> or <code class="docutils literal notranslate">Ctrl</code>+<code class="docutils literal notranslate">p</code> keys, or–if your terminal is configured properly–using <code class="docutils literal notranslate">Alt</code>+<code class="docutils literal notranslate">1</code>, <code class="docutils literal notranslate">Alt</code>+<code class="docutils literal notranslate">2</code>, … See <a class="reference internal" href="../documentation/help/bind_-list/">bind -list</a> for a list of all default key bindings.</p>
+</section>
+<section id="removing-clutter">
+<h3>Removing clutter</h3>
+<p>By default, Irssi shows when someone joins or leaves a channel. These messages can waste a lot of lines and obscure the actual chat. To hide them, type</p>
+<div class="highlight-default notranslate"><div><pre>/window hidelevel +joins +parts +quits
+</pre></div>
+</div>
+<p>To get them back</p>
+<div class="highlight-default notranslate"><div><pre>/window hidelevel -joins -parts -quits
+</pre></div>
+</div>
+<p>If you want to hide them by default, <code class="docutils literal notranslate">/set window_default_hidelevel hidden joins parts quits</code></p>
+</section>
+</section>
+<section id="adding-a-new-network">
+<h2>Adding a new network</h2>
+<p>If you want to join a network that is not there, you first need to find at least one server of that network. Let’s say you have found the room <a class="reference external" href="https://netsplit.de/channels/details.php?room=%23hackint&amp;net=hackint">#hackint</a> on netsplit.de and want to join it. Then you can find that the <a class="reference external" href="https://netsplit.de/servers/?net=hackint">server</a> is irc.hackint.org, port 6697, SSL (TLS) on. To add it to Irssi, use the commands:</p>
+<div class="highlight-default notranslate"><div><pre>/network add hackint
+/server add -tls -network hackint irc.hackint.org 6697
+</pre></div>
+</div>
+<p>Then, you can connect to the newly added network with</p>
+<div class="highlight-default notranslate"><div><pre>/connect hackint
+</pre></div>
+</div>
+<section id="multiple-networks">
+<h3>Multiple networks</h3>
+<p>If you are connected to multiple networks, you can change which one you are “talking” to (which one to send commands) by using the <code class="docutils literal notranslate">Ctrl</code>+<code class="docutils literal notranslate">x</code> key in the status window.</p>
+</section>
+</section>
+<section id="on-line-help">
+<h2>On-line help</h2>
+<p>Most /commands have a help page, you can read it with</p>
+<div class="highlight-default notranslate"><div><pre>/help commandname
+</pre></div>
+</div>
+<p>or <a class="reference internal" href="../documentation/help/">on-line</a>.</p>
+<p>The settings that can be changed with /SET are described on <a class="reference internal" href="../documentation/settings/">Settings Documentation</a> – the settingshelp <a class="reference internal" href="#about-scripts">script</a> can be used to read it from within <code class="docutils literal notranslate">/help</code></p>
+</section>
+<section id="about-scripts">
+<h2>About Scripts</h2>
+<p>You can enhance your Irssi by installing scripts. Many Perl scripts written by other Irssi users can be found on <a class="reference external" href="https://scripts.irssi.org/">https://scripts.irssi.org/</a></p>
+<p>Most of them should be compatible with Irssi 1.4 (but some may not, also see the Full Change log for some incompatible ones)</p>
+</section>
+<section id="about-themes">
+<h2>About Themes</h2>
+<p>Irssi’s look can be thoroughly changed with themes. Many themes created by other Irssi users can be found on <a class="reference external" href="https://themes.irssi.org/">https://themes.irssi.org/</a></p>
+<p>If you want to modify the look of Irssi yourself, the <em>default</em> theme which can be found in your <code class="docutils literal notranslate">~/.irssi</code> folder is a good starting point. It also has a few comments explaining what some of the abstracts are used for</p>
+</section>

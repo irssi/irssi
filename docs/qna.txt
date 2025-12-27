@@ -1,0 +1,111 @@
+# Right-aligned nicks #
+
+To create a “tabular” effect of the chat view, or to align nick names in a
+column, you can use Irssi’s theme/format system. The basic commands are the
+following:
+
+/format own_msg {ownmsgnick $2 {ownnick $[-9]0}}$1
+/format own_msg_channel {ownmsgnick $3 {ownnick $[-9]0}{msgchannel $1}}$2
+/format pubmsg_me {pubmsgmenick $2 {menick $[-9]0}}$1
+/format pubmsg_me_channel {pubmsgmenick $3 {menick $[-9]0}{msgchannel $1}}$2
+/format pubmsg_hilight {pubmsghinick $0 $3 $[-9]1}$2
+/format pubmsg_hilight_channel {pubmsghinick $0 $4 $[-9]1{msgchannel $2}}$3
+/format pubmsg {pubmsgnick $2 {pubnick $[-9]0}}$1
+/format pubmsg_channel {pubmsgnick $3 {pubnick $[-9]0}{msgchannel $1}}$2
+
+These are copied from the default theme’s default values, which are responsible
+for displaying your own messages sent to a channel (own_msg) as well as
+received messages (pubmsg) and the two basic highlightings (me and hilight).
+
+Then, in front of the argument that contains the nick name ($0 in most cases,
+but $1 in pubmsg_hilight), an alignment modifier (see [1]Appendix B: Special
+Variables and Expandos) has been added: [-9]. This means that the nicks will be
+right-aligned and truncated to 9 characters.
+
+Note: Modifiers only work in the /format section of a theme (this may change in
+the future)
+
+There are also some scripts that try to do the alignment for you, like: nm,
+nm2.
+
+There are also some nice themes that extend the alignment to further formats,
+like: [2]weed.
+
+# Automatic log-in to NickServ #
+
+Please check here => [3]Automatic log-in to NickServ
+
+# CertFP Log-in #
+
+CertFP, short for Certificate Finger Print, is another method to log you in to
+NickServ. Instead of a password, it uses a [4]Client Certificate.
+
+In order to use it, you
+
+  • first need a certificate,
+
+  • then configure Irssi to use this certificate,
+
+  • and finally register the certificate with NickServ.
+
+Irssi does not have built-in certificate management commands, so you need to
+use an external tool like openssl to create the certificate.
+
+A step-by-step guide for the Libera Chat network can be found here => [5]https:
+//github.com/shabble/irssi-docs/wiki/liberachat_certfp
+
+It is necessary that the certificate be available as a file; PKCS#11 is not
+supported.
+
+# Tor (The Onion Router) #
+
+[6]Tor is an overlay network for anonymous communication. It operates a local
+[7]SOCKS proxy for applications to use.
+
+Unfortunately, Irssi currently does not support SOCKS proxies natively. As a
+workaround, you can install the [8]ProxyChains-NG program (note, it must be the
+NG version).
+
+Afterwards, you can launch Irssi like this:
+
+proxychains4 irssi
+
+Now your connections will go through the Proxy configured in ProxyChains-NG
+(Tor by default).
+
+IRC networks may have different requirements to be able to connect via Tor. For
+the Libera Chat network, you will first need to set up [9]CertFP Log-in using a
+clearnet connection, and then connect to their [10]Onion Service
+palladium.libera.chat. More detailed instructions can be found here => [11]
+https://github.com/shabble/irssi-docs/wiki/liberator
+
+# The following signatures were invalid: EXPKEYSIG #
+
+If you see such a message
+
+Err:4 home:/ailin_nemui:/irssi-an  InRelease
+  The following signatures were invalid: EXPKEYSIG EDB7AED941EEDB57 home:ailin_nemui OBS Project <home:ailin_nemui@build.opensuse.org>
+
+this means that the automatic signing key used by the Open Build Service
+expired. OBS renews the key periodically, but Debian does not support this.
+
+## Fix ##
+
+Download the key again, following the regular OBS instructions. If it still
+does not work, verify if there is a second expired copy of the key in /etc/apt/
+trusted.gpg.d or in apt-key list and remove it as well.
+
+
+References:
+
+[1] https://irssi.org/documentation/settings/#a-b
+[2] https://github.com/ronilaukkarinen/weed
+[3] https://irssi.org/documentation/manual/automation/#automatic-log-in-to-nickserv
+[4] https://en.wikipedia.org/wiki/Client_certificate
+[5] https://github.com/shabble/irssi-docs/wiki/liberachat_certfp
+[6] https://www.torproject.org/
+[7] https://en.wikipedia.org/wiki/SOCKS
+[8] https://github.com/rofl0r/proxychains-ng
+[9] https://irssi.org/documentation/qna/certfp/
+[10] https://libera.chat/guides/connect#accessing-liberachat-via-tor
+[11] https://github.com/shabble/irssi-docs/wiki/liberator
