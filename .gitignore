@@ -89,3 +89,4 @@ subprojects/*
 Irssi-Dist
 setup.cfg
 *.egg-info
+result
