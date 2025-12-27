@@ -90,4 +90,12 @@ Irssi-Dist
 setup.cfg
 *.egg-info
 result
+Build-fuzz
+
+# Fuzzing artifacts (runtime corpus and crash/leak files)
 corpus/
+crash-*
+leak-*
+oom-*
+timeout-*
+slow-unit-*
