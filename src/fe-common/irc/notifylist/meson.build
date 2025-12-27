@@ -12,12 +12,13 @@ libfe_irc_notifylist_a = static_library('fe_irc_notifylist',
     def_sysconfdir,
   ],
   dependencies : dep)
-shared_module('fe_irc_notifylist',
+shared_library('fe_irc_notifylist',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
-  link_with : dl_cross_irc_notifylist,
-  link_whole : libfe_irc_notifylist_a)
+  link_with : dl_cross_irc_notifylist + dl_cross_irssi_main,
+  link_whole : libfe_irc_notifylist_a,
+  override_options : ['b_lundef=false'])
 
 install_headers(
   files(

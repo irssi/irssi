@@ -1,5 +1,5 @@
 
-shared_module('Irssi',
+shared_library('Irssi',
   [ xsubpp.process(
     files(
       'Channel.xs',
@@ -26,7 +26,8 @@ shared_module('Irssi',
   include_directories : rootinc,
   implicit_include_directories : true,
   dependencies : dep + [ perl_dep ],
-  link_with : dl_cross_perl_core,
+  link_with : dl_cross_perl_core + dl_cross_irssi_main,
+  override_options : ['b_lundef=false'],
 )
 
 install_headers(
