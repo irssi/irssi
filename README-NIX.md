@@ -74,12 +74,13 @@ ninja -C Build-fuzz
 
 ## Fuzzing
 
-The project includes four fuzz targets built with [libFuzzer](https://llvm.org/docs/LibFuzzer.html):
+The project includes five fuzz targets built with [libFuzzer](https://llvm.org/docs/LibFuzzer.html):
 
 | Fuzzer | Tests |
 |--------|-------|
 | `irssi-fuzz` | Text formatting (`printtext_string()`) |
 | `server-fuzz` | IRC protocol message parsing |
+| `dcc-fuzz` | DCC protocol message parsing (SEND, CHAT, RESUME, ACCEPT) |
 | `event-get-params-fuzz` | IRC event parameter parsing |
 | `theme-load-fuzz` | Theme file loading |
 
@@ -118,9 +119,10 @@ Initial seed inputs are provided in `fuzz-corpora/`:
 
 ```bash
 # Copy seeds to corpus directories
-mkdir -p corpus/irssi-fuzz corpus/server-fuzz corpus/event-get-params-fuzz corpus/theme-load-fuzz
+mkdir -p corpus/irssi-fuzz corpus/server-fuzz corpus/dcc-fuzz corpus/event-get-params-fuzz corpus/theme-load-fuzz
 cp fuzz-corpora/irssi-fuzz/* corpus/irssi-fuzz/
 cp fuzz-corpora/server-fuzz/* corpus/server-fuzz/
+cp fuzz-corpora/dcc-fuzz/* corpus/dcc-fuzz/
 cp fuzz-corpora/event-get-params-fuzz/* corpus/event-get-params-fuzz/
 cp fuzz-corpora/theme-load-fuzz/* corpus/theme-load-fuzz/
 ```
@@ -141,6 +143,7 @@ ASAN_OPTIONS=symbolize=1 ./result/bin/server-fuzz crash-<hash>
 
 - **irssi-fuzz**: Arbitrary text, may contain irssi format codes (`%B`, `%U`, etc.)
 - **server-fuzz**: Byte 0 selects prefix mode, remaining bytes are `\r\n`-separated IRC messages
+- **dcc-fuzz**: Byte 0 selects DCC type (0=SEND, 1=CHAT, 2=RESUME, 3=ACCEPT, 4=GET cmd, 5=CLOSE cmd, 6=raw), remaining bytes are DCC message content
 - **event-get-params-fuzz**: Byte 0 selects parsing mode (0-7), remaining bytes are parameters
 - **theme-load-fuzz**: irssi theme file format
 
