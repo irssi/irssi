@@ -1,6 +1,6 @@
 use strict;
 use vars qw($VERSION %IRSSI);
-$VERSION = "2.92";
+$VERSION = "2.93";
 %IRSSI = (
     authors     => "Timo Sirainen, Matti Hiljanen, Joost Vunderink, Bart Matthaei",
     contact     => "tss\@iki.fi, matti\@hiljanen.com, joost\@carnique.nl, bart\@dreamflow.nl",
@@ -63,8 +63,8 @@ sub cmd_print_help {
   "/MAILBOX SHOW\n".
   "    - Shows a list of the defined mailboxes.\n\n".
   "Use the following commands to change the behaviour:\n\n".
-  "/SET MAILDIRMODE on|off\n".
-  "    - If maildirmode is on, the mailboxes in the list are assumed to be ".
+  "/SET MAILDIR_MODE on|off\n".
+  "    - If maildir_mode is on, the mailboxes in the list are assumed to be ".
   "directories. Otherwise they are assumed to be spool files.\n".
   "      Default: off.\n".
   "/SET MAIL_OLDNOTNEW on|off\n".

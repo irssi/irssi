@@ -5,7 +5,7 @@
 
 use strict;
 
-our $VERSION = '2022053100';
+our $VERSION = '2023111700';
 our %IRSSI = (
     authors     => 'Stefan \'tommie\' Tomanek',
     contact     => 'stefan@pico.ruhr.de',
@@ -22,6 +22,8 @@ our ($forked, %remote_db, $have_gpg, @complist);
 use Irssi 20020324;
 use CPAN::Meta::YAML;
 use LWP::UserAgent;
+use Hash::Util qw(lock_ref_keys);
+use JSON::PP;
 use POSIX;
 use version;
 
@@ -43,7 +45,7 @@ sub show_help {
 /scriptassist info <scripts>
     Display information about <scripts>
 /scriptassist ratings <scripts|all>
-    Retrieve the average ratings of the the scripts
+    Retrieve the average ratings of the scripts
 /scriptassist top <num>
     Retrieve the first <num> top rated scripts
 /scriptassist new <num>
@@ -199,87 +201,163 @@ sub get_unknown {
 }
 
 sub get_names {
-    my ($sname, $db) = shift;
+    my ($sname, $db, $votes) = @_;
     $sname =~ s/\s+$//;
-    $sname =~ s/\.pl$//;
-    my $plname = "$sname.pl";
+    my $ext = 'pl';  # default extension
+    if ($sname =~ s/\.(\w{2,3})$//) {
+	$ext = $1;
+    }
+    my $plname = "$sname.$ext";
     $sname =~ s/^.*\///;
     my $xname = $sname;
     $xname =~ s/\W/_/g;
     my $pname = "${xname}::";
     if ($xname ne $sname || $sname =~ /_/) {
 	my $dir = Irssi::get_irssi_dir()."/scripts/";
-	if ($db && exists $db->{"$sname.pl"}) {
+	if ($db && exists $db->{$plname}) {
 	    # $found = 1;
-	} elsif (-e $dir.$plname || -e $dir."$sname.pl" || -e $dir."autorun/$sname.pl") {
+	} elsif (-e $dir.$plname || -e $dir."autorun/".$plname) {
 	    # $found = 1;
 	} else {
 	    # not found
 	    my $pat = $xname; $pat =~ y/_/?/;
 	    my $re = "\Q$xname"; $re =~ s/\Q_/./g;
 	    if ($db) {
-		my ($cand) = grep /^$re\.pl$/, sort keys %$db;
+		my ($cand) = grep /^$re\.\Q$ext\E$/, sort keys %$db;
 		if ($cand) {
-		    return get_names($cand, $db);
+		    return get_names($cand, $db, $votes);
 		}
 	    }
-	    my ($cand) = glob "'$dir$pat.pl' '${dir}autorun/$pat.pl'";
+	    my ($cand) = glob "'$dir$pat.$ext' '${dir}autorun/$pat.$ext'";
 	    if ($cand) {
 		$cand =~ s/^.*\///;
-		return get_names($cand, $db);
+		return get_names($cand, $db, $votes);
 	    }
 	}
     }
-    ($sname, $plname, $pname, $xname)
+    my ($script_stash, $script_irssi, $script_db, $local_version);
+    $script_db = $db->{$plname} if $db && exists $db->{$plname};
+    if (lc $ext eq 'pl') {
+	$script_stash = $Irssi::Script::{$pname};
+    }
+    elsif (lc $ext eq 'py' && is_python_loaded()) {
+	my $filename;
+	capture_print_text_command(
+	    'py list',
+	    sub {
+		for my $line (@_[ 1 .. $#_ ]) {
+		    my ($script, $fn) = split ' ', $line, 2;
+		    if ($script eq $sname) {
+			$filename = $fn;
+		    }
+		}
+	    });
+	if (defined $filename) {
+	    my $filename_quoted = $filename;
+	    $filename_quoted =~ s/[\\']/\\$&/g;
+	    capture_print_text_command(
+		# make sure the command line stays short
+		'py exec ' .
+		(join ';', split /\n/, <<PYTHON
+import ast as A, types as _, json
+i = 'IRSSI'
+v = '__version__'
+T = isinstance
+f = '$filename_quoted'
+a = lambda _: T(_, A.Assign)
+n = lambda _: T(_, A.Name)
+y = lambda _: _.id
+t = lambda _: list(map(y, filter(n, _.targets)))
+C = lambda e: lambda _: a(_) and t(_) == [e]
+O = _.SimpleNamespace(value=A.Constant(None))
+P = A.parse(open(f).read(), filename=f)
+f = lambda e: A.literal_eval(next(filter(C(e), P.body), O).value)
+print(json.dumps({ i: f(i), v: f(v) }))
+PYTHON
+		),
+		sub {
+		    eval {
+			my $doc = decode_json("@_");
+			$script_stash = { IRSSI => $doc->{IRSSI}, VERSION => \($doc->{__version__}) };
+		    };
+		}
+	       );
+	}
+    }
+    if (defined $script_stash) {
+	$script_irssi = $script_stash->{IRSSI};
+	$local_version = ${$script_stash->{VERSION}}
+	  if $script_stash->{VERSION};
+    }
+    lock_ref_keys({
+	sname => $ext eq 'pl' ? $sname : $plname,
+	plname => $plname,
+	pname => $pname,
+	xname => $xname,
+	stash => $script_stash,
+	irssi => $script_irssi,
+	db => $script_db,
+	db_version => ($script_db ? $script_db->{version} : undef),
+	local_version => $local_version,
+	($votes ? (votes => $votes->{$plname}) : ()),
+    })
 }
 
 sub script_info {
     my ($scripts) = @_;
     my %result;
     my $xml = get_scripts();
+    my $py = is_python_loaded();
     foreach (@{$scripts}) {
-	my ($sname, $plname, $pname) = get_names($_, $xml);
-	next unless (defined $xml->{$plname} || ( exists $Irssi::Script::{$pname} && exists $Irssi::Script::{$pname}{IRSSI} ));
-	$result{$sname}{version} = get_remote_version($sname, $xml);
+	my %r;
+	my $n = get_names($_, $xml);
+	next unless (defined $n->{db} || defined $n->{irssi});
+	$r{version} = $n->{db_version};
 	my @headers = ('authors', 'contact', 'description', 'license', 'source');
 	foreach my $entry (@headers) {
-	    $result{$sname}{$entry} = $Irssi::Script::{$pname}{IRSSI}{$entry};
-	    if (defined $xml->{$plname}{$entry}) {
-		$result{$sname}{$entry} = $xml->{$plname}{$entry};
+	    $r{$entry} = $n->{irssi}{$entry};
+	    if ($n->{db} && defined $n->{db}{$entry}) {
+		$r{$entry} = $n->{db}{$entry};
 	    }
 	}
-	if ($xml->{$plname}{signature_available}) {
-	    $result{$sname}{signature_available} = 1;
+	if ($n->{db} && $n->{db}{signature_available}) {
+	    $r{signature_available} = 1;
 	}
-	if (defined $xml->{$plname}{modules}) {
-	    my $modules = $xml->{$plname}{modules};
+	if ($n->{db} && defined $n->{db}{modules}) {
+	    my $modules = $n->{db}{modules};
 	    foreach my $mod (split(/ /, $modules)) {
 		my $opt = ($mod =~ /\((.*)\)/)? 1 : 0;
 		$mod = $1 if $1;
-		$result{$sname}{modules}{$mod}{optional} = $opt;
-		$result{$sname}{modules}{$mod}{installed} = module_exist($mod);
+		$r{modules}{$mod}{optional} = $opt;
+		$r{modules}{$mod}{installed} = module_exist($mod);
 	    }
-	} elsif (defined $Irssi::Script::{$pname}{IRSSI}{modules}) {
-	    my $modules = $Irssi::Script::{$pname}{IRSSI}{modules};
+	} elsif ($n->{irssi} && defined $n->{irssi}{modules}) {
+	    my $modules = $n->{irssi}{modules};
 	    foreach my $mod (split(/ /, $modules)) {
 		my $opt = ($mod =~ /\((.*)\)/)? 1 : 0;
 		$mod = $1 if $1;
-		$result{$sname}{modules}{$mod}{optional} = $opt;
-		$result{$sname}{modules}{$mod}{installed} = module_exist($mod);
+		$r{modules}{$mod}{optional} = $opt;
+		$r{modules}{$mod}{installed} = module_exist($mod);
 	    }
 	}
-	# if (defined $xml->{$plname}{depends}) {
-	#     my $depends = $xml->{$plname}{depends};
+	if (!$py && $n->{db} && $n->{db}{language} eq 'Python') {  # py
+	    $r{modules}{'irssi-python module'}{installed} = 0;
+	}
+	# if (defined $n->{db}{depends}) {
+	#     my $depends = $n->{db}{depends};
 	#     foreach my $dep (split(/ /, $depends)) {
-	# 	$result{$sname}{depends}{$dep}{installed} = 1; #(defined ${ 'Irssi::Script::'.$dep });
+	# 	$r{depends}{$dep}{installed} = 1; #(defined ${ 'Irssi::Script::'.$dep });
 	#     }
 	# }
+	$result{$n->{sname}} = \%r;
     }
     return \%result;
 }
 
 sub get_rate_url {
     my ($src) = @_;
+    if (ref $src) { ($src) = grep { $_ } map { $_->{source} } values %$src; }
+    die("No script source address found\n") unless $src;
     my $ua = LWP::UserAgent->new(env_proxy=>1, keep_alive=>1, timeout=>30);
     $ua->agent('ScriptAssist/'.$VERSION);
     my $request = HTTP::Request->new('GET', $src);
@@ -287,6 +365,9 @@ sub get_rate_url {
     unless ($response->is_success) {
 	my $error = join "\n", $response->status_line(), (grep / at .* line \d+/, split "\n", $response->content()), '';
 	die("Fetching ratings location failed: $error");
+    }
+    if (my $error = $response->header('X-Died')) {
+	die("$error\n");
     }
     my $votes_url;
     for my $tag ($response->content() =~ /<script([^>]*)>/g) {
@@ -299,7 +380,7 @@ sub get_rate_url {
     }
     $request = HTTP::Request->new('GET', $votes_url);
     $response = $ua->request($request);
-    if (!$response->is_success) {
+    if (!$response->is_success || $response->header('X-Died')) {
 	my $error = join "\n", $response->status_line(), (grep / at .* line \d+/, split "\n", $response->content()), '';
 	die("Fetching ratings failed: $error");
     }
@@ -311,16 +392,16 @@ sub get_rate_url {
 sub rate_script {
     my ($script, $stars) = @_;
     my $xml = get_scripts();
-    my $votes = get_rate_url(map { $_->{source} } values %$xml);
-    my ($sname, $plname, $pname) = get_names($script, $xml);
-    die "Script $script not found\n" unless $votes->{$plname};
-    return $votes->{$plname}{u}
+    my $votes = get_rate_url($xml);
+    my $n = get_names($script, $xml, $votes);
+    die "Script $script not found\n" unless $n->{votes};
+    return $n->{votes}{u}
 }
 
 sub get_ratings {
     my ($scripts, $limit) = @_;
     my $xml = get_scripts();
-    my $votes = get_rate_url(map { $_->{source} } values %$xml);
+    my $votes = get_rate_url($xml);
     foreach (keys %{$votes}) {
 	if ($xml->{$_}) {
 	    $xml->{$_}{votes} = $votes->{$_}{v};
@@ -329,9 +410,9 @@ sub get_ratings {
     my %result;
     if (@{$scripts}) {
 	foreach (@{$scripts}) {
-	    my ($sname, $plname, $pname) = get_names($_, $xml);
-	    next unless (defined $xml->{$plname} || ( exists $Irssi::Script::{$pname} && exists $Irssi::Script::{$pname}{IRSSI} ));
-	    $result{$plname} = [$xml->{$plname}{votes}];
+	    my $n = get_names($_, $xml);
+	    next unless ($n->{db} || $n->{irssi});
+	    $result{$n->{plname}} = [$n->{db}{votes}];
 	}
     } else {
 	my @keys = sort { $xml->{$b}{votes} <=> $xml->{$a}{votes}
@@ -371,16 +452,22 @@ sub debug_scripts {
     my ($scripts) = @_;
     my %result;
     my $xml = get_scripts();
+    my $py = is_python_loaded();
     foreach (@{$scripts}) {
-	my ($sname, $plname) = get_names($_, $xml);
-	if (defined $xml->{$plname}{modules}) {
-	    my $modules = $xml->{$plname}{modules};
+	my %r;
+	my $n = get_names($_, $xml);
+	if ($n->{db} && defined $n->{db}{modules}) {
+	    my $modules = $n->{db}{modules};
 	    foreach my $mod (split(/ /, $modules)) {
                 my $opt = ($mod =~ /\((.*)\)/)? 1 : 0;
                 $mod = $1 if $1;
-                $result{$sname}{$mod}{optional} = $opt;
-                $result{$sname}{$mod}{installed} = module_exist($mod);
+                $r{$mod}{optional} = $opt;
+                $r{$mod}{installed} = module_exist($mod);
 	    }
+	    $result{$n->{sname}} = \%r;
+	}
+	if (!$py && $n->{db} && $n->{db}{language} eq 'Python') {  # py
+	    $result{$n->{sname}}{'irssi-python module'}{installed} = 0;
 	}
     }
     return(\%result);
@@ -391,11 +478,11 @@ sub install_scripts {
     my %success;
     my $dir = Irssi::get_irssi_dir()."/scripts/";
     foreach (@{$scripts}) {
-	my ($sname, $plname, $pname) = get_names($_, $xml);
-	if (get_local_version($sname) && (-e $dir.$plname)) {
-	    $success{$sname}{installed} = -2;
+	my $n = get_names($_, $xml);
+	if ($n->{stash} && (-e $dir.$n->{plname})) {
+	    $success{$n->{sname}}{installed} = -2;
 	} else {
-	    $success{$sname} = download_script($sname, $xml);
+	    $success{$n->{sname}} = download_script($n->{sname}, $xml);
 	}
     }
     return \%success;
@@ -406,24 +493,24 @@ sub update_scripts {
     $list = loaded_scripts() if ($list->[0] eq "all" || scalar(@$list) == 0);
     my %status;
     foreach (@{$list}) {
-	my ($sname) = get_names($_, $database);
-	my $local = get_local_version($sname);
-	my $remote = get_remote_version($sname, $database);
+	my $n = get_names($_, $database);
+	my $local = $n->{local_version};
+	my $remote = $n->{db_version};
 	next if $local eq '' || $remote eq '';
 	if (compare_versions($local, $remote) eq "older") {
-	    $status{$sname} = download_script($sname, $database);
+	    $status{$n->{sname}} = download_script($n->{sname}, $database);
 	} else {
-	    $status{$sname}{installed} = -2;
+	    $status{$n->{sname}}{installed} = -2;
 	}
-	$status{$sname}{remote} = $remote;
-	$status{$sname}{local} = $local;
+	$status{$n->{sname}}{remote} = $remote;
+	$status{$n->{sname}}{local} = $local;
     }
     return \%status;
 }
 
 sub search_scripts {
     my ($query, $database) = @_;
-    $query =~ s/\.pl\Z//;
+    $query =~ s/\.pl\Z//;  # pl
     my %result;
     foreach (sort keys %{$database}) {
 	my %entry = %{$database->{$_}};
@@ -432,7 +519,7 @@ sub search_scripts {
 	$string .= $entry{description} if defined $entry{description};
 	if ($string =~ /$query/i) {
 	    my $name = $_;
-	    $name =~ s/\.pl$//;
+	    $name =~ s/\.pl$//;  # pl
 	    if (defined $entry{description}) {
 		$result{$name}{desc} = $entry{description};
 	    } else {
@@ -443,7 +530,7 @@ sub search_scripts {
 	    } else {
 		$result{$name}{authors} = "";
 	    }
-	    if (get_local_version($name)) {
+	    if (get_names($name, $database)->{stash}) {
 		$result{$name}{installed} = 1;
 	    } else {
 		$result{$name}{installed} = 0;
@@ -531,8 +618,8 @@ sub print_unknown {
 	    my $text .= "The command '/".$cmd."' is provided by the script '".$data->{$cmd}{$_}{name}."'.\n";
 	    $text .= "This script is currently not installed on your system.\n";
 	    $text .= "If you want to install the script, enter\n";
-	    my ($name) = get_names($_);
-	    $text .= "  %U/script install ".$name."%U ";
+	    my $n = get_names($_);
+	    $text .= "  %U/script install ".$n->{sname}."%U ";
 	    my $output = draw_box("ScriptAssist", $text, "'".$_."' missing", 1);
 	    print CLIENTCRAP $output;
 	}
@@ -541,10 +628,10 @@ sub print_unknown {
 
 sub check_autorun {
     my ($script) = @_;
-    my (undef, $plname) = get_names($script);
+    my $n = get_names($script);
     my $dir = Irssi::get_irssi_dir()."/scripts/";
-    if (-e $dir."/autorun/".$plname) {
-	if (readlink($dir."/autorun/".$plname) eq "../".$plname) {
+    if (-e $dir."/autorun/".$n->{plname}) {
+	if (readlink($dir."/autorun/".$n->{plname}) eq "../".$n->{plname}) {
 	    return 1;
 	}
     }
@@ -582,14 +669,15 @@ sub print_info {
     my $line;
     foreach my $script (sort keys(%data)) {
 	my ($local, $autorun);
-	if (get_local_version($script)) {
+	my $n = get_names($script);
+	if ($n->{stash}) {
 	    $line .= "%go%n ";
-	    $local = get_local_version($script);
+	    $local = $n->{local_version};
 	} else {
 	    $line .= "%ro%n ";
 	    $local = undef;
 	}
-	if (defined $local || check_autorun($script)) {
+	if ($n->{stash} || check_autorun($script)) {
 	    $autorun = "no";
 	    $autorun = "yes" if check_autorun($script);
 	} else {
@@ -643,7 +731,7 @@ sub print_ratings {
     my @table;
     foreach my $script (sort {$data{$b}{rating}<=>$data{$a}{rating}} keys(%data)) {
 	my @line;
-	if (get_local_version($script)) {
+	if (get_names($script)->{stash}) {
 	    push @line, "%go%n";
 	} else {
 	    push @line, "%yo%n";
@@ -660,13 +748,13 @@ sub print_new {
     my @table;
     foreach (sort {$list->{$b}{modified} cmp $list->{$a}{modified}} keys %$list) {
 	my @line;
-	my ($name) = get_names($_);
-        if (get_local_version($name)) {
+	my $n = get_names($_);
+        if ($n->{stash}) {
             push @line, "%go%n";
         } else {
             push @line, "%yo%n";
         }
-	push @line, "%9".$name."%9";
+	push @line, "%9".$n->{sname}."%9";
 	push @line, $list->{$_}{modified};
 	push @table, \@line;
     }
@@ -678,14 +766,23 @@ sub print_debug {
     my $line;
     foreach my $script (sort keys %data) {
 	$line .= "%ro%n %9".$script."%9 failed to load\n";
-	$line .= "  Make sure you have the following perl modules installed:\n";
+	my $py = $data{$script}{'irssi-python module'};
+	if ($py) {  # py
+	    $line .= "  You are attempting to load a Python script!\n";
+	} else {
+	    $line .= "  Make sure you have the following perl modules installed:\n";
+	}
 	foreach (sort keys %{$data{$script}}) {
 	    if ( $data{$script}{$_}{installed} == 1 ) {
 		$line .= "  %g->%n ".$_." (found)";
 	    } else {
 		$line .= "  %r->%n ".$_." (not found)\n";
 		$line .= "     [This module is optional]\n" if $data{$script}{$_}{optional};
-		$line .= "     [Try /scriptassist cpan ".$_."]";
+		if ($py) {  # py
+		    $line .= "     [If you have it installed, try: /load python]";
+		} else {
+		    $line .= "     [Try /scriptassist cpan ".$_."]";
+		}
 	    }
 	    $line .= "\n";
 	}
@@ -695,7 +792,13 @@ sub print_debug {
 
 sub load_script {
     my ($script) = @_;
-    Irssi::command('script load '.$script);
+    if ($script =~ s/\.py$//i) {  # py
+	if (is_python_loaded()) {
+	    Irssi::command('py load '.$script);
+	}
+    } else {
+	Irssi::command('script load '.$script);  # pl
+    }
 }
 
 sub print_install {
@@ -715,7 +818,7 @@ sub print_install {
 	    } else {
 		load_script($script) unless (lc($script) eq lc($IRSSI{name}));
 	    }
-    	    if (get_local_version($script) && not lc($script) eq lc($IRSSI{name})) {
+	    if (get_names($script)->{stash} && not lc($script) eq lc($IRSSI{name})) {
 		$line .= "%go%n %9".$script."%9 installed\n";
 		push @installed, $script;
 	    } elsif (lc($script) eq lc($IRSSI{name})) {
@@ -751,16 +854,14 @@ sub list_sbitems {
     my ($scripts) = @_;
     my $text;
     foreach (@$scripts) {
-	next unless exists $Irssi::Script::{"${_}::"};
-	next unless exists $Irssi::Script::{"${_}::"}{IRSSI};
-	my $header = $Irssi::Script::{"${_}::"}{IRSSI};
-	next unless $header->{sbitems};
+	my $n = get_names($_);
+	next unless $n->{irssi}{sbitems};
 	$text .= '%9"'.$_.'"%9 provides the following statusbar item(s):'."\n";
-	$text .= '  ->'.$_."\n" foreach (split / /, $header->{sbitems});
+	$text .= '  ->'.$_."\n" foreach (split / /, $n->{irssi}{sbitems});
     }
     return unless $text;
     $text .= "\n";
-    $text .= "Enter '/statusbar window add <item>' to add an item.";
+    $text .= "Enter '/statusbar additem <item> window' to add an item.";
     print CLIENTCRAP draw_box('ScriptAssist', $text, 'sbitems', 1);
 }
 
@@ -838,14 +939,12 @@ sub print_update {
 
 sub contact_author {
     my ($script) = @_;
-    my ($sname, $plname, $pname) = get_names($script);
-    return unless exists $Irssi::Script::{$pname};
-    my $header = $Irssi::Script::{$pname}{IRSSI};
-    if ($header && defined $header->{contact}) {
-	my @ads = split(/ |,/, $header->{contact});
+    my $n = get_names($script);
+    if ($n->{irssi} && defined $n->{irssi}{contact}) {
+	my @ads = split(/ |,/, $n->{irssi}{contact});
 	my $address = $ads[0];
 	$address .= '?subject='.$script;
-	$address .= '_'.get_local_version($script) if defined get_local_version($script);
+	$address .= '_'.$n->{local_version} if $n->{local_version};
 	call_openurl($address) if $address =~ /[\@:]/;
     }
 }
@@ -872,6 +971,10 @@ sub get_scripts {
 	}
 	unless ($response->is_success) {
 	    $error = join "\n", $response->status_line(), (grep / at .* line \d+/, split "\n", $response->content()), '';
+	    next;
+	}
+	if (my $died = $response->header('X-Died')) {
+	    $error = $died;
 	    next;
 	}
 	$fetched = 1;
@@ -929,20 +1032,6 @@ sub get_scripts {
     return $remote_db{db};
 }
 
-sub get_remote_version {
-    my ($script, $database) = @_;
-    my $plname = (get_names($script, $database))[1];
-    return $database->{$plname}{version};
-}
-
-sub get_local_version {
-    my ($script) = @_;
-    my $pname = (get_names($script))[2];
-    return unless exists $Irssi::Script::{$pname};
-    my $vref = $Irssi::Script::{$pname}{VERSION};
-    return $vref ? $$vref : undef;
-}
-
 sub compare_versions {
     my ($ver1, $ver2) = @_;
     for ($ver1, $ver2) {
@@ -959,10 +1048,41 @@ sub compare_versions {
     return 'equal';
 }
 
+sub is_python_loaded {
+    !! grep { $_->{cmd} eq 'py' } Irssi::commands
+}
+
+my @print_text_capture;
+sub capture_print_text {
+    my ($dest, $text, $plain) = @_;
+    push @print_text_capture, $plain;
+    Irssi::signal_stop;
+}
+
+sub capture_print_text_command {
+    my ($command, $sub) = @_;
+    Irssi::signal_add_first('print text', 'capture_print_text');
+    @print_text_capture = ();
+    Irssi::command($command);
+    my @capture = @print_text_capture;
+    Irssi::signal_remove('print text', 'capture_print_text');
+    @print_text_capture = ();
+    $sub->(@capture);
+}
+
 sub loaded_scripts {
     my @modules;
-    foreach (sort grep(s/::$//, keys %Irssi::Script::)) {
+    foreach (sort grep(s/::$//, keys %Irssi::Script::)) {  # pl
 	push @modules, $_;
+    }
+    if (is_python_loaded()) {
+	capture_print_text_command(
+	    'py list', sub {
+		for my $line (@_[ 1 .. $#_ ]) {
+		    my ($script, $file) = split ' ', $line, 2;
+		    push @modules, "$script.py";
+		}
+	    });
     }
     return \@modules;
 }
@@ -971,9 +1091,9 @@ sub check_scripts {
     my ($data) = @_;
     my %versions;
     foreach (@{loaded_scripts()}) {
-	my ($sname) = get_names($_, $data);
-	my $remote = get_remote_version($sname, $data);
-	my $local = get_local_version($sname);
+	my $n = get_names($_, $data);
+	my $remote = $n->{db_version};
+	my $local = $n->{local_version};
 	my $state;
 	if ($local && $remote) {
 	    $state = compare_versions($local, $remote);
@@ -986,9 +1106,9 @@ sub check_scripts {
 	    $remote = '/';
 	}
 	if ($state) {
-	    $versions{$sname}{state} = $state;
-	    $versions{$sname}{remote} = $remote;
-	    $versions{$sname}{local} = $local;
+	    $versions{$n->{sname}}{state} = $state;
+	    $versions{$n->{sname}}{remote} = $remote;
+	    $versions{$n->{sname}}{local} = $local;
 	}
     }
     return \%versions;
@@ -996,40 +1116,40 @@ sub check_scripts {
 
 sub download_script {
     my ($script, $xml) = @_;
-    my ($sname, $plname) = get_names($script, $xml);
+    my $n = get_names($script, $xml);
+    my $site = $n->{db}{source};
     my %result;
-    my $site = $xml->{$plname}{source};
     $result{installed} = 0;
     $result{signed} = 0;
     my $dir = Irssi::get_irssi_dir();
-    my $ua = LWP::UserAgent->new(env_proxy => 1,keep_alive => 1,timeout => 30);
+    my $ua = LWP::UserAgent->new(env_proxy => 1, keep_alive => 1, timeout => 30);
     $ua->agent('ScriptAssist/'.2003020803);
-    my $request = HTTP::Request->new('GET', $site.'/scripts/'.$script.'.pl');
+    my $request = HTTP::Request->new('GET', $site.'/scripts/'.$n->{plname});
     my $response = $ua->request($request);
-    if ($response->is_success()) {
+    if ($response->is_success() && !$response->header('X-Died')) {
 	my $file = $response->content();
 	mkdir $dir.'/scripts/' unless (-e $dir.'/scripts/');
-	open(my $F, '>', $dir.'/scripts/'.$plname.'.new');
-	print $F $file;
-	close($F);
+	open(my $f, '>', $dir.'/scripts/'.$n->{plname}.'.new');
+	print $f $file;
+	close($f);
 	if ($have_gpg && Irssi::settings_get_bool('scriptassist_use_gpg')) {
 	    my $ua2 = LWP::UserAgent->new(env_proxy => 1,keep_alive => 1,timeout => 30);
 	    $ua->agent('ScriptAssist/'.2003020803);
-	    my $request2 = HTTP::Request->new('GET', $site.'/signatures/'.$plname.'.asc');
+	    my $request2 = HTTP::Request->new('GET', $site.'/signatures/'.$n->{plname}.'.asc');
 	    my $response2 = $ua->request($request2);
-	    if ($response2->is_success()) {
+	    if ($response2->is_success() && !$response->header('X-Died')) {
 		my $sig_dir = $dir.'/scripts/signatures/';
 		mkdir $sig_dir unless (-e $sig_dir);
-		open(my $S, '>', $sig_dir.$plname.'.asc');
+		open(my $s, '>', $sig_dir.$n->{plname}.'.asc');
 		my $file2 = $response2->content();
-		print $S $file2;
-		close($S);
+		print $s $file2;
+		close($s);
 		my $sig;
 		foreach (1..2) {
 		    # FIXME gpg needs two rounds to load the key
 		    my $gpg = new GnuPG();
 		    eval {
-			$sig = $gpg->verify( file => $dir.'/scripts/'.$plname.'.new', signature => $sig_dir.$plname.'.asc' );
+			$sig = $gpg->verify( file => $dir.'/scripts/'.$n->{plname}.'.new', signature => $sig_dir.$n->{plname}.'.asc' );
 		    };
 		}
 		if (defined $sig->{user}) {
@@ -1055,8 +1175,8 @@ sub download_script {
     if ($result{installed}) {
 	my $old_dir = "$dir/scripts/old/";
 	mkdir $old_dir unless (-e $old_dir);
-	rename "$dir/scripts/$plname", "$old_dir/$plname.old" if -e "$dir/scripts/$plname";
-	rename "$dir/scripts/$plname.new", "$dir/scripts/$plname";
+	rename "$dir/scripts/".$n->{plname}, "$old_dir/".$n->{plname}.".old" if -e "$dir/scripts/".$n->{plname};
+	rename "$dir/scripts/".$n->{plname}.".new", "$dir/scripts/".$n->{plname};
     }
     return \%result;
 }
@@ -1083,23 +1203,23 @@ sub print_check {
 
 sub toggle_autorun {
     my ($script) = @_;
-    my ($sname, $plname) = get_names($script);
+    my $n = get_names($script);
     my $dir = Irssi::get_irssi_dir()."/scripts/";
     mkdir $dir."autorun/" unless (-e $dir."autorun/");
-    return unless (-e $dir.$plname);
-    if (-e $dir."/autorun/".$plname) {
-	if (readlink($dir."/autorun/".$plname) eq "../".$plname) {
-	    if (unlink($dir."/autorun/".$plname)) {
-		print CLIENTCRAP "%R>>%n Autorun of ".$sname." disabled";
+    return unless (-e $dir.$n->{plname});
+    if (-e $dir."/autorun/".$n->{plname}) {
+	if (readlink($dir."/autorun/".$n->{plname}) eq "../".$n->{plname}) {
+	    if (unlink($dir."/autorun/".$n->{plname})) {
+		print CLIENTCRAP "%R>>%n Autorun of ".$n->{sname}." disabled";
 	    } else {
 		print CLIENTCRAP "%R>>%n Unable to delete link";
 	    }
 	} else {
-	    print CLIENTCRAP "%R>>%n ".$dir."/autorun/".$plname." is not a correct link";
+	    print CLIENTCRAP "%R>>%n ".$dir."/autorun/".$n->{plname}." is not a correct link";
 	}
     } else {
-	if (symlink("../".$plname, $dir."/autorun/".$plname)) {
-    	    print CLIENTCRAP "%R>>%n Autorun of ".$sname." enabled";
+	if (symlink("../".$n->{plname}, $dir."/autorun/".$n->{plname})) {
+	    print CLIENTCRAP "%R>>%n Autorun of ".$n->{sname}." enabled";
 	} else {
 	    print CLIENTCRAP "%R>>%n Unable to create autorun link";
 	}
@@ -1178,9 +1298,9 @@ sub cmd_help {
 
 sub sig_command_script_load {
     my ($script, $server, $witem) = @_;
-    my ($sname, $plname, $pname, $xname) = get_names($script);
-    if ( exists $Irssi::Script::{$pname} ) {
-	if (my $code = "Irssi::Script::${pname}"->can('pre_unload')) {
+    my $n = get_names($script);
+    if ( $n->{stash} ) {
+	if (my $code = ("Irssi::Script::".$n->{pname})->can('pre_unload')) {
 	    print CLIENTCRAP "%R>>%n Triggering pre_unload function of $script...";
 	    $code->();
 	}
