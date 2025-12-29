@@ -20,6 +20,13 @@ struct _IPADDR {
 	struct in6_addr ip;
 };
 
+typedef struct {
+	int refcount;
+	/* GList<GInetAddress> */
+	GList *ailist; /* needs to be freed */
+	GError *error; /* needs to be freed */
+} RESOLVED_IP_REC;
+
 /* maxmimum string length of IP address */
 #define MAX_IP_LEN INET6_ADDRSTRLEN
 
@@ -60,15 +67,10 @@ int net_receive(GIOChannel *handle, char *buf, int len);
 /* Transmit data, return number of bytes sent, -1 = error */
 int net_transmit(GIOChannel *handle, const char *data, int len);
 
-/* Get IP addresses for host, both IPv4 and IPv6 if possible.
-   If ip->family is 0, the address wasn't found.
-   Returns 0 = ok, others = error code for net_gethosterror() */
-int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6);
-/* Get name for host, *name should be g_free()'d unless it's NULL.
-   Return values are the same as with net_gethostbyname() */
-int net_gethostbyaddr(IPADDR *ip, char **name);
-/* get error of net_gethostname() */
-const char *net_gethosterror(int error);
+/* Get IP addresses for host, both IPv4 and IPv6 if possible. */
+RESOLVED_IP_REC *net_gethostbyname(const char *addr, GResolverNameLookupFlags flags);
+int net_gethostbyname_first_ips(const char *addr, GResolverNameLookupFlags flags, IPADDR *ip4,
+                                IPADDR *ip6);
 /* return TRUE if host lookup failed because it didn't exist (ie. not
    some error with name server) */
 int net_hosterror_notfound(int error);
@@ -89,5 +91,8 @@ char *net_getservbyport(int port);
 
 int is_ipv4_address(const char *host);
 int is_ipv6_address(const char *host);
+
+void resolved_ip_ref(RESOLVED_IP_REC *iprec);
+int resolved_ip_unref(RESOLVED_IP_REC *iprec);
 
 #endif
