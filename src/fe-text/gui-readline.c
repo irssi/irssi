@@ -103,6 +103,8 @@ GArray *g_array_copy(GArray *array)
 #endif
 
 static void sig_input(void);
+static void paste_bracketed_middle(void);
+static gboolean process_input_smart(GArray *input_buffer);
 
 void input_listen_init(int handle)
 {
@@ -867,6 +869,87 @@ static void key_append_next_kill(void)
 	active_entry->append_next_kill = TRUE;
 }
 
+static gboolean process_input_smart(GArray *input_buffer)
+{
+	int pos, cluster_end;
+	unichar *data;
+	char *utf8_cluster;
+	glong items_read, items_written;
+	GError *error;
+	int i;
+	gboolean has_control_chars;
+	GString *accum;
+
+	if (!input_buffer || input_buffer->len == 0 || !active_entry || !active_entry->utf8) {
+		return FALSE;
+	}
+
+	data = (unichar*)input_buffer->data;
+	has_control_chars = FALSE;
+	error = NULL;
+
+	/* Check if buffer contains control characters (arrows, enter, etc.) */
+	for (i = 0; i < input_buffer->len; i++) {
+		if (data[i] < 32 || data[i] == 127) {
+			has_control_chars = TRUE;
+			break;
+		}
+	}
+
+	/* If we have control characters, don't process - let legacy system handle */
+	if (has_control_chars) {
+		return FALSE;
+	}
+
+	pos = 0;
+	accum = g_string_new(NULL);
+
+	/* Process input buffer as grapheme clusters, but insert once */
+	while (pos < input_buffer->len) {
+		cluster_end = pos;
+
+		/* Advance to end of current grapheme cluster */
+		unichar_array_advance_cluster(data, input_buffer->len, &cluster_end);
+
+		/* If no advancement, move single character to avoid infinite loop */
+		if (cluster_end == pos) {
+			cluster_end = pos + 1;
+		}
+
+		/* Convert cluster to UTF-8 and append to accumulator */
+		utf8_cluster = g_ucs4_to_utf8(&data[pos], cluster_end - pos,
+		                              &items_read, &items_written, &error);
+
+		if (error == NULL && utf8_cluster && items_written > 0) {
+			g_string_append(accum, utf8_cluster);
+			g_free(utf8_cluster);
+		} else {
+			/* Fallback: append individual printable characters */
+			for (i = pos; i < cluster_end; i++) {
+				if (data[i] >= 32) {
+					char out[10];
+					out[g_unichar_to_utf8(data[i], out)] = '\0';
+					g_string_append(accum, out);
+				}
+			}
+			if (error) {
+				g_error_free(error);
+				error = NULL;
+			}
+		}
+
+		pos = cluster_end;
+	}
+
+	if (accum->len > 0) {
+		/* Insert entire paste as a single text update to mirror history behavior */
+		gui_entry_insert_text(active_entry, accum->str);
+	}
+	g_string_free(accum, TRUE);
+
+	return TRUE;
+}
+
 static gboolean paste_timeout(gpointer data)
 {
 	int split_lines;
@@ -888,11 +971,16 @@ static gboolean paste_timeout(gpointer data)
 
 	/* Take into account the fact that a line may be split every LINE_SPLIT_LIMIT characters */
 	if (paste_line_count == 0 && split_lines <= paste_verify_line_count) {
-		int i;
-
-		for (i = 0; i < paste_buffer->len; i++) {
-			unichar key = g_array_index(paste_buffer, unichar, i);
-			signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
+		/* Use smart UTF-8/grapheme cluster processing if available */
+		if (active_entry && active_entry->utf8 && process_input_smart(paste_buffer)) {
+			/* Smart processing succeeded */
+		} else {
+			/* Fallback to legacy character-by-character processing */
+			int i;
+			for (i = 0; i < paste_buffer->len; i++) {
+				unichar key = g_array_index(paste_buffer, unichar, i);
+				signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
+			}
 		}
 		g_array_set_size(paste_buffer, 0);
 	} else if (paste_verify_line_count > 0 &&
@@ -1004,23 +1092,30 @@ static void sig_input(void)
 				g_source_remove(paste_timeout_id);
 			paste_timeout_id = g_timeout_add(paste_detect_time, paste_timeout, NULL);
 		} else if (!paste_bracketed_mode) {
-			int i;
+			/* Use smart UTF-8/grapheme cluster processing only for multi-char input (paste-like) */
+			if (active_entry && active_entry->utf8 && paste_buffer->len > 1 && process_input_smart(paste_buffer)) {
+				/* Smart processing succeeded - clear buffer */
+				g_array_set_size(paste_buffer, 0);
+				paste_line_count = 0;
+			} else {
+				/* Fallback to legacy character-by-character processing */
+				int i;
+				for (i = 0; i < paste_buffer->len; i++) {
+					unichar key = g_array_index(paste_buffer, unichar, i);
+					signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
 
-			for (i = 0; i < paste_buffer->len; i++) {
-				unichar key = g_array_index(paste_buffer, unichar, i);
-				signal_emit("gui key pressed", 1, GINT_TO_POINTER(key));
+					if (paste_bracketed_mode) {
+						/* just enabled by the signal, remove what was processed so far */
+						g_array_remove_range(paste_buffer, 0, i + 1);
 
-				if (paste_bracketed_mode) {
-					/* just enabled by the signal, remove what was processed so far */
-					g_array_remove_range(paste_buffer, 0, i + 1);
-
-					/* handle single-line / small pastes here */
-					paste_bracketed_middle();
-					return;
+						/* handle single-line / small pastes here */
+						paste_bracketed_middle();
+						return;
+					}
 				}
+				g_array_set_size(paste_buffer, 0);
+				paste_line_count = 0;
 			}
-			g_array_set_size(paste_buffer, 0);
-			paste_line_count = 0;
 		}
 	}
 }
