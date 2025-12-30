@@ -1,0 +1,89 @@
+# DCC protocol fuzzer dictionary
+# DCC command types
+"SEND"
+"GET"
+"CHAT"
+"RESUME"
+"ACCEPT"
+"REJECT"
+"SERVER"
+
+# DCC server protocol numbers
+"100"
+"101"
+"110"
+"120"
+"121"
+
+# CTCP markers
+"\x01"
+"\x01DCC"
+"\x01DCC SEND"
+"\x01DCC CHAT"
+
+# Special IP values
+"16843009"
+"3232235777"
+"127.0.0.1"
+"::1"
+
+# Port values
+"0"
+"1234"
+"6667"
+"65535"
+
+# File sizes
+"1"
+"100"
+"1000"
+"4294967295"
+
+# Passive IDs
+"42"
+"63"
+
+# Delimiters and quoting
+"\""
+" "
+":"
+
+# Protocol prefixes
+"DCC "
+"CTCP_MESSAGE "
+"CTCP_REPLY "
+"ACTION "
+
+# DCC server flags
+"+"
+"-"
+"s"
+"c"
+"f"
+"S"
+"C"
+"F"
+"+s"
+"+c"
+"+f"
+"-s"
+"-c"
+"-f"
+
+# Common filename patterns
+"test.txt"
+"file.txt"
+"\"file with spaces.txt\""
+"file_with_underscores.txt"
+
+# Chat argument
+"chat"
+"CHAT"
+
+# Query prefix for DCC chat
+"="
+
+# Common nicks
+"nick"
+"testnick"
+"fuzzernick"
