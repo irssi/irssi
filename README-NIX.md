@@ -100,8 +100,9 @@ nix build .#fuzz-asan
 # Basic fuzzing (creates corpus automatically)
 ./result/bin/irssi-fuzz corpus/irssi-fuzz/
 
-# With dictionary (recommended for server-fuzz)
+# With dictionary (recommended for server-fuzz and dcc-fuzz)
 ./result/bin/server-fuzz -dict=src/fe-fuzz/tokens.txt corpus/server-fuzz/
+./result/bin/dcc-fuzz -dict=src/fe-fuzz/dcc-tokens.txt corpus/dcc-fuzz/
 
 # Limit number of runs
 ./result/bin/irssi-fuzz -runs=10000 corpus/irssi-fuzz/
