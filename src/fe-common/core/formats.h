@@ -151,25 +151,36 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
  */
 void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC handler);
 
-#define FORMAT_COLOR_NOCHANGE	('0'-1) /* don't change this, at least hilighting depends this value */
-#define FORMAT_COLOR_EXT1	('0'-2)
-#define FORMAT_COLOR_EXT2	('0'-3)
-#define FORMAT_COLOR_EXT3	('0'-4)
-#define FORMAT_COLOR_EXT1_BG	('0'-5)
-#define FORMAT_COLOR_EXT2_BG	('0'-9)
-#define FORMAT_COLOR_EXT3_BG	('0'-10)
-#define FORMAT_COLOR_24	('0'-13)
+enum {
+	FORMAT_COLOR_24 = ('0' - 13),
+	FORMAT_COLOR_EXT3_BG = ('0' - 10),
+	FORMAT_COLOR_EXT2_BG,
+	FORMAT_COLOR_EXT1_BG = ('0' - 5),
+	FORMAT_COLOR_EXT3,
+	FORMAT_COLOR_EXT2,
+	FORMAT_COLOR_EXT1,
+	FORMAT_COLOR_NOCHANGE
+};
+/* don't change this, at least hilighting depends this value */
+G_STATIC_ASSERT(FORMAT_COLOR_NOCHANGE == ('0' - 1));
 
-#define FORMAT_STYLE_SPECIAL	0x60
-#define FORMAT_STYLE_BLINK	(0x01 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_UNDERLINE	(0x02 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_BOLD	(0x03 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_REVERSE	(0x04 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_INDENT	(0x05 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_ITALIC	(0x06 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_DEFAULTS	(0x07 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_CLRTOEOL	(0x08 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_MONOSPACE	(0x09 + FORMAT_STYLE_SPECIAL)
+enum {
+	FORMAT_STYLE_SPECIAL = 0x60,
+	FORMAT_STYLE_BLINK,
+	FORMAT_STYLE_UNDERLINE,
+	FORMAT_STYLE_BOLD,
+	FORMAT_STYLE_REVERSE,
+	FORMAT_STYLE_INDENT,
+	FORMAT_STYLE_ITALIC,
+	FORMAT_STYLE_DEFAULTS,
+	FORMAT_STYLE_CLRTOEOL,
+	FORMAT_STYLE_MONOSPACE,
+	FORMAT_STYLE_THEME_DEFAULTS,
+	FORMAT_STYLE_PUSH,
+	FORMAT_STYLE_POP,
+	FORMAT_STYLE_KEEP
+};
+
 int format_expand_styles(GString *out, const char **format, int *flags);
 void format_ext_color(GString *out, int bg, int color);
 void format_24bit_color(GString *out, int bg, unsigned int color);

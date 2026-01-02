@@ -172,10 +172,16 @@ static inline void unformat(const unsigned char **ptr, int *color, unsigned int 
 	case FORMAT_STYLE_MONOSPACE:
 		/* *color ^= ATTR_MONOSPACE; */
 		break;
+	case FORMAT_STYLE_SPECIAL:
+	case FORMAT_STYLE_INDENT: /* this must be handled by view_line_draw */
 	case FORMAT_STYLE_DEFAULTS:
-		*color = ATTR_RESET;
-		break;
 	case FORMAT_STYLE_CLRTOEOL:
+	case FORMAT_STYLE_THEME_DEFAULTS:
+	case FORMAT_STYLE_PUSH:
+	case FORMAT_STYLE_POP:
+	case FORMAT_STYLE_KEEP:
+		/* these are not supposed to leak into the textbuffer-view */
+		g_assert_not_reached();
 		break;
 #define SET_COLOR_EXT_FG_BITS(base, pc)                                                            \
 	*color &= ~ATTR_FGCOLOR24;                                                                 \

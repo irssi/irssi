@@ -36,6 +36,14 @@
 #include <irssi/src/core/misc.h>
 #include <irssi/src/core/refstrings.h>
 
+#define FORMAT_STYLE_STACK_MAX 10
+typedef struct {
+	int fgcolor_s[FORMAT_STYLE_STACK_MAX];
+	int bgcolor_s[FORMAT_STYLE_STACK_MAX];
+	int flags_s[FORMAT_STYLE_STACK_MAX];
+	int cur, keep;
+} STYLE_STACK_REC;
+
 static const char *format_backs = "04261537";
 static const char *format_fores = "kbgcrmyw";
 static const char *format_boldfores = "KBGCRMYW";
@@ -262,10 +270,14 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 		g_string_append_c(out, FORMAT_STYLE_BLINK);
 		break;
 	case 'n':
-	case 'N':
 		/* default color */
 		g_string_append_c(out, 4);
 		g_string_append_c(out, FORMAT_STYLE_DEFAULTS);
+		break;
+	case 'N':
+		/* default theme color */
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_THEME_DEFAULTS);
 		break;
 	case '>':
 		/* clear to end of line */
@@ -283,6 +295,18 @@ int format_expand_styles(GString *out, const char **format, int *flags)
 			/* oops, reached end prematurely */
 			(*format)--;
 
+		break;
+	case '(':
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_PUSH);
+		break;
+	case ')':
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_POP);
+		break;
+	case '`':
+		g_string_append_c(out, 4);
+		g_string_append_c(out, FORMAT_STYLE_KEEP);
 		break;
 	case 'x':
 	case 'X':
@@ -682,6 +706,9 @@ char *format_string_unexpand(const char *text, int flags)
 				format_flag_unexpand(out, 'I');
 				break;
 			case FORMAT_STYLE_DEFAULTS:
+				format_flag_unexpand(out, 'n');
+				break;
+			case FORMAT_STYLE_THEME_DEFAULTS:
 				format_flag_unexpand(out, 'N');
 				break;
 			case FORMAT_STYLE_CLRTOEOL:
@@ -689,6 +716,15 @@ char *format_string_unexpand(const char *text, int flags)
 				break;
 			case FORMAT_STYLE_MONOSPACE:
 				format_flag_unexpand(out, '#');
+				break;
+			case FORMAT_STYLE_PUSH:
+				format_flag_unexpand(out, '(');
+				break;
+			case FORMAT_STYLE_POP:
+				format_flag_unexpand(out, ')');
+				break;
+			case FORMAT_STYLE_KEEP:
+				format_flag_unexpand(out, '`');
 				break;
 			default:
 				if (*text != FORMAT_COLOR_NOCHANGE) {
@@ -1044,10 +1080,117 @@ void format_newline(TEXT_DEST_REC *dest)
 	               GINT_TO_POINTER(-1), GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE), "", dest);
 }
 
+#define SS_FGCOLOR_CUR(stack) (stack)->fgcolor_s[(stack)->cur]
+#define SS_FGCOLOR_PREV(stack) (stack)->fgcolor_s[(stack)->cur - 1]
+#define SS_FGCOLOR_KEEP(stack) (stack)->fgcolor_s[(stack)->keep]
+
+#define SS_BGCOLOR_CUR(stack) (stack)->bgcolor_s[(stack)->cur]
+#define SS_BGCOLOR_PREV(stack) (stack)->bgcolor_s[(stack)->cur - 1]
+#define SS_BGCOLOR_KEEP(stack) (stack)->bgcolor_s[(stack)->keep]
+
+#define SS_FLAGS_CUR(stack) (stack)->flags_s[(stack)->cur]
+#define SS_FLAGS_PREV(stack) (stack)->flags_s[(stack)->cur - 1]
+#define SS_FLAGS_KEEP(stack) (stack)->flags_s[(stack)->keep]
+
+inline static void ss_restore_fgcolor(THEME_REC *theme, STYLE_STACK_REC *stack, int *fgcolor,
+                                      int *flags)
+{
+	if (stack != NULL && stack->cur > 0) {
+		*fgcolor = SS_FGCOLOR_PREV(stack);
+		if (SS_FLAGS_PREV(stack) & GUI_PRINT_FLAG_COLOR_24_FG) {
+			*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
+		} else {
+			*flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+		}
+	} else {
+		if (theme != NULL)
+			*fgcolor = theme->default_color;
+		else
+			*fgcolor = -1;
+		*flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+	}
+}
+
+inline static void ss_restore_bgcolor(THEME_REC *theme, STYLE_STACK_REC *stack, int *bgcolor,
+                                      int *flags)
+{
+	(void) theme;
+	if (stack != NULL && stack->cur > 0) {
+		*bgcolor = SS_BGCOLOR_PREV(stack);
+		if (SS_FLAGS_PREV(stack) & GUI_PRINT_FLAG_COLOR_24_BG) {
+			*flags |= GUI_PRINT_FLAG_COLOR_24_BG;
+		} else {
+			*flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+		}
+	} else {
+		*bgcolor = -1;
+		*flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+	}
+}
+
+inline static void ss_restore_flags(THEME_REC *theme, STYLE_STACK_REC *stack, int *flags, int reset)
+{
+	int oldflags = *flags;
+	(void) theme;
+	if (reset)
+		oldflags &= ~reset;
+	else
+		oldflags &= (GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG);
+	if (stack != NULL && stack->cur > 0)
+		*flags = (SS_FLAGS_PREV(stack) &
+		          ~(GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG)) |
+		         oldflags;
+	else
+		*flags = oldflags;
+}
+
+inline static void ss_push(THEME_REC *theme, STYLE_STACK_REC *stack, int flags, int fgcolor,
+                           int bgcolor)
+{
+	(void) theme;
+	SS_FLAGS_CUR(stack) =
+	    flags & ~(GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_NEWLINE | GUI_PRINT_FLAG_CLRTOEOL);
+	SS_FGCOLOR_CUR(stack) = fgcolor;
+	SS_BGCOLOR_CUR(stack) = bgcolor;
+	if (stack->cur + 1 < FORMAT_STYLE_STACK_MAX)
+		stack->cur++;
+}
+
+inline static void ss_pop(THEME_REC *theme, STYLE_STACK_REC *stack, int oldflags, int *flags,
+                          int *fgcolor, int *bgcolor)
+{
+	stack->keep = stack->cur;
+	SS_FLAGS_KEEP(stack) =
+	    oldflags & ~(GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_NEWLINE | GUI_PRINT_FLAG_CLRTOEOL);
+	SS_FGCOLOR_KEEP(stack) = *fgcolor;
+	SS_BGCOLOR_KEEP(stack) = *bgcolor;
+	if (stack->cur > 0) {
+		stack->cur--;
+		*flags = SS_FLAGS_CUR(stack);
+		*fgcolor = SS_FGCOLOR_CUR(stack);
+		*bgcolor = SS_BGCOLOR_CUR(stack);
+	} else {
+		*flags = 0;
+		*fgcolor = theme->default_color;
+		*bgcolor = -1;
+	}
+}
+
+inline static void ss_keep(THEME_REC *theme, STYLE_STACK_REC *stack, int oldflags, int *flags,
+                           int *fgcolor, int *bgcolor)
+{
+	*flags = oldflags;
+	if (stack->keep >= 0) {
+		*flags = SS_FLAGS_KEEP(stack);
+		*bgcolor = SS_BGCOLOR_KEEP(stack);
+		*fgcolor = SS_FGCOLOR_KEEP(stack);
+		stack->keep--;
+	}
+}
 
 /* parse ANSI color string */
-static const char *get_ansi_color(THEME_REC *theme, const char *str,
-				  int *fg_ret, int *bg_ret, int *flags_ret)
+static const char *get_ansi_color(THEME_REC *theme, const char *str, int *fg_ret, int *bg_ret,
+                                  int *flags_ret, STYLE_STACK_REC *style_stack)
 {
 	static char ansitab[8] = { 0, 4, 2, 6, 1, 5, 3, 7 };
 	const char *start;
@@ -1055,13 +1198,24 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 	int fg, bg, flags, i;
 	guint num, num2;
 
+	flags = 0;
+
 	if (*str != '[')
 		return str;
 	start = str++;
 
-	fg = fg_ret == NULL || *fg_ret < 0 ? theme->default_color : *fg_ret;
-	bg = bg_ret == NULL || *bg_ret < 0 ? -1 : *bg_ret;
-	flags = flags_ret == NULL ? 0 : *flags_ret;
+	if (fg_ret == NULL || *fg_ret < 0)
+		ss_restore_fgcolor(theme, style_stack, &fg, &flags);
+	else
+		fg = *fg_ret;
+	if (bg_ret == NULL || *bg_ret < 0)
+		ss_restore_bgcolor(theme, style_stack, &bg, &flags);
+	else
+		bg = *bg_ret;
+	if (flags_ret == NULL)
+		ss_restore_flags(theme, style_stack, &flags, 0);
+	else
+		flags = *flags_ret;
 
 	num = 0;
 	for (;; str++) {
@@ -1074,18 +1228,20 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 			str = endptr;
 		}
 
-		if (*str != ';' && *str != 'm')
+		if (!(*str == ';' || *str == 'm' || (*str == ':' && (num == 38 || num == 48))))
 			return start;
 
 		switch (num) {
 		case 0:
 			/* reset colors and attributes back to default */
-			fg = theme->default_color;
-			bg = -1;
-			flags &= ~(GUI_PRINT_FLAG_INDENT |
-				   GUI_PRINT_FLAG_BOLD | GUI_PRINT_FLAG_ITALIC | GUI_PRINT_FLAG_UNDERLINE |
-				   GUI_PRINT_FLAG_BLINK | GUI_PRINT_FLAG_REVERSE |
-				   GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG);
+			ss_restore_fgcolor(theme, style_stack, &fg, &flags);
+			ss_restore_bgcolor(theme, style_stack, &bg, &flags);
+			ss_restore_flags(theme, style_stack, &flags,
+			                 GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_BOLD |
+			                     GUI_PRINT_FLAG_ITALIC | GUI_PRINT_FLAG_UNDERLINE |
+			                     GUI_PRINT_FLAG_BLINK | GUI_PRINT_FLAG_REVERSE |
+			                     GUI_PRINT_FLAG_COLOR_24_FG |
+			                     GUI_PRINT_FLAG_COLOR_24_BG);
 			break;
 		case 1:
 			/* hilight */
@@ -1129,18 +1285,18 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 			break;
 		case 39:
 			/* reset fg */
-			flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
-			fg = theme->default_color;
+			ss_restore_fgcolor(theme, style_stack, &fg, &flags);
 			break;
 		case 49:
 			/* reset bg */
-			bg = -1;
-			flags &= ~(GUI_PRINT_FLAG_COLOR_24_BG | GUI_PRINT_FLAG_INDENT);
+			ss_restore_bgcolor(theme, style_stack, &bg, &flags);
+			flags &= ~GUI_PRINT_FLAG_INDENT;
 			break;
 		case 38:
 		case 48:
 			/* ANSI indexed color or RGB color */
-			if (*str != ';') break;
+			if (*str != ';' && *str != ':')
+				break;
 			str++;
 
 			if (!parse_uint(str, &endptr, 10, &num2)) {
@@ -1183,7 +1339,8 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str,
 				break;
 			case 5:
 				/* indexed */
-				if (*str != ';') break;
+				if (*str != ';' && *str != ':')
+					break;
 				str++;
 
 				if (!parse_uint(str, &endptr, 10, &num2)) {
@@ -1320,7 +1477,8 @@ int strip_real_length(const char *str, int len,
 				if (last_color_len != NULL)
 					*last_color_len = 3;
 				str++;
-			} else if (str[1] == FORMAT_STYLE_DEFAULTS) {
+			} else if (str[1] == FORMAT_STYLE_DEFAULTS ||
+			           str[1] == FORMAT_STYLE_THEME_DEFAULTS) {
 				if (last_color_pos != NULL)
 					*last_color_pos = (int) (str-start);
 				if (last_color_len != NULL)
@@ -1369,14 +1527,17 @@ char *strip_codes(const char *input)
 					else if (p[5] == '\0') p += 4;
 					else p += 5;
 				} else
-				p += 2;
+					p += 2;
 				continue;
 			}
 		}
 
 		if (*p == 27 && p[1] != '\0') {
 			p++;
-			p = get_ansi_color(current_theme, p, NULL, NULL, NULL);
+			if (strncmp(p, "[#", 2) == 0 && (p[2] == '}' || p[2] == '{'))
+				p += 3;
+			else
+				p = get_ansi_color(current_theme, p, NULL, NULL, NULL, NULL);
 			p--;
 		} else if (!IS_COLOR_CODE(*p))
 			*out++ = *p;
@@ -1398,13 +1559,18 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 	THEME_REC *theme;
 	char *dup, *str, *ptr, type;
 	int fgcolor, bgcolor;
-	int flags;
+	int flags, oldflags;
+	STYLE_STACK_REC style_stack;
 
 	theme = window_get_theme(dest->window);
 
 	dup = str = g_strdup(text);
 
-	flags = 0; fgcolor = theme->default_color; bgcolor = -1;
+	flags = 0;
+	fgcolor = theme->default_color;
+	bgcolor = -1;
+	style_stack.cur = 0;
+	style_stack.keep = -1;
 
 	if (*str == '\0') {
 		/* empty line, write line info only */
@@ -1437,14 +1603,16 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 		if (type == '\n') {
 			handler(dest->window, GINT_TO_POINTER(-1), GINT_TO_POINTER(-1),
 			        GINT_TO_POINTER(GUI_PRINT_FLAG_NEWLINE), "", dest);
-			fgcolor = theme->default_color;
-			bgcolor = -1;
-			flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
+			ss_restore_fgcolor(theme, &style_stack, &fgcolor, &flags);
+			ss_restore_bgcolor(theme, &style_stack, &bgcolor, &flags);
+			ss_restore_flags(theme, &style_stack, &flags,
+			                 ~(GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_MONOSPACE));
 		}
 
 		if (*ptr == '\0')
 			break;
 
+		oldflags = flags;
 		switch (type)
 		{
 		case 2:
@@ -1486,11 +1654,25 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 				flags |= GUI_PRINT_FLAG_INDENT;
 				break;
 			case FORMAT_STYLE_DEFAULTS:
+				ss_restore_fgcolor(theme, &style_stack, &fgcolor, &flags);
+				ss_restore_bgcolor(theme, &style_stack, &bgcolor, &flags);
+				ss_restore_flags(theme, &style_stack, &flags, 0);
+				break;
+			case FORMAT_STYLE_THEME_DEFAULTS:
 				fgcolor = theme->default_color;
 				bgcolor = -1;
 				flags &= GUI_PRINT_FLAG_INDENT|GUI_PRINT_FLAG_MONOSPACE;
 				break;
 			case FORMAT_STYLE_CLRTOEOL:
+				break;
+			case FORMAT_STYLE_PUSH:
+				ss_push(theme, &style_stack, oldflags, fgcolor, bgcolor);
+				break;
+			case FORMAT_STYLE_POP:
+				ss_pop(theme, &style_stack, oldflags, &flags, &fgcolor, &bgcolor);
+				break;
+			case FORMAT_STYLE_KEEP:
+				ss_keep(theme, &style_stack, oldflags, &flags, &fgcolor, &bgcolor);
 				break;
 			case FORMAT_COLOR_EXT1:
 				fgcolor = 0x10 + *++ptr - FORMAT_COLOR_NOCHANGE;
@@ -1548,10 +1730,10 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			/* remove all styling */
 			if (!hide_text_style) {
 				if (!hide_colors) {
-					fgcolor = theme->default_color;
-					bgcolor = -1;
+					ss_restore_fgcolor(theme, &style_stack, &fgcolor, &flags);
+					ss_restore_bgcolor(theme, &style_stack, &bgcolor, &flags);
 				}
-				flags &= GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_MONOSPACE;
+				ss_restore_flags(theme, &style_stack, &flags, 0);
 			}
 			break;
 		case 17:
@@ -1574,12 +1756,25 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 				flags ^= GUI_PRINT_FLAG_UNDERLINE;
 			break;
 		case 27:
-			/* ansi color code */
-			ptr = (char *)
-				get_ansi_color(theme, ptr,
-					       hide_colors ? NULL : &fgcolor,
-					       hide_colors ? NULL : &bgcolor,
-					       hide_colors ? NULL : &flags);
+			if (strncmp(ptr, "[#", 2) == 0) {
+				switch (ptr[2]) {
+				case '{':
+					ss_push(theme, &style_stack, oldflags, fgcolor, bgcolor);
+					ptr += 3;
+					break;
+				case '}':
+					ss_pop(theme, &style_stack, oldflags, &flags, &fgcolor,
+					       &bgcolor);
+					ptr += 3;
+					break;
+				}
+			} else {
+				/* ansi color code */
+				ptr = (char *) get_ansi_color(
+				    theme, ptr, hide_colors ? NULL : &fgcolor,
+				    hide_colors ? NULL : &bgcolor, hide_colors ? NULL : &flags,
+				    &style_stack);
+			}
 			break;
 		}
 
