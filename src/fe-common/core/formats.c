@@ -112,17 +112,15 @@ void format_ext_color(GString *out, int bg, int color)
 	if (bg && color < 0x10)
 		g_string_append_c(out, FORMAT_COLOR_NOCHANGE);
 	if (color < 0x10)
-		g_string_append_c(out, color+'0');
+		g_string_append_c(out, color + '0');
 	else {
-		if (color < 0x60)
-			g_string_append_c(out, bg ? FORMAT_COLOR_EXT1_BG
-					  : FORMAT_COLOR_EXT1);
-		else if (color < 0xb0)
+		if (color >= 0xb0)
+			g_string_append_c(out, bg ? FORMAT_COLOR_EXT3_BG : FORMAT_COLOR_EXT3);
+		else if (color >= 0x60)
 			g_string_append_c(out, bg ? FORMAT_COLOR_EXT2_BG
 					  : FORMAT_COLOR_EXT2);
 		else
-			g_string_append_c(out, bg ? FORMAT_COLOR_EXT3_BG
-					  : FORMAT_COLOR_EXT3);
+			g_string_append_c(out, bg ? FORMAT_COLOR_EXT1_BG : FORMAT_COLOR_EXT1);
 		g_string_append_c(out, FORMAT_COLOR_NOCHANGE + ((color-0x10)%0x50));
 	}
 
@@ -142,14 +140,13 @@ static void format_ext_color_unexpand(GString *out, gboolean bg, int base, char 
 	g_string_append_c(out, ext_color_al[value % 36]);
 }
 
-void unformat_24bit_color(char **ptr, int off, int *fgcolor, int *bgcolor, int *flags)
+int unformat_24bit_color_alg(const char **ptr, int off, int *is_bg, unsigned int *color)
 {
-	unsigned int color;
 	unsigned char rgbx[4];
 	unsigned int i;
 	for (i = 0; i < 4; ++i) {
 		if ((*ptr)[i + off] == '\0')
-			return;
+			return FALSE;
 		rgbx[i] = (*ptr)[i + off];
 	}
 	rgbx[3] -= 0x20;
@@ -158,12 +155,23 @@ void unformat_24bit_color(char **ptr, int off, int *fgcolor, int *bgcolor, int *
 		if (rgbx[3] & (0x10 << i))
 			rgbx[i] -= 0x20;
 	}
-	color = rgbx[0] << 16 | rgbx[1] << 8 | rgbx[2];
-	if (rgbx[3] & 0x1) {
+	*color = rgbx[0] << 16 | rgbx[1] << 8 | rgbx[2];
+	*is_bg = rgbx[3] & 0x1;
+	return TRUE;
+}
+
+static void unformat_24bit_color(const char **ptr, int off, int *fgcolor, int *bgcolor, int *flags)
+{
+	unsigned int color;
+	int is_bg;
+
+	if (!unformat_24bit_color_alg(ptr, off, &is_bg, &color))
+		return;
+
+	if (is_bg) {
 		*bgcolor = color;
 		*flags |= GUI_PRINT_FLAG_COLOR_24_BG;
-	}
-	else {
+	} else {
 		*fgcolor = color;
 		*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
 	}
@@ -172,22 +180,13 @@ void unformat_24bit_color(char **ptr, int off, int *fgcolor, int *bgcolor, int *
 static void format_24bit_color_unexpand(GString *out, int off, const char **ptr)
 {
 	unsigned int color;
-	unsigned char rgbx[4];
-	unsigned int i;
-	for (i = 0; i < 4; ++i) {
-		if ((*ptr)[i + off] == '\0')
-			return;
-		rgbx[i] = (*ptr)[i + off];
-	}
-	rgbx[3] -= 0x20;
-	*ptr += 4;
+	int is_bg;
+
+	if (!unformat_24bit_color_alg(ptr, off, &is_bg, &color))
+		return;
+
 	g_string_append_c(out, '%');
-	for (i = 0; i < 3; ++i) {
-		if (rgbx[3] & (0x10 << i))
-			rgbx[i] -= 0x20;
-	}
-	color = rgbx[0] << 16 | rgbx[1] << 8 | rgbx[2];
-	g_string_append_c(out, rgbx[3] & 0x1 ? 'z' : 'Z');
+	g_string_append_c(out, is_bg ? 'z' : 'Z');
 	g_string_append_printf(out, "%06X", color);
 }
 
@@ -1518,7 +1517,8 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
 				break;
 			case FORMAT_COLOR_24:
-				unformat_24bit_color(&ptr, 1, &fgcolor, &bgcolor, &flags);
+				unformat_24bit_color((const char **) &ptr, 1, &fgcolor, &bgcolor,
+				                     &flags);
 				break;
 			default:
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {

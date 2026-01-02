@@ -121,25 +121,15 @@ static void textbuffer_cache_unref(TEXT_BUFFER_CACHE_REC *cache)
 static void unformat_24bit_line_color(const unsigned char **ptr, int off, int *flags, unsigned int *fg, unsigned int *bg)
 {
 	unsigned int color;
-	unsigned char rgbx[4];
-	unsigned int i;
-	for (i = 0; i < 4; ++i) {
-		if ((*ptr)[i + off] == '\0')
-			return;
-		rgbx[i] = (*ptr)[i + off];
-	}
-	rgbx[3] -= 0x20;
-	*ptr += 4;
-	for (i = 0; i < 3; ++i) {
-		if (rgbx[3] & (0x10 << i))
-			rgbx[i] -= 0x20;
-	}
-	color = rgbx[0] << 16 | rgbx[1] << 8 | rgbx[2];
-	if (rgbx[3] & 0x1) {
+	int is_bg;
+
+	if (!unformat_24bit_color_alg((const char **) ptr, off, &is_bg, &color))
+		return;
+
+	if (is_bg) {
 		*flags = (*flags & FGATTR) | ATTR_BGCOLOR24;
 		*bg = color;
-	}
-	else {
+	} else {
 		*flags = (*flags & BGATTR) | ATTR_FGCOLOR24;
 		*fg = color;
 	}

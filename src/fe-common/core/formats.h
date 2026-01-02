@@ -173,6 +173,7 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 int format_expand_styles(GString *out, const char **format, int *flags);
 void format_ext_color(GString *out, int bg, int color);
 void format_24bit_color(GString *out, int bg, unsigned int color);
+int unformat_24bit_color_alg(const char **ptr, int off, int *is_bg, unsigned int *color);
 void format_gui_flags(GString *out, int *last_fg, int *last_bg, int *last_flags, int fg, int bg,
                       int flags);
 
