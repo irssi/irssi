@@ -3,7 +3,6 @@
 
 #include <irssi/src/common.h>
 
-#include <glib.h>
 typedef	GRegex Regex;
 typedef	struct _MatchInfo MatchInfo;
 
