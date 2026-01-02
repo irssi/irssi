@@ -1,6 +1,8 @@
 #ifndef IRSSI_FE_COMMON_CORE_THEMES_H
 #define IRSSI_FE_COMMON_CORE_THEMES_H
 
+#include <irssi/src/common.h>
+
 typedef struct {
 	char *name;
 
@@ -50,12 +52,16 @@ void theme_unregister_module(const char *module);
 
 void theme_set_default_abstract(const char *key, const char *value);
 
+/* clang-format off */
 #define EXPAND_FLAG_IGNORE_REPLACES     0x01 /* don't use the character replaces when expanding */
 #define EXPAND_FLAG_IGNORE_EMPTY        0x02 /* if abstract's argument is empty, or the argument is a $variable that is empty, don't try to expand it (ie. {xx }, but not {xx}) */
 #define EXPAND_FLAG_RECURSIVE_MASK      0x0f
 /* private */
-#define EXPAND_FLAG_ROOT		0x10
-#define EXPAND_FLAG_LASTCOLOR_ARG	0x20
+#define EXPAND_FLAG_ROOT                0x10
+#define EXPAND_FLAG_LASTCOLOR_ARG       0x20
+#define EXPAND_FLAG_PRIVATE_MASK        0xf0
+#define EXPAND_FLAG_COUNT_MASK          0xff00
+/* clang-format on */
 
 typedef struct {
 	char m[8];

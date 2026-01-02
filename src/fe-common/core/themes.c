@@ -33,6 +33,8 @@
 
 #include "default-theme.h"
 
+#define THEME_NESTED_MAX 20
+
 GSList *themes;
 THEME_REC *current_theme;
 GHashTable *default_formats;
@@ -113,10 +115,14 @@ void theme_destroy(THEME_REC *rec)
 	theme_unref(rec);
 }
 
-static char *theme_replace_expand(THEME_REC *theme, int index,
-				  theme_rm_col default_fg, theme_rm_col default_bg,
-				  theme_rm_col *last_fg, theme_rm_col *last_bg,
-				  char chr, int flags)
+static char *theme_format_expand_data_rec(THEME_REC *theme, const char **format,
+                                          theme_rm_col default_fg, theme_rm_col default_bg,
+                                          theme_rm_col *save_last_fg, theme_rm_col *save_last_bg,
+                                          int flags, GTree *block_list);
+
+static char *theme_replace_expand(THEME_REC *theme, int index, theme_rm_col default_fg,
+                                  theme_rm_col default_bg, theme_rm_col *last_fg,
+                                  theme_rm_col *last_bg, char chr, int flags, GTree *block_list)
 {
 	GSList *rec;
 	char *ret, *abstract, data[2];
@@ -127,9 +133,9 @@ static char *theme_replace_expand(THEME_REC *theme, int index,
 	data[0] = chr; data[1] = '\0';
 
 	abstract = rec->data;
-	abstract = theme_format_expand_data(theme, (const char **) &abstract,
-					    default_fg, default_bg,
-					    last_fg, last_bg, (flags | EXPAND_FLAG_IGNORE_REPLACES));
+	abstract = theme_format_expand_data_rec(theme, (const char **) &abstract, default_fg,
+	                                        default_bg, last_fg, last_bg,
+	                                        (flags | EXPAND_FLAG_IGNORE_REPLACES), block_list);
 	ret = parse_special_string(abstract, NULL, NULL, data, NULL,
 				   PARSE_FLAG_ONLY_ARGS);
 	g_free(abstract);
@@ -196,11 +202,10 @@ static inline int chr_is_valid_ext(const char format[])
 }
 
 /* append next "item", either a character, $variable or %format */
-static void theme_format_append_next(THEME_REC *theme, GString *str,
-				     const char **format,
-				     theme_rm_col default_fg, theme_rm_col default_bg,
-				     theme_rm_col *last_fg, theme_rm_col *last_bg,
-				     int flags)
+static void theme_format_append_next(THEME_REC *theme, GString *str, const char **format,
+                                     theme_rm_col default_fg, theme_rm_col default_bg,
+                                     theme_rm_col *last_fg, theme_rm_col *last_bg, int flags,
+                                     GTree *block_list)
 {
 	int index;
 	unsigned char chr;
@@ -295,9 +300,8 @@ static void theme_format_append_next(THEME_REC *theme, GString *str,
 	else {
 		char *value;
 
-		value = theme_replace_expand(theme, index,
-					     default_fg, default_bg,
-					     last_fg, last_bg, chr, flags);
+		value = theme_replace_expand(theme, index, default_fg, default_bg, last_fg, last_bg,
+		                             chr, flags, block_list);
 		g_string_append(str, value);
 		g_free(value);
 	}
@@ -358,8 +362,8 @@ static int data_is_empty(const char **data)
         return FALSE;
 }
 
-/* return "data" from {abstract data} string */
-char *theme_format_expand_get(THEME_REC *theme, const char **format)
+static char *theme_format_expand_get_rec(THEME_REC *theme, const char **format, int rec_count,
+                                         GTree *block_list)
 {
 	GString *str;
 	char *ret;
@@ -379,10 +383,9 @@ char *theme_format_expand_get(THEME_REC *theme, const char **format)
 			(*format)++;
 			continue;
 		} else {
-			theme_format_append_next(theme, str, format,
-						 reset, reset,
-						 &dummy, &dummy,
-						 EXPAND_FLAG_IGNORE_REPLACES);
+			theme_format_append_next(theme, str, format, reset, reset, &dummy, &dummy,
+			                         (rec_count << 8) | EXPAND_FLAG_IGNORE_REPLACES,
+			                         block_list);
 			continue;
 		}
 
@@ -399,10 +402,11 @@ char *theme_format_expand_get(THEME_REC *theme, const char **format)
 	return ret;
 }
 
-static char *theme_format_expand_data_rec(THEME_REC *theme, const char **format,
-                                          theme_rm_col default_fg, theme_rm_col default_bg,
-                                          theme_rm_col *save_last_fg, theme_rm_col *save_last_bg,
-                                          int flags, GTree *block_list);
+/* return "data" from {abstract data} string */
+char *theme_format_expand_get(THEME_REC *theme, const char **format)
+{
+	return theme_format_expand_get_rec(theme, format, 0, NULL);
+}
 
 /* expand a single {abstract ...data... } */
 static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp,
@@ -413,7 +417,9 @@ static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp
 	const char *p, *format;
 	char *abstract, *data, *ret, *blocking;
 	theme_rm_col default_fg, default_bg;
-	int len;
+	int len, recurse_count;
+
+	recurse_count = (flags & EXPAND_FLAG_COUNT_MASK) >> 8;
 
 	format = *formatp;
 	default_fg = *last_fg;
@@ -447,6 +453,10 @@ static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp
 		g_tree_ref(block_list);
 	}
 
+	if (recurse_count >= THEME_NESTED_MAX) {
+		g_warning("Theme nesting cannot exceed %d at {%s ...}", THEME_NESTED_MAX, abstract);
+	}
+
 	/* get the abstract data */
 	data = g_hash_table_lookup(theme->abstracts, abstract);
 	if (data == NULL || g_tree_lookup(block_list, abstract) != NULL) {
@@ -462,7 +472,7 @@ static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp
 
 	/* we'll need to get the data part. it may contain
 	   more abstracts, they are _NOT_ expanded. */
-	data = theme_format_expand_get(theme, formatp);
+	data = theme_format_expand_get_rec(theme, formatp, recurse_count, block_list);
 	len = strlen(data);
 
 	if (len > 1 && i_isdigit(data[len-1]) && data[len-2] == '$') {
@@ -499,8 +509,13 @@ static char *theme_format_expand_abstract(THEME_REC *theme, const char **formatp
 
 	/* abstract may itself contain abstracts or replaces */
 	p = abstract;
-	ret = theme_format_expand_data_rec(theme, &p, default_fg, default_bg, last_fg, last_bg,
-	                                   flags | EXPAND_FLAG_LASTCOLOR_ARG, block_list);
+	if (recurse_count >= THEME_NESTED_MAX) {
+		ret = g_strdup(p);
+	} else {
+		ret = theme_format_expand_data_rec(theme, &p, default_fg, default_bg, last_fg,
+		                                   last_bg, flags | EXPAND_FLAG_LASTCOLOR_ARG,
+		                                   block_list);
+	}
 	g_free(abstract);
 	if (blocking != NULL) {
 		g_tree_remove(block_list, blocking);
@@ -521,7 +536,7 @@ static char *theme_format_expand_data_rec(THEME_REC *theme, const char **format,
 
 	last_fg = default_fg;
 	last_bg = default_bg;
-        recurse_flags = flags & EXPAND_FLAG_RECURSIVE_MASK;
+	recurse_flags = (flags + (1 << 8)) & (EXPAND_FLAG_RECURSIVE_MASK | EXPAND_FLAG_COUNT_MASK);
 
 	str = g_string_new(NULL);
 	while (**format != '\0') {
@@ -546,10 +561,8 @@ static char *theme_format_expand_data_rec(THEME_REC *theme, const char **format,
 				}
 			}
 
-			theme_format_append_next(theme, str, format,
-						 default_fg, default_bg,
-						 &last_fg, &last_bg,
-						 recurse_flags);
+			theme_format_append_next(theme, str, format, default_fg, default_bg,
+			                         &last_fg, &last_bg, recurse_flags, block_list);
 			continue;
 		}
 
