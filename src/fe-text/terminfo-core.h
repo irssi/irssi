@@ -1,6 +1,7 @@
 #ifndef IRSSI_FE_TEXT_TERMINFO_CORE_H
 #define IRSSI_FE_TEXT_TERMINFO_CORE_H
 
+#include <irssi/src/common.h>
 #include <termios.h>
 
 #define terminfo_move(x, y) current_term->tr_move(current_term, x, y)
