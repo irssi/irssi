@@ -27,6 +27,7 @@
 #include <irssi/src/core/signals.h>
 #include <irssi/src/core/special-vars.h>
 #include <irssi/src/core/utf8.h>
+#include <irssi/src/fe-common/core/formats.h>
 
 #define isvarchar(c) \
         (i_isalnum(c) || (c) == '_')
@@ -81,12 +82,20 @@ static char *get_argument(char **cmd, char **arglist)
 	}
 
 	str = g_string_new(NULL);
+	g_string_append_c(str, 4);
+	g_string_append_c(str, FORMAT_STYLE_PUSH);
 	while (arg >= 0 && arg < argcount && (arg <= max || max == -1)) {
 		g_string_append(str, arglist[arg]);
 		g_string_append_c(str, ' ');
 		arg++;
 	}
-	if (str->len > 0) g_string_truncate(str, str->len-1);
+	if (str->len > 2) {
+		g_string_truncate(str, str->len - 1);
+		g_string_append_c(str, 4);
+		g_string_append_c(str, FORMAT_STYLE_POP);
+	} else {
+		g_string_truncate(str, 0);
+	}
 
 	ret = g_string_free_and_steal(str);
 	return ret;
