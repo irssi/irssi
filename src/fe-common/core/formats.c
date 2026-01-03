@@ -1457,7 +1457,8 @@ int strip_real_length(const char *str, int len,
 		*last_color_len = -1;
 
 	while (*str != '\0') {
-		if (*str == 3) { /* mIRC color */
+		switch (str[0]) {
+		case 3: { /* mIRC color */
 			const char *mircstart = str;
 
 			if (last_color_pos != NULL)
@@ -1466,45 +1467,84 @@ int strip_real_length(const char *str, int len,
 			get_mirc_color(&str, NULL, NULL, NULL);
 			if (last_color_len != NULL)
 				*last_color_len = (int) (str-mircstart);
-
-		} else if (*str == 4 && str[1] != '\0') {
+		} break;
+		case 4:
 			/* We expect 4 to indicate an internal Irssi color code. However 4
 			 * also means hex color, an alternative to mIRC color codes. We
 			 * don't support those. */
-			if (str[1] == FORMAT_COLOR_24 && str[2] != '\0') {
-				if (str[3] == '\0') str++;
-				else if (str[4] == '\0') str += 2;
-				else if (str[5] == '\0') str += 3;
+			switch (str[1]) {
+			case '\0':
+				str++;
+				break;
+			case FORMAT_COLOR_24:
+				if (str[2] == '\0')
+					str += 2;
+				else if (str[3] == '\0')
+					str += 3;
+				else if (str[4] == '\0')
+					str += 4;
+				else if (str[5] == '\0')
+					str += 5;
 				else {
 					if (last_color_pos != NULL)
 						*last_color_pos = (int) (str-start);
 					if (last_color_len != NULL)
 						*last_color_len = 6;
-					str+=4;
+					str += 6;
 				}
-			} else if (str[1] < FORMAT_STYLE_SPECIAL && str[2] != '\0') {
-				if (last_color_pos != NULL)
-					*last_color_pos = (int) (str-start);
-				if (last_color_len != NULL)
-					*last_color_len = 3;
-				str++;
-			} else if (str[1] == FORMAT_STYLE_DEFAULTS ||
-			           str[1] == FORMAT_STYLE_THEME_DEFAULTS) {
+				break;
+			case FORMAT_STYLE_DEFAULTS:
+			case FORMAT_STYLE_THEME_DEFAULTS:
 				if (last_color_pos != NULL)
 					*last_color_pos = (int) (str-start);
 				if (last_color_len != NULL)
 					*last_color_len = 2;
+				str += 2;
+				break;
+			default:
+				if (str[1] < FORMAT_STYLE_SPECIAL && str[2] != '\0') {
+					if (last_color_pos != NULL)
+						*last_color_pos = (int) (str - start);
+					if (last_color_len != NULL)
+						*last_color_len = 3;
+					str += 3;
+				} else {
+					str += 2;
+				}
+				break;
 			}
-			str += 2;
-		} else {
+			break;
+		case 15:
+			/* remove all styling */
+			if (last_color_pos != NULL)
+				*last_color_pos = -1;
+			if (last_color_len != NULL)
+				*last_color_len = -1;
+			str++;
+			break;
+		case 27: {
+			const char *ansistart;
+			int unchanged = 0x7fffffff, fg = unchanged, bg = unchanged;
+			ansistart = str;
+			str++;
+			str = get_ansi_color(NULL, str, &fg, &bg, NULL, NULL);
+			if (fg < unchanged || bg < unchanged) {
+				if (last_color_pos != NULL)
+					*last_color_pos = (int) (ansistart - start);
+				if (last_color_len != NULL)
+					*last_color_len = (int) (str - ansistart);
+			}
+		} break;
+		default:
 			if (!IS_COLOR_CODE(*str)) {
 				if (len-- == 0)
-					break;
+					goto out;
 			}
 			str++;
+			break;
 		}
 	}
-
+out:
 	return (int) (str-start);
 }
 
