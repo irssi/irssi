@@ -178,9 +178,11 @@ static void unformat_24bit_color(const char **ptr, int off, int *fgcolor, int *b
 
 	if (is_bg) {
 		*bgcolor = color;
+		*flags &= ~GUI_PRINT_FLAG_MIRC_COLOR_BG;
 		*flags |= GUI_PRINT_FLAG_COLOR_24_BG;
 	} else {
 		*fgcolor = color;
+		*flags &= ~GUI_PRINT_FLAG_MIRC_COLOR_FG;
 		*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
 	}
 }
@@ -1092,22 +1094,24 @@ void format_newline(TEXT_DEST_REC *dest)
 #define SS_FLAGS_PREV(stack) (stack)->flags_s[(stack)->cur - 1]
 #define SS_FLAGS_KEEP(stack) (stack)->flags_s[(stack)->keep]
 
+inline static void copy_flags(int in_flags, unsigned int copy_flags, int *out_flags)
+{
+	*out_flags &= ~copy_flags;
+	*out_flags |= (in_flags & copy_flags);
+}
+
 inline static void ss_restore_fgcolor(THEME_REC *theme, STYLE_STACK_REC *stack, int *fgcolor,
                                       int *flags)
 {
 	if (stack != NULL && stack->cur > 0) {
 		*fgcolor = SS_FGCOLOR_PREV(stack);
-		if (SS_FLAGS_PREV(stack) & GUI_PRINT_FLAG_COLOR_24_FG) {
-			*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
-		} else {
-			*flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
-		}
+		copy_flags(SS_FLAGS_PREV(stack), GUI_PRINT_FLAGS_FG_COLORS, flags);
 	} else {
 		if (theme != NULL)
 			*fgcolor = theme->default_color;
 		else
 			*fgcolor = -1;
-		*flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+		*flags &= ~GUI_PRINT_FLAGS_FG_COLORS;
 	}
 }
 
@@ -1117,14 +1121,10 @@ inline static void ss_restore_bgcolor(THEME_REC *theme, STYLE_STACK_REC *stack, 
 	(void) theme;
 	if (stack != NULL && stack->cur > 0) {
 		*bgcolor = SS_BGCOLOR_PREV(stack);
-		if (SS_FLAGS_PREV(stack) & GUI_PRINT_FLAG_COLOR_24_BG) {
-			*flags |= GUI_PRINT_FLAG_COLOR_24_BG;
-		} else {
-			*flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-		}
+		copy_flags(SS_FLAGS_PREV(stack), GUI_PRINT_FLAGS_BG_COLORS, flags);
 	} else {
 		*bgcolor = -1;
-		*flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+		*flags &= ~GUI_PRINT_FLAGS_BG_COLORS;
 	}
 }
 
@@ -1135,11 +1135,9 @@ inline static void ss_restore_flags(THEME_REC *theme, STYLE_STACK_REC *stack, in
 	if (reset)
 		oldflags &= ~reset;
 	else
-		oldflags &= (GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG);
+		oldflags &= GUI_PRINT_FLAGS_COLORS;
 	if (stack != NULL && stack->cur > 0)
-		*flags = (SS_FLAGS_PREV(stack) &
-		          ~(GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG)) |
-		         oldflags;
+		*flags = (SS_FLAGS_PREV(stack) & ~GUI_PRINT_FLAGS_COLORS) | oldflags;
 	else
 		*flags = oldflags;
 }
@@ -1234,14 +1232,13 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str, int *fg_ret
 		switch (num) {
 		case 0:
 			/* reset colors and attributes back to default */
-			ss_restore_fgcolor(theme, style_stack, &fg, &flags);
-			ss_restore_bgcolor(theme, style_stack, &bg, &flags);
 			ss_restore_flags(theme, style_stack, &flags,
 			                 GUI_PRINT_FLAG_INDENT | GUI_PRINT_FLAG_BOLD |
 			                     GUI_PRINT_FLAG_ITALIC | GUI_PRINT_FLAG_UNDERLINE |
 			                     GUI_PRINT_FLAG_BLINK | GUI_PRINT_FLAG_REVERSE |
-			                     GUI_PRINT_FLAG_COLOR_24_FG |
-			                     GUI_PRINT_FLAG_COLOR_24_BG);
+			                     GUI_PRINT_FLAGS_COLORS);
+			ss_restore_fgcolor(theme, style_stack, &fg, &flags);
+			ss_restore_bgcolor(theme, style_stack, &bg, &flags);
 			break;
 		case 1:
 			/* hilight */
@@ -1329,9 +1326,11 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str, int *fg_ret
 				if (i == -1) break;
 
 				if (num == 38) {
+					flags &= ~GUI_PRINT_FLAG_MIRC_COLOR_FG;
 					flags |= GUI_PRINT_FLAG_COLOR_24_FG;
 					fg = num2;
 				} else if (num == 48) {
+					flags &= ~GUI_PRINT_FLAG_MIRC_COLOR_BG;
 					flags |= GUI_PRINT_FLAG_COLOR_24_BG;
 					bg = num2;
 				}
@@ -1351,10 +1350,10 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str, int *fg_ret
 				if (*str == '\0') return start;
 
 				if (num == 38) {
-					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+					flags &= ~GUI_PRINT_FLAGS_FG_COLORS;
 					fg = num2;
 				} else if (num == 48) {
-					flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+					flags &= ~GUI_PRINT_FLAGS_BG_COLORS;
 					bg = num2;
 				}
 
@@ -1363,16 +1362,16 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str, int *fg_ret
 			break;
 		default:
 			if (num >= 30 && num <= 37) {
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				flags &= ~GUI_PRINT_FLAGS_FG_COLORS;
 				fg = ansitab[num-30];
 			} else if (num >= 40 && num <= 47) {
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				flags &= ~GUI_PRINT_FLAGS_BG_COLORS;
 				bg = ansitab[num-40];
 			} else if (num >= 90 && num <= 97) {
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				flags &= ~GUI_PRINT_FLAGS_FG_COLORS;
 				fg = 8 + ansitab[num-90];
 			} else if (num >= 100 && num <= 107) {
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				flags &= ~GUI_PRINT_FLAGS_BG_COLORS;
 				bg = 8 + ansitab[num-100];
 			}
 			break;
@@ -1393,17 +1392,17 @@ static const char *get_ansi_color(THEME_REC *theme, const char *str, int *fg_ret
 }
 
 /* parse MIRC color string */
-static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
+static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret, int *flags)
 {
 	int fg, bg;
 
-	fg = fg_ret == NULL ? -1 : *fg_ret;
-	bg = bg_ret == NULL ? -1 : *bg_ret;
+	fg = -1;
+	bg = -1;
 
 	if (!i_isdigit(**str)) {
 		/* turn off color */
-		fg = -1;
-		bg = -1;
+		fg = 99;
+		bg = 99;
 	} else {
 		/* foreground color */
 		fg = **str-'0';
@@ -1425,8 +1424,20 @@ static void get_mirc_color(const char **str, int *fg_ret, int *bg_ret)
 		}
 	}
 
-	if (fg_ret) *fg_ret = fg;
-	if (bg_ret) *bg_ret = bg;
+	if (fg_ret && fg > -1) {
+		*fg_ret = fg;
+		if (flags) {
+			*flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+			*flags |= GUI_PRINT_FLAG_MIRC_COLOR_FG;
+		}
+	}
+	if (bg_ret && bg > -1) {
+		*bg_ret = bg;
+		if (flags) {
+			*flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+			*flags |= GUI_PRINT_FLAG_MIRC_COLOR_BG;
+		}
+	}
 }
 
 #define IS_COLOR_CODE(c) \
@@ -1452,7 +1463,7 @@ int strip_real_length(const char *str, int len,
 			if (last_color_pos != NULL)
 				*last_color_pos = (int) (str-start);
 			str++;
-			get_mirc_color(&str, NULL, NULL);
+			get_mirc_color(&str, NULL, NULL, NULL);
 			if (last_color_len != NULL)
 				*last_color_len = (int) (str-mircstart);
 
@@ -1508,7 +1519,7 @@ char *strip_codes(const char *input)
 			p++;
 
 			/* mirc color */
-			get_mirc_color(&p, NULL, NULL);
+			get_mirc_color(&p, NULL, NULL, NULL);
 			p--;
 			continue;
 		}
@@ -1622,15 +1633,19 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 			break;
 		case 3:
 			/* MIRC color */
-			get_mirc_color((const char **) &ptr,
-					hide_colors ? NULL : &fgcolor,
-					hide_colors ? NULL : &bgcolor);
-			if (!hide_colors)
-				flags |= GUI_PRINT_FLAG_MIRC_COLOR;
+			get_mirc_color((const char **) &ptr, hide_colors ? NULL : &fgcolor,
+			               hide_colors ? NULL : &bgcolor, hide_colors ? NULL : &flags);
+			if ((flags & GUI_PRINT_FLAG_MIRC_COLOR_FG) && fgcolor == 99) {
+				flags &= ~GUI_PRINT_FLAG_MIRC_COLOR_FG;
+				ss_restore_fgcolor(theme, &style_stack, &fgcolor, &flags);
+			}
+			if ((flags & GUI_PRINT_FLAG_MIRC_COLOR_BG) && bgcolor == 99) {
+				flags &= ~GUI_PRINT_FLAG_MIRC_COLOR_BG;
+				ss_restore_bgcolor(theme, &style_stack, &bgcolor, &flags);
+			}
 			break;
 		case 4:
 			/* user specific colors */
-			flags &= ~GUI_PRINT_FLAG_MIRC_COLOR;
 			switch (*ptr) {
 			case FORMAT_STYLE_BLINK:
 				flags ^= GUI_PRINT_FLAG_BLINK;
@@ -1676,27 +1691,27 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 				break;
 			case FORMAT_COLOR_EXT1:
 				fgcolor = 0x10 + *++ptr - FORMAT_COLOR_NOCHANGE;
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				flags &= ~GUI_PRINT_FLAGS_FG_COLORS;
 				break;
 			case FORMAT_COLOR_EXT1_BG:
 				bgcolor = 0x10 + *++ptr - FORMAT_COLOR_NOCHANGE;
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				flags &= ~GUI_PRINT_FLAGS_BG_COLORS;
 				break;
 			case FORMAT_COLOR_EXT2:
 				fgcolor = 0x60 + *++ptr - FORMAT_COLOR_NOCHANGE;
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				flags &= ~GUI_PRINT_FLAGS_FG_COLORS;
 				break;
 			case FORMAT_COLOR_EXT2_BG:
 				bgcolor = 0x60 + *++ptr - FORMAT_COLOR_NOCHANGE;
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				flags &= ~GUI_PRINT_FLAGS_BG_COLORS;
 				break;
 			case FORMAT_COLOR_EXT3:
 				fgcolor = 0xb0 + *++ptr - FORMAT_COLOR_NOCHANGE;
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
+				flags &= ~GUI_PRINT_FLAGS_FG_COLORS;
 				break;
 			case FORMAT_COLOR_EXT3_BG:
 				bgcolor = 0xb0 + *++ptr - FORMAT_COLOR_NOCHANGE;
-				flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+				flags &= ~GUI_PRINT_FLAGS_BG_COLORS;
 				break;
 			case FORMAT_COLOR_24:
 				unformat_24bit_color((const char **) &ptr, 1, &fgcolor, &bgcolor,
@@ -1704,16 +1719,26 @@ void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC
 				break;
 			default:
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
-					flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
-					fgcolor = *ptr==(char)0xff ? -1 : (unsigned char) *ptr-'0';
+					if (*ptr == (char) 0xff) {
+						ss_restore_fgcolor(theme, &style_stack, &fgcolor,
+						                   &flags);
+					} else {
+						flags &= ~GUI_PRINT_FLAGS_FG_COLORS;
+						fgcolor = (unsigned char) *ptr - '0';
+					}
 				}
 				if (ptr[1] == '\0')
 					break;
 
 				ptr++;
 				if (*ptr != FORMAT_COLOR_NOCHANGE) {
-					flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-					bgcolor = *ptr==(char)0xff ? -1 : *ptr-'0';
+					if (*ptr == (char) 0xff) {
+						ss_restore_bgcolor(theme, &style_stack, &bgcolor,
+						                   &flags);
+					} else {
+						flags &= ~GUI_PRINT_FLAGS_BG_COLORS;
+						bgcolor = *ptr - '0';
+					}
 				}
 			}
 			if (*ptr == '\0')

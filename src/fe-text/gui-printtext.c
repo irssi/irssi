@@ -32,6 +32,7 @@
 #include <irssi/src/fe-text/gui-windows.h>
 
 /* Terminal indexed colour map */
+/* clang-format off */
 int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7,
 	 /* 16-27 */  52,  94, 100,  58,  22,  29,  23,  24,  17,  54,  53,  89,
 	 /* 28-39 */  88, 130, 142,  64,  28,  35,  30,  25,  18,  91,  90, 125,
@@ -40,9 +41,11 @@ int mirc_colors[] = { 15, 0, 1, 2, 12, 4, 5, 6, 14, 10, 3, 11, 9, 13, 8, 7,
 	 /* 64-75 */ 203, 215, 227, 191,  83, 122,  87, 111,  63, 177, 207, 205,
 	 /* 76-87 */ 217, 223, 229, 193, 157, 158, 159, 153, 147, 183, 219, 212,
 	 /* 88-98 */  16, 233, 235, 237, 239, 241, 244, 247, 250, 254, 231, -1 };
+/* clang-format on */
 
 /* RGB colour map */
-int mirc_colors24[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+/* clang-format off */
+int mirc_colors_24bit[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	 /* 16-27 */ 0x470000, 0x472100, 0x474700, 0x324700, 0x004700, 0x00472c, 0x004747, 0x002747, 0x000047, 0x2e0047, 0x470047, 0x47002a,
 	 /* 28-39 */ 0x740000, 0x743a00, 0x747400, 0x517400, 0x007400, 0x007449, 0x007474, 0x004074, 0x000074, 0x4b0074, 0x740074, 0x740045,
 	 /* 40-51 */ 0xb50000, 0xb56300, 0xb5b500, 0x7db500, 0x00b500, 0x00b571, 0x00b5b5, 0x0063b5, 0x0000b5, 0x7500b5, 0xb500b5, 0xb5006b,
@@ -50,8 +53,9 @@ int mirc_colors24[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
 	 /* 64-75 */ 0xff5959, 0xffb459, 0xffff71, 0xcfff60, 0x6fff6f, 0x65ffc9, 0x6dffff, 0x59b4ff, 0x5959ff, 0xc459ff, 0xff66ff, 0xff59bc,
 	 /* 76-87 */ 0xff9c9c, 0xffd39c, 0xffff9c, 0xe2ff9c, 0x9cff9c, 0x9cffdb, 0x9cffff, 0x9cd3ff, 0x9c9cff, 0xdc9cff, 0xff9cff, 0xff94d3,
 	 /* 88-98 */ 0x000000, 0x131313, 0x282828, 0x363636, 0x4d4d4d, 0x656565, 0x818181, 0x9f9f9f, 0xbcbcbc, 0xe2e2e2, 0xffffff, -1 };
+/* clang-format on */
 
-static int scrollback_lines, scrollback_time, scrollback_burst_remove;
+static int scrollback_lines, scrollback_time, scrollback_burst_remove, colors_ansi_24bit;
 /*
  * If positive, remove lines older than scrollback_max_age seconds.
  * Deletion is triggered by the "gui print text finished" signal (i.e. a message
@@ -242,33 +246,29 @@ static void remove_old_lines(TEXT_BUFFER_VIEW_REC *view)
 void gui_printtext_get_colors(int *flags, int *fg, int *bg, int *attr)
 {
 	*attr = 0;
-	if (*flags & GUI_PRINT_FLAG_MIRC_COLOR) {
-		/* mirc colors - extended colours proposal */
-		gboolean use_24_map = FALSE;
-		use_24_map = settings_get_bool("colors_ansi_24bit");
-		if (*bg >= 0) {
-			if (use_24_map && mirc_colors24[*bg % 100] != -1) {
-				*bg = mirc_colors24[*bg % 100];
-				*flags |= GUI_PRINT_FLAG_COLOR_24_BG;
-			} else {
-				*bg = mirc_colors[*bg % 100];
-				*flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
-				/* ignore mirc color 99 = -1 (reset) */
-				if (*bg != -1 && settings_get_bool("mirc_blink_fix")) {
-					if (*bg < 16) /* ansi bit flip :-( */
-						*bg = (*bg&8) | (*bg&4)>>2 | (*bg&2) | (*bg&1)<<2;
-					*bg = term_color256map[*bg&0xff] & 7;
-				}
+	/* mirc colors - extended colours proposal */
+	if ((*flags & GUI_PRINT_FLAG_MIRC_COLOR_BG) && (*bg >= 0)) {
+		if (colors_ansi_24bit && mirc_colors_24bit[*bg % 100] != -1) {
+			*bg = mirc_colors_24bit[*bg % 100];
+			*flags |= GUI_PRINT_FLAG_COLOR_24_BG;
+		} else {
+			*bg = mirc_colors[*bg % 100];
+			*flags &= ~GUI_PRINT_FLAG_COLOR_24_BG;
+			if (*bg != -1 && settings_get_bool("mirc_blink_fix")) {
+				if (*bg < 16) /* ansi bit flip :-( */
+					*bg =
+					    (*bg & 8) | (*bg & 4) >> 2 | (*bg & 2) | (*bg & 1) << 2;
+				*bg = term_color256map[*bg & 0xff] & 7;
 			}
 		}
-		if (*fg >= 0) {
-			if (use_24_map && mirc_colors24[*fg % 100] != -1) {
-				*fg = mirc_colors24[*fg % 100];
-				*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
-			} else {
-				*fg = mirc_colors[*fg % 100];
-				*flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
-			}
+	}
+	if ((*flags & GUI_PRINT_FLAG_MIRC_COLOR_FG) && (*fg >= 0)) {
+		if (colors_ansi_24bit && mirc_colors_24bit[*fg % 100] != -1) {
+			*fg = mirc_colors_24bit[*fg % 100];
+			*flags |= GUI_PRINT_FLAG_COLOR_24_FG;
+		} else {
+			*fg = mirc_colors[*fg % 100];
+			*flags &= ~GUI_PRINT_FLAG_COLOR_24_FG;
 		}
 	}
 
@@ -396,6 +396,7 @@ static void read_settings(void)
 	scrollback_time = settings_get_time("scrollback_time")/1000;
 	scrollback_max_age = settings_get_time("scrollback_max_age")/1000;
         scrollback_burst_remove = settings_get_int("scrollback_burst_remove");
+	colors_ansi_24bit = settings_get_bool("colors_ansi_24bit");
 }
 
 void gui_printtext_init(void)
