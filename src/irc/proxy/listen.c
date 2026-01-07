@@ -720,8 +720,10 @@ static void add_listen(const char *ircnet, int port, const char *port_or_path)
 				return;
 			}
 
-			my_ip = ip6.family == 0 ? &ip4 : ip4.family == 0 ||
-				settings_get_bool("resolve_prefer_ipv6") ? &ip6 : &ip4;
+			my_ip = ip6.family == 0 ? &ip4 :
+			        ip4.family == 0 || settings_get_bool("irssiproxy_prefer_ipv6") ?
+			                          &ip6 :
+			                          &ip4;
 		}
 		handle = net_listen(my_ip, &port);
 	}

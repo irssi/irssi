@@ -321,7 +321,7 @@ static void server_connect_use_resolved(SERVER_REC *server)
 		server_real_connect(server, ip, NULL);
 		errormsg = NULL;
 	} else {
-		/* TODO !!! */
+		/* TODO */
 
 		/* if (iprec.error == 0 || net_hosterror_notfound(iprec.error)) { */
 		/* 	/\* IP wasn't found for the host, don't try to */
