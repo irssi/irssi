@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <irssi/src/common.h>
 
 #ifndef AF_INET6
 #  ifdef PF_INET6

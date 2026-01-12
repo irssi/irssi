@@ -1,6 +1,8 @@
 #ifndef IRSSI_CORE_NET_SENDBUFFER_H
 #define IRSSI_CORE_NET_SENDBUFFER_H
 
+#include <irssi/src/common.h>
+
 #define DEFAULT_BUFFER_SIZE 8192
 #define MAX_BUFFER_SIZE 1048576
 

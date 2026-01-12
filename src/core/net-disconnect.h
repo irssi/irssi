@@ -1,6 +1,8 @@
 #ifndef IRSSI_CORE_NET_DISCONNECT_H
 #define IRSSI_CORE_NET_DISCONNECT_H
 
+#include <irssi/src/common.h>
+
 /* Try to let the other side close the connection, if it still isn't
    disconnected after certain amount of time, close it ourself */
 void net_disconnect_later(GIOChannel *handle);
