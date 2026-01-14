@@ -387,6 +387,8 @@ static void event_starttls(IRC_SERVER_REC *server, const char *data)
 		char *str;
 		line_split("", -1, &str, &server->handle->readbuffer);
 	}
+#if 0
+	// TODO
 	ssl_handle = net_start_ssl((SERVER_REC *) server);
 	if (ssl_handle != NULL) {
 		g_source_remove(server->readtag);
@@ -394,8 +396,11 @@ static void event_starttls(IRC_SERVER_REC *server, const char *data)
 		server->handle->handle = ssl_handle;
 		init_ssl_loop(server, server->handle->handle);
 	} else {
-		g_warning("net_start_ssl failed");
+#endif
+	g_warning("net_start_ssl failed");
+#if 0
 	}
+#endif
 }
 
 static void event_registerfirst(IRC_SERVER_REC *server, const char *data)
@@ -695,23 +700,24 @@ void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
 
 void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 {
-	if (net_sendbuffer_send(server->handle, data, len) == -1) {
-		/* something bad happened */
-		server->connection_lost = TRUE;
-		return;
-	}
+	if (server->handle != NULL) {
+		if (net_sendbuffer_send(server->handle, data, len) == -1) {
+			/* something bad happened */
+			server->connection_lost = TRUE;
+			return;
+		}
+		server->last_cmd = g_get_real_time();
 
-	server->last_cmd = g_get_real_time();
-
-	/* A bit kludgy way to do the flood protection. In ircnet, there
-	   actually is 1sec / 100 bytes penalty, but we rather want to deal
-	   with the max. 1000 bytes input buffer problem. If we send more
-	   than that with the burst, we'll get excess flooded. */
-	if (len < 100 || server->cmd_queue_speed <= 10)
-		server->wait_cmd = 0;
-	else {
-		server->wait_cmd = server->last_cmd;
-		server->wait_cmd += (2 + len / 100) * G_USEC_PER_SEC;
+		/* A bit kludgy way to do the flood protection. In ircnet, there
+		   actually is 1sec / 100 bytes penalty, but we rather want to deal
+		   with the max. 1000 bytes input buffer problem. If we send more
+		   than that with the burst, we'll get excess flooded. */
+		if (len < 100 || server->cmd_queue_speed <= 10)
+			server->wait_cmd = 0;
+		else {
+			server->wait_cmd = server->last_cmd;
+			server->wait_cmd += (2 + len / 100) * G_USEC_PER_SEC;
+		}
 	}
 }
 

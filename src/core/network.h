@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <irssi/src/common.h>
 
 #ifndef AF_INET6
 #  ifdef PF_INET6
@@ -19,6 +20,13 @@ struct _IPADDR {
 	unsigned short family;
 	struct in6_addr ip;
 };
+
+typedef struct {
+	int refcount;
+	/* GList<GInetAddress> */
+	GList *ailist; /* needs to be freed */
+	GError *error; /* needs to be freed */
+} RESOLVED_IP_REC;
 
 /* maxmimum string length of IP address */
 #define MAX_IP_LEN INET6_ADDRSTRLEN
@@ -49,6 +57,8 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
 GIOChannel *net_connect_unix(const char *path);
 /* Disconnect socket */
 void net_disconnect(GIOChannel *handle);
+/* Disconnect socket */
+void net_disconnect_connection(GSocketConnection *connection);
 
 /* Listen for connections on a socket */
 GIOChannel *net_listen(IPADDR *my_ip, int *port);
@@ -57,18 +67,17 @@ GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port);
 
 /* Read data from socket, return number of bytes read, -1 = error */
 int net_receive(GIOChannel *handle, char *buf, int len);
+/* Read data from stream, return number of bytes read, -1 = error */
+int net_receive_connection(GIOStream *connection, char *buf, int len);
 /* Transmit data, return number of bytes sent, -1 = error */
 int net_transmit(GIOChannel *handle, const char *data, int len);
+/* Transmit data, return number of bytes sent, -1 = error */
+int net_transmit_connection(GIOStream *connection, const char *data, int len);
 
-/* Get IP addresses for host, both IPv4 and IPv6 if possible.
-   If ip->family is 0, the address wasn't found.
-   Returns 0 = ok, others = error code for net_gethosterror() */
-int net_gethostbyname(const char *addr, IPADDR *ip4, IPADDR *ip6);
-/* Get name for host, *name should be g_free()'d unless it's NULL.
-   Return values are the same as with net_gethostbyname() */
-int net_gethostbyaddr(IPADDR *ip, char **name);
-/* get error of net_gethostname() */
-const char *net_gethosterror(int error);
+/* Get IP addresses for host, both IPv4 and IPv6 if possible. */
+RESOLVED_IP_REC *net_gethostbyname(const char *addr, GResolverNameLookupFlags flags);
+int net_gethostbyname_first_ips(const char *addr, GResolverNameLookupFlags flags, IPADDR *ip4,
+                                IPADDR *ip6);
 /* return TRUE if host lookup failed because it didn't exist (ie. not
    some error with name server) */
 int net_hosterror_notfound(int error);
@@ -89,5 +98,8 @@ char *net_getservbyport(int port);
 
 int is_ipv4_address(const char *host);
 int is_ipv6_address(const char *host);
+
+void resolved_ip_ref(RESOLVED_IP_REC *iprec);
+int resolved_ip_unref(RESOLVED_IP_REC *iprec);
 
 #endif

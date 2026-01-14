@@ -21,10 +21,8 @@ unsigned int no_reconnect:1; /* Don't reconnect to server */
 NET_SENDBUF_REC *handle;
 int readtag; /* input tag */
 
-/* for net_gethostbyname_return() */
-GIOChannel *connect_pipe[2];
+GCancellable *connect_cancellable;
 int connect_tag;
-int connect_pid;
 
 RAWLOG_REC *rawlog;
 GHashTable *module_data;

@@ -9,6 +9,7 @@ int refcount;
 char *proxy;
 int proxy_port;
 char *proxy_string, *proxy_string_after, *proxy_password;
+GProxyResolver *proxy_resolver;
 
 unsigned short family; /* 0 = don't care, AF_INET or AF_INET6 */
 unsigned short chosen_family; /* family actually chosen during name resolution */
@@ -33,6 +34,7 @@ char *tls_capath;
 char *tls_ciphers;
 char *tls_pinned_cert;
 char *tls_pinned_pubkey;
+GSocketConnectable *tls_identity;
 
 GIOChannel *connect_handle; /* connect using this handle */
 
@@ -45,6 +47,8 @@ unsigned int unix_socket:1; /* Connect using named unix socket */
 unsigned int use_tls:1; /* this connection uses TLS */
 unsigned int tls_verify:1;
 unsigned int no_connect:1; /* don't connect() at all, it's done by plugin */
-unsigned short last_failed_family; /* #641: if we failed to connect to ipv6, try ipv4 and vice versa */
+int last_connected;
+int last_failed;
+RESOLVED_IP_REC *resolved_host;
 char *channels;
 char *away_reason;
