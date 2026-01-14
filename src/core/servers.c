@@ -276,11 +276,29 @@ static void server_real_connect_event(GSocketClient *client, GSocketClientEvent 
 		    g_network_address_new(server->connrec->address, server->connrec->port);
 		g_tls_client_connection_set_server_identity((GTlsClientConnection *) connection,
 		                                            server->connrec->tls_identity);
+		if (server->connrec->tls_cert != NULL) {
+			GTlsCertificate *cert;
+			GError *err;
+			char *scert;
+			scert = convert_home(server->connrec->tls_cert);
+			err = NULL;
+			cert = g_tls_certificate_new_from_file(scert, &err);
+			if (err != NULL) {
+				g_warning("Tls Certificate: %s", err->message);
+			} else {
+				g_tls_connection_set_certificate((GTlsConnection *) connection,
+				                                 cert);
+			}
+			if (cert != NULL) {
+				g_object_unref(cert);
+			}
+			g_free(scert);
+		}
 	}
 }
 
-static void server_real_connect(SERVER_REC *server, IPADDR *ip,
-				const char *unix_socket)
+static void server_real_connect(SERVER_REC *server, IPADDR *ip, const char *unix_socket,
+                                const char *host)
 {
 	/*
 	GIOChannel *handle;
@@ -292,7 +310,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 	char ipaddr[MAX_IP_LEN];
 	int port = 0;
 
-	g_return_if_fail(ip != NULL || unix_socket != NULL);
+	g_return_if_fail(ip != NULL || unix_socket != NULL || host != NULL);
 
 	if (ip != NULL) {
 		server->connrec->chosen_family = ip->family;
@@ -300,22 +318,35 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		server->connrec->ipaddr = g_strdup(ipaddr);
 	}
 
-	signal_emit("server connecting", 2, server, ip);
+	signal_emit("server connecting", 3, server, ip, (char *) ipaddr ? ipaddr : host);
 
 	if (server->connrec->no_connect)
 		return;
 
 	client = g_socket_client_new();
 	// server->connect_cancellable = g_cancellable_new();
-	if (ip != NULL) {
+	if (ip != NULL || host != NULL) {
 		// own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
-		port = server->connrec->proxy != NULL ?
-			server->connrec->proxy_port : server->connrec->port;
+		port = /* server->connrec->proxy != NULL ?
+		          server->connrec->proxy_port : */
+		    server->connrec->port;
 		if (server->connrec->use_tls)
 			g_socket_client_set_tls(client, TRUE);
+		if (server->connrec->proxy != NULL) {
+			GProxyResolver *res;
+			char *addr;
+			addr = g_strdup_printf("socks://%s:%d", server->connrec->proxy,
+			                       server->connrec->proxy_port);
+			res = g_simple_proxy_resolver_new(addr, NULL);
+			// g_free(addr); // TODO: free
+			g_warning("configuring %s as proxy", addr);
+			g_socket_client_set_proxy_resolver(client, res);
+			g_socket_client_set_enable_proxy(client, TRUE);
+			server->connrec->proxy_resolver = res;
+		}
 		g_signal_connect(client, "event", G_CALLBACK(server_real_connect_event), server);
 		g_socket_client_connect_to_host_async(
-		    client, ipaddr, port, server->connect_cancellable,
+		    client, ip ? ipaddr : host, port, server->connect_cancellable,
 		    (GAsyncReadyCallback) server_real_connect_connected, server);
 		return;
 	} else {
@@ -382,6 +413,11 @@ static void server_connect_use_resolved(SERVER_REC *server)
 	const char *errormsg;
 	RESOLVED_IP_REC *iprec = server->connrec->resolved_host;
 
+	if (server->connrec->proxy != NULL) {
+		server_real_connect(server, NULL, NULL, server->connrec->address);
+		errormsg = NULL;
+		return;
+	}
 	if (iprec->error != NULL) {
 		/* error */
 		ip = NULL;
@@ -420,7 +456,7 @@ static void server_connect_use_resolved(SERVER_REC *server)
 
 	if (ip != NULL) {
 		/* host lookup ok */
-		server_real_connect(server, ip, NULL);
+		server_real_connect(server, ip, NULL, NULL);
 		errormsg = NULL;
 	} else {
 		/* TODO */
@@ -476,8 +512,12 @@ static int server_start_connect_resolve(SERVER_REC *server)
 	const char *connect_address;
 	GResolverNameLookupFlags net_gethostbyname_flags;
 
+	if (server->connrec->proxy != NULL)
+		return TRUE;
+
 	connect_address =
-	    server->connrec->proxy != NULL ? server->connrec->proxy : server->connrec->address;
+	    /* server->connrec->proxy != NULL ? server->connrec->proxy : */ server->connrec
+	        ->address;
 	net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT;
 	if (server->connrec->family == AF_INET) {
 		net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY;
@@ -558,7 +598,7 @@ int server_start_connect(SERVER_REC *server)
 		server_connect_finished(server);
 	} else if (server->connrec->unix_socket) {
 		/* connect with unix socket */
-		server_real_connect(server, NULL, server->connrec->address);
+		server_real_connect(server, NULL, server->connrec->address, NULL);
 	} else {
 		int already_resolved;
 		/* resolve host name */
@@ -769,6 +809,8 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->proxy_string);
 	g_free_not_null(conn->proxy_string_after);
 	g_free_not_null(conn->proxy_password);
+	if (conn->proxy_resolver != NULL)
+		g_object_unref(conn->proxy_resolver);
 
 	if (conn->tls_identity != NULL)
 		g_object_unref(conn->tls_identity);
