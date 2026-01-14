@@ -254,6 +254,14 @@ void net_disconnect(GIOChannel *handle)
 	g_io_channel_unref(handle);
 }
 
+void net_disconnect_connection(GSocketConnection *connection)
+{
+	g_return_if_fail(connection != NULL);
+
+	g_io_stream_close((GIOStream *) connection, NULL, NULL);
+	g_object_unref(connection);
+}
+
 /* Listen for connections on a socket. if `my_ip' is NULL, listen in any
    address. */
 GIOChannel *net_listen(IPADDR *my_ip, int *port)
@@ -349,6 +357,59 @@ int net_receive(GIOChannel *handle, char *buf, int len)
 		return -1; /* disconnected */
 
 	return ret;
+}
+
+int net_receive_connection(GIOStream *connection, char *buf, int len)
+{
+	GInputStream *iin;
+	GPollableInputStream *in;
+	GError *error;
+	gsize ret;
+
+	g_return_val_if_fail(connection != NULL, -1);
+	g_return_val_if_fail(buf != NULL, -1);
+
+	error = NULL;
+	iin = g_io_stream_get_input_stream(connection);
+	in = G_POLLABLE_INPUT_STREAM(g_io_stream_get_input_stream(connection));
+
+	ret = g_pollable_input_stream_read_nonblocking(in, buf, len, NULL, &error);
+	if (error == NULL) {
+		if (ret == 0) {
+			g_warning("net_receive returned has_pending:%d, is_closed:%d, connection "
+			          "is_closed:%d, %lu [%s]",
+			          g_input_stream_has_pending(iin), g_input_stream_is_closed(iin),
+			          g_io_stream_is_closed(connection), ret, buf);
+			return -1;
+		}
+		return ret;
+	} else if (error->code == G_IO_ERROR_WOULD_BLOCK) {
+		// g_warning("net_receive would block: %s, is_connected:%d", error->message,
+		// g_socket_connection_is_connected((GSocketConnection *)connection));
+		return 0;
+	} else {
+		g_warning("net_receive failed: %d:%s", error->code, error->message);
+		return -1;
+	}
+}
+
+int net_transmit_connection(GIOStream *connection, const char *data, int len)
+{
+	GPollableOutputStream *out;
+	gsize ret;
+	GError *err = NULL;
+
+	g_return_val_if_fail(connection != NULL, -1);
+	g_return_val_if_fail(data != NULL, -1);
+
+	out = G_POLLABLE_OUTPUT_STREAM(g_io_stream_get_output_stream(connection));
+	ret = g_pollable_output_stream_write_nonblocking(out, data, len, NULL, &err);
+	if (err == NULL || err->code == G_IO_ERROR_WOULD_BLOCK) {
+		return ret;
+	} else {
+		g_warning("net_transmit: %d:%s", err->code, err->message);
+		return -1;
+	}
 }
 
 /* Transmit data, return number of bytes sent, -1 = error */

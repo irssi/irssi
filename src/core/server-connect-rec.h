@@ -33,6 +33,7 @@ char *tls_capath;
 char *tls_ciphers;
 char *tls_pinned_cert;
 char *tls_pinned_pubkey;
+GSocketConnectable *tls_identity;
 
 GIOChannel *connect_handle; /* connect using this handle */
 

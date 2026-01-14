@@ -8,19 +8,23 @@
 
 struct _NET_SENDBUF_REC {
         GIOChannel *handle;
-        LINEBUF_REC *readbuffer; /* receive buffer */
+	GSocketConnection *connection;
+	LINEBUF_REC *readbuffer; /* receive buffer */
 
-        int send_tag;
-        int bufsize;
-        int bufpos;
-        char *buffer; /* Buffer is NULL until it's actually needed. */
-        int def_bufsize;
-        unsigned int dead:1;
+	int send_tag;
+	int bufsize;
+	int bufpos;
+	char *buffer; /* Buffer is NULL until it's actually needed. */
+	int def_bufsize;
+	unsigned int dead : 1;
 };
 
 /* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
    is used */
 NET_SENDBUF_REC *net_sendbuffer_create(GIOChannel *handle, int bufsize);
+/* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
+   is used */
+NET_SENDBUF_REC *net_sendbuffer_create_connection(GSocketConnection *connection, int bufsize);
 /* Destroy the buffer. `close' specifies if socket handle should be closed. */
 void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close);
 

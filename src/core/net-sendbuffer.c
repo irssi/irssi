@@ -41,12 +41,34 @@ NET_SENDBUF_REC *net_sendbuffer_create(GIOChannel *handle, int bufsize)
 	return rec;
 }
 
+NET_SENDBUF_REC *net_sendbuffer_create_connection(GSocketConnection *connection, int bufsize)
+{
+	NET_SENDBUF_REC *rec;
+
+	g_return_val_if_fail(connection != NULL, NULL);
+
+	rec = g_new0(NET_SENDBUF_REC, 1);
+	rec->send_tag = -1;
+	rec->connection = connection;
+	rec->bufsize = bufsize > 0 ? bufsize : DEFAULT_BUFFER_SIZE;
+	rec->def_bufsize = rec->bufsize;
+
+	return rec;
+}
+
 /* Destroy the buffer. `close' specifies if socket handle should be closed. */
 void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close)
 {
         if (rec->send_tag != -1) g_source_remove(rec->send_tag);
-	if (close) net_disconnect(rec->handle);
+	if (close) {
+		if (rec->handle != NULL)
+			net_disconnect(rec->handle);
+		else
+			net_disconnect_connection(rec->connection);
+	}
 	if (rec->readbuffer != NULL) line_split_free(rec->readbuffer);
+	if (rec->connection != NULL)
+		g_object_unref(rec->connection);
 	g_free_not_null(rec->buffer);
 	g_free(rec);
 }
@@ -83,6 +105,14 @@ static void sig_sendbuffer(NET_SENDBUF_REC *rec)
 	rec->send_tag = -1;
 }
 
+static gboolean sig_sendbuffer_source(GObject *pollable_stream, NET_SENDBUF_REC *rec)
+{
+	g_warning("sig_sendbuffer_source");
+
+	sig_sendbuffer(rec);
+	return FALSE;
+}
+
 /* Add `data' to transmit buffer - return FALSE if buffer is full */
 static int buffer_add(NET_SENDBUF_REC *rec, const void *data, int size)
 {
@@ -112,7 +142,7 @@ static int buffer_add(NET_SENDBUF_REC *rec, const void *data, int size)
    occurred. */
 int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 {
-	int ret;
+	int ret = 0;
 
 	g_return_val_if_fail(rec != NULL, -1);
 	g_return_val_if_fail(data != NULL, -1);
@@ -120,7 +150,10 @@ int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 
 	if (rec->buffer == NULL || rec->bufpos == 0) {
                 /* nothing in buffer - transmit immediately */
-		ret = net_transmit(rec->handle, data, size);
+		if (rec->handle != NULL)
+			ret = net_transmit(rec->handle, data, size);
+		else if (rec->connection != NULL)
+			ret = net_transmit_connection((GIOStream *) rec->connection, data, size);
 		if (ret < 0) return -1;
 		size -= ret;
 		data = ((const char *) data) + ret;
@@ -131,8 +164,21 @@ int net_sendbuffer_send(NET_SENDBUF_REC *rec, const void *data, int size)
 
 	/* everything couldn't be sent. */
 	if (rec->send_tag == -1) {
-		rec->send_tag =
-		    i_input_add(rec->handle, I_INPUT_WRITE, (GInputFunction) sig_sendbuffer, rec);
+		if (rec->handle != NULL) {
+			rec->send_tag = i_input_add(rec->handle, I_INPUT_WRITE,
+			                            (GInputFunction) sig_sendbuffer, rec);
+		} else if (rec->connection != NULL) {
+			GOutputStream *out;
+			GSource *source;
+
+			out = g_io_stream_get_output_stream((GIOStream *) rec->connection);
+			source = g_pollable_output_stream_create_source(
+			    G_POLLABLE_OUTPUT_STREAM(out), NULL);
+			g_source_set_callback(source, G_SOURCE_FUNC(sig_sendbuffer_source), rec,
+			                      NULL);
+			rec->send_tag = g_source_attach(source, NULL);
+			g_warning("send_tag: %d", rec->send_tag);
+		}
 	}
 
 	return buffer_add(rec, data, size) ? 0 : -1;
@@ -143,8 +189,13 @@ int net_sendbuffer_receive_line(NET_SENDBUF_REC *rec, char **str, int read_socke
 	char tmpbuf[2048];
 	int recvlen = 0;
 
-	if (read_socket)
-		recvlen = net_receive(rec->handle, tmpbuf, sizeof(tmpbuf));
+	if (read_socket) {
+		if (rec->handle != NULL)
+			recvlen = net_receive(rec->handle, tmpbuf, sizeof(tmpbuf));
+		else if (rec->connection != NULL)
+			recvlen = net_receive_connection((GIOStream *) rec->connection, tmpbuf,
+			                                 sizeof(tmpbuf));
+	}
 
 	return line_split(tmpbuf, recvlen, str, &rec->readbuffer);
 }

@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include <irssi/src/core/net-sendbuffer.h>
 #include <irssi/src/core/network.h>
 
 #include <sys/select.h>
@@ -32,6 +33,7 @@
 typedef struct {
 	time_t created;
 	GIOChannel *handle;
+	GIOStream *stream;
 	int tag;
 } NET_DISCONNECT_REC;
 
@@ -41,10 +43,14 @@ static int timeout_tag;
 
 static void net_disconnect_remove(NET_DISCONNECT_REC *rec)
 {
+	g_warning("disconnect finished");
 	disconnects = g_slist_remove(disconnects, rec);
 
 	g_source_remove(rec->tag);
-        net_disconnect(rec->handle);
+	if (rec->handle != NULL)
+		net_disconnect(rec->handle);
+	else
+		net_disconnect_connection((GSocketConnection *) rec->stream);
 	g_free(rec);
 }
 
@@ -64,6 +70,35 @@ static void sig_disconnect(NET_DISCONNECT_REC *rec)
 		}
                 count++;
 	} while (ret == sizeof(buf) && count < 18);
+}
+
+// static gboolean sig_disconnect_source(GObject *pollable_stream, NET_DISCONNECT_REC *rec)
+static gboolean sig_disconnect_source(GSocket *socket, GIOCondition cond, NET_DISCONNECT_REC *rec)
+{
+	char buf[512];
+	int count, ret;
+
+	g_warning("sig_disconnect_source, condition: %d", cond);
+
+	if (cond & (G_IO_ERR | G_IO_HUP)) {
+		net_disconnect_remove(rec);
+		return FALSE;
+	}
+
+	/* check if there's any data waiting in socket. read max. 9kB so
+	   if server just keeps sending us stuff we won't get stuck */
+	count = 0;
+	do {
+		ret = net_receive_connection(rec->stream, buf, sizeof(buf));
+		if (ret == -1) {
+			/* socket was closed */
+			net_disconnect_remove(rec);
+			return FALSE;
+		}
+		count++;
+	} while (ret == sizeof(buf) && count < 18);
+
+	return TRUE;
 }
 
 static int sig_timeout_disconnect(void)
@@ -92,15 +127,32 @@ static int sig_timeout_disconnect(void)
 
 /* Try to let the other side close the connection, if it still isn't
    disconnected after certain amount of time, close it ourself */
-void net_disconnect_later(GIOChannel *handle)
+void net_disconnect_later(NET_SENDBUF_REC *handle)
 {
 	NET_DISCONNECT_REC *rec;
 
 	rec = g_new(NET_DISCONNECT_REC, 1);
 	rec->created = time(NULL);
-	rec->handle = handle;
-	rec->tag = i_input_add(handle, I_INPUT_READ, (GInputFunction) sig_disconnect, rec);
+	if (handle->handle != NULL) {
+		rec->handle = handle->handle;
+		rec->tag =
+		    i_input_add(rec->handle, I_INPUT_READ, (GInputFunction) sig_disconnect, rec);
+	} else if (handle->connection != NULL) {
+		// GInputStream *in;
+		GSocket *socket;
+		GSource *source;
 
+		socket = g_socket_connection_get_socket(handle->connection);
+		source = g_socket_create_source(socket, G_IO_IN | G_IO_HUP, NULL);
+		// in = g_io_stream_get_input_stream((GIOStream *) rec->stream);
+		// source = g_pollable_input_stream_create_source(G_POLLABLE_INPUT_STREAM(in),
+		// NULL);
+		g_source_set_callback(source, G_SOURCE_FUNC(sig_disconnect_source), rec, NULL);
+		rec->stream = (GIOStream *) handle->connection;
+		rec->tag = g_source_attach(source, NULL);
+		g_warning("net_disconnect_rec.tag: %d", rec->tag);
+		// TODO
+	}
 	if (timeout_tag == -1) {
 		timeout_tag = g_timeout_add(10000, (GSourceFunc)
 					    sig_timeout_disconnect, NULL);

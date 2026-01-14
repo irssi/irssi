@@ -26,7 +26,7 @@
 #include <irssi/src/core/net-nonblock.h>
 
 typedef struct {
-	net_gethostbyname_continuation_func cont;
+	NetGethostbynameContinuationFunc cont;
 	void *cont_data;
 } NET_GETHOSTBYNAME_CALLBACK_DATA;
 
@@ -55,7 +55,7 @@ static void net_gethostbyname_callback(GResolver *resolver, GAsyncResult *result
 
 /* nonblocking gethostbyname() */
 GCancellable *net_gethostbyname_nonblock(const char *addr, GResolverNameLookupFlags flags,
-                                         net_gethostbyname_continuation_func cont, void *cont_data)
+                                         NetGethostbynameContinuationFunc cont, void *cont_data)
 {
 	GResolver *resolver;
 	GCancellable *cancellable;
