@@ -13,10 +13,15 @@ rootinc = include_directories('.')
 dep = []
 textui_dep = []
 need_dl_cross_link = false
+need_dl_cross_link_main = false
+dl_cross_irssi_main = []
 # The Android environment requires that all modules are linked to each other.
 # See https://github.com/android/ndk/issues/201
 if host_machine.system() == 'android'
   need_dl_cross_link = true
+elif host_machine.system() == 'cygwin'
+  need_dl_cross_link = true
+  need_dl_cross_link_main = true
 endif
 
 includedir          = get_option('includedir')
