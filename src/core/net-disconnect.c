@@ -19,6 +19,7 @@
 */
 
 #include "module.h"
+#include <irssi/src/core/net-sendbuffer.h>
 #include <irssi/src/core/network.h>
 
 #include <sys/select.h>
@@ -31,7 +32,7 @@
 
 typedef struct {
 	time_t created;
-	GIOChannel *handle;
+	GIOChannel *channel;
 	int tag;
 } NET_DISCONNECT_REC;
 
@@ -39,12 +40,18 @@ static GSList *disconnects;
 
 static int timeout_tag;
 
+void net_disconnect_any(NET_DISCONNECT_REC *rec)
+{
+	if (rec->channel != NULL)
+		net_disconnect_channel(rec->channel);
+}
+
 static void net_disconnect_remove(NET_DISCONNECT_REC *rec)
 {
 	disconnects = g_slist_remove(disconnects, rec);
 
 	g_source_remove(rec->tag);
-        net_disconnect(rec->handle);
+	net_disconnect_any(rec);
 	g_free(rec);
 }
 
@@ -57,7 +64,7 @@ static void sig_disconnect(NET_DISCONNECT_REC *rec)
 	   if server just keeps sending us stuff we won't get stuck */
 	count = 0;
 	do {
-		ret = net_receive(rec->handle, buf, sizeof(buf));
+		ret = net_receive_channel(rec->channel, buf, sizeof(buf));
 		if (ret == -1) {
 			/* socket was closed */
 			net_disconnect_remove(rec);
@@ -92,15 +99,17 @@ static int sig_timeout_disconnect(void)
 
 /* Try to let the other side close the connection, if it still isn't
    disconnected after certain amount of time, close it ourself */
-void net_disconnect_later(GIOChannel *handle)
+void net_disconnect_later(NET_SENDBUF_REC *handle)
 {
 	NET_DISCONNECT_REC *rec;
 
 	rec = g_new(NET_DISCONNECT_REC, 1);
 	rec->created = time(NULL);
-	rec->handle = handle;
-	rec->tag = i_input_add(handle, I_INPUT_READ, (GInputFunction) sig_disconnect, rec);
-
+	if (handle->channel != NULL) {
+		rec->channel = handle->channel;
+		rec->tag =
+		    i_input_add(rec->channel, I_INPUT_READ, (GInputFunction) sig_disconnect, rec);
+	}
 	if (timeout_tag == -1) {
 		timeout_tag = g_timeout_add(10000, (GSourceFunc)
 					    sig_timeout_disconnect, NULL);
@@ -136,15 +145,16 @@ void net_disconnect_deinit(void)
 			continue;
 		}
 
-                fd = g_io_channel_unix_get_fd(rec->handle);
-		FD_ZERO(&set);
-		FD_SET(fd, &set);
-		tv.tv_sec = first ? 0 : max-now;
-		tv.tv_usec = first ? 100000 : 0;
-		if (select(fd+1, &set, NULL, NULL, &tv) > 0 &&
-		    FD_ISSET(fd, &set)) {
-			/* data coming .. check if we can close the handle */
-			sig_disconnect(rec);
+		if (rec->channel != NULL) {
+			fd = g_io_channel_unix_get_fd(rec->channel);
+			FD_ZERO(&set);
+			FD_SET(fd, &set);
+			tv.tv_sec = first ? 0 : max - now;
+			tv.tv_usec = first ? 100000 : 0;
+			if (select(fd + 1, &set, NULL, NULL, &tv) > 0 && FD_ISSET(fd, &set)) {
+				/* data coming .. check if we can close the handle */
+				sig_disconnect(rec);
+			}
 		} else if (first) {
 			/* Display the text when we have already waited
 			   for a while */

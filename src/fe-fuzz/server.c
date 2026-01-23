@@ -83,7 +83,7 @@ void event_connected(IRC_SERVER_REC *server, const char *data, const char *from)
 	server->real_connect_time = time(NULL);
 
 	/* let the queue send now that we are identified */
-	g_get_current_time(&server->wait_cmd);
+	server->wait_cmd = g_get_real_time();
 
 	if (server->connrec->usermode != NULL) {
 		/* Send the user mode, before the autosendcmd.
@@ -124,7 +124,7 @@ void test_server() {
 	server->session_reconnect = TRUE;
 	g_free(server->tag);
 	server->tag = g_strdup("testserver");
-	server->handle = net_sendbuffer_create(handle, 0);
+	server->handle = net_sendbuffer_create_channel(handle, 0);
 
 	/* we skip some initialisations that would try to send data */
 	/* irc_servers_deinit(); */
