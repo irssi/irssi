@@ -337,29 +337,29 @@ void dcc_chat_input(CHAT_DCC_REC *dcc)
 static void dcc_chat_listen(CHAT_DCC_REC *dcc)
 {
 	IPADDR ip;
-        GIOChannel *handle;
+	GIOChannel *channel;
 	int port;
 
 	g_return_if_fail(IS_DCC_CHAT(dcc));
 
 	/* accept connection */
-	handle = net_accept(dcc->handle, &ip, &port);
-	if (handle == NULL)
+	channel = net_accept_channel(dcc->channel, &ip, &port);
+	if (channel == NULL)
 		return;
 
 	/* TODO: add paranoia check - see dcc-files.c */
 
-	net_disconnect(dcc->handle);
+	net_disconnect_channel(dcc->channel);
 	g_source_remove(dcc->tagconn);
 	dcc->tagconn = -1;
 
 	dcc->starttime = time(NULL);
-	dcc->handle = handle;
-	dcc->sendbuf = net_sendbuffer_create(handle, 0);
+	dcc->channel = channel;
+	dcc->sendbuf = net_sendbuffer_create_channel(channel, 0);
 	memcpy(&dcc->addr, &ip, sizeof(IPADDR));
 	net_ip2host(&dcc->addr, dcc->addrstr);
 	dcc->port = port;
-	dcc->tagread = i_input_add(handle, I_INPUT_READ, (GInputFunction) dcc_chat_input, dcc);
+	dcc->tagread = i_input_add(channel, I_INPUT_READ, (GInputFunction) dcc_chat_input, dcc);
 
 	signal_emit("dcc connected", 1, dcc);
 }
@@ -369,7 +369,7 @@ static void sig_chat_connected(CHAT_DCC_REC *dcc)
 {
 	g_return_if_fail(IS_DCC_CHAT(dcc));
 
-	if (net_geterror(dcc->handle) != 0) {
+	if (net_geterror_channel(dcc->channel) != 0) {
 		/* error connecting */
 		signal_emit("dcc error connect", 1, dcc);
 		dcc_destroy(DCC(dcc));
@@ -381,8 +381,9 @@ static void sig_chat_connected(CHAT_DCC_REC *dcc)
 	dcc->tagconn = -1;
 
 	dcc->starttime = time(NULL);
-	dcc->sendbuf = net_sendbuffer_create(dcc->handle, 0);
-	dcc->tagread = i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_chat_input, dcc);
+	dcc->sendbuf = net_sendbuffer_create_channel(dcc->channel, 0);
+	dcc->tagread =
+	    i_input_add(dcc->channel, I_INPUT_READ, (GInputFunction) dcc_chat_input, dcc);
 
 	signal_emit("dcc connected", 1, dcc);
 }
@@ -391,15 +392,14 @@ static void dcc_chat_connect(CHAT_DCC_REC *dcc)
 {
 	g_return_if_fail(IS_DCC_CHAT(dcc));
 
-	if (dcc->addrstr[0] == '\0' ||
-	    dcc->starttime != 0 || dcc->handle != NULL) {
+	if (dcc->addrstr[0] == '\0' || dcc->starttime != 0 || dcc->channel != NULL) {
 		/* already sent a chat request / already chatting */
 		return;
 	}
 
-	dcc->handle = dcc_connect_ip(&dcc->addr, dcc->port);
-	if (dcc->handle != NULL) {
-		dcc->tagconn = i_input_add(dcc->handle, I_INPUT_WRITE | I_INPUT_READ,
+	dcc->channel = dcc_connect_ip_channel(&dcc->addr, dcc->port);
+	if (dcc->channel != NULL) {
+		dcc->tagconn = i_input_add(dcc->channel, I_INPUT_WRITE | I_INPUT_READ,
 		                           (GInputFunction) sig_chat_connected, dcc);
 	} else {
 		/* error connecting */
@@ -412,25 +412,23 @@ static void dcc_chat_passive(CHAT_DCC_REC *dcc)
 {
 	IPADDR own_ip;
 	int port;
-	GIOChannel *handle;
+	GIOChannel *channel;
 	char host[MAX_IP_LEN];
 
 	g_return_if_fail(IS_DCC_CHAT(dcc));
 
-	if (dcc->addrstr[0] == '\0' ||
-	    dcc->starttime != 0 || dcc->handle != NULL) {
+	if (dcc->addrstr[0] == '\0' || dcc->starttime != 0 || dcc->channel != NULL) {
 		/* already sent a chat request / already chatting */
 		return;
 	}
 
-	handle = dcc_listen(net_sendbuffer_handle(dcc->server->handle),
-			    &own_ip, &port);
-	if (handle == NULL)
+	channel = dcc_listen_channel(net_sendbuffer_channel(dcc->server->handle), &own_ip, &port);
+	if (channel == NULL)
 		cmd_return_error(CMDERR_ERRNO);
 
-	dcc->handle = handle;
+	dcc->channel = channel;
 	dcc->tagconn =
-	    i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_chat_listen, dcc);
+	    i_input_add(dcc->channel, I_INPUT_READ, (GInputFunction) dcc_chat_listen, dcc);
 
 	/* Let's send the reply to the other client! */
 	dcc_ip2str(&own_ip, host);
@@ -445,7 +443,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 	void *free_arg;
 	CHAT_DCC_REC *dcc;
 	IPADDR own_ip;
-	GIOChannel *handle;
+	GIOChannel *channel;
 	GHashTable *optlist;
 	int p_id;
 	char *nick, host[MAX_IP_LEN];
@@ -470,7 +468,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 	}
 
 	dcc = dcc_chat_find_id(nick);
-	if (dcc != NULL && dcc_is_waiting_user(dcc)) {
+	if (dcc != NULL && dcc_is_waiting_user_channel(dcc)) {
 		if (!dcc_is_passive(dcc)) {
 			/* found from dcc chat requests,
 			   we're the connecting side */
@@ -483,8 +481,7 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 		return;
 	}
 
-	if (dcc != NULL && dcc_is_listening(dcc) &&
-	    dcc->server == server) {
+	if (dcc != NULL && dcc_is_listening_channel(dcc) && dcc->server == server) {
 		/* sending request again even while old request is
 		   still waiting, remove it. */
 		dcc_destroy(DCC(dcc));
@@ -502,14 +499,14 @@ static void cmd_dcc_chat(const char *data, IRC_SERVER_REC *server)
 
 	if (g_hash_table_lookup(optlist, "passive") == NULL) {
 		/* Standard DCC CHAT... let's listen for incoming connections */
-		handle = dcc_listen(net_sendbuffer_handle(server->handle),
-				    &own_ip, &port);
-		if (handle == NULL)
+		channel =
+		    dcc_listen_channel(net_sendbuffer_channel(server->handle), &own_ip, &port);
+		if (channel == NULL)
 			cmd_param_error(CMDERR_ERRNO);
 
-		dcc->handle = handle;
+		dcc->channel = channel;
 		dcc->tagconn =
-		    i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_chat_listen, dcc);
+		    i_input_add(dcc->channel, I_INPUT_READ, (GInputFunction) dcc_chat_listen, dcc);
 
 		/* send the chat request */
 		signal_emit("dcc request send", 1, dcc);
@@ -645,7 +642,7 @@ static void ctcp_msg_dcc_chat(IRC_SERVER_REC *server, const char *data,
 
 	dcc = DCC_CHAT(dcc_find_request(DCC_CHAT_TYPE, nick, NULL));
 	if (dcc != NULL) {
-		if (dcc_is_listening(dcc)) {
+		if (dcc_is_listening_channel(dcc)) {
 			/* we requested dcc chat, they requested
 			   dcc chat from us .. allow it. */
 			dcc_destroy(DCC(dcc));

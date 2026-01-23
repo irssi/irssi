@@ -143,13 +143,13 @@ void server_connect_finished(SERVER_REC *server)
 	signal_emit("server connected", 1, server);
 }
 
-static void server_connect_callback_init(SERVER_REC *server, GIOChannel *handle)
+static void server_connect_callback_init_channel(SERVER_REC *server, GIOChannel *channel)
 {
 	int error;
 
 	g_return_if_fail(IS_SERVER(server));
 
-	error = net_geterror(handle);
+	error = net_geterror_channel(channel);
 	if (error != 0) {
 		server->connection_lost = TRUE;
 		server->connrec->last_failed = server->connrec->last_connected;
@@ -164,13 +164,13 @@ static void server_connect_callback_init(SERVER_REC *server, GIOChannel *handle)
 	server_connect_finished(server);
 }
 
-static void server_connect_callback_init_ssl(SERVER_REC *server, GIOChannel *handle)
+static void server_connect_callback_init_ssl_channel(SERVER_REC *server, GIOChannel *channel)
 {
 	int error;
 
 	g_return_if_fail(IS_SERVER(server));
 
-	error = irssi_ssl_handshake(handle);
+	error = irssi_ssl_handshake_channel(channel);
 	if (error == -1) {
 		server->connection_lost = TRUE;
 		server->connrec->last_failed = server->connrec->last_connected;
@@ -181,8 +181,8 @@ static void server_connect_callback_init_ssl(SERVER_REC *server, GIOChannel *han
 		if (server->connect_tag != -1)
 			g_source_remove(server->connect_tag);
 		server->connect_tag =
-		    i_input_add(handle, error == 1 ? I_INPUT_READ : I_INPUT_WRITE,
-		                (GInputFunction) server_connect_callback_init_ssl, server);
+		    i_input_add(channel, error == 1 ? I_INPUT_READ : I_INPUT_WRITE,
+		                (GInputFunction) server_connect_callback_init_ssl_channel, server);
 		return;
 	}
 
@@ -195,17 +195,17 @@ static void server_connect_callback_init_ssl(SERVER_REC *server, GIOChannel *han
 	server_connect_finished(server);
 }
 
-static void server_real_connect(SERVER_REC *server, IPADDR *ip,
-				const char *unix_socket)
+static void server_real_connect(SERVER_REC *server, IPADDR *ip, const char *unix_socket,
+                                const char *host)
 {
-	GIOChannel *handle;
-	IPADDR *own_ip = NULL;
+	GIOChannel *channel;
 	const char *errmsg;
 	char *errmsg2;
+	IPADDR *own_ip = NULL;
 	char ipaddr[MAX_IP_LEN];
 	int port = 0;
 
-	g_return_if_fail(ip != NULL || unix_socket != NULL);
+	g_return_if_fail(ip != NULL || unix_socket != NULL || host != NULL);
 
 	if (ip != NULL) {
 		server->connrec->chosen_family = ip->family;
@@ -213,7 +213,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		server->connrec->ipaddr = g_strdup(ipaddr);
 	}
 
-	signal_emit("server connecting", 2, server, ip);
+	signal_emit("server connecting", 3, server, ip, ip != NULL ? ipaddr : host);
 
 	if (server->connrec->no_connect)
 		return;
@@ -222,23 +222,23 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 		own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
 		port = server->connrec->proxy != NULL ?
 			server->connrec->proxy_port : server->connrec->port;
-		handle = net_connect_ip(ip, port, own_ip);
+		channel = net_connect_ip_channel(ip, port, own_ip);
 	} else {
-		handle = net_connect_unix(unix_socket);
+		channel = net_connect_unix_channel(unix_socket);
 	}
 
-	if (server->connrec->use_tls && handle != NULL) {
-		server->handle = net_sendbuffer_create(handle, 0);
-		handle = net_start_ssl(server);
-		if (handle == NULL) {
+	if (server->connrec->use_tls && channel != NULL) {
+		server->handle = net_sendbuffer_create_channel(channel, 0);
+		channel = net_start_ssl_channel(server);
+		if (channel == NULL) {
 			net_sendbuffer_destroy(server->handle, TRUE);
 			server->handle = NULL;
 		} else {
-			server->handle->handle = handle;
+			server->handle->channel = channel;
 		}
 	}
 
-	if (handle == NULL) {
+	if (channel == NULL) {
 		/* failed */
 		errmsg = g_strerror(errno);
 		errmsg2 = NULL;
@@ -262,13 +262,13 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 	} else {
 		server->connrec->last_failed = 0;
 		if (!server->connrec->use_tls)
-			server->handle = net_sendbuffer_create(handle, 0);
+			server->handle = net_sendbuffer_create_channel(channel, 0);
 		if (server->connrec->use_tls)
-			server_connect_callback_init_ssl(server, handle);
+			server_connect_callback_init_ssl_channel(server, channel);
 		else
-			server->connect_tag =
-			    i_input_add(handle, I_INPUT_WRITE | I_INPUT_READ,
-			                (GInputFunction) server_connect_callback_init, server);
+			server->connect_tag = i_input_add(
+			    channel, I_INPUT_WRITE | I_INPUT_READ,
+			    (GInputFunction) server_connect_callback_init_channel, server);
 	}
 }
 
@@ -318,7 +318,7 @@ static void server_connect_use_resolved(SERVER_REC *server)
 
 	if (ip != NULL) {
 		/* host lookup ok */
-		server_real_connect(server, ip, NULL);
+		server_real_connect(server, ip, NULL, NULL);
 		errormsg = NULL;
 	} else {
 		if (iprec->error->code == G_RESOLVER_ERROR_NOT_FOUND) {
@@ -441,16 +441,16 @@ int server_start_connect(SERVER_REC *server)
 
 	server->rawlog = rawlog_create();
 
-	if (server->connrec->connect_handle != NULL) {
+	if (server->connrec->connect_channel != NULL) {
 		/* already connected */
-		GIOChannel *handle = server->connrec->connect_handle;
+		GIOChannel *channel = server->connrec->connect_channel;
 
-		server->connrec->connect_handle = NULL;
-		server->handle = net_sendbuffer_create(handle, 0);
+		server->connrec->connect_channel = NULL;
+		server->handle = net_sendbuffer_create_channel(channel, 0);
 		server_connect_finished(server);
 	} else if (server->connrec->unix_socket) {
 		/* connect with unix socket */
-		server_real_connect(server, NULL, server->connrec->address);
+		server_real_connect(server, NULL, server->connrec->address, NULL);
 	} else {
 		int already_resolved;
 		/* resolve host name */
@@ -564,7 +564,7 @@ int server_unref(SERVER_REC *server)
 			/* we were on some channels, try to let the server
 			   disconnect so that our quit message is guaranteed
 			   to get displayed */
-			net_disconnect_later(net_sendbuffer_handle(server->handle));
+			net_disconnect_later(server->handle);
 			net_sendbuffer_destroy(server->handle, FALSE);
 		}
 		server->handle = NULL;
@@ -654,8 +654,8 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 
         CHAT_PROTOCOL(conn)->destroy_server_connect(conn);
 
-	if (conn->connect_handle != NULL)
-		net_disconnect(conn->connect_handle);
+	if (conn->connect_channel != NULL)
+		net_disconnect_channel(conn->connect_channel);
 
 	g_free_not_null(conn->proxy);
 	g_free_not_null(conn->proxy_string);

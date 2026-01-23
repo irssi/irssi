@@ -272,7 +272,7 @@ static void dcc_send_data(SEND_DCC_REC *dcc)
 		return;
 	}
 
-	ret = net_transmit(dcc->handle, buffer, ret);
+	ret = net_transmit_channel(dcc->channel, buffer, ret);
 	if (ret > 0) dcc->transfd += ret;
 	dcc->gotalldata = FALSE;
 
@@ -287,8 +287,8 @@ static void dcc_send_read_size(SEND_DCC_REC *dcc)
 	guint32 bytes;
 	int ret;
 
-	ret = net_receive(dcc->handle, dcc->count_buf+dcc->count_pos,
-			  4-dcc->count_pos);
+	ret =
+	    net_receive_channel(dcc->channel, dcc->count_buf + dcc->count_pos, 4 - dcc->count_pos);
 	if (ret == -1) {
 		dcc_close(DCC(dcc));
 		return;
@@ -313,31 +313,31 @@ static void dcc_send_read_size(SEND_DCC_REC *dcc)
 /* input function: DCC SEND - someone tried to connect to our socket */
 static void dcc_send_connected(SEND_DCC_REC *dcc)
 {
-        GIOChannel *handle;
+	GIOChannel *channel;
 	IPADDR addr;
 	int port;
 
 	/* accept connection */
-	handle = net_accept(dcc->handle, &addr, &port);
-	if (handle == NULL)
+	channel = net_accept_channel(dcc->channel, &addr, &port);
+	if (channel == NULL)
 		return;
 
 	/* TODO: some kind of paranoia check would be nice. it would check
 	   that the host of the nick who we sent the request matches the
 	   address who connected us. */
 
-	net_disconnect(dcc->handle);
+	net_disconnect_channel(dcc->channel);
 	g_source_remove(dcc->tagconn);
         dcc->tagconn = -1;
 
 	dcc->starttime = time(NULL);
-	dcc->handle = handle;
+	dcc->channel = channel;
 	memcpy(&dcc->addr, &addr, sizeof(IPADDR));
 	net_ip2host(&dcc->addr, dcc->addrstr);
 	dcc->port = port;
 
-	dcc->tagread = i_input_add(handle, I_INPUT_READ, (GInputFunction) dcc_send_read_size, dcc);
-	dcc->tagwrite = i_input_add(handle, I_INPUT_WRITE, (GInputFunction) dcc_send_data, dcc);
+	dcc->tagread = i_input_add(channel, I_INPUT_READ, (GInputFunction) dcc_send_read_size, dcc);
+	dcc->tagwrite = i_input_add(channel, I_INPUT_WRITE, (GInputFunction) dcc_send_data, dcc);
 
 	signal_emit("dcc connected", 1, dcc);
 }
@@ -345,15 +345,15 @@ static void dcc_send_connected(SEND_DCC_REC *dcc)
 /* input function: DCC SEND - connect to the receiver (passive protocol) */
 static void dcc_send_connect(SEND_DCC_REC *dcc)
 {
-	dcc->handle = dcc_connect_ip(&dcc->addr, dcc->port);
+	dcc->channel = dcc_connect_ip_channel(&dcc->addr, dcc->port);
 
-	if (dcc->handle != NULL) {
+	if (dcc->channel != NULL) {
 		dcc->starttime = time(NULL);
 
-		dcc->tagread = i_input_add(dcc->handle, I_INPUT_READ,
+		dcc->tagread = i_input_add(dcc->channel, I_INPUT_READ,
 		                           (GInputFunction) dcc_send_read_size, dcc);
 		dcc->tagwrite =
-		    i_input_add(dcc->handle, I_INPUT_WRITE, (GInputFunction) dcc_send_data, dcc);
+		    i_input_add(dcc->channel, I_INPUT_WRITE, (GInputFunction) dcc_send_data, dcc);
 		signal_emit("dcc connected", 1, dcc);
 	} else {
 		/* error connecting */
@@ -372,7 +372,7 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 	int hfile, port = 0;
         SEND_DCC_REC *dcc;
 	IPADDR own_ip;
-	GIOChannel *handle;
+	GIOChannel *channel;
 
 	if (dcc_find_request(DCC_SEND_TYPE, target, fname)) {
 		signal_emit("dcc error send exists", 2, target, fname);
@@ -398,16 +398,16 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 	/* start listening (only if passive == FALSE )*/
 
 	if (passive == FALSE) {
-		handle = dcc_listen(chat != NULL ? chat->handle :
-				    net_sendbuffer_handle(server->handle),
-				    &own_ip, &port);
-		if (handle == NULL) {
+		channel = dcc_listen_channel(chat != NULL ? chat->channel :
+		                                            net_sendbuffer_channel(server->handle),
+		                             &own_ip, &port);
+		if (channel == NULL) {
 			close(hfile);
 			g_warning("dcc_listen() failed: %s", strerror(errno));
 			return FALSE;
 		}
 	} else {
-		handle = NULL;
+		channel = NULL;
 	}
 
 	str = g_path_get_basename(fname);
@@ -425,7 +425,7 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
 		return FALSE;
 	}
 
-	dcc->handle = handle;
+	dcc->channel = channel;
 	dcc->port = port;
 	dcc->size = st.st_size;
 	dcc->fhandle = hfile;
@@ -433,7 +433,7 @@ static int dcc_send_one_file(int queue, const char *target, const char *fname,
         dcc->file_quoted = strchr(fname, ' ') != NULL;
 	if (!passive) {
 		dcc->tagconn =
-		    i_input_add(handle, I_INPUT_READ, (GInputFunction) dcc_send_connected, dcc);
+		    i_input_add(channel, I_INPUT_READ, (GInputFunction) dcc_send_connected, dcc);
 	}
 
 	/* Generate an ID for this send if using passive protocol */
