@@ -58,7 +58,8 @@ static void save_ips(IPADDR *ip4, IPADDR *ip6,
 static void get_source_host_ip(void)
 {
         const char *hostname;
-	IPADDR ip4, ip6;
+	IPADDR ip4 = { 0 };
+	IPADDR ip6 = { 0 };
 
 	if (source_host_ok)
 		return;
@@ -66,7 +67,8 @@ static void get_source_host_ip(void)
 	/* FIXME: This will block! */
         hostname = settings_get_str("hostname");
 	source_host_ok = *hostname != '\0' &&
-		net_gethostbyname(hostname, &ip4, &ip6) == 0;
+	                 net_gethostbyname_first_ips(hostname, G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT,
+	                                             &ip4, &ip6) == 0;
 
 	if (source_host_ok)
 		save_ips(&ip4, &ip6, &source_host_ip4, &source_host_ip6);
@@ -79,12 +81,14 @@ static void get_source_host_ip(void)
 static void conn_set_ip(SERVER_CONNECT_REC *conn, const char *own_host,
 			IPADDR **own_ip4, IPADDR **own_ip6)
 {
-	IPADDR ip4, ip6;
+	IPADDR ip4 = { 0 };
+	IPADDR ip6 = { 0 };
 
 	if (*own_ip4 == NULL && *own_ip6 == NULL) {
 		/* resolve the IP */
-		if (net_gethostbyname(own_host, &ip4, &ip6) == 0)
-                        save_ips(&ip4, &ip6, own_ip4, own_ip6);
+		if (net_gethostbyname_first_ips(own_host, G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT,
+		                                &ip4, &ip6) == 0)
+			save_ips(&ip4, &ip6, own_ip4, own_ip6);
 	}
 
 	server_connect_own_ip_save(conn, *own_ip4, *own_ip6);

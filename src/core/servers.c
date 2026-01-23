@@ -51,18 +51,14 @@ void server_connect_failed(SERVER_REC *server, const char *msg)
 		g_source_remove(server->connect_tag);
 		server->connect_tag = -1;
 	}
+	if (server->connect_cancellable != NULL) {
+		g_cancellable_cancel(server->connect_cancellable);
+		g_object_unref(server->connect_cancellable);
+		server->connect_cancellable = NULL;
+	}
 	if (server->handle != NULL) {
 		net_sendbuffer_destroy(server->handle, TRUE);
 		server->handle = NULL;
-	}
-
-	if (server->connect_pipe[0] != NULL) {
-		g_io_channel_shutdown(server->connect_pipe[0], TRUE, NULL);
-		g_io_channel_unref(server->connect_pipe[0]);
-		g_io_channel_shutdown(server->connect_pipe[1], TRUE, NULL);
-		g_io_channel_unref(server->connect_pipe[1]);
-		server->connect_pipe[0] = NULL;
-		server->connect_pipe[1] = NULL;
 	}
 
 	server_unref(server);
@@ -156,7 +152,7 @@ static void server_connect_callback_init(SERVER_REC *server, GIOChannel *handle)
 	error = net_geterror(handle);
 	if (error != 0) {
 		server->connection_lost = TRUE;
-		server->connrec->last_failed_family = server->connrec->chosen_family;
+		server->connrec->last_failed = server->connrec->last_connected;
 		server_connect_failed(server, g_strerror(error));
 		return;
 	}
@@ -177,7 +173,7 @@ static void server_connect_callback_init_ssl(SERVER_REC *server, GIOChannel *han
 	error = irssi_ssl_handshake(handle);
 	if (error == -1) {
 		server->connection_lost = TRUE;
-		server->connrec->last_failed_family = server->connrec->chosen_family;
+		server->connrec->last_failed = server->connrec->last_connected;
 		server_connect_failed(server, NULL);
 		return;
 	}
@@ -259,12 +255,12 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 
 		server->connection_lost = TRUE;
 		if (ip != NULL) {
-			server->connrec->last_failed_family = ip->family;
+			server->connrec->last_failed = server->connrec->last_connected;
 		}
 		server_connect_failed(server, errmsg2 ? errmsg2 : errmsg);
 		g_free(errmsg2);
 	} else {
-		server->connrec->last_failed_family = 0;
+		server->connrec->last_failed = 0;
 		if (!server->connrec->use_tls)
 			server->handle = net_sendbuffer_create(handle, 0);
 		if (server->connrec->use_tls)
@@ -276,48 +272,47 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip,
 	}
 }
 
-static void server_connect_callback_readpipe(SERVER_REC *server)
+static int server_start_connect_resolve(SERVER_REC *server);
+
+static void server_connect_use_resolved(SERVER_REC *server)
 {
-	RESOLVED_IP_REC iprec;
-        IPADDR *ip;
+	IPADDR *ip;
 	const char *errormsg;
+	RESOLVED_IP_REC *iprec = server->connrec->resolved_host;
 
-	g_source_remove(server->connect_tag);
-	server->connect_tag = -1;
-
-	net_gethostbyname_return(server->connect_pipe[0], &iprec);
-
-	g_io_channel_shutdown(server->connect_pipe[0], TRUE, NULL);
-	g_io_channel_unref(server->connect_pipe[0]);
-	g_io_channel_shutdown(server->connect_pipe[1], TRUE, NULL);
-	g_io_channel_unref(server->connect_pipe[1]);
-
-	server->connect_pipe[0] = NULL;
-	server->connect_pipe[1] = NULL;
-
-	/* figure out if we should use IPv4 or v6 address */
-	if (iprec.error != 0) {
-                /* error */
+	if (iprec->error != NULL) {
+		/* error */
 		ip = NULL;
-	} else if (server->connrec->family == AF_INET) {
-		/* force IPv4 connection */
-		ip = iprec.ip4.family == 0 ? NULL : &iprec.ip4;
-	} else if (server->connrec->family == AF_INET6) {
-		/* force IPv6 connection */
-		ip = iprec.ip6.family == 0 ? NULL : &iprec.ip6;
 	} else {
-		/* pick the one that was found. if both were found:
-		   1. disprefer the last one that failed
-		   2. prefer ipv4 over ipv6 unless resolve_prefer_ipv6 is set
-		*/
-		if (iprec.ip4.family == 0 ||
-		    (iprec.ip6.family != 0 &&
-		     (server->connrec->last_failed_family == AF_INET ||
-		      (settings_get_bool("resolve_prefer_ipv6") &&
-		       server->connrec->last_failed_family != AF_INET6)))) {
-			ip = &iprec.ip6;
+		GList *curr;
+		int i;
+
+		curr = iprec->ailist;
+		i = 0;
+		while (i < server->connrec->last_failed) {
+			if (curr != NULL) {
+				curr = curr->next;
+				i++;
+			}
+			/* curr is different now */
+			if (curr == NULL) {
+				resolved_ip_unref(server->connrec->resolved_host);
+				server->connrec->resolved_host = NULL;
+				server->connrec->last_failed = 0;
+				/* retry resolve */
+				server_start_connect_resolve(server);
+				return;
+			}
+		}
+		if (curr != NULL) {
+			GInetAddress *addr;
+			addr = curr->data;
+			server->connrec->last_connected = i + 1;
+			ip = g_new0(IPADDR, 1);
+			ip->family = g_inet_address_get_family(addr);
+			memcpy(&ip->ip, g_inet_address_to_bytes(addr), sizeof(ip->ip));
 		} else {
-			ip = &iprec.ip4;
+			ip = NULL;
 		}
 	}
 
@@ -326,28 +321,63 @@ static void server_connect_callback_readpipe(SERVER_REC *server)
 		server_real_connect(server, ip, NULL);
 		errormsg = NULL;
 	} else {
-		if (iprec.error == 0 || net_hosterror_notfound(iprec.error)) {
+		if (iprec->error->code == G_RESOLVER_ERROR_NOT_FOUND) {
 			/* IP wasn't found for the host, don't try to
 			   reconnect back to this server */
 			server->dns_error = TRUE;
 		}
 
-		if (iprec.error == 0) {
-			/* forced IPv4 or IPv6 address but it wasn't found */
-			errormsg = server->connrec->family == AF_INET ?
-				"IPv4 address not found for host" :
-				"IPv6 address not found for host";
-		} else {
-			/* gethostbyname() failed */
-			errormsg = iprec.errorstr != NULL ? iprec.errorstr :
-				"Host lookup failed";
-		}
+		errormsg = iprec->error->message;
+		if (errormsg == NULL)
+			errormsg = "Host lookup failed";
 
 		server->connection_lost = TRUE;
+		/* clear the error in resolved_host */
+		server->connrec->resolved_host = NULL;
 		server_connect_failed(server, errormsg);
-	}
 
-	g_free(iprec.errorstr);
+		resolved_ip_unref(iprec);
+	}
+}
+
+static void server_connect_callback_resolved(RESOLVED_IP_REC *iprec, SERVER_REC *server)
+{
+	server->connect_cancellable = NULL;
+
+	if (server->connrec->resolved_host != NULL) {
+		resolved_ip_unref(server->connrec->resolved_host);
+	}
+	server->connrec->resolved_host = iprec;
+	if (iprec->error == NULL && iprec->ailist == NULL) {
+		server->connection_lost = TRUE;
+		server->dns_error = TRUE;
+		server_connect_failed(server, "Host lookup failed");
+	} else {
+		server_connect_use_resolved(server);
+	}
+}
+
+static int server_start_connect_resolve(SERVER_REC *server)
+{
+	const char *connect_address;
+	GResolverNameLookupFlags net_gethostbyname_flags;
+
+	connect_address =
+	    server->connrec->proxy != NULL ? server->connrec->proxy : server->connrec->address;
+	net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT;
+	if (server->connrec->family == AF_INET) {
+		net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY;
+	} else if (server->connrec->family == AF_INET6) {
+		net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_IPV6_ONLY;
+	}
+	if (server->connrec->resolved_host == NULL) {
+		server->connect_cancellable = net_gethostbyname_nonblock(
+		    connect_address, net_gethostbyname_flags,
+		    (NetGethostbynameContinuationFunc) server_connect_callback_resolved, server);
+		return FALSE;
+	} else {
+		return TRUE;
+	}
 }
 
 SERVER_REC *server_connect(SERVER_CONNECT_REC *conn)
@@ -399,9 +429,6 @@ void server_connect_init(SERVER_REC *server)
 /* starts connecting to server */
 int server_start_connect(SERVER_REC *server)
 {
-	const char *connect_address;
-        int fd[2];
-
 	g_return_val_if_fail(server != NULL, FALSE);
 	if (!server->connrec->unix_socket && server->connrec->port <= 0)
 		return FALSE;
@@ -419,30 +446,17 @@ int server_start_connect(SERVER_REC *server)
 		/* connect with unix socket */
 		server_real_connect(server, NULL, server->connrec->address);
 	} else {
+		int already_resolved;
 		/* resolve host name */
-		if (pipe(fd) != 0) {
-			g_warning("server_connect(): pipe() failed.");
-			g_free(server->tag);
-			g_free(server->nick);
-			return FALSE;
-		}
-
-		server->connect_pipe[0] = i_io_channel_new(fd[0]);
-		server->connect_pipe[1] = i_io_channel_new(fd[1]);
-
-		connect_address = server->connrec->proxy != NULL ?
-			server->connrec->proxy : server->connrec->address;
-		server->connect_pid =
-			net_gethostbyname_nonblock(connect_address,
-						   server->connect_pipe[1], 0);
-		server->connect_tag =
-		    i_input_add(server->connect_pipe[0], I_INPUT_READ,
-		                (GInputFunction) server_connect_callback_readpipe, server);
+		already_resolved = server_start_connect_resolve(server);
 
 		server->connect_time = time(NULL);
 		lookup_servers = g_slist_append(lookup_servers, server);
 
 		signal_emit("server looking", 1, server);
+		if (already_resolved) {
+			server_connect_use_resolved(server);
+		}
 	}
 	return TRUE;
 }
@@ -481,8 +495,9 @@ void server_disconnect(SERVER_REC *server)
 
 	if (server->connect_tag != -1) {
 		/* still connecting to server.. */
-		if (server->connect_pid != -1)
-			net_disconnect_nonblock(server->connect_pid);
+		server_connect_failed(server, NULL);
+		return;
+	} else if (server->connect_cancellable != NULL) {
 		server_connect_failed(server, NULL);
 		return;
 	}
@@ -649,6 +664,10 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->own_ip4);
 	g_free_not_null(conn->own_ip6);
 
+	if (conn->resolved_host != NULL) {
+		resolved_ip_unref(conn->resolved_host);
+	}
+
 	g_free_not_null(conn->password);
 	g_free_not_null(conn->nick);
 	g_free_not_null(conn->username);
@@ -769,7 +788,6 @@ static void sig_chat_protocol_deinit(CHAT_PROTOCOL_REC *proto)
 
 void servers_init(void)
 {
-	settings_add_bool("server", "resolve_prefer_ipv6", TRUE);
 	lookup_servers = servers = NULL;
 
 	signal_add("chat protocol deinit", (SIGNAL_FUNC) sig_chat_protocol_deinit);
