@@ -2,7 +2,7 @@
 # Perl interface to irssi functions.
 #
 
-package Irssi::Irc;
+package Irssi::Irc::Dcc;
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
@@ -16,17 +16,11 @@ require DynaLoader;
 @EXPORT = qw();
 @EXPORT_OK = qw();
 
-bootstrap Irssi::Irc $VERSION if (!Irssi::Core::is_static());
+bootstrap Irssi::Irc::Dcc $VERSION if (!Irssi::Core::is_static());
 
-Irssi::Irc::init();
+Irssi::Irc::Dcc::init();
 
 Irssi::EXPORT_ALL();
-
-eval {
-    local $@;
-    require Irssi::Irc::Dcc;
-    1;
-};
 
 1;
 
