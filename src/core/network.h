@@ -16,6 +16,19 @@
 #  endif
 #endif
 
+#if GLIB_CHECK_VERSION(2, 59, 0)
+/* nothing */
+#else
+/* compatibility code for old GLib */
+
+typedef enum {
+	G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT = 0,
+	G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY = 1 << 0,
+	G_RESOLVER_NAME_LOOKUP_FLAGS_IPV6_ONLY = 1 << 1,
+} GResolverNameLookupFlags;
+
+#endif
+
 struct _IPADDR {
 	unsigned short family;
 	struct in6_addr ip;
