@@ -26,6 +26,7 @@
 #include <irssi/src/core/net-nonblock.h>
 
 typedef struct {
+	GResolverNameLookupFlags flags;
 	NetGethostbynameContinuationFunc cont;
 	void *cont_data;
 } NET_GETHOSTBYNAME_CALLBACK_DATA;
@@ -39,7 +40,39 @@ static void net_gethostbyname_callback(GResolver *resolver, GAsyncResult *result
 	RESOLVED_IP_REC *iprec;
 
 	error = NULL;
+#if GLIB_CHECK_VERSION(2, 59, 0)
 	ailist = g_resolver_lookup_by_name_with_flags_finish(resolver, result, &error);
+#else
+	/* compatibility code for old GLib */
+	ailist = g_resolver_lookup_by_name_finish(resolver, result, &error);
+	if (error == NULL && data->flags) {
+		GList *ll, *lll;
+
+		for (ll = ailist; ll != NULL; ll = lll) {
+			GInetAddress *address;
+			GSocketFamily family;
+
+			address = G_INET_ADDRESS(ll->data);
+			family = g_inet_address_get_family(address);
+			lll = ll->next;
+
+			if ((data->flags == G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY &&
+			     family == G_SOCKET_FAMILY_IPV6) ||
+			    (data->flags == G_RESOLVER_NAME_LOOKUP_FLAGS_IPV6_ONLY &&
+			     family == G_SOCKET_FAMILY_IPV4)) {
+				g_object_unref(address);
+				ailist = g_list_delete_link(ailist, ll);
+			}
+		}
+
+		if (ailist == NULL) {
+			g_set_error(&error, G_RESOLVER_ERROR, G_RESOLVER_ERROR_NOT_FOUND,
+			            data->flags == G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY ?
+			                "IPv4 address not found for host" :
+			                "IPv6 address not found for host");
+		}
+	}
+#endif
 	iprec = g_new0(RESOLVED_IP_REC, 1);
 	if (error != NULL) {
 		iprec->error = error;
@@ -66,10 +99,17 @@ GCancellable *net_gethostbyname_nonblock(const char *addr, GResolverNameLookupFl
 	resolver = g_resolver_get_default();
 	cancellable = g_cancellable_new();
 	data = g_new0(NET_GETHOSTBYNAME_CALLBACK_DATA, 1);
+	data->flags = flags;
 	data->cont = cont;
 	data->cont_data = cont_data;
+#if GLIB_CHECK_VERSION(2, 59, 0)
 	g_resolver_lookup_by_name_with_flags_async(resolver, addr, flags, cancellable,
 	                                           (GAsyncReadyCallback) net_gethostbyname_callback,
 	                                           data);
+#else
+	/* compatibility code for old GLib */
+	g_resolver_lookup_by_name_async(resolver, addr, cancellable,
+	                                (GAsyncReadyCallback) net_gethostbyname_callback, data);
+#endif
 	return cancellable;
 }
