@@ -30,7 +30,7 @@ while (<>) {
 	$prot = 2;
 	$in_code = 0;
     }
-    elsif (/^((PP)?CODE|PREINIT):/) {
+    elsif (/^((PP)?CODE|PREINIT|BOOT):/) {
 	$prot = 1;
 	$in_code = 3;
     }

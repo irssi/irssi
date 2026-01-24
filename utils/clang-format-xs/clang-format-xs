@@ -6,14 +6,22 @@ srcdir=$(dirname "$(readlink -f "$0")")
 test -z "$srcdir" && srcdir=.
 
 CLANG_FORMAT=${CLANG_FORMAT:-clang-format}
+if [[ "$CLANG_FORMAT" = *-xs\ * ]]; then
+    CLANG_FORMAT=${CLANG_FORMAT/-xs / }
+elif [[ "$CLANG_FORMAT" = *-xs ]]; then
+    CLANG_FORMAT=${CLANG_FORMAT%-xs}
+fi
+
+clang_format_version=$($CLANG_FORMAT --version 2>/dev/null | perl -ne '/(\d+)/ && print $1 or print 0')
+
 options=()
 files=()
 lines=()
-inplace=0;xml=0;
+inplace=0;xml=0;list_ignored=0;
 filename=tmp.1.c
 offsets=
 off_opts=()
-opts=$(getopt -n clang-format-xs -s bash -a -o in -l Werror,assume-filename:,cursor:,dry-run,dump-config,fallback-style:,ferror-limit:,help,length:,lines:,offset:,output-replacement-xmls,sort-includes,style:,verbose,version -- "$@")
+opts=$(getopt -n clang-format-xs -s bash -a -o in -l Werror,assume-filename:,cursor:,dry-run,dump-config,fallback-style:,ferror-limit:,help,length:,lines:,offset:,output-replacement-xmls,sort-includes,list-ignored,style:,verbose,version -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$opts"; unset opts
 while :; do
@@ -47,6 +55,11 @@ while :; do
 	    shift
 	    continue
 	    ;;
+	--list-ignored)
+	    list_ignored=1
+	    shift
+	    continue
+	    ;;
 	-i)
 	    inplace=1
 	    shift
@@ -75,6 +88,10 @@ fi
 if [[ $xml = 1 ]]; then
     options_o=("-output-replacements-xml" "${options[@]}")
 fi
+if [[ $list_ignored = 1 ]]; then
+    options_o=("-list-ignored" "${options[@]}")
+fi
+
 options_o+=("${off_opts[@]}")
 
 do_xs() {
@@ -92,7 +109,13 @@ do_xs() {
     rm "$1".1.c
 }
 
-if [[ ${#files[@]} -eq 0 ]]; then
+if [[ $list_ignored = 1 ]]; then
+    if [[ $clang_format_version -lt 19 ]]; then
+	: # true
+    else
+	$CLANG_FORMAT "${options_o[@]}" -- "${files[@]}"
+    fi
+elif [[ ${#files[@]} -eq 0 ]]; then
     case "$filename" in
 	    *.xs)
 		cat > "$filename".1.xs
