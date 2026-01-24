@@ -338,16 +338,22 @@ static void server_connect_use_resolved(SERVER_REC *server)
 
 		resolved_ip_unref(iprec);
 	}
+
+	g_free(ip);
 }
 
 static void server_connect_callback_resolved(RESOLVED_IP_REC *iprec, SERVER_REC *server)
 {
-	server->connect_cancellable = NULL;
+	if (server->connect_cancellable != NULL) {
+		g_object_unref(server->connect_cancellable);
+		server->connect_cancellable = NULL;
+	}
 
 	if (server->connrec->resolved_host != NULL) {
 		resolved_ip_unref(server->connrec->resolved_host);
 	}
 	server->connrec->resolved_host = iprec;
+
 	if (iprec->error == NULL && iprec->ailist == NULL) {
 		server->connection_lost = TRUE;
 		server->dns_error = TRUE;
