@@ -69,63 +69,6 @@ static void perl_ban_fill_hash(HV *hv, BAN_REC *ban)
 	(void) hv_store(hv, "time", 4, newSViv(ban->time), 0);
 }
 
-static void perl_dcc_fill_hash(HV *hv, DCC_REC *dcc)
-{
-	(void) hv_store(hv, "type", 4, new_pv(dcc_type2str(dcc->type)), 0);
-	(void) hv_store(hv, "orig_type", 9, new_pv(dcc_type2str(dcc->orig_type)), 0);
-	(void) hv_store(hv, "created", 7, newSViv(dcc->created), 0);
-
-	(void) hv_store(hv, "server", 6, iobject_bless(dcc->server), 0);
-	(void) hv_store(hv, "servertag", 9, new_pv(dcc->servertag), 0);
-	(void) hv_store(hv, "mynick", 6, new_pv(dcc->mynick), 0);
-	(void) hv_store(hv, "nick", 4, new_pv(dcc->nick), 0);
-
-	(void) hv_store(hv, "chat", 4, simple_iobject_bless(dcc->chat), 0);
-	(void) hv_store(hv, "target", 6, new_pv(dcc->target), 0);
-	(void) hv_store(hv, "arg", 3, new_pv(dcc->arg), 0);
-
-	(void) hv_store(hv, "addr", 4, new_pv(dcc->addrstr), 0);
-	(void) hv_store(hv, "port", 4, newSViv(dcc->port), 0);
-
-	(void) hv_store(hv, "starttime", 9, newSViv(dcc->starttime), 0);
-	(void) hv_store(hv, "transfd", 7, newSViv(dcc->transfd), 0);
-}
-
-static void perl_dcc_chat_fill_hash(HV *hv, CHAT_DCC_REC *dcc)
-{
-        perl_dcc_fill_hash(hv, (DCC_REC *) dcc);
-
-	(void) hv_store(hv, "id", 2, new_pv(dcc->id), 0);
-	(void) hv_store(hv, "mirc_ctcp", 9, newSViv(dcc->mirc_ctcp), 0);
-	(void) hv_store(hv, "connection_lost", 15, newSViv(dcc->connection_lost), 0);
-}
-
-static void perl_dcc_file_fill_hash(HV *hv, FILE_DCC_REC *dcc)
-{
-        perl_dcc_fill_hash(hv, (DCC_REC *) dcc);
-
-	(void) hv_store(hv, "size", 4, newSViv(dcc->size), 0);
-	(void) hv_store(hv, "skipped", 7, newSViv(dcc->skipped), 0);
-}
-
-static void perl_dcc_get_fill_hash(HV *hv, GET_DCC_REC *dcc)
-{
-        perl_dcc_file_fill_hash(hv, (FILE_DCC_REC *) dcc);
-
-	(void) hv_store(hv, "get_type", 8, newSViv(dcc->get_type), 0);
-	(void) hv_store(hv, "file", 4, new_pv(dcc->file), 0);
-	(void) hv_store(hv, "file_quoted", 11, newSViv(dcc->file_quoted), 0);
-}
-
-static void perl_dcc_send_fill_hash(HV *hv, SEND_DCC_REC *dcc)
-{
-        perl_dcc_file_fill_hash(hv, (FILE_DCC_REC *) dcc);
-
-	(void) hv_store(hv, "file_quoted", 11, newSViv(dcc->file_quoted), 0);
-	(void) hv_store(hv, "waitforend", 10, newSViv(dcc->waitforend), 0);
-	(void) hv_store(hv, "gotalldata", 10, newSViv(dcc->gotalldata), 0);
-}
-
 static void perl_netsplit_fill_hash(HV *hv, NETSPLIT_REC *netsplit)
 {
         AV *av;
@@ -195,7 +138,6 @@ static void perl_client_fill_hash(HV *hv, CLIENT_REC *client)
 
 static PLAIN_OBJECT_INIT_REC irc_plains[] = {
 	{ "Irssi::Irc::Ban", (PERL_OBJECT_FUNC) perl_ban_fill_hash },
-	{ "Irssi::Irc::Dcc", (PERL_OBJECT_FUNC) perl_dcc_fill_hash },
 	{ "Irssi::Irc::Netsplit", (PERL_OBJECT_FUNC) perl_netsplit_fill_hash },
 	{ "Irssi::Irc::Netsplitserver", (PERL_OBJECT_FUNC) perl_netsplit_server_fill_hash },
 	{ "Irssi::Irc::Netsplitchannel", (PERL_OBJECT_FUNC) perl_netsplit_channel_fill_hash },
@@ -244,27 +186,9 @@ CODE:
 	irssi_add_object(module_get_uniq_id("SERVER CONNECT", 0),
 			 chat_type, "Irssi::Irc::Connect",
 			 (PERL_OBJECT_FUNC) perl_irc_connect_fill_hash);
-	irssi_add_object(module_get_uniq_id("SERVER", 0),
-			 chat_type, "Irssi::Irc::Server",
-			 (PERL_OBJECT_FUNC) perl_irc_server_fill_hash);
-	irssi_add_object(module_get_uniq_id_str("DCC", "CHAT"),
-			 0, "Irssi::Irc::Dcc::Chat",
-			 (PERL_OBJECT_FUNC) perl_dcc_chat_fill_hash);
-	irssi_add_object(module_get_uniq_id_str("DCC", "GET"),
-			 0, "Irssi::Irc::Dcc::Get",
-			 (PERL_OBJECT_FUNC) perl_dcc_get_fill_hash);
-	irssi_add_object(module_get_uniq_id_str("DCC", "SEND"),
-			 0, "Irssi::Irc::Dcc::Send",
-			 (PERL_OBJECT_FUNC) perl_dcc_send_fill_hash);
-	irssi_add_object(module_get_uniq_id_str("DCC", "SERVER"),
-			 0, "Irssi::Irc::Dcc::Server",
-			 (PERL_OBJECT_FUNC) perl_dcc_send_fill_hash);
-        irssi_add_plains(irc_plains);
-	perl_eval_pv("@Irssi::Irc::Dcc::Chat::ISA = qw(Irssi::Irc::Dcc);\n"
-		     "@Irssi::Irc::Dcc::Get::ISA = qw(Irssi::Irc::Dcc);\n"
-		     "@Irssi::Irc::Dcc::Send::ISA = qw(Irssi::Irc::Dcc);\n"
-		     "@Irssi::Irc::Dcc::Server::ISA = qw(Irssi::Irc::Dcc);\n",
-		     TRUE);
+	irssi_add_object(module_get_uniq_id("SERVER", 0), chat_type, "Irssi::Irc::Server",
+	                 (PERL_OBJECT_FUNC) perl_irc_server_fill_hash);
+	irssi_add_plains(irc_plains);
 
 void
 deinit()
@@ -274,7 +198,6 @@ CODE:
 BOOT:
 	irssi_boot(Irc__Channel);
 	irssi_boot(Irc__Ctcp);
-	irssi_boot(Irc__Dcc);
 	irssi_boot(Irc__Modes);
 	irssi_boot(Irc__Netsplit);
 	irssi_boot(Irc__Notifylist);

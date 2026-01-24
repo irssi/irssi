@@ -81,6 +81,14 @@ int i_io_channel_read_block(GIOChannel *channel, void *data, int len)
 	return received < len ? -1 : 0;
 }
 
+IPADDR ip4_any = { AF_INET,
+#if defined(IN6ADDR_ANY_INIT)
+	           IN6ADDR_ANY_INIT
+#else
+	           { INADDR_ANY }
+#endif
+};
+
 static void sin_set_ip(union sockaddr_union *so, const IPADDR *ip)
 {
 	if (ip == NULL) {
