@@ -3,7 +3,7 @@ name: abicheck
 env:
   build_options: -Dbuildtype=debug -Denable-true-color=yes -Dwith-proxy=yes -Dc_args=-DPERL_EUPXS_ALWAYS_EXPORT
   prefix: /usr/local
-  apt_build_deps: ninja-build libutf8proc-dev libperl-dev libotr5-dev
+  apt_build_deps: ninja-build libutf8proc-dev libperl-dev libotr5-dev libglib2.0-dev
   get_pip_build_deps: pip3 install setuptools; pip3 install wheel; pip3 install 'meson<0.59.0'
   getabidef_def: getabidef() { awk '$1=="#define" && $2=="IRSSI_ABI_VERSION" { print $3 }' "$1"/include/irssi/src/common.h; }
 jobs:
@@ -17,7 +17,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: prepare required software
         run: |
-          sudo apt install $apt_build_deps
+          sudo apt update; sudo apt install $apt_build_deps
           eval "$get_pip_build_deps"
       - name: checkout base ref
         uses: actions/checkout@main
@@ -36,8 +36,8 @@ jobs:
           base_abi=$(getabidef base$prefix)
           echo base abi : $base_abi
           ./base$prefix/bin/irssi --version
-          echo "::set-output name=base_abi::$base_abi"
-      - uses: actions/upload-artifact@v2
+          echo base_abi=$base_abi >> $GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v4
         with:
           name: base.inst
           path: base
@@ -52,7 +52,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: prepare required software
         run: |
-          sudo apt install $apt_build_deps
+          sudo apt update; sudo apt install $apt_build_deps
           eval "$get_pip_build_deps"
       - name: checkout merge ref
         uses: actions/checkout@main
@@ -70,8 +70,8 @@ jobs:
           merge_abi=$(getabidef merge$prefix)
           echo merge abi : $merge_abi
           ./merge$prefix/bin/irssi --version
-          echo "::set-output name=merge_abi::$merge_abi"
-      - uses: actions/upload-artifact@v2
+          echo merge_abi=$merge_abi >> $GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v4
         with:
           name: merge.inst
           path: merge
@@ -87,14 +87,14 @@ jobs:
     steps:
       - name: prepare required software
         run: |
-          sudo apt install abigail-tools
+          sudo apt update; sudo apt install abigail-tools
       - name: fetch base build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: base.inst
           path: base
       - name: fetch merge build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: merge.inst
           path: merge
@@ -103,7 +103,7 @@ jobs:
           abipkgdiff -l base merge >abipkgdiff.out && diff_ret=0 || diff_ret=$?
           echo "diff_ret=$diff_ret" >> $GITHUB_ENV
           cat abipkgdiff.out
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           path: abipkgdiff.out
       - run: |

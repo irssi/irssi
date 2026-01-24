@@ -5,7 +5,7 @@ on:
   pull_request:
 name: Check Irssi
 env:
-  apt_build_deps: libutf8proc-dev libperl-dev libotr5-dev
+  apt_build_deps: libutf8proc-dev libperl-dev libotr5-dev libglib2.0-dev
   apt_build_deps_meson: ninja-build
   apt_build_deps_autotools: autoconf automake libtool
   get_pip_build_deps_meson: pip3 install setuptools${setuptools_ver}; pip3 install wheel; pip3 install meson${meson_ver}
@@ -25,7 +25,7 @@ jobs:
           # make dist
           ./autogen.sh $build_options_configure
           make dist
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           path: irssi-*.tar.gz
           retention-days: 1
@@ -38,24 +38,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-latest]
+        os: [ubuntu-20.04, ubuntu-latest]
         builder: [meson, configure]
         compiler: [clang, gcc]
         flags: [regular]
         include:
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             builder: meson
-            meson_ver: ==0.49.2
+            meson_ver: ==0.53.2
             setuptools_ver: <51
           - os: ubuntu-latest
             builder: meson
-            meson_ver: <0.60.0
+            meson_ver: <0.63.0
           - os: ubuntu-latest
             builder: meson
             flags: meson-latest FAILURE-OK
     steps:
       - name: fetch dist
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
       - name: set PATH
         run: |
           echo "$HOME/.local/bin" >> $GITHUB_PATH
