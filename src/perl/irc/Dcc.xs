@@ -202,4 +202,4 @@ CODE:
 	initialized = FALSE;
 
 BOOT:
-	/* nothing * /
+	/* nothing */
