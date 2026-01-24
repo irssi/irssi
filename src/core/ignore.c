@@ -243,23 +243,33 @@ IGNORE_REC *ignore_find_full(const char *servertag, const char *mask, const char
 				continue;
 		}
 
-		if ((flags & IGNORE_FIND_NOACT) && (rec->level & MSGLEVEL_NO_ACT) == 0)
-			continue;
+		if (!(flags & IGNORE_FIND_ANY)) {
+			if ((flags & IGNORE_FIND_NO_ACT) && (rec->level & MSGLEVEL_NO_ACT) == 0)
+				continue;
 
-		if (!(flags & IGNORE_FIND_NOACT) && (rec->level & MSGLEVEL_NO_ACT) != 0)
-			continue;
+			if (!(flags & IGNORE_FIND_NO_ACT) && (rec->level & MSGLEVEL_NO_ACT) != 0)
+				continue;
 
-		if ((flags & IGNORE_FIND_HIDDEN) && (rec->level & MSGLEVEL_HIDDEN) == 0)
-			continue;
+			if ((flags & IGNORE_FIND_HIDDEN) && (rec->level & MSGLEVEL_HIDDEN) == 0)
+				continue;
 
-		if (!(flags & IGNORE_FIND_HIDDEN) && (rec->level & MSGLEVEL_HIDDEN) != 0)
-			continue;
+			if (!(flags & IGNORE_FIND_HIDDEN) && (rec->level & MSGLEVEL_HIDDEN) != 0)
+				continue;
 
-		if ((flags & IGNORE_FIND_NOHILIGHT) && (rec->level & MSGLEVEL_NOHILIGHT) == 0)
-			continue;
+			if ((flags & IGNORE_FIND_NOHILIGHT) &&
+			    (rec->level & MSGLEVEL_NOHILIGHT) == 0)
+				continue;
 
-		if (!(flags & IGNORE_FIND_NOHILIGHT) && (rec->level & MSGLEVEL_NOHILIGHT) != 0)
-			continue;
+			if (!(flags & IGNORE_FIND_NOHILIGHT) &&
+			    (rec->level & MSGLEVEL_NOHILIGHT) != 0)
+				continue;
+
+			if ((flags & IGNORE_FIND_EXCEPT) && (rec->exception == 0))
+				continue;
+
+			if (!(flags & IGNORE_FIND_EXCEPT) && (rec->exception != 0))
+				continue;
+		}
 
 		if ((rec->mask == NULL && mask != NULL) ||
 		    (rec->mask != NULL && mask == NULL))
@@ -303,11 +313,6 @@ IGNORE_REC *ignore_find_full(const char *servertag, const char *mask, const char
 	return NULL;
 }
 
-IGNORE_REC *ignore_find(const char *servertag, const char *mask, char **channels)
-{
-	return ignore_find_full(servertag, mask, NULL, channels, 0);
-}
-
 static void ignore_set_config(IGNORE_REC *rec)
 {
 	CONFIG_NODE *node;
@@ -333,6 +338,7 @@ static void ignore_set_config(IGNORE_REC *rec)
 	if (rec->unignore_time != 0)
 		iconfig_node_set_int(node, "unignore_time", rec->unignore_time);
 	iconfig_node_set_str(node, "servertag", rec->servertag);
+	iconfig_node_set_str(node, "comment", rec->comment);
 
 	if (rec->channels != NULL && *rec->channels != NULL) {
 		node = iconfig_node_section(node, "channels", NODE_TYPE_LIST);
@@ -403,13 +409,14 @@ static void ignore_destroy(IGNORE_REC *rec, int send_signal)
 	if (rec->channels != NULL) g_strfreev(rec->channels);
 	g_free_not_null(rec->mask);
 	g_free_not_null(rec->servertag);
+	g_free_not_null(rec->comment);
 	g_free_not_null(rec->pattern);
 	g_free(rec);
 }
 
 void ignore_update_rec(IGNORE_REC *rec)
 {
-	if (rec->level == 0) {
+	if ((rec->level & ~(MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN | MSGLEVEL_NOHILIGHT)) == 0) {
 		/* unignored everything */
 		ignore_remove_config(rec);
 		ignore_destroy(rec, TRUE);
@@ -424,7 +431,7 @@ void ignore_update_rec(IGNORE_REC *rec)
                 ignore_init_rec(rec);
 		signal_emit("ignore changed", 1, rec);
 	}
-        nickmatch_rebuild(nickmatch);
+	nickmatch_rebuild(nickmatch);
 }
 
 static int unignore_timeout(void)
@@ -480,6 +487,7 @@ static void read_ignores(void)
 		rec->replies = config_node_get_bool(node, "replies", FALSE);
 		rec->unignore_time = config_node_get_int(node, "unignore_time", 0);
 		rec->servertag = g_strdup(config_node_get_str(node, "servertag", 0));
+		rec->comment = g_strdup(config_node_get_str(node, "comment", 0));
 
 		node = iconfig_node_section(node, "channels", -1);
 		if (node != NULL) rec->channels = config_node_get_list(node);
@@ -518,8 +526,8 @@ static void ignore_nick_cache(GHashTable *list, CHANNEL_REC *channel,
 
 	if (matches == NULL)
 		g_hash_table_remove(list, nick);
-        else
-                g_hash_table_insert(list, nick, matches);
+	else
+		g_hash_table_insert(list, nick, matches);
 }
 
 void ignore_init(void)

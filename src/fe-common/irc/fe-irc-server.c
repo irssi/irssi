@@ -186,10 +186,10 @@ void fe_irc_server_init(void)
 	command_bind("server list", NULL, (SIGNAL_FUNC) cmd_server_list);
 
 	command_set_options("server add",
-	                    "-ircnet -network -cmdspeed -cmdmax -querychans starttls "
+	                    "~-ircnet -network -cmdspeed -cmdmax -querychans starttls "
 	                    "nostarttls disallow_starttls nodisallow_starttls cap nocap");
 	command_set_options("server modify",
-	                    "-ircnet -network -cmdspeed -cmdmax -querychans starttls nostarttls "
+	                    "~-ircnet -network -cmdspeed -cmdmax -querychans starttls nostarttls "
 	                    "disallow_starttls nodisallow_starttls cap nocap");
 }
 
