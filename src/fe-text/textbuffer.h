@@ -1,6 +1,8 @@
 #ifndef IRSSI_FE_TEXT_TEXTBUFFER_H
 #define IRSSI_FE_TEXT_TEXTBUFFER_H
 
+#include <irssi/src/common.h>
+
 /* Make sure TEXT_CHUNK_REC is not slightly more than a page, as that
    wastes a lot of memory. */
 #define LINE_TEXT_CHUNK_SIZE (16384 - 16)

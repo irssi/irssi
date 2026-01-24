@@ -375,13 +375,11 @@ static void sig_render_line_text(TEXT_DEST_REC *dest, GString *str, LINE_INFO_ME
 
 		/* end of the line */
 		pos = strip_real_length(str->str, hilight_end, &color_pos, &color_len);
-		if (color_pos > 0) {
+		g_string_append_c(str2, 4);
+		g_string_append_c(str2, (char) -1);
+		g_string_append_c(str2, (char) -1);
+		if (color_pos > 0)
 			g_string_append_len(str2, str->str + color_pos, color_len);
-		} else {
-			/* no colors in line, change back to default */
-			g_string_append_c(str2, 4);
-			g_string_append_c(str2, FORMAT_STYLE_DEFAULTS);
-		}
 		g_string_append(str2, str->str + pos);
 
 		g_string_assign(str, g_string_free(str2, FALSE));

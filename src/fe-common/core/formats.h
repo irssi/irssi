@@ -5,11 +5,11 @@
 #include <irssi/src/fe-common/core/fe-windows.h>
 #include <irssi/src/fe-common/core/themes.h>
 
+/* clang-format off */
 #define GUI_PRINT_FLAG_BOLD          0x0001
 #define GUI_PRINT_FLAG_REVERSE       0x0002
 #define GUI_PRINT_FLAG_UNDERLINE     0x0004
 #define GUI_PRINT_FLAG_BLINK         0x0008
-#define GUI_PRINT_FLAG_MIRC_COLOR    0x0010
 #define GUI_PRINT_FLAG_INDENT        0x0020
 #define GUI_PRINT_FLAG_ITALIC        0x0040
 #define GUI_PRINT_FLAG_NEWLINE       0x0080
@@ -17,6 +17,17 @@
 #define GUI_PRINT_FLAG_MONOSPACE     0x0200
 #define GUI_PRINT_FLAG_COLOR_24_FG   0x0400
 #define GUI_PRINT_FLAG_COLOR_24_BG   0x0800
+#define GUI_PRINT_FLAG_MIRC_COLOR_FG 0x1000
+#define GUI_PRINT_FLAG_MIRC_COLOR_BG 0x2000
+/* clang-format on */
+
+#define GUI_PRINT_FLAGS_COLORS_24 (GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG)
+#define GUI_PRINT_FLAGS_MIRC_COLORS (GUI_PRINT_FLAG_MIRC_COLOR_FG | GUI_PRINT_FLAG_MIRC_COLOR_BG)
+#define GUI_PRINT_FLAGS_FG_COLORS (GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_MIRC_COLOR_FG)
+#define GUI_PRINT_FLAGS_BG_COLORS (GUI_PRINT_FLAG_COLOR_24_BG | GUI_PRINT_FLAG_MIRC_COLOR_BG)
+#define GUI_PRINT_FLAGS_COLORS                                                                     \
+	(GUI_PRINT_FLAG_COLOR_24_FG | GUI_PRINT_FLAG_COLOR_24_BG | GUI_PRINT_FLAG_MIRC_COLOR_FG |  \
+	 GUI_PRINT_FLAG_MIRC_COLOR_BG)
 
 #define MAX_FORMAT_PARAMS 10
 #define DEFAULT_FORMAT_ARGLIST_SIZE 200
@@ -37,17 +48,17 @@ struct _FORMAT_REC {
 };
 
 /* clang-format off */
-#define PRINT_FLAG_SET_LINE_START	0x0001
-#define PRINT_FLAG_SET_LINE_START_IRSSI	0x0002
-#define PRINT_FLAG_UNSET_LINE_START	0x0040
+#define PRINT_FLAG_SET_LINE_START       0x0001
+#define PRINT_FLAG_SET_LINE_START_IRSSI 0x0002
+#define PRINT_FLAG_UNSET_LINE_START     0x0040
 
-#define PRINT_FLAG_SET_TIMESTAMP	0x0004
-#define PRINT_FLAG_UNSET_TIMESTAMP	0x0008
+#define PRINT_FLAG_SET_TIMESTAMP        0x0004
+#define PRINT_FLAG_UNSET_TIMESTAMP      0x0008
 
-#define PRINT_FLAG_SET_SERVERTAG	0x0010
-#define PRINT_FLAG_UNSET_SERVERTAG	0x0020
+#define PRINT_FLAG_SET_SERVERTAG        0x0010
+#define PRINT_FLAG_UNSET_SERVERTAG      0x0020
 
-#define PRINT_FLAG_FORMAT         	0x0080
+#define PRINT_FLAG_FORMAT               0x0080
 /* clang-format on */
 
 typedef struct _HILIGHT_REC HILIGHT_REC;
@@ -151,28 +162,40 @@ void format_send_to_gui(TEXT_DEST_REC *dest, const char *text);
  */
 void format_send_as_gui_flags(TEXT_DEST_REC *dest, const char *text, SIGNAL_FUNC handler);
 
-#define FORMAT_COLOR_NOCHANGE	('0'-1) /* don't change this, at least hilighting depends this value */
-#define FORMAT_COLOR_EXT1	('0'-2)
-#define FORMAT_COLOR_EXT2	('0'-3)
-#define FORMAT_COLOR_EXT3	('0'-4)
-#define FORMAT_COLOR_EXT1_BG	('0'-5)
-#define FORMAT_COLOR_EXT2_BG	('0'-9)
-#define FORMAT_COLOR_EXT3_BG	('0'-10)
-#define FORMAT_COLOR_24	('0'-13)
+enum {
+	FORMAT_COLOR_24 = ('0' - 13),
+	FORMAT_COLOR_EXT3_BG = ('0' - 10),
+	FORMAT_COLOR_EXT2_BG,
+	FORMAT_COLOR_EXT1_BG = ('0' - 5),
+	FORMAT_COLOR_EXT3,
+	FORMAT_COLOR_EXT2,
+	FORMAT_COLOR_EXT1,
+	FORMAT_COLOR_NOCHANGE
+};
+/* don't change this, at least hilighting depends this value */
+G_STATIC_ASSERT(FORMAT_COLOR_NOCHANGE == ('0' - 1));
 
-#define FORMAT_STYLE_SPECIAL	0x60
-#define FORMAT_STYLE_BLINK	(0x01 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_UNDERLINE	(0x02 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_BOLD	(0x03 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_REVERSE	(0x04 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_INDENT	(0x05 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_ITALIC	(0x06 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_DEFAULTS	(0x07 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_CLRTOEOL	(0x08 + FORMAT_STYLE_SPECIAL)
-#define FORMAT_STYLE_MONOSPACE	(0x09 + FORMAT_STYLE_SPECIAL)
+enum {
+	FORMAT_STYLE_SPECIAL = 0x60,
+	FORMAT_STYLE_BLINK,
+	FORMAT_STYLE_UNDERLINE,
+	FORMAT_STYLE_BOLD,
+	FORMAT_STYLE_REVERSE,
+	FORMAT_STYLE_INDENT,
+	FORMAT_STYLE_ITALIC,
+	FORMAT_STYLE_DEFAULTS,
+	FORMAT_STYLE_CLRTOEOL,
+	FORMAT_STYLE_MONOSPACE,
+	FORMAT_STYLE_THEME_DEFAULTS,
+	FORMAT_STYLE_PUSH,
+	FORMAT_STYLE_POP,
+	FORMAT_STYLE_KEEP
+};
+
 int format_expand_styles(GString *out, const char **format, int *flags);
 void format_ext_color(GString *out, int bg, int color);
 void format_24bit_color(GString *out, int bg, unsigned int color);
+int unformat_24bit_color_alg(const char **ptr, int off, int *is_bg, unsigned int *color);
 void format_gui_flags(GString *out, int *last_fg, int *last_bg, int *last_flags, int fg, int bg,
                       int flags);
 
