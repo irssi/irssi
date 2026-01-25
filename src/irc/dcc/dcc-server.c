@@ -49,15 +49,15 @@ static void sig_dcc_destroyed(SERVER_DCC_REC *dcc)
 }
 
 /* Start listening for incoming connections */
-static GIOChannel *dcc_listen_port(GIOChannel *iface, IPADDR *ip, int port)
+static GIOChannel *dcc_listen_port_channel(GIOChannel *iface, IPADDR *ip, int port)
 {
-	if (net_getsockname(iface, ip, NULL) == -1)
+	if (net_getsockname_channel(iface, ip, NULL) == -1)
 		return NULL;
 
 	if (IPADDR_IS_V6(ip))
-		return net_listen(NULL, &port);
+		return net_listen_channel(NULL, &port);
 	else
-		return net_listen(&ip4_any, &port);
+		return net_listen_channel(&ip4_any, &port);
 }
 
 /* input function: DCC SERVER received some data.. */
@@ -85,7 +85,7 @@ static void dcc_server_input(SERVER_DCC_REC *dcc)
 		if (dcc->connection_established) {
 			/* We set handle to NULL first because the new (chat/get) is using the same */
 			/* handle and we don't want dcc_close to disconnect it.*/
-			dcc->handle = NULL;
+			dcc->channel = NULL;
 			dcc_close(DCC(dcc));
 			break;
 		}
@@ -164,27 +164,27 @@ static void dcc_server_listen(SERVER_DCC_REC *dcc)
 {
 	SERVER_DCC_REC *newdcc;
 	IPADDR ip;
-	GIOChannel *handle;
+	GIOChannel *channel;
 	int port;
 
 	g_return_if_fail(IS_DCC_SERVER(dcc));
 
 	/* accept connection */
-	handle = net_accept(dcc->handle, &ip, &port);
-	if (handle == NULL)
+	channel = net_accept_channel(dcc->channel, &ip, &port);
+	if (channel == NULL)
 		return;
 
 	/* Create a new DCC SERVER to handle this connection */
 	newdcc = dcc_server_clone(dcc);
 
 	newdcc->starttime = time(NULL);
-	newdcc->handle = handle;
-	newdcc->sendbuf = net_sendbuffer_create(handle, 0);
+	newdcc->channel = channel;
+	newdcc->sendbuf = net_sendbuffer_create_channel(channel, 0);
 	memcpy(&newdcc->addr, &ip, sizeof(IPADDR));
 	net_ip2host(&newdcc->addr, newdcc->addrstr);
 	newdcc->port = port;
 	newdcc->tagread =
-	    i_input_add(handle, I_INPUT_READ, (GInputFunction) dcc_server_input, newdcc);
+	    i_input_add(channel, I_INPUT_READ, (GInputFunction) dcc_server_input, newdcc);
 
 	signal_emit("dcc connected", 1, newdcc);
 }
@@ -205,12 +205,12 @@ static void dcc_server_msg(SERVER_DCC_REC *dcc, const char *msg)
 			CHAT_DCC_REC *dccchat = dcc_chat_create(dcc->server, NULL, msg, "chat");
 
 			dccchat->starttime = time(NULL);
-			dccchat->handle = dcc->handle;
-			dccchat->sendbuf = net_sendbuffer_create(dccchat->handle, 0);
+			dccchat->channel = dcc->channel;
+			dccchat->sendbuf = net_sendbuffer_create_channel(dccchat->channel, 0);
 			memcpy(&dccchat->addr, &dcc->addr, sizeof(IPADDR));
 			net_ip2host(&dccchat->addr, dccchat->addrstr);
 			dccchat->port = dcc->port;
-			dccchat->tagread = i_input_add(dccchat->handle, I_INPUT_READ,
+			dccchat->tagread = i_input_add(dccchat->channel, I_INPUT_READ,
 			                               (GInputFunction) dcc_chat_input, dccchat);
 
 			dcc->connection_established = 1;
@@ -266,7 +266,7 @@ static void dcc_server_msg(SERVER_DCC_REC *dcc, const char *msg)
 			}
 
 			dccget = dcc_get_create(dcc->server, NULL, nick, fname);
-			dccget->handle = dcc->handle;
+			dccget->channel = dcc->channel;
 			dccget->target = g_strdup(dcc->server ? dcc->server->nick : "??");
 			memcpy(&dccget->addr, &dcc->addr, sizeof(dcc->addr));
 			if (dccget->addr.family == AF_INET) {
@@ -314,7 +314,7 @@ SERVER_DCC_REC *dcc_server_find_port(const char *port_str)
 static void cmd_dcc_server(const char *data, IRC_SERVER_REC *server)
 {
 	void *free_arg;
-	GIOChannel *handle;
+	GIOChannel *channel;
 	SERVER_DCC_REC *dcc;
 	IPADDR own_ip;
 	char *flags, *port;
@@ -337,18 +337,18 @@ static void cmd_dcc_server(const char *data, IRC_SERVER_REC *server)
 		cmd_param_error(CMDERR_NOT_CONNECTED);
 	}
 
-	handle = dcc_listen_port(net_sendbuffer_handle(server->handle),
-				 &own_ip, atoi(port));
+	channel =
+	    dcc_listen_port_channel(net_sendbuffer_channel(server->handle), &own_ip, atoi(port));
 
-	if (handle == NULL) {
+	if (channel == NULL) {
 		cmd_param_error(CMDERR_ERRNO);
 	}
 
 	dcc = dcc_server_create(server, flags);
-	dcc->handle = handle;
+	dcc->channel = channel;
 	dcc->port = atoi(port);
 	dcc->tagconn =
-	    i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_server_listen, dcc);
+	    i_input_add(dcc->channel, I_INPUT_READ, (GInputFunction) dcc_server_listen, dcc);
 
 	signal_emit("dcc server started", 1, dcc);
 

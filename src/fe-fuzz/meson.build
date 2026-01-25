@@ -3,7 +3,8 @@
 subdir('irc')
 subdir('fe-common')
 
-executable('irssi-fuzz',
+executable(
+  'irssi-fuzz',
   files(
     'null-logger.c',
     'irssi.c',
@@ -14,15 +15,16 @@ executable('irssi-fuzz',
     libcore_a,
     libfuzzer_fe_common_core_a,
   ],
-  link_args : [fuzzer_lib],
+  link_args : [ fuzzer_lib ],
   link_language : fuzzer_link_language,
   include_directories : rootinc,
   implicit_include_directories : false,
   install : true,
-  dependencies : dep
+  dependencies : dep,
 )
 
-executable('server-fuzz',
+executable(
+  'server-fuzz',
   files(
     'null-logger.c',
     'server.c',
@@ -37,12 +39,12 @@ executable('server-fuzz',
     libfe_irc_dcc_a,
     libfe_irc_notifylist_a,
   ],
-  link_args : [fuzzer_lib],
+  link_args : [ fuzzer_lib ],
   link_language : fuzzer_link_language,
   include_directories : rootinc,
   implicit_include_directories : false,
   install : true,
-  dependencies : dep
+  dependencies : dep,
 )
 
 # noinst_headers = files(

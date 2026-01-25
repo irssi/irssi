@@ -11,4 +11,5 @@ install_data(
     'scriptassist.pl',
     'usercount.pl',
   ),
-  install_dir : scriptdir)
+  install_dir : scriptdir,
+)

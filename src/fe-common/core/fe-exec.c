@@ -305,9 +305,9 @@ static void process_exec(PROCESS_REC *rec, const char *cmd)
 		GIOChannel *outio = i_io_channel_new(in[1]);
 
 		rec->in = i_io_channel_new(out[0]);
-		rec->out = net_sendbuffer_create(outio, 0);
+		rec->out = net_sendbuffer_create_channel(outio, 0);
 
-                close(out[1]);
+		close(out[1]);
 		close(in[0]);
 		pidwait_add(rec->pid);
                 return;
@@ -360,7 +360,7 @@ static void sig_exec_input_reader(PROCESS_REC *rec)
 
 	g_return_if_fail(rec != NULL);
 
-	recvlen = net_receive(rec->in, tmpbuf, sizeof(tmpbuf));
+	recvlen = net_receive_channel(rec->in, tmpbuf, sizeof(tmpbuf));
 	do {
 		ret = line_split(tmpbuf, recvlen, &str, &rec->databuf);
 		if (ret == -1) {

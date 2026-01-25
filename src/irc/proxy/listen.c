@@ -47,7 +47,7 @@ static int is_all_digits(const char *s)
 	return strspn(s, "0123456789") == strlen(s);
 }
 
-static GIOChannel *net_listen_unix(const char *path)
+static GIOChannel *net_listen_unix_channel(const char *path)
 {
 	struct sockaddr_un sa;
 	int saved_errno, handle;
@@ -84,16 +84,16 @@ error_close:
 	return NULL;
 }
 
-static GIOChannel *net_accept_unix(GIOChannel *handle)
+static GIOChannel *net_accept_unix_channel(GIOChannel *channel)
 {
 	struct sockaddr_un sa;
 	int ret;
 	socklen_t addrlen;
 
-	g_return_val_if_fail(handle != NULL, NULL);
+	g_return_val_if_fail(channel != NULL, NULL);
 
 	addrlen = sizeof sa;
-	ret = accept(g_io_channel_unix_get_fd(handle), (struct sockaddr *)&sa, &addrlen);
+	ret = accept(g_io_channel_unix_get_fd(channel), (struct sockaddr *) &sa, &addrlen);
 
 	if (ret < 0)
 		return NULL;
@@ -431,7 +431,7 @@ static void sig_listen(LISTEN_REC *listen)
 	CLIENT_REC *rec;
 	IPADDR ip;
 	NET_SENDBUF_REC *sendbuf;
-	GIOChannel *handle;
+	GIOChannel *channel;
 	char host[MAX_IP_LEN];
 	int port;
 	char *addr;
@@ -440,20 +440,20 @@ static void sig_listen(LISTEN_REC *listen)
 
 	/* accept connection */
 	if (listen->port) {
-		handle = net_accept(listen->handle, &ip, &port);
-		if (handle == NULL)
+		channel = net_accept_channel(listen->channel, &ip, &port);
+		if (channel == NULL)
 			return;
 		net_ip2host(&ip, host);
 		addr = g_strdup_printf("%s:%d", host, port);
 	} else {
 		/* no port => this is a unix socket */
-		handle = net_accept_unix(listen->handle);
-		if (handle == NULL)
+		channel = net_accept_unix_channel(listen->channel);
+		if (channel == NULL)
 			return;
 		addr = g_strdup("(local)");
 	}
 
-	sendbuf = net_sendbuffer_create(handle, 0);
+	sendbuf = net_sendbuffer_create_channel(channel, 0);
 	rec = g_new0(CLIENT_REC, 1);
 	rec->listen = listen;
 	rec->handle = sendbuf;
@@ -470,7 +470,7 @@ static void sig_listen(LISTEN_REC *listen)
 		rec->server = servers == NULL ? NULL :
 			IRC_SERVER(server_find_chatnet(listen->ircnet));
 	}
-	rec->recv_tag = i_input_add(handle, I_INPUT_READ, (GInputFunction) sig_listen_client, rec);
+	rec->recv_tag = i_input_add(channel, I_INPUT_READ, (GInputFunction) sig_listen_client, rec);
 
 	proxy_clients = g_slist_prepend(proxy_clients, rec);
 	listen->clients = g_slist_prepend(listen->clients, rec);
@@ -699,14 +699,14 @@ static void add_listen(const char *ircnet, int port, const char *port_or_path)
 {
 	LISTEN_REC *rec;
 	IPADDR ip4, ip6, *my_ip;
-	GIOChannel *handle;
+	GIOChannel *channel;
 
 	if (*port_or_path == '\0' || port < 0 || *ircnet == '\0')
 		return;
 
 	if (port == 0) {
 		/* listening on a unix socket */
-		handle = net_listen_unix(port_or_path);
+		channel = net_listen_unix_channel(port_or_path);
 	} else {
 		/* bind to specific host/ip? */
 		my_ip = NULL;
@@ -725,10 +725,10 @@ static void add_listen(const char *ircnet, int port, const char *port_or_path)
 			                          &ip6 :
 			                          &ip4;
 		}
-		handle = net_listen(my_ip, &port);
+		channel = net_listen_channel(my_ip, &port);
 	}
 
-	if (handle == NULL) {
+	if (channel == NULL) {
 		printtext(NULL, NULL, MSGLEVEL_CLIENTERROR,
 		          "Proxy: Listen in port %s failed: %s",
 		          port_or_path, g_strerror(errno));
@@ -736,12 +736,12 @@ static void add_listen(const char *ircnet, int port, const char *port_or_path)
 	}
 
 	rec = g_new0(LISTEN_REC, 1);
-	rec->handle = handle;
+	rec->channel = channel;
 	rec->ircnet = g_strdup(ircnet);
 	rec->port = port;
 	rec->port_or_path = g_strdup(port_or_path);
 
-	rec->tag = i_input_add(rec->handle, I_INPUT_READ, (GInputFunction) sig_listen, rec);
+	rec->tag = i_input_add(rec->channel, I_INPUT_READ, (GInputFunction) sig_listen, rec);
 
 	proxy_listens = g_slist_append(proxy_listens, rec);
 }
@@ -757,7 +757,7 @@ static void remove_listen(LISTEN_REC *rec)
 	if (rec->port == 0)
 		unlink(rec->port_or_path);
 
-	net_disconnect(rec->handle);
+	net_disconnect_channel(rec->channel);
 	g_source_remove(rec->tag);
 	g_free(rec->port_or_path);
 	g_free(rec->ircnet);

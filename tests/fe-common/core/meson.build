@@ -1,4 +1,5 @@
-test_test_formats = executable('test-formats',
+test_test_formats = executable(
+  'test-formats',
   files(
     'test-formats.c',
   ),
@@ -12,8 +13,11 @@ test_test_formats = executable('test-formats',
   ],
   include_directories : rootinc,
   implicit_include_directories : false,
-  dependencies : dep
+  dependencies : dep,
 )
-test('test-formats test', test_test_formats,
-  args : ['--tap'],
-  protocol : 'tap')
+test(
+  'test-formats test',
+  test_test_formats,
+  args : [ '--tap' ],
+  protocol : 'tap',
+)

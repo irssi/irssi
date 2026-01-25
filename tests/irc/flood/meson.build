@@ -1,4 +1,5 @@
-test_test_796 = executable('test-796',
+test_test_796 = executable(
+  'test-796',
   files(
     'test-796.c',
   ),
@@ -17,10 +18,13 @@ test_test_796 = executable('test-796',
   ],
   include_directories : rootinc,
   implicit_include_directories : false,
-  dependencies : dep
+  dependencies : dep,
 )
-test('test-796 test', test_test_796,
+test(
+  'test-796 test',
+  test_test_796,
   args : [
     '--tap',
   ],
-  protocol : 'tap')
+  protocol : 'tap',
+)

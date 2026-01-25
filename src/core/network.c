@@ -182,7 +182,7 @@ int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip)
 }
 
 /* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
+GIOChannel *net_connect_ip_channel(IPADDR *ip, int port, IPADDR *my_ip)
 {
 	int handle = -1;
 
@@ -202,7 +202,7 @@ GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip)
 }
 
 /* Connect to named UNIX socket */
-GIOChannel *net_connect_unix(const char *path)
+GIOChannel *net_connect_unix_channel(const char *path)
 {
 	struct sockaddr_un sa;
 	int handle, ret;
@@ -233,17 +233,25 @@ GIOChannel *net_connect_unix(const char *path)
 }
 
 /* Disconnect socket */
-void net_disconnect(GIOChannel *handle)
+void net_disconnect_channel(GIOChannel *channel)
 {
-	g_return_if_fail(handle != NULL);
+	g_return_if_fail(channel != NULL);
 
-	g_io_channel_shutdown(handle, TRUE, NULL);
-	g_io_channel_unref(handle);
+	g_io_channel_shutdown(channel, TRUE, NULL);
+	g_io_channel_unref(channel);
+}
+
+void net_disconnect_stream(GIOStream *stream)
+{
+	g_return_if_fail(stream != NULL);
+
+	g_io_stream_close(stream, NULL, NULL);
+	g_object_unref(stream);
 }
 
 /* Listen for connections on a socket. if `my_ip' is NULL, listen in any
    address. */
-GIOChannel *net_listen(IPADDR *my_ip, int *port)
+GIOChannel *net_listen_channel(IPADDR *my_ip, int *port)
 {
 	union sockaddr_union so;
 	int ret, handle, opt = 1;
@@ -296,16 +304,16 @@ GIOChannel *net_listen(IPADDR *my_ip, int *port)
 }
 
 /* Accept a connection on a socket */
-GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port)
+GIOChannel *net_accept_channel(GIOChannel *channel, IPADDR *addr, int *port)
 {
 	union sockaddr_union so;
 	int ret;
 	socklen_t addrlen;
 
-	g_return_val_if_fail(handle != NULL, NULL);
+	g_return_val_if_fail(channel != NULL, NULL);
 
 	addrlen = sizeof(so);
-	ret = accept(g_io_channel_unix_get_fd(handle), &so.sa, &addrlen);
+	ret = accept(g_io_channel_unix_get_fd(channel), &so.sa, &addrlen);
 
 	if (ret < 0)
 		return NULL;
@@ -318,16 +326,16 @@ GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port)
 }
 
 /* Read data from socket, return number of bytes read, -1 = error */
-int net_receive(GIOChannel *handle, char *buf, int len)
+int net_receive_channel(GIOChannel *channel, char *buf, int len)
 {
         gsize ret;
 	GIOStatus status;
 	GError *err = NULL;
 
-	g_return_val_if_fail(handle != NULL, -1);
+	g_return_val_if_fail(channel != NULL, -1);
 	g_return_val_if_fail(buf != NULL, -1);
 
-	status = g_io_channel_read_chars(handle, buf, len, &ret, &err);
+	status = g_io_channel_read_chars(channel, buf, len, &ret, &err);
 	if (err != NULL) {
 	        g_warning("%s", err->message);
 	        g_error_free(err);
@@ -338,17 +346,70 @@ int net_receive(GIOChannel *handle, char *buf, int len)
 	return ret;
 }
 
+int net_receive_stream(GIOStream *stream, char *buf, int len)
+{
+	GInputStream *iin;
+	GPollableInputStream *in;
+	GError *error;
+	gsize ret;
+
+	g_return_val_if_fail(stream != NULL, -1);
+	g_return_val_if_fail(buf != NULL, -1);
+
+	error = NULL;
+	iin = g_io_stream_get_input_stream(stream);
+	in = G_POLLABLE_INPUT_STREAM(iin);
+
+	ret = g_pollable_input_stream_read_nonblocking(in, buf, len, NULL, &error);
+	if (error == NULL) {
+		if (ret == 0) {
+			g_warning("net_receive returned has_pending:%d, is_closed:%d, connection "
+			          "is_closed:%d, %lu [%s]",
+			          g_input_stream_has_pending(iin), g_input_stream_is_closed(iin),
+			          g_io_stream_is_closed(stream), ret, buf);
+			return -1;
+		}
+		return ret;
+	} else if (error->code == G_IO_ERROR_WOULD_BLOCK) {
+		// g_warning("net_receive would block: %s, is_connected:%d", error->message,
+		// g_socket_connection_is_connected((GSocketConnection *)stream));
+		return 0;
+	} else {
+		g_warning("net_receive failed: %d:%s", error->code, error->message);
+		return -1;
+	}
+}
+
+int net_transmit_stream(GIOStream *stream, const char *data, int len)
+{
+	GPollableOutputStream *out;
+	gsize ret;
+	GError *err = NULL;
+
+	g_return_val_if_fail(stream != NULL, -1);
+	g_return_val_if_fail(data != NULL, -1);
+
+	out = G_POLLABLE_OUTPUT_STREAM(g_io_stream_get_output_stream(stream));
+	ret = g_pollable_output_stream_write_nonblocking(out, data, len, NULL, &err);
+	if (err == NULL || err->code == G_IO_ERROR_WOULD_BLOCK) {
+		return ret;
+	} else {
+		g_warning("net_transmit: %d:%s", err->code, err->message);
+		return -1;
+	}
+}
+
 /* Transmit data, return number of bytes sent, -1 = error */
-int net_transmit(GIOChannel *handle, const char *data, int len)
+int net_transmit_channel(GIOChannel *channel, const char *data, int len)
 {
         gsize ret;
 	GIOStatus status;
 	GError *err = NULL;
 
-	g_return_val_if_fail(handle != NULL, -1);
+	g_return_val_if_fail(channel != NULL, -1);
 	g_return_val_if_fail(data != NULL, -1);
 
-	status = g_io_channel_write_chars(handle, (char *) data, len, &ret, &err);
+	status = g_io_channel_write_chars(channel, (char *) data, len, &ret, &err);
 	if (err != NULL) {
 	        g_warning("%s", err->message);
 	        g_error_free(err);
@@ -360,17 +421,16 @@ int net_transmit(GIOChannel *handle, const char *data, int len)
 }
 
 /* Get socket address/port */
-int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port)
+int net_getsockname_channel(GIOChannel *channel, IPADDR *addr, int *port)
 {
 	union sockaddr_union so;
 	socklen_t addrlen;
 
-	g_return_val_if_fail(handle != NULL, -1);
+	g_return_val_if_fail(channel != NULL, -1);
 	g_return_val_if_fail(addr != NULL, -1);
 
 	addrlen = sizeof(so);
-	if (getsockname(g_io_channel_unix_get_fd(handle),
-			(struct sockaddr *) &so, &addrlen) == -1)
+	if (getsockname(g_io_channel_unix_get_fd(channel), (struct sockaddr *) &so, &addrlen) == -1)
 		return -1;
 
         sin_get_ip(&so, addr);
@@ -518,13 +578,13 @@ int net_host2ip(const char *host, IPADDR *ip)
 }
 
 /* Get socket error */
-int net_geterror(GIOChannel *handle)
+int net_geterror_channel(GIOChannel *channel)
 {
 	int data;
 	socklen_t len = sizeof(data);
 
-	if (getsockopt(g_io_channel_unix_get_fd(handle),
-		       SOL_SOCKET, SO_ERROR, (void *) &data, &len) == -1)
+	if (getsockopt(g_io_channel_unix_get_fd(channel), SOL_SOCKET, SO_ERROR, (void *) &data,
+	               &len) == -1)
 		return -1;
 
 	return data;

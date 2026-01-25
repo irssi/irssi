@@ -102,8 +102,7 @@ void dcc_get_send_received(GET_DCC_REC *dcc)
 	memcpy(dcc->count_buf, &recd, 4);
 
 	dcc->count_pos =
-		net_transmit(dcc->handle, dcc->count_buf+dcc->count_pos,
-			     4-dcc->count_pos);
+	    net_transmit_channel(dcc->channel, dcc->count_buf + dcc->count_pos, 4 - dcc->count_pos);
 	if (dcc->count_pos == 4) dcc->count_pos = 0;
 
 	/* count_pos might be -1 here. if this happens, the
@@ -112,7 +111,7 @@ void dcc_get_send_received(GET_DCC_REC *dcc)
 	   never, but I just want to do it right.. :) */
 	if (dcc->tagwrite == -1) {
 		dcc->tagwrite =
-		    i_input_add(dcc->handle, I_INPUT_WRITE, (GInputFunction) sig_dccget_send, dcc);
+		    i_input_add(dcc->channel, I_INPUT_WRITE, (GInputFunction) sig_dccget_send, dcc);
 	}
 }
 
@@ -123,8 +122,8 @@ static void sig_dccget_send(GET_DCC_REC *dcc)
 	int ret;
 
 	if (dcc->count_pos != 0) {
-		ret = net_transmit(dcc->handle, dcc->count_buf+dcc->count_pos,
-				   4-dcc->count_pos);
+		ret = net_transmit_channel(dcc->channel, dcc->count_buf + dcc->count_pos,
+		                           4 - dcc->count_pos);
 
 		if (dcc->count_pos <= 0)
 			dcc->count_pos = ret;
@@ -157,8 +156,8 @@ static void sig_dccget_receive(GET_DCC_REC *dcc)
 	}
 
 	for (;;) {
-		ret = net_receive(dcc->handle, dcc_get_recv_buffer,
-				  DCC_GET_RECV_BUFFER_SIZE);
+		ret = net_receive_channel(dcc->channel, dcc_get_recv_buffer,
+		                          DCC_GET_RECV_BUFFER_SIZE);
 		if (ret == 0) break;
 
 		if (ret < 0) {
@@ -194,7 +193,7 @@ void sig_dccget_connected(GET_DCC_REC *dcc)
         int ret, ret_errno, temphandle, old_umask;
 
 	if (!dcc->from_dccserver) {
-		if (net_geterror(dcc->handle) != 0) {
+		if (net_geterror_channel(dcc->channel) != 0) {
 			/* error connecting */
 			signal_emit("dcc error connect", 1, dcc);
 			dcc_destroy(DCC(dcc));
@@ -285,13 +284,13 @@ void sig_dccget_connected(GET_DCC_REC *dcc)
 		return;
 	}
 	dcc->tagread =
-	    i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) sig_dccget_receive, dcc);
+	    i_input_add(dcc->channel, I_INPUT_READ, (GInputFunction) sig_dccget_receive, dcc);
 	signal_emit("dcc connected", 1, dcc);
 
 	if (dcc->from_dccserver) {
 		str = g_strdup_printf("121 %s %d\n",
 				      dcc->server ? dcc->server->nick : "??", 0);
-		net_transmit(dcc->handle, str, strlen(str));
+		net_transmit_channel(dcc->channel, str, strlen(str));
 	}
 }
 
@@ -307,10 +306,10 @@ void dcc_get_connect(GET_DCC_REC *dcc)
 		return;
 	}
 
-	dcc->handle = dcc_connect_ip(&dcc->addr, dcc->port);
+	dcc->channel = dcc_connect_ip_channel(&dcc->addr, dcc->port);
 
-	if (dcc->handle != NULL) {
-		dcc->tagconn = i_input_add(dcc->handle, I_INPUT_WRITE | I_INPUT_READ,
+	if (dcc->channel != NULL) {
+		dcc->tagconn = i_input_add(dcc->channel, I_INPUT_WRITE | I_INPUT_READ,
 		                           (GInputFunction) sig_dccget_connected, dcc);
 	} else {
 		/* error connecting */
@@ -321,43 +320,43 @@ void dcc_get_connect(GET_DCC_REC *dcc)
 
 static void dcc_get_listen(GET_DCC_REC *dcc)
 {
-	GIOChannel *handle;
+	GIOChannel *channel;
 	IPADDR addr;
 	int port;
 
 	/* accept connection */
-	handle = net_accept(dcc->handle, &addr, &port);
-	if (handle == NULL)
+	channel = net_accept_channel(dcc->channel, &addr, &port);
+	if (channel == NULL)
 		return;
 
-	net_disconnect(dcc->handle);
+	net_disconnect_channel(dcc->channel);
 	g_source_remove(dcc->tagconn);
 	dcc->tagconn = -1;
 
 	dcc->starttime = time(NULL);
-	dcc->handle = handle;
+	dcc->channel = channel;
 	memcpy(&dcc->addr, &addr, sizeof(IPADDR));
 	net_ip2host(&dcc->addr, dcc->addrstr);
 	dcc->port = port;
 
-	dcc->tagconn = i_input_add(handle, I_INPUT_READ | I_INPUT_WRITE,
+	dcc->tagconn = i_input_add(channel, I_INPUT_READ | I_INPUT_WRITE,
 	                           (GInputFunction) sig_dccget_connected, dcc);
 }
 
 void dcc_get_passive(GET_DCC_REC *dcc)
 {
-	GIOChannel *handle;
+	GIOChannel *channel;
 	IPADDR own_ip;
 	int port;
 	char host[MAX_IP_LEN];
 
-	handle = dcc_listen(net_sendbuffer_handle(dcc->server->handle),
-			    &own_ip, &port);
-	if (handle == NULL)
+	channel = dcc_listen_channel(net_sendbuffer_channel(dcc->server->handle), &own_ip, &port);
+	if (channel == NULL)
 		cmd_return_error(CMDERR_ERRNO);
 
-	dcc->handle = handle;
-	dcc->tagconn = i_input_add(dcc->handle, I_INPUT_READ, (GInputFunction) dcc_get_listen, dcc);
+	dcc->channel = channel;
+	dcc->tagconn =
+	    i_input_add(dcc->channel, I_INPUT_READ, (GInputFunction) dcc_get_listen, dcc);
 
 	/* Let's send the reply to the other client! */
 	dcc_ip2str(&own_ip, host);
@@ -581,7 +580,7 @@ void cmd_dcc_receive(const char *data, DCC_GET_FUNC accept_func,
 
 		next = tmp->next;
 		if (IS_DCC_GET(dcc) && g_ascii_strcasecmp(dcc->nick, nick) == 0 &&
-		    (dcc_is_waiting_user(dcc) || dcc->from_dccserver) &&
+		    (dcc_is_waiting_user_channel(dcc) || dcc->from_dccserver) &&
 		    (*fname == '\0' || g_strcmp0(dcc->arg, fname) == 0)) {
 			found = TRUE;
 			if (!dcc_is_passive(dcc))

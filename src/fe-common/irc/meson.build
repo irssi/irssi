@@ -1,6 +1,7 @@
 # this file is part of irssi
 
-libfe_common_irc_a = static_library('fe_common_irc',
+libfe_common_irc_a = static_library(
+  'fe_common_irc',
   files(
     'fe-cap.c',
     'fe-common-irc.c',
@@ -27,14 +28,17 @@ libfe_common_irc_a = static_library('fe_common_irc',
     def_helpdir,
     def_themesdir,
   ],
-  dependencies : dep)
-shared_library('fe_common_irc',
+  dependencies : dep,
+)
+shared_library(
+  'fe_common_irc',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
   link_with : dl_cross_irc_core + dl_cross_irssi_main,
   link_whole : libfe_common_irc_a,
-  override_options : ['b_lundef=false'])
+  override_options : [ 'b_lundef=false' ],
+)
 
 install_headers(
   files(
@@ -43,7 +47,8 @@ install_headers(
     'module-formats.h',
     'module.h',
   ),
-  subdir : incdir / 'src' / 'fe-common' / 'irc')
+  subdir : incdir / 'src' / 'fe-common' / 'irc',
+)
 
 subdir('dcc')
 subdir('notifylist')

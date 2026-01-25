@@ -57,34 +57,40 @@ int i_io_channel_read_block(GIOChannel *channel, void *data, int len);
 int net_connect_ip_handle(const IPADDR *ip, int port, const IPADDR *my_ip);
 
 /* Connect to socket with ip address and SSL*/
-GIOChannel *net_connect_ip_ssl(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *server);
+GIOChannel *net_connect_ip_ssl_channel(IPADDR *ip, int port, IPADDR *my_ip, SERVER_REC *server);
 /* Start TLS */
-GIOChannel *net_start_ssl(SERVER_REC *server);
+GIOChannel *net_start_ssl_channel(SERVER_REC *server);
 
-int irssi_ssl_handshake(GIOChannel *handle);
+int irssi_ssl_handshake_channel(GIOChannel *channel);
 /* Connect to socket with ip address */
-GIOChannel *net_connect_ip(IPADDR *ip, int port, IPADDR *my_ip);
+GIOChannel *net_connect_ip_channel(IPADDR *ip, int port, IPADDR *my_ip);
 /* Connect to named UNIX socket */
-GIOChannel *net_connect_unix(const char *path);
+GIOChannel *net_connect_unix_channel(const char *path);
 /* Disconnect socket */
-void net_disconnect(GIOChannel *handle);
+void net_disconnect_channel(GIOChannel *channel);
+/* Disconnect socket */
+void net_disconnect_stream(GIOStream *stream);
 
 /* Listen for connections on a socket */
-GIOChannel *net_listen(IPADDR *my_ip, int *port);
+GIOChannel *net_listen_channel(IPADDR *my_ip, int *port);
 /* Accept a connection on a socket */
-GIOChannel *net_accept(GIOChannel *handle, IPADDR *addr, int *port);
+GIOChannel *net_accept_channel(GIOChannel *channel, IPADDR *addr, int *port);
 
 /* Read data from socket, return number of bytes read, -1 = error */
-int net_receive(GIOChannel *handle, char *buf, int len);
+int net_receive_channel(GIOChannel *channel, char *buf, int len);
+/* Read data from stream, return number of bytes read, -1 = error */
+int net_receive_stream(GIOStream *stream, char *buf, int len);
 /* Transmit data, return number of bytes sent, -1 = error */
-int net_transmit(GIOChannel *handle, const char *data, int len);
+int net_transmit_channel(GIOChannel *channel, const char *data, int len);
+/* Transmit data, return number of bytes sent, -1 = error */
+int net_transmit_stream(GIOStream *stream, const char *data, int len);
 
 /* Get the first IP address for host, both IPv4 and IPv6 if possible. */
 int net_gethostbyname_first_ips(const char *addr, GResolverNameLookupFlags flags, IPADDR *ip4,
                                 IPADDR *ip6);
 
 /* Get socket address/port */
-int net_getsockname(GIOChannel *handle, IPADDR *addr, int *port);
+int net_getsockname_channel(GIOChannel *channel, IPADDR *addr, int *port);
 
 /* IPADDR -> char* translation. `host' must be at least MAX_IP_LEN bytes */
 int net_ip2host(IPADDR *ip, char *host);
@@ -92,7 +98,7 @@ int net_ip2host(IPADDR *ip, char *host);
 int net_host2ip(const char *host, IPADDR *ip);
 
 /* Get socket error */
-int net_geterror(GIOChannel *handle);
+int net_geterror_channel(GIOChannel *channel);
 
 /* Get name of TCP service */
 char *net_getservbyport(int port);

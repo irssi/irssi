@@ -1,6 +1,7 @@
 # this file is part of irssi
 
-libirc_notifylist_sm = shared_library('irc_notifylist',
+libirc_notifylist_sm = shared_library(
+  'irc_notifylist',
   files(
     'notify-commands.c',
     'notify-ison.c',
@@ -15,9 +16,10 @@ libirc_notifylist_sm = shared_library('irc_notifylist',
   install_dir : moduledir,
   link_with : dl_cross_irc_core + dl_cross_irssi_main,
   dependencies : dep,
-  override_options : ['b_lundef=false'])
+  override_options : [ 'b_lundef=false' ],
+)
 
-dl_cross_irc_notifylist = []
+dl_cross_irc_notifylist = [  ]
 if need_dl_cross_link
   dl_cross_irc_notifylist += libirc_notifylist_sm
 endif
@@ -28,4 +30,5 @@ install_headers(
     'notify-setup.h',
     'notifylist.h',
   ),
-  subdir : incdir / 'src' / 'irc' / 'notifylist')
+  subdir : incdir / 'src' / 'irc' / 'notifylist',
+)

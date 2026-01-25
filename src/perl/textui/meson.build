@@ -1,18 +1,19 @@
-shared_library('TextUI',
-  [ xsubpp.process(
-    files(
-      'Statusbar.xs',
-      'TextBufferView.xs',
-      'TextBuffer.xs',
-      'TextUI.xs',
+shared_library(
+  'TextUI',
+  [
+    xsubpp.process(
+      files(
+        'Statusbar.xs',
+        'TextBufferView.xs',
+        'TextBuffer.xs',
+        'TextUI.xs',
+      ),
+      extra_args : [
+        '-typemap', '../common/typemap',
+        '-typemap', '../ui/typemap',
+      ],
     ),
-    extra_args : [
-      '-typemap',
-      '../common/typemap',
-      '-typemap',
-      '../ui/typemap',
-    ],
-  ) ]
+  ]
   + files(
     'module.h',
   ),
@@ -24,7 +25,7 @@ shared_library('TextUI',
   implicit_include_directories : true,
   dependencies : dep + [ perl_dep ],
   link_with : dl_cross_perl_core + dl_cross_irssi_main,
-  override_options : ['b_lundef=false'],
+  override_options : [ 'b_lundef=false' ],
 )
 
 install_headers(
@@ -33,6 +34,6 @@ install_headers(
   ),
   install_dir : perlmoddir / 'Irssi',
 )
-  
+
 # 'Makefile.PL.in',
 # 'typemap',

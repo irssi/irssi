@@ -572,6 +572,16 @@ static void irc_parse_incoming(SERVER_REC *server)
 	server_unref(server);
 }
 
+static gboolean irc_parse_incoming_source(GObject *pollable_stream, SERVER_REC *server)
+{
+	g_return_val_if_fail(server != NULL, FALSE);
+	// g_warning("irc_parse_incoming_source");
+
+	irc_parse_incoming(server);
+
+	return TRUE;
+}
+
 static void irc_init_server(IRC_SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
@@ -579,8 +589,20 @@ static void irc_init_server(IRC_SERVER_REC *server)
 	if (!IS_IRC_SERVER(server))
 		return;
 
-	server->readtag = i_input_add(net_sendbuffer_handle(server->handle), I_INPUT_READ,
-	                              (GInputFunction) irc_parse_incoming, server);
+	if (server->handle->channel != NULL) {
+		server->readtag = i_input_add(net_sendbuffer_channel(server->handle), I_INPUT_READ,
+		                              (GInputFunction) irc_parse_incoming, server);
+	} else {
+		GInputStream *in;
+		GSource *source;
+
+		in = g_io_stream_get_input_stream(server->handle->stream);
+		source = g_pollable_input_stream_create_source(G_POLLABLE_INPUT_STREAM(in), NULL);
+		g_source_set_callback(source, G_SOURCE_FUNC(irc_parse_incoming_source), server,
+		                      NULL);
+		server->readtag = g_source_attach(source, NULL);
+		g_warning("readtag: %d", server->readtag);
+	}
 }
 
 void irc_irc_init(void)

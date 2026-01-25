@@ -3,4 +3,5 @@ install_data(
     'default.theme',
     'colorless.theme',
   ),
-  install_dir : themedir)
+  install_dir : themedir,
+)

@@ -17,12 +17,10 @@ typedef struct {
         ((dcc)->starttime != 0)
 
 /* not connected, we're waiting for other side to connect */
-#define dcc_is_listening(dcc) \
-        ((dcc)->handle != NULL && (dcc)->starttime == 0)
+#define dcc_is_listening_channel(dcc) ((dcc)->channel != NULL && (dcc)->starttime == 0)
 
 /* not connected, waiting for user to accept it */
-#define dcc_is_waiting_user(dcc) \
-        ((dcc)->handle == NULL)
+#define dcc_is_waiting_user_channel(dcc) ((dcc)->channel == NULL)
 
 /* passive DCC */
 #define dcc_is_passive(dcc) \
@@ -52,9 +50,9 @@ void dcc_ip2str(IPADDR *ip, char *str);
 void dcc_str2ip(const char *str, IPADDR *ip);
 
 /* Start listening for incoming connections */
-GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port);
+GIOChannel *dcc_listen_channel(GIOChannel *iface, IPADDR *ip, int *port);
 /* Connect to specified IP address using the correct own_ip. */
-GIOChannel *dcc_connect_ip(IPADDR *ip, int port);
+GIOChannel *dcc_connect_ip_channel(IPADDR *ip, int port);
 
 /* Close DCC - sends "dcc closed" signal and calls dcc_destroy() */
 void dcc_close(DCC_REC *dcc);

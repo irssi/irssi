@@ -1,4 +1,5 @@
-test_test_paste_join_multiline = executable('test-paste-join-multiline',
+test_test_paste_join_multiline = executable(
+  'test-paste-join-multiline',
   files(
     '../../src/fe-text/gui-entry.c',
     '../../src/fe-text/gui-printtext.c',
@@ -25,7 +26,9 @@ test_test_paste_join_multiline = executable('test-paste-join-multiline',
   implicit_include_directories : false,
   dependencies : dep + textui_dep,
 )
-test('test-paste-join-multiline test', test_test_paste_join_multiline,
-  args : ['--tap'],
-  protocol : 'tap')
-
+test(
+  'test-paste-join-multiline test',
+  test_test_paste_join_multiline,
+  args : [ '--tap' ],
+  protocol : 'tap',
+)

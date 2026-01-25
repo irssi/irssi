@@ -116,6 +116,7 @@ install_data(
     'whowas',
     'window',
   ),
-  install_dir : helpdir)
+  install_dir : helpdir,
+)
 
 # subdir('in')

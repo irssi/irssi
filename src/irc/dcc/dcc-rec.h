@@ -15,7 +15,7 @@ IPADDR addr; /* address we're connected in */
 char addrstr[MAX_IP_LEN]; /* in readable form */
 int port; /* port we're connected in */
 
-GIOChannel *handle; /* socket handle */
+GIOChannel *channel; /* socket handle */
 int tagconn, tagread, tagwrite;
 time_t starttime; /* transfer start time */
 uoff_t transfd; /* bytes transferred */

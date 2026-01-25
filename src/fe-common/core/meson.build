@@ -3,7 +3,7 @@
 if have_capsicum
   fe_common_core_capsicum_source = files('fe-capsicum.c')
 else
-  fe_common_core_capsicum_source = []
+  fe_common_core_capsicum_source = [  ]
 endif
 
 fe_common_core_sources = [
@@ -43,10 +43,11 @@ fe_common_core_sources = [
   + [
     default_theme_h,
     irssi_version_h,
-  ]
+  ],
 ]
 
-libfe_common_core_a = static_library('fe_common_core',
+libfe_common_core_a = static_library(
+  'fe_common_core',
   fe_common_core_sources,
   include_directories : rootinc,
   implicit_include_directories : false,
@@ -54,10 +55,12 @@ libfe_common_core_a = static_library('fe_common_core',
     def_helpdir,
     def_themesdir,
   ],
-  dependencies : dep)
+  dependencies : dep,
+)
 
 if want_fuzzer
-  libfuzzer_fe_common_core_a = static_library('fuzzer_fe_common_core',
+  libfuzzer_fe_common_core_a = static_library(
+    'fuzzer_fe_common_core',
     fe_common_core_sources,
     include_directories : rootinc,
     implicit_include_directories : false,
@@ -66,7 +69,8 @@ if want_fuzzer
       def_themesdir,
       def_suppress_printf_fallback,
     ],
-    dependencies : dep)
+    dependencies : dep,
+  )
 endif
 
 install_headers(
@@ -96,4 +100,5 @@ install_headers(
     'window-items.h',
     'windows-layout.h',
   ),
-  subdir : incdir / 'src' / 'fe-common' / 'core')
+  subdir : incdir / 'src' / 'fe-common' / 'core',
+)

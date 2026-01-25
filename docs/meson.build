@@ -13,6 +13,7 @@ install_data(
     'startup-HOWTO.html',
     'startup-HOWTO.txt',
   ),
-  install_dir : docdir)
+  install_dir : docdir,
+)
 
 subdir('help')

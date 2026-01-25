@@ -13,7 +13,7 @@ typedef struct {
 	char *ircnet;
 
 	int tag;
-	GIOChannel *handle;
+	GIOChannel *channel;
 
 	GSList *clients;
 

@@ -175,13 +175,13 @@ static void session_save_server(SERVER_REC *server, CONFIG_REC *config,
 	config_node_set_str(config, node, "tls_pinned_cert", server->connrec->tls_pinned_cert);
 	config_node_set_str(config, node, "tls_pinned_pubkey", server->connrec->tls_pinned_pubkey);
 
-	handle = g_io_channel_unix_get_fd(net_sendbuffer_handle(server->handle));
+	handle = g_io_channel_unix_get_fd(net_sendbuffer_channel(server->handle));
 	config_node_set_int(config, node, "handle", handle);
 
 	signal_emit("session save server", 3, server, config, node);
 
 	/* fake the server disconnection */
-	g_io_channel_unref(net_sendbuffer_handle(server->handle));
+	g_io_channel_unref(net_sendbuffer_channel(server->handle));
 	net_sendbuffer_destroy(server->handle, FALSE);
 	server->handle = NULL;
 
@@ -282,7 +282,7 @@ static void session_restore_server(CONFIG_NODE *node)
 	conn->tls_pinned_pubkey = g_strdup(config_node_get_str(node, "tls_pinned_pubkey", NULL));
 
 	conn->reconnection = TRUE;
-	conn->connect_handle = i_io_channel_new(handle);
+	conn->connect_channel = i_io_channel_new(handle);
 
 	server = proto->server_init_connect(conn);
 	server->version = g_strdup(config_node_get_str(node, "version", NULL));

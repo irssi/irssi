@@ -1,6 +1,7 @@
 # this file is part of irssi
 
-shared_library('otr_core',
+shared_library(
+  'otr_core',
   files(
     'key.c',
     'otr-fe.c',
@@ -15,7 +16,7 @@ shared_library('otr_core',
   install : true,
   install_dir : moduledir,
   dependencies : dep,
-  override_options : ['b_lundef=false'],
+  override_options : [ 'b_lundef=false' ],
 )
 
 # noinst_headers = files(
