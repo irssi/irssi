@@ -18,6 +18,7 @@
     -network:     Matches only on the given network.
     -channels:    Matches only on the given channels.
     -priority:    The priority to use when multiple highlights match.
+    -comment:     Comment for internal use.
 
     The text to highlight on; if no argument is given, the list of highlights
     will be displayed.
