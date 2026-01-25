@@ -8,6 +8,7 @@
 
 struct _NET_SENDBUF_REC {
 	GIOChannel *channel;
+	GIOStream *stream;
 	LINEBUF_REC *readbuffer; /* receive buffer */
 
 	int send_tag;
@@ -21,6 +22,9 @@ struct _NET_SENDBUF_REC {
 /* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
    is used */
 NET_SENDBUF_REC *net_sendbuffer_create_channel(GIOChannel *channel, int bufsize);
+/* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
+   is used */
+NET_SENDBUF_REC *net_sendbuffer_create_stream(GIOStream *stream, int bufsize);
 /* Destroy the buffer. `close' specifies if socket handle should be closed. */
 void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close);
 

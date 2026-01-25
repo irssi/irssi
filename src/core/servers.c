@@ -164,6 +164,27 @@ static void server_connect_callback_init_channel(SERVER_REC *server, GIOChannel 
 	server_connect_finished(server);
 }
 
+static gboolean server_connect_callback_init_source(GSocket *socket, GIOCondition cond,
+                                                    SERVER_REC *server)
+{
+	g_return_val_if_fail(IS_SERVER(server), FALSE);
+
+	if (cond & (G_IO_ERR | G_IO_HUP)) {
+		server->connection_lost = TRUE;
+		server->connrec->last_failed = server->connrec->last_connected;
+		server_connect_failed(server, "Connection broken"); // TODO: g_strerror(error)
+		return FALSE;
+	}
+
+	lookup_servers = g_slist_remove(lookup_servers, server);
+	g_source_remove(server->connect_tag);
+	server->connect_tag = -1;
+
+	server_connect_finished(server);
+
+	return FALSE;
+}
+
 static void server_connect_callback_init_ssl_channel(SERVER_REC *server, GIOChannel *channel)
 {
 	int error;
@@ -195,13 +216,96 @@ static void server_connect_callback_init_ssl_channel(SERVER_REC *server, GIOChan
 	server_connect_finished(server);
 }
 
+void server_real_connect_connected(GSocketClient *client, GAsyncResult *res, SERVER_REC *server)
+{
+	GIOStream *stream;
+	// int fd;
+	// GIOChannel *channel;
+	GError *error;
+	error = NULL;
+	stream = (GIOStream *) g_socket_client_connect_finish(client, res, &error);
+	g_object_unref(client);
+	if (error != NULL) {
+		const char *errormsg = error->message;
+		if (errormsg == NULL)
+			errormsg = "Connect failed";
+		if (error->code == G_IO_ERROR_CONNECTION_REFUSED) {
+#if 0
+			// TODO
+			if (own_ip != NULL) {
+				/* show the IP which is causing the error */
+				net_ip2host(own_ip, ipaddr);
+				errmsg2 = g_strconcat(errmsg, ": ", ipaddr, NULL);
+			}
+#endif
+			server->no_reconnect = TRUE;
+		}
+#if 0
+		// TODO
+		if (server->connrec->use_tls && errno == ENOSYS)
+			server->no_reconnect = TRUE;
+#endif
+
+		server->connection_lost = TRUE;
+		if (server->connrec->ipaddr != NULL) {
+			server->connrec->last_failed = server->connrec->last_connected;
+		}
+		server_connect_failed(server, errormsg);
+	} else {
+		GSocket *socket;
+		GSource *source;
+
+		server->connrec->last_failed = 0;
+		g_object_ref(stream); // TODO: unref
+		g_assert(server->handle == NULL);
+		server->handle = net_sendbuffer_create_stream(stream, 0);
+		socket = g_socket_connection_get_socket((GSocketConnection *) stream);
+		source = g_socket_create_source(socket, G_IO_IN | G_IO_OUT, NULL);
+		g_source_set_callback(source, G_SOURCE_FUNC(server_connect_callback_init_source),
+		                      server, NULL);
+		server->connect_tag = g_source_attach(source, NULL);
+	}
+}
+
+static void server_real_connect_event(GSocketClient *client, GSocketClientEvent event,
+                                      GSocketConnectable *connectable, GIOStream *stream,
+                                      SERVER_REC *server)
+{
+	if (event == G_SOCKET_CLIENT_TLS_HANDSHAKING) {
+		server->connrec->tls_identity =
+		    g_network_address_new(server->connrec->address, server->connrec->port);
+		g_tls_client_connection_set_server_identity((GTlsClientConnection *) stream,
+		                                            server->connrec->tls_identity);
+		if (server->connrec->tls_cert != NULL) {
+			GTlsCertificate *cert;
+			GError *err;
+			char *scert;
+			scert = convert_home(server->connrec->tls_cert);
+			err = NULL;
+			cert = g_tls_certificate_new_from_file(scert, &err);
+			if (err != NULL) {
+				g_warning("Tls Certificate: %s", err->message);
+			} else {
+				g_tls_connection_set_certificate((GTlsConnection *) stream, cert);
+			}
+			if (cert != NULL) {
+				g_object_unref(cert);
+			}
+			g_free(scert);
+		}
+	}
+}
+
 static void server_real_connect(SERVER_REC *server, IPADDR *ip, const char *unix_socket,
                                 const char *host)
 {
+	/*
 	GIOChannel *channel;
 	const char *errmsg;
 	char *errmsg2;
 	IPADDR *own_ip = NULL;
+	*/
+	GSocketClient *client;
 	char ipaddr[MAX_IP_LEN];
 	int port = 0;
 
@@ -218,6 +322,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip, const char *unix
 	if (server->connrec->no_connect)
 		return;
 
+/*
 	if (ip != NULL) {
 		own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
 		port = server->connrec->proxy != NULL ?
@@ -225,8 +330,44 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip, const char *unix
 		channel = net_connect_ip_channel(ip, port, own_ip);
 	} else {
 		channel = net_connect_unix_channel(unix_socket);
+*/
+
+	client = g_socket_client_new();
+	// server->connect_cancellable = g_cancellable_new();
+	if (ip != NULL || host != NULL) {
+		// own_ip = IPADDR_IS_V6(ip) ? server->connrec->own_ip6 : server->connrec->own_ip4;
+		port = /* server->connrec->proxy != NULL ?
+		          server->connrec->proxy_port : */
+		    server->connrec->port;
+		if (server->connrec->use_tls)
+			g_socket_client_set_tls(client, TRUE);
+		if (server->connrec->proxy != NULL) {
+			GProxyResolver *res;
+			char *addr;
+			addr = g_strdup_printf("socks://%s:%d", server->connrec->proxy,
+			                       server->connrec->proxy_port);
+			res = g_simple_proxy_resolver_new(addr, NULL);
+			// g_free(addr); // TODO: free
+			g_warning("configuring %s as proxy", addr);
+			g_socket_client_set_proxy_resolver(client, res);
+			g_socket_client_set_enable_proxy(client, TRUE);
+			server->connrec->proxy_resolver = res;
+		}
+		g_signal_connect(client, "event", G_CALLBACK(server_real_connect_event), server);
+		g_socket_client_connect_to_host_async(
+		    client, ip ? ipaddr : host, port, server->connect_cancellable,
+		    (GAsyncReadyCallback) server_real_connect_connected, server);
+		return;
+	} else {
+		GSocketAddress *addr;
+		addr = g_unix_socket_address_new(unix_socket);
+		g_socket_client_connect_async(
+		    client, (GSocketConnectable *) addr, server->connect_cancellable,
+		    (GAsyncReadyCallback) server_real_connect_connected, server);
+		return;
 	}
 
+#if 0
 	if (server->connrec->use_tls && channel != NULL) {
 		server->handle = net_sendbuffer_create_channel(channel, 0);
 		channel = net_start_ssl_channel(server);
@@ -270,6 +411,7 @@ static void server_real_connect(SERVER_REC *server, IPADDR *ip, const char *unix
 			    channel, I_INPUT_WRITE | I_INPUT_READ,
 			    (GInputFunction) server_connect_callback_init_channel, server);
 	}
+#endif
 }
 
 static int server_start_connect_resolve(SERVER_REC *server);
@@ -280,6 +422,11 @@ static void server_connect_use_resolved(SERVER_REC *server)
 	const char *errormsg;
 	RESOLVED_IP_REC *iprec = server->connrec->resolved_host;
 
+	if (server->connrec->proxy != NULL) {
+		server_real_connect(server, NULL, NULL, server->connrec->address);
+		errormsg = NULL;
+		return;
+	}
 	if (iprec->error != NULL) {
 		/* error */
 		ip = NULL;
@@ -368,8 +515,12 @@ static int server_start_connect_resolve(SERVER_REC *server)
 	const char *connect_address;
 	GResolverNameLookupFlags net_gethostbyname_flags;
 
+	if (server->connrec->proxy != NULL)
+		return TRUE;
+
 	connect_address =
-	    server->connrec->proxy != NULL ? server->connrec->proxy : server->connrec->address;
+	    /* server->connrec->proxy != NULL ? server->connrec->proxy : */ server->connrec
+	        ->address;
 	net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT;
 	if (server->connrec->family == AF_INET) {
 		net_gethostbyname_flags = G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY;
@@ -441,6 +592,7 @@ int server_start_connect(SERVER_REC *server)
 
 	server->rawlog = rawlog_create();
 
+	// TODO connect_connection
 	if (server->connrec->connect_channel != NULL) {
 		/* already connected */
 		GIOChannel *channel = server->connrec->connect_channel;
@@ -661,7 +813,11 @@ void server_connect_unref(SERVER_CONNECT_REC *conn)
 	g_free_not_null(conn->proxy_string);
 	g_free_not_null(conn->proxy_string_after);
 	g_free_not_null(conn->proxy_password);
+	if (conn->proxy_resolver != NULL)
+		g_object_unref(conn->proxy_resolver);
 
+	if (conn->tls_identity != NULL)
+		g_object_unref(conn->tls_identity);
 	g_free_not_null(conn->ipaddr);
 	g_free_not_null(conn->tag);
 	g_free_not_null(conn->address);

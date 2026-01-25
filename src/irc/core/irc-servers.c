@@ -387,6 +387,8 @@ static void event_starttls(IRC_SERVER_REC *server, const char *data)
 		char *str;
 		line_split("", -1, &str, &server->handle->readbuffer);
 	}
+#if 0
+	// TODO
 	ssl_channel = net_start_ssl_channel((SERVER_REC *) server);
 	if (ssl_channel != NULL) {
 		g_source_remove(server->readtag);
@@ -394,8 +396,11 @@ static void event_starttls(IRC_SERVER_REC *server, const char *data)
 		server->handle->channel = ssl_channel;
 		init_ssl_loop_channel(server, server->handle->channel);
 	} else {
-		g_warning("net_start_ssl failed");
+#endif
+	g_warning("net_start_ssl failed");
+#if 0
 	}
+#endif
 }
 
 static void event_registerfirst(IRC_SERVER_REC *server, const char *data)

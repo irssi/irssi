@@ -241,6 +241,14 @@ void net_disconnect_channel(GIOChannel *channel)
 	g_io_channel_unref(channel);
 }
 
+void net_disconnect_stream(GIOStream *stream)
+{
+	g_return_if_fail(stream != NULL);
+
+	g_io_stream_close(stream, NULL, NULL);
+	g_object_unref(stream);
+}
+
 /* Listen for connections on a socket. if `my_ip' is NULL, listen in any
    address. */
 GIOChannel *net_listen_channel(IPADDR *my_ip, int *port)
@@ -336,6 +344,59 @@ int net_receive_channel(GIOChannel *channel, char *buf, int len)
 		return -1; /* disconnected */
 
 	return ret;
+}
+
+int net_receive_stream(GIOStream *stream, char *buf, int len)
+{
+	GInputStream *iin;
+	GPollableInputStream *in;
+	GError *error;
+	gsize ret;
+
+	g_return_val_if_fail(stream != NULL, -1);
+	g_return_val_if_fail(buf != NULL, -1);
+
+	error = NULL;
+	iin = g_io_stream_get_input_stream(stream);
+	in = G_POLLABLE_INPUT_STREAM(iin);
+
+	ret = g_pollable_input_stream_read_nonblocking(in, buf, len, NULL, &error);
+	if (error == NULL) {
+		if (ret == 0) {
+			g_warning("net_receive returned has_pending:%d, is_closed:%d, connection "
+			          "is_closed:%d, %lu [%s]",
+			          g_input_stream_has_pending(iin), g_input_stream_is_closed(iin),
+			          g_io_stream_is_closed(stream), ret, buf);
+			return -1;
+		}
+		return ret;
+	} else if (error->code == G_IO_ERROR_WOULD_BLOCK) {
+		// g_warning("net_receive would block: %s, is_connected:%d", error->message,
+		// g_socket_connection_is_connected((GSocketConnection *)stream));
+		return 0;
+	} else {
+		g_warning("net_receive failed: %d:%s", error->code, error->message);
+		return -1;
+	}
+}
+
+int net_transmit_stream(GIOStream *stream, const char *data, int len)
+{
+	GPollableOutputStream *out;
+	gsize ret;
+	GError *err = NULL;
+
+	g_return_val_if_fail(stream != NULL, -1);
+	g_return_val_if_fail(data != NULL, -1);
+
+	out = G_POLLABLE_OUTPUT_STREAM(g_io_stream_get_output_stream(stream));
+	ret = g_pollable_output_stream_write_nonblocking(out, data, len, NULL, &err);
+	if (err == NULL || err->code == G_IO_ERROR_WOULD_BLOCK) {
+		return ret;
+	} else {
+		g_warning("net_transmit: %d:%s", err->code, err->message);
+		return -1;
+	}
 }
 
 /* Transmit data, return number of bytes sent, -1 = error */

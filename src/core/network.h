@@ -68,6 +68,8 @@ GIOChannel *net_connect_ip_channel(IPADDR *ip, int port, IPADDR *my_ip);
 GIOChannel *net_connect_unix_channel(const char *path);
 /* Disconnect socket */
 void net_disconnect_channel(GIOChannel *channel);
+/* Disconnect socket */
+void net_disconnect_stream(GIOStream *stream);
 
 /* Listen for connections on a socket */
 GIOChannel *net_listen_channel(IPADDR *my_ip, int *port);
@@ -76,8 +78,12 @@ GIOChannel *net_accept_channel(GIOChannel *channel, IPADDR *addr, int *port);
 
 /* Read data from socket, return number of bytes read, -1 = error */
 int net_receive_channel(GIOChannel *channel, char *buf, int len);
+/* Read data from stream, return number of bytes read, -1 = error */
+int net_receive_stream(GIOStream *stream, char *buf, int len);
 /* Transmit data, return number of bytes sent, -1 = error */
 int net_transmit_channel(GIOChannel *channel, const char *data, int len);
+/* Transmit data, return number of bytes sent, -1 = error */
+int net_transmit_stream(GIOStream *stream, const char *data, int len);
 
 /* Get the first IP address for host, both IPv4 and IPv6 if possible. */
 int net_gethostbyname_first_ips(const char *addr, GResolverNameLookupFlags flags, IPADDR *ip4,

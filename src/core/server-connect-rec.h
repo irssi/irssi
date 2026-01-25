@@ -9,6 +9,7 @@ int refcount;
 char *proxy;
 int proxy_port;
 char *proxy_string, *proxy_string_after, *proxy_password;
+GProxyResolver *proxy_resolver;
 
 unsigned short family; /* 0 = don't care, AF_INET or AF_INET6 */
 unsigned short chosen_family; /* family actually chosen during name resolution */
@@ -33,6 +34,7 @@ char *tls_capath;
 char *tls_ciphers;
 char *tls_pinned_cert;
 char *tls_pinned_pubkey;
+GSocketConnectable *tls_identity;
 
 GIOChannel *connect_channel; /* connect using this handle */
 
