@@ -24,7 +24,6 @@ if want_fuzzer
 endif
 
 install_headers(
-  files(
-    'common.h'
-  ),
-  subdir : incdir / 'src')
+  files('common.h'),
+  subdir : incdir / 'src',
+)

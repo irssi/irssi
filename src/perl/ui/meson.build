@@ -1,16 +1,18 @@
-shared_library('UI',
-  [ xsubpp.process(
-    files(
-      'Formats.xs',
-      'Themes.xs',
-      'UI.xs',
-      'Window.xs',
+shared_library(
+  'UI',
+  [
+    xsubpp.process(
+      files(
+        'Formats.xs',
+        'Themes.xs',
+        'UI.xs',
+        'Window.xs',
+      ),
+      extra_args : [
+        '-typemap', '../common/typemap',
+      ],
     ),
-    extra_args : [
-      '-typemap',
-      '../common/typemap',
-    ],
-  ) ]
+  ]
   + files(
     'module.h',
   ),
@@ -22,7 +24,7 @@ shared_library('UI',
   implicit_include_directories : true,
   dependencies : dep + [ perl_dep ],
   link_with : dl_cross_perl_core + dl_cross_irssi_main,
-  override_options : ['b_lundef=false'],
+  override_options : [ 'b_lundef=false' ],
 )
 
 install_headers(
@@ -31,6 +33,6 @@ install_headers(
   ),
   install_dir : perlmoddir / 'Irssi',
 )
-  
+
 # 'Makefile.PL.in',
 # 'typemap',

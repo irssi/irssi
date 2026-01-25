@@ -1,6 +1,7 @@
 # this file is part of irssi
 
-libconfig_a = static_library('irssi_config',
+libconfig_a = static_library(
+  'irssi_config',
   files(
     'get.c',
     'parse.c',
@@ -9,11 +10,13 @@ libconfig_a = static_library('irssi_config',
   ),
   include_directories : rootinc,
   implicit_include_directories : false,
-  dependencies : dep)
+  dependencies : dep,
+)
 
 install_headers(
   files(
     'iconfig.h',
     'module.h',
   ),
-  subdir : incdir / 'src' / 'lib-config')
+  subdir : incdir / 'src' / 'lib-config',
+)

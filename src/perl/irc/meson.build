@@ -1,21 +1,23 @@
-shared_library('Irc',
-  [ xsubpp.process(
-    files(
-      'Channel.xs',
-      'Client.xs',
-      'Ctcp.xs',
-      'Irc.xs',
-      'Modes.xs',
-      'Netsplit.xs',
-      'Notifylist.xs',
-      'Query.xs',
-      'Server.xs',
+shared_library(
+  'Irc',
+  [
+    xsubpp.process(
+      files(
+        'Channel.xs',
+        'Client.xs',
+        'Ctcp.xs',
+        'Irc.xs',
+        'Modes.xs',
+        'Netsplit.xs',
+        'Notifylist.xs',
+        'Query.xs',
+        'Server.xs',
+      ),
+      extra_args : [
+        '-typemap', '../common/typemap',
+      ],
     ),
-    extra_args : [
-      '-typemap',
-      '../common/typemap',
-    ],
-  ) ]
+  ]
   + files(
     'module.h',
   ),
@@ -27,7 +29,7 @@ shared_library('Irc',
   implicit_include_directories : true,
   dependencies : dep + [ perl_dep ],
   link_with : dl_cross_perl_core + dl_cross_irc_notifylist + dl_cross_irc_core + dl_cross_irssi_main,
-  override_options : ['b_lundef=false'],
+  override_options : [ 'b_lundef=false' ],
 )
 
 install_headers(
@@ -37,16 +39,18 @@ install_headers(
   install_dir : perlmoddir / 'Irssi',
 )
 
-shared_library('Dcc',
-  [ xsubpp.process(
-    files(
-      'Dcc.xs',
+shared_library(
+  'Dcc',
+  [
+    xsubpp.process(
+      files(
+        'Dcc.xs',
+      ),
+      extra_args : [
+        '-typemap', '../common/typemap',
+      ],
     ),
-    extra_args : [
-      '-typemap',
-      '../common/typemap',
-    ],
-  ) ]
+  ]
   + files(
     'module.h',
   ),
@@ -58,7 +62,7 @@ shared_library('Dcc',
   implicit_include_directories : true,
   dependencies : dep + [ perl_dep ],
   link_with : dl_cross_perl_core + dl_cross_irc_dcc + dl_cross_irc_core + dl_cross_irssi_main,
-  override_options : ['b_lundef=false'],
+  override_options : [ 'b_lundef=false' ],
 )
 
 install_headers(
@@ -67,6 +71,6 @@ install_headers(
   ),
   install_dir : perlmoddir / 'Irssi' / 'Irc',
 )
-  
+
 # 'Makefile.PL.in',
 # 'typemap',

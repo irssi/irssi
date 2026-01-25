@@ -1,4 +1,5 @@
-test_test_irc = executable('test-irc',
+test_test_irc = executable(
+  'test-irc',
   files(
     'test-irc.c',
   ),
@@ -13,15 +14,19 @@ test_test_irc = executable('test-irc',
   ],
   include_directories : rootinc,
   implicit_include_directories : false,
-  dependencies : dep
+  dependencies : dep,
 )
-test('test-irc test', test_test_irc,
+test(
+  'test-irc test',
+  test_test_irc,
   args : [
     '--tap',
   ],
-  protocol : 'tap')
+  protocol : 'tap',
+)
 
-test_test_channel_events = executable('test-channel-events',
+test_test_channel_events = executable(
+  'test-channel-events',
   files(
     'test-channel-events.c',
   ),
@@ -36,10 +41,13 @@ test_test_channel_events = executable('test-channel-events',
   ],
   include_directories : rootinc,
   implicit_include_directories : false,
-  dependencies : dep
+  dependencies : dep,
 )
-test('test-channel-events test', test_test_channel_events,
+test(
+  'test-channel-events test',
+  test_test_channel_events,
   args : [
     '--tap',
   ],
-  protocol : 'tap')
+  protocol : 'tap',
+)
