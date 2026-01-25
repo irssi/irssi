@@ -70,11 +70,11 @@ static void get_source_host_ip(void)
 	                 net_gethostbyname_first_ips(hostname, G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT,
 	                                             &ip4, &ip6) == 0;
 
-	if (source_host_ok)
+	if (source_host_ok) {
 		save_ips(&ip4, &ip6, &source_host_ip4, &source_host_ip6);
-	else {
-                g_free_and_null(source_host_ip4);
-                g_free_and_null(source_host_ip6);
+	} else {
+		g_free_and_null(source_host_ip4);
+		g_free_and_null(source_host_ip6);
 	}
 }
 

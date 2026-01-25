@@ -408,16 +408,43 @@ static RESOLVED_IP_REC *net_gethostbyname(const char *addr, GResolverNameLookupF
 	GResolver *resolver;
 	RESOLVED_IP_REC *iprec;
 
-#ifdef HAVE_CAPSICUM
-	if (capsicum_enabled())
-		return (capsicum_net_gethostbyname(addr, flags));
-#endif
-
 	g_return_val_if_fail(addr != NULL, NULL);
 
 	error = NULL;
 	resolver = g_resolver_get_default();
+#if GLIB_CHECK_VERSION(2, 59, 0)
 	ailist = g_resolver_lookup_by_name_with_flags(resolver, addr, flags, NULL, &error);
+#else
+	/* compatibility code for old GLib */
+	ailist = g_resolver_lookup_by_name(resolver, addr, NULL, &error);
+	if (error == NULL && flags) {
+		GList *ll, *lll;
+
+		for (ll = ailist; ll != NULL; ll = lll) {
+			GInetAddress *address;
+			GSocketFamily family;
+
+			address = G_INET_ADDRESS(ll->data);
+			family = g_inet_address_get_family(address);
+			lll = ll->next;
+
+			if ((flags == G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY &&
+			     family == G_SOCKET_FAMILY_IPV6) ||
+			    (flags == G_RESOLVER_NAME_LOOKUP_FLAGS_IPV6_ONLY &&
+			     family == G_SOCKET_FAMILY_IPV4)) {
+				g_object_unref(address);
+				ailist = g_list_delete_link(ailist, ll);
+			}
+		}
+
+		if (ailist == NULL) {
+			g_set_error(&error, G_RESOLVER_ERROR, G_RESOLVER_ERROR_NOT_FOUND,
+			            flags == G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY ?
+			                "IPv4 address not found for host" :
+			                "IPv6 address not found for host");
+		}
+	}
+#endif
 	iprec = g_new0(RESOLVED_IP_REC, 1);
 	if (error != NULL) {
 		iprec->error = error;
@@ -435,11 +462,16 @@ int net_gethostbyname_first_ips(const char *addr, GResolverNameLookupFlags flags
 {
 	RESOLVED_IP_REC *iprec;
 
+#ifdef HAVE_CAPSICUM
+	if (capsicum_enabled())
+		return (capsicum_net_gethostbyname(addr, ip4, ip6));
+#endif
+
 	iprec = net_gethostbyname(addr, flags);
 	if (iprec->error == NULL) {
 		GList *curr;
 
-		for (curr = iprec->ailist; curr->next; curr = curr->next) {
+		for (curr = iprec->ailist; curr; curr = curr->next) {
 			unsigned short family;
 			GInetAddress *addr;
 
