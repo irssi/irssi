@@ -1,6 +1,7 @@
 # this file is part of irssi
 
-libfe_irc_notifylist_a = static_library('fe_irc_notifylist',
+libfe_irc_notifylist_a = static_library(
+  'fe_irc_notifylist',
   files(
     'fe-notifylist.c',
     'module-formats.c',
@@ -11,18 +12,22 @@ libfe_irc_notifylist_a = static_library('fe_irc_notifylist',
     def_helpdir,
     def_sysconfdir,
   ],
-  dependencies : dep)
-shared_library('fe_irc_notifylist',
+  dependencies : dep,
+)
+shared_library(
+  'fe_irc_notifylist',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
   link_with : dl_cross_irc_notifylist + dl_cross_irssi_main,
   link_whole : libfe_irc_notifylist_a,
-  override_options : ['b_lundef=false'])
+  override_options : [ 'b_lundef=false' ],
+)
 
 install_headers(
   files(
     'module-formats.h',
     'module.h',
   ),
-  subdir : incdir / 'src' / 'fe-common' / 'irc' / 'notifylist')
+  subdir : incdir / 'src' / 'fe-common' / 'irc' / 'notifylist',
+)

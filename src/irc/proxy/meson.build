@@ -1,6 +1,7 @@
 # this file is part of irssi
 
-shared_library('irc_proxy',
+shared_library(
+  'irc_proxy',
   files(
     'dump.c',
     'listen.c',
@@ -13,7 +14,7 @@ shared_library('irc_proxy',
   install : true,
   install_dir : moduledir,
   dependencies : dep,
-  override_options : ['b_lundef=false'],
+  override_options : [ 'b_lundef=false' ],
 )
 
 # noinst_headers = files(

@@ -3,10 +3,11 @@
 if have_capsicum
   core_capsicum_source = files('capsicum.c')
 else
-  core_capsicum_source = []
+  core_capsicum_source = [  ]
 endif
 
-libcore_a = static_library('core',
+libcore_a = static_library(
+  'core',
   files(
     'args.c',
     'channels-setup.c',
@@ -63,7 +64,8 @@ libcore_a = static_library('core',
     def_moduledir,
     def_sysconfdir,
   ],
-  dependencies : dep)
+  dependencies : dep,
+)
 
 install_headers(
   files(
@@ -122,4 +124,5 @@ install_headers(
     'window-item-def.h',
     'write-buffer.h',
   ),
-  subdir : incdir / 'src' / 'core')
+  subdir : incdir / 'src' / 'core',
+)

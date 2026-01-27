@@ -1,6 +1,7 @@
 # this file is part of irssi
 
-fe_none_irssi = executable('botti',
+fe_none_irssi = executable(
+  'botti',
   files(
     'irssi.c',
   ),
@@ -13,7 +14,7 @@ fe_none_irssi = executable('botti',
     libcore_a,
   ],
   install : true,
-  dependencies : dep
+  dependencies : dep,
 )
 if need_dl_cross_link_main
   dl_cross_irssi_main = [ fe_none_irssi ]

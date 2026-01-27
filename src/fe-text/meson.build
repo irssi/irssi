@@ -1,6 +1,7 @@
 # this file is part of irssi
 
-fe_text_irssi = executable('irssi',
+fe_text_irssi = executable(
+  'irssi',
   files(
     #### terminfo_sources ####
     'term-terminfo.c',
@@ -40,10 +41,9 @@ fe_text_irssi = executable('irssi',
     libconfig_a,
     libcore_a,
     libfe_common_core_a,
-    ],
+  ],
   install : true,
-  dependencies : dep
-  + textui_dep
+  dependencies : dep + textui_dep,
 )
 if need_dl_cross_link_main
   dl_cross_irssi_main = [ fe_text_irssi ]
@@ -61,7 +61,8 @@ install_headers(
     'textbuffer-view.h',
     'textbuffer.h',
   ),
-  subdir : incdir / 'src' / 'fe-text')
+  subdir : incdir / 'src' / 'fe-text',
+)
 
 # noinst_headers = files(
 #   'gui-entry.h',

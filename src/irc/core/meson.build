@@ -1,6 +1,7 @@
 # this file is part of irssi
 
-libirc_core_a = static_library('irc_core',
+libirc_core_a = static_library(
+  'irc_core',
   files(
     'bans.c',
     'channel-events.c',
@@ -38,16 +39,19 @@ libirc_core_a = static_library('irc_core',
     def_moduledir,
     def_sysconfdir,
   ],
-  dependencies : dep)
-libirc_core_sm = shared_library('irc_core',
+  dependencies : dep,
+)
+libirc_core_sm = shared_library(
+  'irc_core',
   name_suffix : module_suffix,
   install : true,
   install_dir : moduledir,
   link_whole : libirc_core_a,
   link_with : dl_cross_irssi_main,
-  override_options : ['b_lundef=false'])
+  override_options : [ 'b_lundef=false' ],
+)
 
-dl_cross_irc_core = []
+dl_cross_irc_core = [  ]
 if need_dl_cross_link
   dl_cross_irc_core += libirc_core_sm
 endif
@@ -77,4 +81,5 @@ install_headers(
     'servers-idle.h',
     'servers-redirect.h',
   ),
-  subdir : incdir / 'src' / 'irc' / 'core')
+  subdir : incdir / 'src' / 'irc' / 'core',
+)
