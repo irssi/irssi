@@ -1,0 +1,32 @@
+name: Format meson files
+
+on:
+  push:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  muon-meson-fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+        with:
+          persist-credentials: false
+
+      # Build from source because Ubuntu 24.04 apt only has muon 0.2.0.
+      # Newer muons seem to format differently.
+      - name: Build muon from source
+        run: |
+          git clone --depth 1 --branch 0.5.0 https://github.com/muon-build/muon /tmp/muon
+          cd /tmp/muon
+          ./bootstrap.sh build
+          build/muon-bootstrap setup build
+          build/muon-bootstrap -C build samu
+          sudo build/muon -C build install
+
+      - name: Run muon fmt
+        run: |
+          find . -name meson.build -print0 | xargs -0 muon fmt -c .muon_fmt.ini -i
+          git diff --exit-code
