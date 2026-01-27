@@ -323,7 +323,7 @@ static void server_init_1(IRC_SERVER_REC *server)
 		server_init_2(server);
 }
 
-static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
+static void init_ssl_loop_channel(IRC_SERVER_REC *server, GIOChannel *channel)
 {
 	int error;
 	server->connrec->starttls = 1;
@@ -333,7 +333,7 @@ static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
 		server->starttls_tag = 0;
 	}
 
-	error = irssi_ssl_handshake(handle);
+	error = irssi_ssl_handshake_channel(channel);
 	if (error == -1) {
 		server->connection_lost = TRUE;
 		server_disconnect((SERVER_REC *) server);
@@ -341,8 +341,8 @@ static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
 	}
 	if (error & 1) { /* wait */
 		server->starttls_tag =
-		    i_input_add(handle, error == 1 ? I_INPUT_READ : I_INPUT_WRITE,
-		                (GInputFunction) init_ssl_loop, server);
+		    i_input_add(channel, error == 1 ? I_INPUT_READ : I_INPUT_WRITE,
+		                (GInputFunction) init_ssl_loop_channel, server);
 		return;
 	}
 	/* continue */
@@ -375,7 +375,7 @@ void irc_server_send_starttls(IRC_SERVER_REC *server)
 
 static void event_starttls(IRC_SERVER_REC *server, const char *data)
 {
-	GIOChannel *ssl_handle;
+	GIOChannel *ssl_channel;
 
 	g_return_if_fail(server != NULL);
 
@@ -387,12 +387,12 @@ static void event_starttls(IRC_SERVER_REC *server, const char *data)
 		char *str;
 		line_split("", -1, &str, &server->handle->readbuffer);
 	}
-	ssl_handle = net_start_ssl((SERVER_REC *) server);
-	if (ssl_handle != NULL) {
+	ssl_channel = net_start_ssl_channel((SERVER_REC *) server);
+	if (ssl_channel != NULL) {
 		g_source_remove(server->readtag);
 		server->readtag = -1;
-		server->handle->handle = ssl_handle;
-		init_ssl_loop(server, server->handle->handle);
+		server->handle->channel = ssl_channel;
+		init_ssl_loop_channel(server, server->handle->channel);
 	} else {
 		g_warning("net_start_ssl failed");
 	}
@@ -485,7 +485,7 @@ void irc_server_connect(SERVER_REC *server)
 {
 	g_return_if_fail(server != NULL);
 
-	if (server->connrec->connect_handle != NULL) {
+	if (server->connrec->connect_channel != NULL) {
 		/* an existing handle from upgrade */
 		IRC_SERVER_CONNECT_REC *conn;
 		int tls_disconnect;
@@ -495,8 +495,8 @@ void irc_server_connect(SERVER_REC *server)
 
 		if (tls_disconnect) {
 			/* we cannot use it, it is encrypted. force a reconnect */
-			g_io_channel_unref(conn->connect_handle);
-			conn->connect_handle = NULL;
+			g_io_channel_unref(conn->connect_channel);
+			conn->connect_channel = NULL;
 			server->session_reconnect = FALSE;
 			server_connect_ref((SERVER_CONNECT_REC *) conn);
 			server_disconnect(server);
@@ -695,23 +695,24 @@ void irc_server_send_away(IRC_SERVER_REC *server, const char *reason)
 
 void irc_server_send_data(IRC_SERVER_REC *server, const char *data, int len)
 {
-	if (net_sendbuffer_send(server->handle, data, len) == -1) {
-		/* something bad happened */
-		server->connection_lost = TRUE;
-		return;
-	}
+	if (server->handle != NULL) {
+		if (net_sendbuffer_send(server->handle, data, len) == -1) {
+			/* something bad happened */
+			server->connection_lost = TRUE;
+			return;
+		}
+		server->last_cmd = g_get_real_time();
 
-	server->last_cmd = g_get_real_time();
-
-	/* A bit kludgy way to do the flood protection. In ircnet, there
-	   actually is 1sec / 100 bytes penalty, but we rather want to deal
-	   with the max. 1000 bytes input buffer problem. If we send more
-	   than that with the burst, we'll get excess flooded. */
-	if (len < 100 || server->cmd_queue_speed <= 10)
-		server->wait_cmd = 0;
-	else {
-		server->wait_cmd = server->last_cmd;
-		server->wait_cmd += (2 + len / 100) * G_USEC_PER_SEC;
+		/* A bit kludgy way to do the flood protection. In ircnet, there
+		   actually is 1sec / 100 bytes penalty, but we rather want to deal
+		   with the max. 1000 bytes input buffer problem. If we send more
+		   than that with the burst, we'll get excess flooded. */
+		if (len < 100 || server->cmd_queue_speed <= 10)
+			server->wait_cmd = 0;
+		else {
+			server->wait_cmd = server->last_cmd;
+			server->wait_cmd += (2 + len / 100) * G_USEC_PER_SEC;
+		}
 	}
 }
 

@@ -34,7 +34,7 @@ char *tls_ciphers;
 char *tls_pinned_cert;
 char *tls_pinned_pubkey;
 
-GIOChannel *connect_handle; /* connect using this handle */
+GIOChannel *connect_channel; /* connect using this handle */
 
 /* when reconnecting, the old server status */
 unsigned int reconnection:1; /* we're trying to reconnect a connected server */

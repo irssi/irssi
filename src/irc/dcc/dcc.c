@@ -109,7 +109,8 @@ void dcc_destroy(DCC_REC *dcc)
 	dcc->destroyed = TRUE;
 	signal_emit("dcc destroyed", 1, dcc);
 
-	if (dcc->handle != NULL) net_disconnect(dcc->handle);
+	if (dcc->channel != NULL)
+		net_disconnect_channel(dcc->channel);
 	if (dcc->tagconn != -1) g_source_remove(dcc->tagconn);
 	if (dcc->tagread != -1) g_source_remove(dcc->tagread);
 	if (dcc->tagwrite != -1) g_source_remove(dcc->tagwrite);
@@ -132,7 +133,7 @@ DCC_REC *dcc_find_request_latest(int type)
 	for (tmp = dcc_conns; tmp != NULL; tmp = tmp->next) {
 		DCC_REC *dcc = tmp->data;
 
-		if (dcc->type == type && dcc_is_waiting_user(dcc))
+		if (dcc->type == type && dcc_is_waiting_user_channel(dcc))
 			latest = dcc;
 	}
 
@@ -195,14 +196,14 @@ void dcc_str2ip(const char *str, IPADDR *ip)
 }
 
 /* Start listening for incoming connections */
-GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
+GIOChannel *dcc_listen_channel(GIOChannel *iface, IPADDR *ip, int *port)
 {
-        GIOChannel *handle;
+	GIOChannel *channel;
 	IPADDR *listen_ip = NULL;
 	const char *dcc_port, *p, *own_ip;
 	int first, last;
 
-	if (net_getsockname(iface, ip, NULL) == -1)
+	if (net_getsockname_channel(iface, ip, NULL) == -1)
 		return NULL;
 
 	/* figure out if we want to listen in IPv4 address or in "any" address,
@@ -222,7 +223,7 @@ GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 	if (first == 0) {
                 /* random port */
 		*port = 0;
-		return net_listen(listen_ip, port);
+		return net_listen_channel(listen_ip, port);
 	}
 
         /* get last port */
@@ -240,20 +241,20 @@ GIOChannel *dcc_listen(GIOChannel *iface, IPADDR *ip, int *port)
 
         /* use the first available port */
 	for (*port = first; *port <= last; (*port)++) {
-		handle = net_listen(listen_ip, port);
-		if (handle != NULL)
-                        return handle;
+		channel = net_listen_channel(listen_ip, port);
+		if (channel != NULL)
+			return channel;
 	}
 
         return NULL;
 }
 
 /* Connect to specified IP address using the correct own_ip. */
-GIOChannel *dcc_connect_ip(IPADDR *ip, int port)
+GIOChannel *dcc_connect_ip_channel(IPADDR *ip, int port)
 {
 	IPADDR *own_ip, temp_ip;
 	const char *own_ip_str;
-	GIOChannel *handle;
+	GIOChannel *channel;
 
 	own_ip_str = settings_get_str("dcc_own_ip");
 	own_ip = NULL;
@@ -267,13 +268,13 @@ GIOChannel *dcc_connect_ip(IPADDR *ip, int port)
 	if (own_ip == NULL)
 		own_ip = IPADDR_IS_V6(ip) ? source_host_ip6 : source_host_ip4;
 
-	handle = net_connect_ip(ip, port, own_ip);
-	if (handle == NULL && errno == EADDRNOTAVAIL && own_ip != NULL) {
+	channel = net_connect_ip_channel(ip, port, own_ip);
+	if (channel == NULL && errno == EADDRNOTAVAIL && own_ip != NULL) {
 		/* dcc_own_ip is external address */
 		own_ip = IPADDR_IS_V6(ip) ? source_host_ip6 : source_host_ip4;
-		handle = net_connect_ip(ip, port, own_ip);
+		channel = net_connect_ip_channel(ip, port, own_ip);
 	}
-	return handle;
+	return channel;
 }
 
 /* Server connected - update server for DCC records that have
