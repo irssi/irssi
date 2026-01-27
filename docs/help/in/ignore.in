@@ -38,7 +38,7 @@
     /IGNORE * JOINS
     /IGNORE * CTCPS
     /IGNORE -except *!*@*.irssi.org CTCPS
-    /IGNORE #irssi ALL -PUBLIC -ACTIONS
+    /IGNORE #irssi ALL -PUBLICS -ACTIONS
     /IGNORE -replies *!*@*.irssi.org ALL
     /IGNORE -regexp -pattern (away|gone|back|playing|returned) * ACTIONS
     /IGNORE -regexp -pattern (away|gone|back|playing|returned) #channel ACTIONS
@@ -47,7 +47,7 @@
     /IGNORE *away* NICKS
     /IGNORE #irssi NO_ACT JOINS PARTS QUITS
     /IGNORE mike NO_ACT -MSGS
-    /IGNORE mike HIDDEN PUBLIC JOINS PARTS QUITS
+    /IGNORE mike HIDDEN PUBLICS JOINS PARTS QUITS
     /IGNORE -time 5days christmas PUBLICS
     /IGNORE -time 300 mike PUBLICS
 
