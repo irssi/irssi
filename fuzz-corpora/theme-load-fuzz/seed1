@@ -1,0 +1,5 @@
+abstracts = {
+  line_start = "%B-%W!%B-%n ";
+  timestamp = "%K$0-%n ";
+  hilight = "%_$*%_";
+};

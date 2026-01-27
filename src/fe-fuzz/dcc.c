@@ -1,7 +1,8 @@
 /*
- server.c : irssi
+ dcc.c : irssi DCC fuzzer
 
     Copyright (C) 2018 Joseph Bisch
+    Copyright (C) 2025 irssi contributors
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -110,7 +111,6 @@ void irc_server_init_bare_minimum(IRC_SERVER_REC *server) {
 }
 
 void test_server() {
-	//SERVER_REC *server; /* = g_new0(IRC_SERVER_REC, 1); */
 	CHAT_PROTOCOL_REC *proto;
 	SERVER_CONNECT_REC *conn;
 	GIOChannel *handle = g_io_channel_unix_new(open("/dev/null", O_RDWR));
@@ -126,7 +126,6 @@ void test_server() {
 	server->handle = net_sendbuffer_create(handle, 0);
 
 	/* we skip some initialisations that would try to send data */
-	/* irc_servers_deinit(); */
 	irc_session_deinit();
 	irc_irc_deinit();
 
@@ -137,7 +136,6 @@ void test_server() {
 
 	irc_irc_init();
 	irc_session_init();
-	/* irc_servers_init(); */
 
 	server_connect_unref(conn);
 }
@@ -162,46 +160,83 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 	return 0;
 }
 
+/*
+ * DCC fuzzer input format:
+ * Byte 0: DCC type selector
+ *   0 = DCC SEND
+ *   1 = DCC CHAT
+ *   2 = DCC RESUME
+ *   3 = DCC ACCEPT
+ *   4 = DCC GET (command parsing)
+ *   5 = DCC CLOSE (command parsing)
+ *   6+ = raw CTCP DCC message
+ *
+ * Remaining bytes: DCC message content (after "DCC <type> ")
+ */
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-	gboolean prefixedChoice = (gboolean)*data;
 	gchar *copy;
-	gchar **lines;
-	gchar **head;
+	gchar *ctcp_line;
+	gchar *irc_line;
+	int dcc_type;
+	int disconnected;
 
-	if (size < 1) return 0;
+	if (size < 2) return 0;
 
 	test_server();
 
+	dcc_type = data[0] % 7;
 	copy = g_strndup((const gchar *)data+1, size-1);
-	lines = g_strsplit(copy, "\r\n", -1);
-	head = lines;
 
-	for (; *lines != NULL; lines++) {
-		gchar *prefixedLine;
-		int disconnected;
-		if (prefixedChoice) {
-			prefixedLine = g_strdup_printf(":user %s\n", *lines);
-		} else {
-			prefixedLine = g_strdup_printf("%s\n", *lines);
-		}
-		server_ref(server);
-		signal_emit("server incoming", 2, server, prefixedLine);
-		disconnected = server->disconnected;
-		/*
-		if (disconnected) {
-		        server_connect_unref(server->connrec);
-		}
-		*/
-		server_unref(server);
-		if (disconnected) {
-			/* reconnect */
-			test_server();
-		}
-		g_free(prefixedLine);
+	/* Replace any NUL bytes with spaces to allow fuzzing of full data */
+	for (size_t i = 0; i < size-1; i++) {
+		if (copy[i] == '\0') copy[i] = ' ';
 	}
 
-	g_strfreev(head);
+	switch (dcc_type) {
+	case 0: /* DCC SEND - file transfer offer */
+		ctcp_line = g_strdup_printf("DCC SEND %s", copy);
+		break;
+	case 1: /* DCC CHAT - chat request */
+		ctcp_line = g_strdup_printf("DCC CHAT %s", copy);
+		break;
+	case 2: /* DCC RESUME - resume file transfer */
+		ctcp_line = g_strdup_printf("DCC RESUME %s", copy);
+		break;
+	case 3: /* DCC ACCEPT - accept resume */
+		ctcp_line = g_strdup_printf("DCC ACCEPT %s", copy);
+		break;
+	case 4: /* DCC GET command parsing */
+		/* Test the command parsing path via "dcc get" command */
+		signal_emit("command dcc get", 3, copy, server, NULL);
+		g_free(copy);
+		goto cleanup;
+	case 5: /* DCC CLOSE command parsing */
+		/* Test the command parsing path via "dcc close" command */
+		signal_emit("command dcc close", 3, copy, server, NULL);
+		g_free(copy);
+		goto cleanup;
+	default: /* Raw CTCP DCC message */
+		ctcp_line = g_strdup_printf("DCC %s", copy);
+		break;
+	}
+
+	/* Emit the DCC CTCP message signal directly
+	 * This is what happens when a CTCP message is received:
+	 * server, data, nick, addr, target, chat */
+	server_ref(server);
+	signal_emit("ctcp msg dcc", 6, server, ctcp_line,
+		    "fuzzernick", "fuzzer@host.example.com", "testnick", NULL);
+	disconnected = server->disconnected;
+	server_unref(server);
+
+	g_free(ctcp_line);
 	g_free(copy);
-	server_disconnect(server);
+
+cleanup:
+	if (server->disconnected) {
+		test_server();
+	} else {
+		server_disconnect(server);
+	}
 	return 0;
 }
