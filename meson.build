@@ -28,40 +28,40 @@ elif host_machine.system() == 'cygwin'
   need_dl_cross_link_main = true
 endif
 
-includedir          = get_option('includedir')
-incdir              = 'irssi'
-moduledir           = get_option('libdir') / incdir / 'modules'
-helpdir             = get_option('datadir') / incdir / 'help'
-themedir            = get_option('datadir') / incdir / 'themes'
-scriptdir           = get_option('datadir') / incdir / 'scripts'
-docdir              = get_option('docdir') != '' ? get_option('docdir') : (get_option('datadir') / 'doc' / incdir)
+includedir = get_option('includedir')
+incdir = 'irssi'
+moduledir = get_option('libdir') / incdir / 'modules'
+helpdir = get_option('datadir') / incdir / 'help'
+themedir = get_option('datadir') / incdir / 'themes'
+scriptdir = get_option('datadir') / incdir / 'scripts'
+docdir = get_option('docdir') != '' ? get_option('docdir') : (get_option('datadir') / 'doc' / incdir)
 
-want_textui         = get_option('without-textui') != 'yes'
-want_bot            = get_option('with-bot') == 'yes'
-want_fuzzer         = get_option('with-fuzzer') == 'yes'
-fuzzer_lib          = get_option('with-fuzzer-lib')
+want_textui = get_option('without-textui') != 'yes'
+want_bot = get_option('with-bot') == 'yes'
+want_fuzzer = get_option('with-fuzzer') == 'yes'
+fuzzer_lib = get_option('with-fuzzer-lib')
 fuzzer_link_language = get_option('fuzzer-link-language')
-want_proxy          = get_option('with-proxy') == 'yes'
+want_proxy = get_option('with-proxy') == 'yes'
 
-require_capsicum    = get_option('with-capsicum') == 'yes'
-want_capsicum       = get_option('with-capsicum') != 'no'
+require_capsicum = get_option('with-capsicum') == 'yes'
+want_capsicum = get_option('with-capsicum') != 'no'
 
 require_libutf8proc = get_option('disable-utf8proc') == 'no'
-want_libutf8proc    = get_option('disable-utf8proc') != 'yes'
+want_libutf8proc = get_option('disable-utf8proc') != 'yes'
 
-require_perl        = get_option('with-perl') == 'yes'
-want_perl           = get_option('with-perl') != 'no'
-with_perl_lib       = get_option('with-perl-lib')
+require_perl = get_option('with-perl') == 'yes'
+want_perl = get_option('with-perl') != 'no'
+with_perl_lib = get_option('with-perl-lib')
 
-require_otr         = get_option('with-otr') == 'yes'
-want_otr            = get_option('with-otr') != 'no'
+require_otr = get_option('with-otr') == 'yes'
+want_otr = get_option('with-otr') != 'no'
 
-want_glib_internal  = get_option('install-glib') != 'no'
+want_glib_internal = get_option('install-glib') != 'no'
 require_glib_internal = get_option('install-glib') == 'force'
 
 want_static_dependency = get_option('static-dependency') == 'yes'
 
-package_version     = get_option('PACKAGE_VERSION') != '' ? get_option('PACKAGE_VERSION') : meson.project_version()
+package_version = get_option('PACKAGE_VERSION') != '' ? get_option('PACKAGE_VERSION') : meson.project_version()
 
 fs = import('fs')
 if fs.exists('config.status') or fs.exists('irssi-version.h') or fs.exists('default-config.h') or fs.exists('default-theme.h') or fs.exists('src/perl/irssi-core.pl.h') or fs.exists('src/perl/perl-signals-list.h') or fs.exists('irssi-config.h')
@@ -97,11 +97,11 @@ run_command(
   check : false,
 )
 
-def_moduledir  = '-D' + 'MODULEDIR'  + '="' + (get_option('prefix') / moduledir) + '"'
+def_moduledir = '-D' + 'MODULEDIR' + '="' + (get_option('prefix') / moduledir) + '"'
 def_sysconfdir = '-D' + 'SYSCONFDIR' + '="' + (get_option('prefix') / get_option('sysconfdir')) + '"'
-def_helpdir    = '-D' + 'HELPDIR'    + '="' + (get_option('prefix') / helpdir) + '"'
-def_themesdir  = '-D' + 'THEMESDIR'  + '="' + (get_option('prefix') / themedir) + '"'
-def_scriptdir  = '-D' + 'SCRIPTDIR'  + '="' + (get_option('prefix') / scriptdir) + '"'
+def_helpdir = '-D' + 'HELPDIR' + '="' + (get_option('prefix') / helpdir) + '"'
+def_themesdir = '-D' + 'THEMESDIR' + '="' + (get_option('prefix') / themedir) + '"'
+def_scriptdir = '-D' + 'SCRIPTDIR' + '="' + (get_option('prefix') / scriptdir) + '"'
 
 def_suppress_printf_fallback = '-D' + 'SUPPRESS_PRINTF_FALLBACK'
 
@@ -938,10 +938,8 @@ pc.generate(
   description : 'Irssi chat client',
   version : package_version,
   requires : pc_requires,
-  variables : [
-    'irssimoduledir=${libdir}' / incdir / 'modules',
-    'signalsfile=' + signalsfile
-  ])
+  variables : [ 'irssimoduledir=${libdir}' / incdir / 'modules', 'signalsfile=' + signalsfile ],
+)
 
 ###########
 # irssi.1 #
