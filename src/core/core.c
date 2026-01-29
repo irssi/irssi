@@ -45,6 +45,7 @@
 #include <irssi/src/core/servers.h>
 #include <irssi/src/core/special-vars.h>
 #include <irssi/src/core/write-buffer.h>
+#include <irssi/src/core/utf8.h>
 
 #include <irssi/src/core/channels.h>
 #include <irssi/src/core/queries.h>
@@ -285,6 +286,7 @@ void core_init(void)
 	i_refstr_init();
 	special_vars_init();
 	wcwidth_wrapper_init();
+	utf8_init();
 
 	settings_add_str("misc", "ignore_signals", "");
 	settings_add_bool("misc", "override_coredump_limit", FALSE);
@@ -316,6 +318,7 @@ void core_deinit(void)
 	signal_remove("chat protocol created", (SIGNAL_FUNC) reread_setup);
 	signal_remove("irssi init finished", (SIGNAL_FUNC) sig_irssi_init_finished);
 
+	utf8_deinit();
 	wcwidth_wrapper_deinit();
 	special_vars_deinit();
 	i_refstr_deinit();
