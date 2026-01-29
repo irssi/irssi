@@ -1,24 +1,30 @@
 #ifndef IRSSI_CORE_NET_SENDBUFFER_H
 #define IRSSI_CORE_NET_SENDBUFFER_H
 
+#include <irssi/src/common.h>
+
 #define DEFAULT_BUFFER_SIZE 8192
 #define MAX_BUFFER_SIZE 1048576
 
 struct _NET_SENDBUF_REC {
-        GIOChannel *handle;
-        LINEBUF_REC *readbuffer; /* receive buffer */
+	GIOChannel *channel;
+	GIOStream *stream;
+	LINEBUF_REC *readbuffer; /* receive buffer */
 
-        int send_tag;
-        int bufsize;
-        int bufpos;
-        char *buffer; /* Buffer is NULL until it's actually needed. */
-        int def_bufsize;
-        unsigned int dead:1;
+	int send_tag;
+	int bufsize;
+	int bufpos;
+	char *buffer; /* Buffer is NULL until it's actually needed. */
+	int def_bufsize;
+	unsigned int dead : 1;
 };
 
 /* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
    is used */
-NET_SENDBUF_REC *net_sendbuffer_create(GIOChannel *handle, int bufsize);
+NET_SENDBUF_REC *net_sendbuffer_create_channel(GIOChannel *channel, int bufsize);
+/* Create new buffer - if `bufsize' is zero or less, DEFAULT_BUFFER_SIZE
+   is used */
+NET_SENDBUF_REC *net_sendbuffer_create_stream(GIOStream *stream, int bufsize);
 /* Destroy the buffer. `close' specifies if socket handle should be closed. */
 void net_sendbuffer_destroy(NET_SENDBUF_REC *rec, int close);
 
@@ -33,6 +39,6 @@ int net_sendbuffer_receive_line(NET_SENDBUF_REC *rec, char **str, int read_socke
 void net_sendbuffer_flush(NET_SENDBUF_REC *rec);
 
 /* Returns the socket handle */
-GIOChannel *net_sendbuffer_handle(NET_SENDBUF_REC *rec);
+GIOChannel *net_sendbuffer_channel(NET_SENDBUF_REC *rec);
 
 #endif
