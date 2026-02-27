@@ -766,6 +766,9 @@ void fe_events_numeric_init(void)
 	last_away_nick = NULL;
 	last_away_msg = NULL;
 
+	settings_add_bool("lookandfeel", "print_topic_on_join", TRUE);
+	settings_add_bool("lookandfeel", "print_url_on_join", TRUE);
+
 	/* clang-format off */
 	signal_add("event 221", (SIGNAL_FUNC) event_user_mode);
 	signal_add("event 303", (SIGNAL_FUNC) event_ison);
@@ -782,14 +785,22 @@ void fe_events_numeric_init(void)
 	signal_add("event 344", (SIGNAL_FUNC) event_hybrid_quiet_list); /* used by ircd-hybrid */
 	signal_add("event 346", (SIGNAL_FUNC) event_invite_list);
 	signal_add("event 433", (SIGNAL_FUNC) event_nick_in_use);
-	signal_add("event 332", (SIGNAL_FUNC) event_topic_get);
-	signal_add("event 333", (SIGNAL_FUNC) event_topic_info);
+
+	if (settings_get_bool("print_topic_on_join")) {
+		signal_add("event 332", (SIGNAL_FUNC) event_topic_get);
+		signal_add("event 333", (SIGNAL_FUNC) event_topic_info);
+	}
+
 	signal_add("event 324", (SIGNAL_FUNC) event_channel_mode);
 	signal_add("event 329", (SIGNAL_FUNC) event_channel_created);
 	signal_add("event 306", (SIGNAL_FUNC) event_nowaway);
 	signal_add("event 305", (SIGNAL_FUNC) event_unaway);
 	signal_add("event 301", (SIGNAL_FUNC) event_away);
-	signal_add("event 328", (SIGNAL_FUNC) event_chanserv_url);
+
+	if (settings_get_bool("print_url_on_join")) {
+		signal_add("event 328", (SIGNAL_FUNC) event_chanserv_url);
+	}
+
 	signal_add("event 302", (SIGNAL_FUNC) event_userhost);
 	signal_add("event 341", (SIGNAL_FUNC) event_sent_invite);
 
@@ -880,14 +891,22 @@ void fe_events_numeric_deinit(void)
 	signal_remove("event 344", (SIGNAL_FUNC) event_hybrid_quiet_list);
 	signal_remove("event 346", (SIGNAL_FUNC) event_invite_list);
 	signal_remove("event 433", (SIGNAL_FUNC) event_nick_in_use);
-	signal_remove("event 332", (SIGNAL_FUNC) event_topic_get);
-	signal_remove("event 333", (SIGNAL_FUNC) event_topic_info);
+
+	if (settings_get_bool("print_topic_on_join")) {
+		signal_remove("event 332", (SIGNAL_FUNC) event_topic_get);
+		signal_remove("event 333", (SIGNAL_FUNC) event_topic_info);
+	}
+
 	signal_remove("event 324", (SIGNAL_FUNC) event_channel_mode);
 	signal_remove("event 329", (SIGNAL_FUNC) event_channel_created);
 	signal_remove("event 306", (SIGNAL_FUNC) event_nowaway);
 	signal_remove("event 305", (SIGNAL_FUNC) event_unaway);
 	signal_remove("event 301", (SIGNAL_FUNC) event_away);
-	signal_remove("event 328", (SIGNAL_FUNC) event_chanserv_url);
+
+	if (settings_get_bool("print_url_on_join")) {
+		signal_remove("event 328", (SIGNAL_FUNC) event_chanserv_url);
+	}
+
 	signal_remove("event 302", (SIGNAL_FUNC) event_userhost);
 	signal_remove("event 341", (SIGNAL_FUNC) event_sent_invite);
 
