@@ -52,27 +52,62 @@ static const char *levels[] = {
 	/* clang-format on */
 };
 
+/* the levels which should be printed without plural-s */
+static char levels_no_s[] = {
+	/* clang-format off */
+	0,
+	0,
+	1 /* PUBLIC */,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	1 /* CLIENTNOTICE */,
+	0,
+	1 /* CLIENTERROR */,
+	1 /* HILIGHT */,
+	-1
+	/* clang-format on */
+};
+
+G_STATIC_ASSERT(G_N_ELEMENTS(levels) == G_N_ELEMENTS(levels_no_s));
+
 int level_get(const char *level)
 {
 	int n, len, match;
 
-	if (g_ascii_strcasecmp(level, "ALL") == 0 || g_strcmp0(level, "*") == 0)
+	len = strlen(level);
+	if (len == 0)
+		return 0;
+
+	/* partial match allowed, if it uniquely identifies the special level */
+	if (g_ascii_strncasecmp("ALL", level, MAX(len, 2)) == 0 || g_strcmp0(level, "*") == 0)
 		return MSGLEVEL_ALL;
 
-	if (g_ascii_strcasecmp(level, "NEVER") == 0)
+	if (g_ascii_strncasecmp("NEVER", level, MAX(len, 2)) == 0)
 		return MSGLEVEL_NEVER;
 
-	if (g_ascii_strcasecmp(level, "NO_ACT") == 0)
+	if (g_ascii_strncasecmp("NO_ACT", level, MAX(len, 3)) == 0 ||
+	    g_ascii_strncasecmp("NOACT", level, MAX(len, 3)) == 0)
 		return MSGLEVEL_NO_ACT;
 
-	if (g_ascii_strcasecmp(level, "NOHILIGHT") == 0)
+	if (g_ascii_strncasecmp("NOHILIGHT", level, MAX(len, 3)) == 0)
 		return MSGLEVEL_NOHILIGHT;
 
-	if (g_ascii_strcasecmp(level, "HIDDEN") == 0)
+	if (g_ascii_strncasecmp("HIDDEN", level, MAX(len, 3)) == 0)
 		return MSGLEVEL_HIDDEN;
-
-	len = strlen(level);
-	if (len == 0) return 0;
 
 	/* partial match allowed, as long as it's the only one that matches */
 	match = 0;
@@ -125,7 +160,8 @@ int level2bits(const char *level, int *errorp)
 		} else if (errorp != NULL)
 			*errorp = TRUE;
 
-       		while (*str == ' ') str++;
+		while (*str == ' ')
+			str++;
 		if (*str == '\0') break;
 
        		ptr = str;
@@ -157,7 +193,9 @@ char *bits2level(int bits)
 	} else {
 		for (n = 0; levels[n] != NULL; n++) {
 			if (bits & (1L << n))
-				g_string_append_printf(str, "%s ", levels[n]);
+				g_string_append_printf(str, "%.*s ",
+				                       (int) (strlen(levels[n]) - levels_no_s[n]),
+				                       levels[n]);
 		}
 	}
 
@@ -178,7 +216,7 @@ char *bits2level(int bits)
 int combine_level(int dest, const char *src)
 {
 	char **list, **item, *itemname;
-	int itemlevel;
+	int itemlevel, len;
 
 	g_return_val_if_fail(src != NULL, dest);
 
@@ -186,8 +224,9 @@ int combine_level(int dest, const char *src)
 	for (item = list; *item != NULL; item++) {
 		itemname = *item + (**item == '+' || **item == '-' || **item == '^' ? 1 : 0);
 		itemlevel = level_get(itemname);
+		len = strlen(itemname);
 
-		if (g_ascii_strcasecmp(itemname, "NONE") == 0)
+		if (g_ascii_strncasecmp("NONE", itemname, MAX(len, 3)) == 0)
 			dest = 0;
 		else if (**item == '-')
 			dest &= ~(itemlevel);

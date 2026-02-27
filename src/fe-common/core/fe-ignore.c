@@ -70,6 +70,8 @@ static void ignore_print(int index, IGNORE_REC *rec)
 		g_string_append_printf(options, "-network %s ", rec->servertag);
 	if (rec->pattern != NULL)
 		g_string_append_printf(options, "-pattern %s ", rec->pattern);
+	if (rec->comment != NULL)
+		g_string_append_printf(options, "-comment %s ", rec->comment);
 	if (rec->unignore_time != 0) {
 		ts = *localtime(&rec->unignore_time);
 		strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &ts);
@@ -114,19 +116,24 @@ static void cmd_ignore_show(void)
 	printformat(NULL, NULL, MSGLEVEL_CLIENTCRAP, TXT_IGNORE_FOOTER);
 }
 
-/* SYNTAX: IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
-                  [-network <network>] [-channels <channel>] [-time <time>] <mask> [<levels>]
-           IGNORE [-regexp | -full] [-pattern <pattern>] [-except] [-replies]
-                  [-network <network>] [-time <time>] <channels> [<levels>] */
+/* SYNTAX: IGNORE [-regexp | -full] [-oldpattern <pattern>] [-pattern <pattern>] [-except]
+                  [-replies] [-network <network>] [-channels <channel>] [-comment <comment>]
+                  [-time <time>] <mask> [<levels>]
+           IGNORE [-regexp | -full] [-oldpattern <pattern>] [-pattern <pattern>] [-except]
+                  [-replies] [-network <network>] [-time <time>] [-comment <comment>] <channels>
+                  [<levels>]
+           IGNORE [-regexp | -noregexp | -full | -nofull] [-pattern <pattern>] [-except | -noexcept]
+                  [-replies | -noreplies] [-network <network>] [-channels <channel>]
+                  [-comment <comment] [-time <time>] [-mask <mask>] <id> [<levels>] */
 /* NOTE: -network replaces the old -ircnet flag. */
 static void cmd_ignore(const char *data)
 {
 	GHashTable *optlist;
 	IGNORE_REC *rec;
-	char *patternarg, *chanarg, *mask, *levels, *timestr, *servertag;
+	char *oldpattern, *patternarg, *chanarg, *mask, *levels, *timestr, *servertag, *comment;
 	char **channels;
 	void *free_arg;
-	int new_ignore, msecs, level, flags;
+	int new_ignore, modify_ignore, msecs, level, nolev, flags, exception;
 
 	if (*data == '\0') {
 		cmd_ignore_show();
@@ -138,16 +145,22 @@ static void cmd_ignore(const char *data)
 			    "ignore", &optlist, &mask, &levels))
 		return;
 
+	oldpattern = g_hash_table_lookup(optlist, "oldpattern");
 	patternarg = g_hash_table_lookup(optlist, "pattern");
-        chanarg = g_hash_table_lookup(optlist, "channels");
+	if (oldpattern == NULL)
+		oldpattern = patternarg;
+	chanarg = g_hash_table_lookup(optlist, "channels");
 	servertag = g_hash_table_lookup(optlist, "network");
+	comment = g_hash_table_lookup(optlist, "comment");
+	exception = g_hash_table_lookup(optlist, "except") != NULL;
 	/* Allow -ircnet for backwards compatibility */
 	if (!servertag)
 		servertag = g_hash_table_lookup(optlist, "ircnet");
 
-	if (*mask == '\0') cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
-        if (*levels == '\0') levels = "ALL";
+	if (*mask == '\0')
+		cmd_param_error(CMDERR_NOT_ENOUGH_PARAMS);
 	level = level2bits(levels, NULL);
+	nolev = (~combine_level(MSGLEVEL_ALL, levels)) & MSGLEVEL_ALL;
 
 	msecs = 0;
 	timestr = g_hash_table_lookup(optlist, "time");
@@ -164,68 +177,150 @@ static void cmd_ignore(const char *data)
 	channels = (chanarg == NULL || *chanarg == '\0') ? NULL :
 		g_strsplit(chanarg, ",", -1);
 
-	flags = IGNORE_FIND_PATTERN;
-	if (level & MSGLEVEL_NO_ACT)
-		flags |= IGNORE_FIND_NOACT;
-	if (level & MSGLEVEL_HIDDEN)
-		flags |= IGNORE_FIND_HIDDEN;
-	if (level & MSGLEVEL_NOHILIGHT)
-		flags |= IGNORE_FIND_NOHILIGHT;
+	if (is_numeric(mask, '\0')) {
+		/* with index number */
+		GSList *tmp;
 
-	rec = ignore_find_full(servertag, mask, patternarg, channels, flags);
+		if (oldpattern != patternarg) {
+			g_strfreev(channels);
+			cmd_param_error(CMDERR_OPTION_UNKNOWN);
+		}
+
+		if ((g_hash_table_lookup(optlist, "except") != NULL &&
+		     g_hash_table_lookup(optlist, "noexcept") != NULL) ||
+		    (g_hash_table_lookup(optlist, "regexp") != NULL &&
+		     g_hash_table_lookup(optlist, "noregexp") != NULL) ||
+		    (g_hash_table_lookup(optlist, "full") != NULL &&
+		     g_hash_table_lookup(optlist, "nofull") != NULL) ||
+		    (g_hash_table_lookup(optlist, "replies") != NULL &&
+		     g_hash_table_lookup(optlist, "noreplies") != NULL)) {
+			g_strfreev(channels);
+			cmd_param_error(CMDERR_OPTION_AMBIGUOUS);
+		}
+
+		tmp = g_slist_nth(ignores, atoi(mask) - 1);
+		if (tmp == NULL) {
+			printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_IGNORE_NOT_FOUND, mask);
+			g_strfreev(channels);
+			cmd_params_free(free_arg);
+			return;
+		} else {
+			rec = tmp->data;
+			mask = g_hash_table_lookup(optlist, "mask");
+			modify_ignore = TRUE;
+		}
+	} else {
+		if (g_hash_table_lookup(optlist, "mask") != NULL) {
+			g_strfreev(channels);
+			cmd_param_error(CMDERR_OPTION_UNKNOWN);
+		}
+
+		flags = (oldpattern == NULL || g_strcmp0(oldpattern, "*") != 0) ?
+		            IGNORE_FIND_PATTERN :
+		            0;
+		if (level & MSGLEVEL_NO_ACT)
+			flags |= IGNORE_FIND_NO_ACT;
+		if (level & MSGLEVEL_HIDDEN)
+			flags |= IGNORE_FIND_HIDDEN;
+		if (level & MSGLEVEL_NOHILIGHT)
+			flags |= IGNORE_FIND_NOHILIGHT;
+		if (exception)
+			flags |= IGNORE_FIND_EXCEPT;
+
+		rec = ignore_find_full(servertag, mask, oldpattern, channels, flags);
+		modify_ignore = FALSE;
+	}
 	new_ignore = rec == NULL;
 
 	if (rec == NULL) {
 		rec = g_new0(IGNORE_REC, 1);
+	}
 
+	if (new_ignore || (modify_ignore && mask != NULL)) {
 		rec->mask = mask == NULL || *mask == '\0' ||
 			g_strcmp0(mask, "*") == 0 ? NULL : g_strdup(mask);
-		rec->channels = channels;
+	}
+
+	if (new_ignore || (modify_ignore && chanarg != NULL)) {
+		rec->channels =
+		    (channels == NULL || g_strcmp0(*channels, "*") == 0) ? NULL : channels;
 	} else {
-                g_free_and_null(rec->pattern);
 		g_strfreev(channels);
 	}
 
 	rec->level = combine_level(rec->level, levels);
 
-	if (rec->level == MSGLEVEL_NO_ACT) {
-		/* If only NO_ACT was specified add all levels; it makes no
-		 * sense on its own. */
-		rec->level |= MSGLEVEL_ALL;
-	}
-
-	if (rec->level == MSGLEVEL_HIDDEN) {
-		/* If only HIDDEN was specified add all levels; it makes no
-		 * sense on its own. */
-		rec->level |= MSGLEVEL_ALL;
-	}
-
-	if (rec->level == MSGLEVEL_NOHILIGHT) {
-		/* If only NOHILIGHT was specified add all levels; it makes no
-		 * sense on its own. */
-		rec->level |= MSGLEVEL_ALL;
-	}
-
-	if (new_ignore && rec->level == 0) {
+	if (new_ignore && rec->level == 0 && nolev != 0) {
 		/* tried to unignore levels from nonexisting ignore */
-		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE,
-			    TXT_IGNORE_NOT_FOUND, rec->mask);
+		printformat(NULL, NULL, MSGLEVEL_CLIENTNOTICE, TXT_IGNORE_NOT_FOUND,
+		            mask == NULL ? (chanarg == NULL ? "*" : chanarg) : mask);
 		g_free(rec->mask);
 		g_strfreev(rec->channels);
 		g_free(rec);
 		cmd_params_free(free_arg);
-                return;
+		return;
 	}
-	rec->servertag = (servertag == NULL || *servertag == '\0') ?
-		NULL : g_strdup(servertag);
-	rec->pattern = (patternarg == NULL || *patternarg == '\0') ?
-		NULL : g_strdup(patternarg);
-	rec->exception = g_hash_table_lookup(optlist, "except") != NULL;
-	rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
-	rec->fullword = g_hash_table_lookup(optlist, "full") != NULL;
-	rec->replies = g_hash_table_lookup(optlist, "replies") != NULL;
+
+	if (nolev == 0 &&
+	    (rec->level & ~(MSGLEVEL_NO_ACT | MSGLEVEL_HIDDEN | MSGLEVEL_NOHILIGHT)) == 0) {
+		/* If only NO_ACT / HIDDEN / NOHILIGHT was specified, add all levels; it makes no
+		 * sense on its own. */
+		rec->level |= MSGLEVEL_ALL;
+	}
+
+	if (new_ignore || (modify_ignore && servertag != NULL)) {
+		g_free(rec->servertag);
+
+		rec->servertag =
+		    servertag == NULL || *servertag == '\0' || g_strcmp0(servertag, "*") == 0 ?
+		        NULL :
+		        g_strdup(servertag);
+	}
+
+	if (comment != NULL) {
+		g_free(rec->comment);
+		rec->comment = *comment == '\0' ? NULL : g_strdup(comment);
+	}
+
+	if (patternarg != NULL && g_strcmp0(patternarg, "*") != 0) {
+		g_free(rec->pattern);
+		rec->pattern = *patternarg == '\0' ? NULL : g_strdup(patternarg);
+	}
+
+	if (modify_ignore) {
+		if (g_hash_table_lookup(optlist, "except") != NULL)
+			rec->exception = TRUE;
+		else if (g_hash_table_lookup(optlist, "noexcept") != NULL)
+			rec->exception = FALSE;
+	} else {
+		rec->exception = exception;
+	}
+
+	if (modify_ignore) {
+		if (g_hash_table_lookup(optlist, "regexp") != NULL)
+			rec->regexp = TRUE;
+		else if (g_hash_table_lookup(optlist, "noregexp") != NULL)
+			rec->regexp = FALSE;
+
+		if (g_hash_table_lookup(optlist, "full") != NULL)
+			rec->fullword = TRUE;
+		else if (g_hash_table_lookup(optlist, "nofull") != NULL)
+			rec->fullword = FALSE;
+
+		if (g_hash_table_lookup(optlist, "replies") != NULL)
+			rec->replies = TRUE;
+		else if (g_hash_table_lookup(optlist, "noreplies") != NULL)
+			rec->replies = FALSE;
+	} else if (new_ignore || patternarg != NULL) {
+		rec->regexp = g_hash_table_lookup(optlist, "regexp") != NULL;
+		rec->fullword = g_hash_table_lookup(optlist, "full") != NULL;
+		rec->replies = g_hash_table_lookup(optlist, "replies") != NULL;
+	}
+
 	if (msecs != 0)
 		rec->unignore_time = time(NULL)+msecs/1000;
+	else if (modify_ignore && timestr != NULL)
+		rec->unignore_time = 0;
 
 	if (new_ignore)
 		ignore_add_rec(rec);
@@ -266,10 +361,7 @@ static void cmd_unignore(const char *data)
 			chans[0] = mask;
 			mask = NULL;
 		}
-		rec = ignore_find_full("*", mask, NULL, (char **) chans, 0);
-		if (rec == NULL) {
-			rec = ignore_find_full("*", mask, NULL, (char **) chans, IGNORE_FIND_NOACT);
-		}
+		rec = ignore_find_full("*", mask, NULL, (char **) chans, IGNORE_FIND_ANY);
 	}
 
 	if (rec != NULL) {
@@ -305,7 +397,10 @@ void fe_ignore_init(void)
 	signal_add("ignore created", (SIGNAL_FUNC) sig_ignore_created);
 	signal_add("ignore changed", (SIGNAL_FUNC) sig_ignore_created);
 
-	command_set_options("ignore", "regexp full except replies -network -ircnet -time -pattern -channels");
+	command_set_options(
+	    "ignore",
+	    "regexp noregexp full nofull except noexcept replies noreplies -network ~-ircnet -time "
+	    "-oldpattern -pattern -mask -channels -comment");
 }
 
 void fe_ignore_deinit(void)

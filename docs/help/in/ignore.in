@@ -7,6 +7,7 @@
 
     -regexp:      Indicates that the pattern is a regular expression.
     -full:        Indicates that the pattern must match a full word.
+    -oldpattern:  The text pattern to edit.
     -pattern:     The text pattern to ignore.
     -except:      Negates the ignore.
     -replies:     Also ignore nicknames who are talking to anyone who matches
@@ -16,6 +17,7 @@
     -time:        The timeout to automatically remove the ignore.
                   Accepts units specified in days, hours, minutes, seconds,
                   milliseconds, or no unit for seconds.
+    -comment:     Comment for internal use.
 
     The mask, channels and levels to ignore; if no argument is provided, the
     list of ignores will be displayed.
@@ -31,6 +33,7 @@
     later be revealed using /WINDOW HIDELEVEL -HIDDEN
     The special level 'NOHILIGHT' can be used to suppress hilights without actually
     ignoring the message.
+    The old pattern '*' can be used to edit the first ignore matching the mask.
 
 %9Examples:%9
 
@@ -48,8 +51,8 @@
     /IGNORE #irssi NO_ACT JOINS PARTS QUITS
     /IGNORE mike NO_ACT -MSGS
     /IGNORE mike HIDDEN PUBLIC JOINS PARTS QUITS
-    /IGNORE -time 5days christmas PUBLICS
-    /IGNORE -time 300 mike PUBLICS
+    /IGNORE -time 5days christmas PUBLIC
+    /IGNORE -time 300 mike PUBLIC
 
 %9See also:%9 ACCEPT, SILENCE, UNIGNORE
 

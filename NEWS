@@ -3352,7 +3352,7 @@ v0.7.1 1999-03-08  Timo Sirainen <a@sicom.fi> [unstable]
 
           You can use these levels, ALL is set by default:
           ALL, CRAP, PUBLIC, MSGS, NOTICES, WALLOPS, SNOTES, ACTIONS, DCC,
-          CTCP, CLIENTNOTICES, CLIENTERRORS
+          CTCP, CLIENTNOTICE, CLIENTERROR
 	+ Automatically create query window when received msg (option)
 	+ No more "WHO: unknown commmand"s, all unknown commands are sent to
           server just like they were written
@@ -3613,7 +3613,7 @@ v0.3.0 1999-01-18  Timo Sirainen <a@sicom.fi>
            - /UNIGNORE <mask> <ignore level>
            - ignore page added to preferences
            - ignore levels: ALL, CRAP, CHAN, PUBLIC, MSGS, NOTICES, WALLOPS,
-             SNOTES, ACTIONS, DCC, CTCP, CLIENTNOTICES, CLIENTERRORS
+             SNOTES, ACTIONS, DCC, CTCP, CLIENTNOTICE, CLIENTERROR
         + autoignoring msg and ctcp flooders
         + options page added to preferences
         + invite lists (channel mode I)
