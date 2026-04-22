@@ -16,7 +16,7 @@
     -window:          Displays the output to the active window, or the window
                       specified in the targets parameter.
     -<server tag>:    The server tag the targets must be on.
-    -targets:         Logs the specified nicknames or channels.
+    -targets:         A list of nicknames or channels, separated by space, to log.
     -colors:          Also log the color codes of the messages.
 
     The filename of the log and the levels to match; if no argument is given,
@@ -32,7 +32,7 @@
 
 %9Examples:%9
 
-    /LOG OPEN -targets mike ~/irclogs/mike.log MSGS
+    /LOG OPEN -targets 'mike #mikeschannel' ~/irclogs/mike.log MSGS
     /LOG OPEN -targets #irssi ~/irclogs/liberachat/irssi-%%Y-%%m-%%d
     /LOG CLOSE ~/irclogs/liberachat/irssi-%%Y-%%m-%%d
     /LOG STOP ~/irclogs/liberachat/irssi-%%Y-%%m-%%d
