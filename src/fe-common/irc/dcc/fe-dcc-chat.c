@@ -74,14 +74,19 @@ static void dcc_connected(CHAT_DCC_REC *dcc)
 
 static void dcc_closed(CHAT_DCC_REC *dcc)
 {
+	QUERY_REC *query;
 	char *sender;
 
-        if (!IS_DCC_CHAT(dcc)) return;
+    if (!IS_DCC_CHAT(dcc)) return;
+
 
 	sender = g_strconcat("=", dcc->id, NULL);
-	printformat(dcc->server, NULL, MSGLEVEL_DCC,
-		    IRCTXT_DCC_CHAT_DISCONNECTED, dcc->id);
+	query = query_find((SERVER_REC *)dcc->server, sender);
 	g_free(sender);
+
+
+	printformat(dcc->server, query ? query->name : NULL, MSGLEVEL_DCC,
+                IRCTXT_DCC_CHAT_DISCONNECTED, dcc->id);
 }
 
 static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)
