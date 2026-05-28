@@ -164,6 +164,29 @@ static void grab_who(CLIENT_REC *client, const char *channel)
 	g_string_free(arg, TRUE);
 }
 
+static void grab_names(CLIENT_REC *client, const char *channel)
+{
+	char **list, **tmp;
+	char *arg, *p;
+	int count;
+
+	/* NAMES a,b,c responds with one 366 per channel */
+	list = g_strsplit(channel, ",", -1);
+
+	for (tmp = list, count = 0; *tmp != NULL; tmp++, count++)
+		;
+
+	/* replace commas with spaces for redirect arg matching */
+	arg = g_strdup(channel);
+	for (p = arg; *p != '\0'; p++)
+		if (*p == ',') *p = ' ';
+
+	proxy_redirect_event(client, "names", count > 0 ? count : 1, arg, TRUE);
+
+	g_free(arg);
+	g_strfreev(list);
+}
+
 static void handle_client_connect_cmd(CLIENT_REC *client,
                                       const char *cmd, const char *args)
 {
@@ -302,6 +325,8 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	/* check if the command could be redirected */
 	if (g_strcmp0(cmd, "WHO") == 0)
 		grab_who(client, args);
+	else if (g_strcmp0(cmd, "NAMES") == 0)
+		grab_names(client, args);
 	else if (g_strcmp0(cmd, "WHOWAS") == 0)
 		proxy_redirect_event(client, "whowas", 1, args, -1);
 	else if (g_strcmp0(cmd, "WHOIS") == 0) {
