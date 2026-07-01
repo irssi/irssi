@@ -78,7 +78,16 @@ static void cap_emit_signal (IRC_SERVER_REC *server, char *cmd, char *args)
 {
 	char *signal_name;
 
-	signal_name = g_strdup_printf("server cap %s %s", cmd, args? args: "");
+	if (args == NULL)
+		return;
+
+	/* Cap the number of unique CAP signals emitted per server to prevent
+	 * unbounded signal-name interning from server-controlled CAP tokens. */
+	if (server->cap_supported == NULL ||
+	    g_hash_table_size(server->cap_supported) > 256)
+		return;
+
+	signal_name = g_strdup_printf("server cap %s %s", cmd, args);
 	signal_emit(signal_name, 1, server);
 	g_free(signal_name);
 }
