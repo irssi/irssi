@@ -730,6 +730,16 @@ static void dcc_chat_msg(CHAT_DCC_REC *dcc, const char *msg)
 	if (*msg != 1)
 		return;
 
+	/* Cap the CTCP body length that is concatenated into the signal name. The
+	 * body comes from a remote peer on an established DCC CHAT connection
+	 * and is passed as the second argument to any matching signal handler
+	 * (including loaded perl scripts). A modest cap limits the attack surface
+	 * for the dynamic-signal-name dispatch and aligns with the convention
+	 * used for CTCP-over-IRC. */
+	if (strlen(msg+1) > 256) {
+		return;
+	}
+
 	/* get ctcp command, remove \001 chars */
 	event = g_strconcat(reply ? "dcc reply " : "dcc ctcp ", msg+1, NULL);
 	if (event[strlen(event)-1] == 1) event[strlen(event)-1] = '\0';
