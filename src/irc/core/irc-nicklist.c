@@ -531,7 +531,7 @@ static void event_userhost(SERVER_REC *server, const char *data)
 			oper = 0;
 		*ptr++ = '\0';
 
-		nicklist_update_flags(server, *pos, *ptr == '-', oper);
+		nicklist_update_flags(server, *pos, *ptr != '\0' && *ptr == '-', oper);
 	}
 	g_strfreev(phosts);
 	g_free(params);
