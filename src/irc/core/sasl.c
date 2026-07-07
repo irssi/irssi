@@ -28,7 +28,7 @@
 
 /*
  * Based on IRCv3 SASL Extension Specification:
- * http://ircv3.net/specs/extensions/sasl-3.1.html
+ * https://ircv3.net/specs/extensions/sasl-3.1.html
  */
 #define AUTHENTICATE_CHUNK_SIZE 400 /* bytes */
 

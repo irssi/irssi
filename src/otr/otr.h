@@ -49,7 +49,7 @@
 
 /*
  * Specified in OTR protocol version 3. See:
- * http://www.cypherpunks.ca/otr/Protocol-v3-4.0.0.html
+ * https://www.cypherpunks.ca/otr/Protocol-v3-4.0.0.html
  */
 #define OTR_MSG_BEGIN_TAG             "?OTR:"
 #define OTR_MSG_END_TAG               '.'

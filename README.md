@@ -6,8 +6,8 @@ Irssi is a modular text mode chat client. It comes with IRC support
 built in, and there are third party
 [ICB](https://github.com/jperkin/irssi-icb),
 [SILC](http://www.silcnet.org/),
-[XMPP](http://cybione.org/~irssi-xmpp/) (Jabber),
-[PSYC](http://about.psyc.eu/Irssyc) and
+[XMPP](https://cybione.org/~irssi-xmpp/) (Jabber),
+[PSYC](https://about.psyc.eu/Irssyc) and
 [Quassel](https://github.com/phhusson/quassel-irssi) protocol modules
 available.
 

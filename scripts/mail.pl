@@ -8,7 +8,7 @@ $VERSION = "2.93";
     description => "Fully customizable mail counter statusbar item with multiple mailbox and multiple Maildir support",
     sbitems     => "mail",
     license     => "Public Domain",
-    url         => "http://irssi.org, http://scripts.irssi.de",
+    url         => "https://irssi.org, http://scripts.irssi.de",
 );
 
 # Mail counter statusbar item
@@ -148,7 +148,7 @@ sub mbox_count {
       opendir(DIR, "$mailfile/cur") or return 0;
       while (defined(my $file = readdir(DIR))) {
         next if $file =~ /^(.|..)$/;
-        # Maildir flags: http://cr.yp.to/proto/maildir.html
+        # Maildir flags: https://cr.yp.to/proto/maildir.html
         # My old regexps were useless if the MUA added any 
         # non-default flags -qvr
         # 

@@ -2,8 +2,8 @@
  * This is an implementation of wcwidth() and wcswidth() (defined in
  * IEEE Std 1002.1-2001) for Unicode.
  *
- * http://www.opengroup.org/onlinepubs/007904975/functions/wcwidth.html
- * http://www.opengroup.org/onlinepubs/007904975/functions/wcswidth.html
+ * https://www.opengroup.org/onlinepubs/007904975/functions/wcwidth.html
+ * https://www.opengroup.org/onlinepubs/007904975/functions/wcswidth.html
  *
  * In fixed-width output devices, Latin characters all occupy a single
  * "cell" position of equal width, whereas ideographic CJK characters
@@ -48,7 +48,7 @@
  * but also of each presentation form, something the author of these
  * routines has avoided to do so far.
  *
- * http://www.unicode.org/unicode/reports/tr11/
+ * https://www.unicode.org/unicode/reports/tr11/
  *
  * Markus Kuhn -- 2007-05-25 (Unicode 5.0)
  *
@@ -56,7 +56,7 @@
  * for any purpose and without fee is hereby granted. The author
  * disclaims all warranties with regard to this software.
  *
- * Latest version: http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
+ * Latest version: https://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
  */
 
 #include <irssi/src/core/utf8.h>

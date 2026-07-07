@@ -1279,7 +1279,7 @@ sub cmd_scripassist {
 	my $number = defined $args[1] ? $args[1] : 10;
 	bg_do("top ".$number);
     } elsif ($args[0] eq 'cpan' && defined $args[1]) {
-	call_openurl('http://search.cpan.org/search?mode=module&query='.$args[1]);
+	call_openurl('https://search.cpan.org/search?mode=module&query='.$args[1]);
     } elsif ($args[0] eq 'autorun' && defined $args[1]) {
 	toggle_autorun($args[1]);
     } elsif ($args[0] eq 'new') {

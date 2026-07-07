@@ -19,7 +19,7 @@ $VERSION = "2.2";
     name	=> "dns",
     description	=> "/DNS <nick>|<host>|<ip> ...",
     license	=> "Public Domain",
-    url		=> "http://irssi.org/",
+    url		=> "https://irssi.org/",
     changed	=> "2019-01-24"
 );
 

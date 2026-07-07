@@ -9,7 +9,7 @@ $VERSION = "1.20";
     description => 'Adds a usercount for a channel as a statusbar item',
     sbitems     => 'usercount',
     license     => 'GNU GPLv2 or later',
-    url         => 'http://irssi.dgl.cx/',
+    url         => 'https://irssi.dgl.cx/',
     changes     => 'Only show halfops if server supports them',
 );
 
