@@ -242,7 +242,7 @@
 	commands in server's input command queue. If the server's socket is
 	disconnected immediately after QUIT message is sent, it is possible
 	that the server didn't yet process the quit command and your quit
-	message will be "broken pipe" or something similiar. The right thing
+	message will be "broken pipe" or something similar. The right thing
 	to do is to let the server disconnect you, but what if the
 	connection to server is broken and the server never disconnects you?
 	I solved the problem by waiting a few seconds to see if the server
