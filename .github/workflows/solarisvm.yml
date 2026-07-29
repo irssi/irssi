@@ -75,7 +75,7 @@ jobs:
             gtar xzf artifact/irssi-*.tar.gz
             # ninja install
             cd irssi-*/
-            meson Build -Dwith-proxy=yes -Dwith-bot=yes -Dwith-perl=yes --prefix=$HOME/irssi-build
+            meson Build -Dwith-proxy=yes -Dwith-bot=yes -Dwith-perl=yes --prefix=$HOME/irssi-build -Dc_std=gnu11
             ninja -C Build
             ninja -C Build install
             # ninja test
