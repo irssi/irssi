@@ -77,14 +77,31 @@ static char *force_channel_name(IRC_SERVER_REC *server, const char *name)
 	return g_strdup_printf("%c%s", *chantypes, name);
 }
 
+static void irc_channels_send_joins(IRC_SERVER_REC *server,
+									GString *outchans, GString *outkeys,
+									int use_keys)
+{
+	if (use_keys)
+		irc_send_cmdv(IRC_SERVER(server), "JOIN %s %s", outchans->str, outkeys->str);
+	else
+		irc_send_cmdv(IRC_SERVER(server), "JOIN %s", outchans->str);
+
+	g_string_truncate(outchans, 0);
+	g_string_truncate(outkeys, 0);
+}
+
 static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 			      int automatic)
 {
 	CHANNEL_SETUP_REC *schannel;
 	IRC_CHANNEL_REC *chanrec;
 	GString *outchans, *outkeys;
+	GPtrArray *channel_list, *key_list;
+	char* my_channel;
+	char* my_key;
+	unsigned int i;
 	char *channels, *keys, *key, *space;
-	char **chanlist, **keylist, **tmp, **tmpkey, **tmpstr, *channel, *channame;
+	char **chanlist, **keylist, **tmp, **tmpkey, *channel, *channame;
 	void *free_arg;
 	int use_keys, cmdlen;
 
@@ -102,7 +119,7 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 		*space = '\0';
 	}
 
-        chanlist = g_strsplit(channels, ",", -1);
+	chanlist = g_strsplit(channels, ",", -1);
 	keylist = g_strsplit(keys, ",", -1);
 
 	outchans = g_string_new(NULL);
@@ -110,71 +127,75 @@ static void irc_channels_join(IRC_SERVER_REC *server, const char *data,
 
 	use_keys = *keys != '\0';
 	tmpkey = keylist;
-	tmp = chanlist;
-	for (;; tmp++) {
-		if (*tmp !=  NULL) {
-			channel = force_channel_name(server, *tmp);
 
-			chanrec = irc_channel_find(server, channel);
-			if (chanrec == NULL) {
-				schannel = channel_setup_find(channel, server->connrec->chatnet);
+	channel_list = g_ptr_array_new();
+	key_list = g_ptr_array_new();
 
-				g_string_append_printf(outchans, "%s,", channel);
-				if (*tmpkey != NULL && **tmpkey != '\0')
-                        		key = *tmpkey;
-	                        else if (schannel != NULL && schannel->password != NULL) {
-					/* get password from setup record */
-                	                use_keys = TRUE;
-					key = schannel->password;
-				} else key = NULL;
+	for (tmp = chanlist; *tmp != NULL; tmp++) {
+		channel = force_channel_name(server, *tmp);
+		chanrec = irc_channel_find(server, channel);
 
-				g_string_append_printf(outkeys, "%s,", get_join_key(key));
-				channame = channel + (channel[0] == '!' &&
-						      channel[1] == '!');
-				chanrec = irc_channel_create(server, channame, NULL,
-							     automatic);
-				if (key != NULL) chanrec->key = g_strdup(key);
+		if (chanrec == NULL) {
+			schannel = channel_setup_find(channel, server->connrec->chatnet);
+
+			if (*tmpkey != NULL && **tmpkey != '\0')
+				key = *tmpkey;
+			else if (schannel != NULL && schannel->password != NULL) {
+				/* get password from setup record */
+				use_keys = TRUE;
+				key = schannel->password;
+			} else {
+				key = NULL;
 			}
-			g_free(channel);
 
-			if (*tmpkey != NULL)
-                	        tmpkey++;
+			channame = channel + (channel[0] == '!' && channel[1] == '!');
+			g_ptr_array_add(channel_list, g_strdup(channame));
+			g_ptr_array_add(key_list, g_strdup(get_join_key(key)));
 
-			tmpstr = tmp;
-			tmpstr++;
-			cmdlen = outchans->len-1;
-
-			if (use_keys)
-				cmdlen += outkeys->len;
-			if (*tmpstr != NULL)
-				cmdlen += server_ischannel(SERVER(server), *tmpstr) ? strlen(*tmpstr) :
-					  strlen(*tmpstr)+1;
-			if (*tmpkey != NULL)
-				cmdlen += strlen(*tmpkey);
-
-			/* don't try to send too long lines
-			   make sure it's not longer than 510
-			   so 510 - strlen("JOIN ") = 505 */
-			if (cmdlen < server->max_message_len - 5 /* strlen("JOIN ") */)
-				continue;
+			chanrec = irc_channel_create(server, channame, NULL,
+							     automatic);
+			if (key != NULL)
+				chanrec->key = g_strdup(key);
 		}
-		if (outchans->len > 0) {
-			g_string_truncate(outchans, outchans->len - 1);
-			g_string_truncate(outkeys, outkeys->len - 1);
+		g_free(channel);
 
-			if (use_keys)
-				irc_send_cmdv(IRC_SERVER(server), "JOIN %s %s", outchans->str, outkeys->str);
-			else
-				irc_send_cmdv(IRC_SERVER(server), "JOIN %s", outchans->str);
-		}
-		cmdlen = 0;
-		g_string_truncate(outchans,0);
-		g_string_truncate(outkeys,0);
-		if (*tmp == NULL || tmp[1] == NULL)
-			break;
+		if (*tmpkey != NULL)
+			tmpkey++;
 	}
+
+	g_assert(channel_list->len == key_list->len);
+
+	for (i = 0; i < channel_list->len ; i++) {
+		my_channel = g_ptr_array_index(channel_list, i);
+		my_key = g_ptr_array_index(key_list, i);
+
+		/* How long is the pending queue? */
+		cmdlen = outchans->len + outkeys->len;
+		cmdlen += 5; /* "JOIN " */
+		cmdlen += 1; /* "," */
+
+		/* Need to see if we're too big when we add the pending bits too. */
+		cmdlen += server_ischannel(SERVER(server), my_channel) ? strlen(my_channel) :
+					strlen(my_channel)+1;
+		cmdlen += strlen(my_key);
+
+		if (cmdlen > server->max_message_len - 5) {
+			/* Send what we have so far. */
+			irc_channels_send_joins(server, outchans, outkeys, use_keys);
+		}
+
+		g_string_append_printf(outchans, "%s,", my_channel);
+		g_string_append_printf(outkeys, "%s,", my_key);
+	}
+
+	/* Flush out anything left at the end too. */
+	if (outchans->len != 0)
+		irc_channels_send_joins(server, outchans, outkeys, use_keys);
+
 	g_string_free(outchans, TRUE);
 	g_string_free(outkeys, TRUE);
+	g_ptr_array_free(channel_list, TRUE);
+	g_ptr_array_free(key_list, TRUE);
 
 	g_strfreev(chanlist);
 	g_strfreev(keylist);
