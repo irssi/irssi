@@ -260,7 +260,7 @@ void proxy_dump_data(CLIENT_REC *client)
 		for (;; tmp++) {
 			if (*tmp != NULL) {
 				g_string_append_printf(paramstr, "%s ", *tmp);
-				if (++count < 15)
+				if (++count < 13)
 					continue;
 			}
 
