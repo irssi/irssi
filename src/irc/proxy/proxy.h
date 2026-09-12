@@ -31,6 +31,7 @@ typedef struct {
 	unsigned int connected:1;
 	unsigned int want_ctcp:1;
 	unsigned int multiplex:1;
+	unsigned int cap_message_tags:1;
 } CLIENT_REC;
 
 #endif
