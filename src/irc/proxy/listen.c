@@ -164,6 +164,14 @@ static void grab_who(CLIENT_REC *client, const char *channel)
 	g_string_free(arg, TRUE);
 }
 
+static gboolean server_has_message_tags(IRC_SERVER_REC *server)
+{
+	if (server == NULL || server->cap_supported == NULL)
+		return FALSE;
+
+	return g_hash_table_lookup_extended(server->cap_supported, "message-tags", NULL, NULL);
+}
+
 static void handle_client_cap(CLIENT_REC *client, const char *args)
 {
 	char *subcmd, *cap_args;
@@ -182,19 +190,33 @@ static void handle_client_cap(CLIENT_REC *client, const char *args)
 	target_nick = client->nick != NULL ? client->nick : "*";
 
 	if (g_ascii_strcasecmp(subcmd, "LS") == 0) {
-		proxy_outdata(client, ":%s CAP %s LS :\r\n", client->proxy_address, target_nick);
+		if (server_has_message_tags(client->server)) {
+			proxy_outdata(client, ":%s CAP %s LS :message-tags\r\n", client->proxy_address, target_nick);
+		} else {
+			proxy_outdata(client, ":%s CAP %s LS :\r\n", client->proxy_address, target_nick);
+		}
 	} else if (g_ascii_strcasecmp(subcmd, "REQ") == 0) {
 		const char *req = cap_args;
 
 		while (*req == ' ' || *req == ':')
 			req++;
 
-		if (*req != '\0') {
+		if (*req == '\0') {
+			g_free(subcmd);
+			return;
+		}
+
+		if (g_ascii_strcasecmp(req, "message-tags") == 0 && server_has_message_tags(client->server)) {
+			client->cap_message_tags = TRUE;
+			proxy_outdata(client, ":%s CAP %s ACK :%s\r\n", client->proxy_address,
+			              target_nick, req);
+		} else {
 			proxy_outdata(client, ":%s CAP %s NAK :%s\r\n", client->proxy_address,
 			              target_nick, req);
 		}
 	} else if (g_ascii_strcasecmp(subcmd, "LIST") == 0) {
-		proxy_outdata(client, ":%s CAP %s LIST :\r\n", client->proxy_address, target_nick);
+		proxy_outdata(client, ":%s CAP %s LIST :%s\r\n", client->proxy_address, target_nick,
+			              client->cap_message_tags ? "message-tags" : "");
 	} else if (g_ascii_strcasecmp(subcmd, "END") == 0) {
 		/* CAP negotiation complete */
 	}
@@ -604,7 +626,29 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 	}
 
 	/* send the data to clients.. */
-        proxy_outdata_all(server, "%s", next_line->str);
+	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
+		CLIENT_REC *rec = tmp->data;
+
+		if (!rec->connected || rec->server != server)
+			continue;
+
+		if (rec->cap_message_tags) {
+			net_sendbuffer_send(rec->handle, next_line->str, next_line->len);
+		} else if (g_strcmp0(event, "event tagmsg") != 0) {
+			const char *untagged = next_line->str;
+
+			if (*untagged == '@') {
+				untagged = strchr(untagged, ' ');
+				if (untagged != NULL) {
+					while (*untagged == ' ')
+						untagged++;
+				} else {
+					untagged = next_line->str;
+				}
+			}
+			net_sendbuffer_send(rec->handle, untagged, strlen(untagged));
+		}
+	}
 
 	g_free(event);
 }
