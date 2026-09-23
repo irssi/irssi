@@ -2,6 +2,7 @@ on:
   push:
     branches:
      - master
+     - maint/*
   pull_request:
 name: Check Irssi
 env:
