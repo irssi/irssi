@@ -22,7 +22,7 @@ my $verb = $AM_DEFAULT_VERBOSITY;
     }
     sub pm_to_blib {
 	my $ret = shift->SUPER::pm_to_blib(@_);
-	$ret =~ s{^(\t(?:- ?)?)(?:\$\(NOECHO\) ?)?(.*-e ['"]pm_to_blib(.*\\\n)*.*)$}{$1\$(PL_AM_V_BLIB)$2\$(PL_AM_V_BLIB_Hide)}mg;
+	$ret =~ s{^(\t(?:- ?)?)(?:\$\(NOECHO\) ?)?((?:\\\r?\n|.)*-e ['"]pm_to_blib(.*\\\n)*.*)$}{$1\$(PL_AM_V_BLIB)$2\$(PL_AM_V_BLIB_Hide)}mg;
 	$ret
     }
     sub post_constants {
