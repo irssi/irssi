@@ -70,7 +70,6 @@ jobs:
           merge_abi=$(getabidef merge$prefix)
           echo merge abi : $merge_abi
           ./merge$prefix/bin/irssi --version
-      - uses: actions/upload-artifact@v2
           echo "::set-output name=merge_abi::$merge_abi"
       - uses: actions/upload-artifact@v4
         with:
