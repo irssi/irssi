@@ -34,7 +34,7 @@ FORMAT_REC fecommon_irc_notifylist_formats[] =
 	{ "notify_unaway", "{nick $0} [$4] [$1@$2] [{hilight $3}] is now unaway", 5, { 0, 0, 0, 0, 0 } },
 	{ "notify_online", "On $0: {hilight $1}", 2, { 0, 0 } },
 	{ "notify_offline", "Offline: $0", 1, { 0 } },
-	{ "notify_list", "$0: $1 $2", 4, { 0, 0, 0, 0 } },
+	{ "notify_list", "$0: $1 $2", 3, { 0, 0, 0 } },
 	{ "notify_list_empty", "The notify list is empty", 0 },
 
 	{ NULL, NULL, 0 },
