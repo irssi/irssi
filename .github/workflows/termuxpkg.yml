@@ -6,7 +6,7 @@ on:
 name: Build Irssi Termux package
 jobs:
   termux-package:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout termux-packages
         uses: actions/checkout@main

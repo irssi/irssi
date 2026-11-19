@@ -11,7 +11,7 @@ env:
   prefix: ~/irssi-build
 jobs:
   dist:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       meson_ver: <0.63.0
       setuptools_ver: <66
@@ -61,7 +61,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-latest]
+        os: [ubuntu-22.04, ubuntu-24.04]
         compiler: [clang, gcc]
         flags: [regular]
         setuptools_ver: [<66]
@@ -69,9 +69,9 @@ jobs:
           - os: ubuntu-22.04
             meson_ver: ==0.53.2
             setuptools_ver: <51
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             meson_ver: <0.63.0
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             flags: meson-latest FAILURE-OK
     steps:
       - name: fetch dist
@@ -127,7 +127,7 @@ jobs:
           irssi-build/bin/irssi --home irssi-test | perl -Mutf8 -C ~/render.pl
           cat irc.log.*
   annotation-warnings:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: ${{ github.event_name == 'pull_request' }}
     env:
       CC: clang
