@@ -359,7 +359,8 @@ static void init_ssl_loop(IRC_SERVER_REC *server, GIOChannel *handle)
 		    server->connrec->address, server->connrec->port, server->connrec->chatnet));
 		if (ssetup != NULL) {
 			ssetup->starttls = STARTTLS_ENABLED;
-			server_setup_add((SERVER_SETUP_REC *) ssetup);
+			server_setup_modify((SERVER_SETUP_REC *) ssetup, ssetup->port,
+			                    ssetup->chatnet);
 		}
 	}
 }
