@@ -175,17 +175,20 @@ static void grab_who(CLIENT_REC *client, const char *channel)
 	g_string_free(arg, TRUE);
 }
 
-enum {
-	PROXY_CAP_MESSAGE_TAGS = 1 << 0,
-	PROXY_CAP_SERVER_TIME = 1 << 1,
-};
-
 static const struct {
 	unsigned int flag;
 	const char *name;
+	const char *event;
 } proxy_caps[] = {
-	{ PROXY_CAP_MESSAGE_TAGS, CAP_MESSAGE_TAGS },
-	{ PROXY_CAP_SERVER_TIME, CAP_SERVER_TIME },
+	{ PROXY_CAP_MESSAGE_TAGS, CAP_MESSAGE_TAGS, "event tagmsg" },
+	{ PROXY_CAP_SERVER_TIME, CAP_SERVER_TIME, NULL },
+	{ PROXY_CAP_MULTI_PREFIX, CAP_MULTI_PREFIX, NULL },
+	{ PROXY_CAP_EXTENDED_JOIN, CAP_EXTENDED_JOIN, NULL },
+	{ PROXY_CAP_SETNAME, CAP_SETNAME, "event setname" },
+	{ PROXY_CAP_INVITE_NOTIFY, CAP_INVITE_NOTIFY, NULL },
+	{ PROXY_CAP_AWAY_NOTIFY, CAP_AWAY_NOTIFY, "event away" },
+	{ PROXY_CAP_CHGHOST, CAP_CHGHOST, "event chghost" },
+	{ PROXY_CAP_ACCOUNT_NOTIFY, CAP_ACCOUNT_NOTIFY, "event account" },
 };
 
 static unsigned int client_available_caps(CLIENT_REC *client)
@@ -677,12 +680,14 @@ static void sig_incoming(IRC_SERVER_REC *server, const char *line)
 static gboolean proxy_client_wants_event(CLIENT_REC *rec, IRC_SERVER_REC *server, const char *event,
                                          const char *args)
 {
-	if (g_strcmp0(event, "event tagmsg") == 0)
-		return (rec->caps & PROXY_CAP_MESSAGE_TAGS) != 0;
-	if (g_strcmp0(event, "event away") == 0 || g_strcmp0(event, "event account") == 0 ||
-	    g_strcmp0(event, "event chghost") == 0 || g_strcmp0(event, "event setname") == 0)
-		return FALSE;
-	if (g_strcmp0(event, "event invite") == 0) {
+	size_t i;
+
+	for (i = 0; i < G_N_ELEMENTS(proxy_caps); i++) {
+		if (proxy_caps[i].event != NULL && g_strcmp0(event, proxy_caps[i].event) == 0)
+			return (rec->caps & proxy_caps[i].flag) != 0;
+	}
+
+	if (g_strcmp0(event, "event invite") == 0 && !(rec->caps & PROXY_CAP_INVITE_NOTIFY)) {
 		char *params, *invited;
 		gboolean self;
 
@@ -699,6 +704,7 @@ static void proxy_send_server_line(CLIENT_REC *rec, IRC_SERVER_REC *server, cons
 {
 	const char *body = line, *tag_start = NULL, *join_end = NULL;
 	size_t tag_len = 0;
+	gboolean rewrite_353 = FALSE;
 
 	if (!proxy_client_wants_event(rec, server, event, args))
 		return;
@@ -735,7 +741,8 @@ static void proxy_send_server_line(CLIENT_REC *rec, IRC_SERVER_REC *server, cons
 		}
 	}
 
-	if (g_strcmp0(event, "event join") == 0 && strchr(args, ' ') != NULL) {
+	if (g_strcmp0(event, "event join") == 0 && !(rec->caps & PROXY_CAP_EXTENDED_JOIN) &&
+	    strchr(args, ' ') != NULL) {
 		const char *p = (*body == ':') ? skip_token(body) : body;
 
 		join_end = skip_token(p);
@@ -743,9 +750,12 @@ static void proxy_send_server_line(CLIENT_REC *rec, IRC_SERVER_REC *server, cons
 		       *join_end != '\n') {
 			join_end++;
 		}
+	} else if (g_strcmp0(event, "event 353") == 0 && !(rec->caps & PROXY_CAP_MULTI_PREFIX)) {
+		rewrite_353 = TRUE;
 	}
 
-	if (join_end == NULL && (*line != '@' || (rec->caps & PROXY_CAP_MESSAGE_TAGS))) {
+	if (join_end == NULL && !rewrite_353 &&
+	    (*line != '@' || (rec->caps & PROXY_CAP_MESSAGE_TAGS))) {
 		net_sendbuffer_send(rec->handle, line, strlen(line));
 		return;
 	}
@@ -760,6 +770,31 @@ static void proxy_send_server_line(CLIENT_REC *rec, IRC_SERVER_REC *server, cons
 	if (join_end != NULL) {
 		g_string_append_len(client_line, body, join_end - body);
 		g_string_append(client_line, "\r\n");
+	} else if (rewrite_353) {
+		const char *p = (*body == ':') ? skip_token(body) : body;
+		const char *names = strstr(p, " :");
+
+		if (names == NULL) {
+			g_string_append(client_line, body);
+		} else {
+			names += 2;
+			g_string_append_len(client_line, body, names - body);
+			p = names;
+			while (*p != '\0' && *p != '\r' && *p != '\n') {
+				if (*p == ' ') {
+					g_string_append_c(client_line, *p++);
+					continue;
+				}
+				g_string_append_c(client_line, *p++);
+				if (isnickflag(server, p[-1])) {
+					while (*p != '\0' && isnickflag(server, *p))
+						p++;
+				}
+				while (*p != '\0' && *p != ' ' && *p != '\r' && *p != '\n')
+					g_string_append_c(client_line, *p++);
+			}
+			g_string_append(client_line, p);
+		}
 	} else {
 		g_string_append(client_line, body);
 	}
