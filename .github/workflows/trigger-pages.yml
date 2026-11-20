@@ -6,7 +6,7 @@ on:
 jobs:
   rebuild-pages:
     if: github.repository == 'irssi/irssi'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/github-script@v6
         with:

@@ -7,7 +7,7 @@ on:
 name: Check Irssi on Void Linux glibc
 jobs:
   dist:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: ghcr.io/void-linux/void-glibc:latest
     steps:
       - name: prepare required software
@@ -25,7 +25,7 @@ jobs:
           path: irssi-*.tar.gz
           retention-days: 1
   install:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: ghcr.io/void-linux/void-glibc:latest
     needs: dist
     steps:

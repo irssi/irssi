@@ -10,7 +10,7 @@ env:
   prefix: ~/irssi-build
 jobs:
   dist:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       setuptools_ver: <66
     steps:
@@ -51,7 +51,7 @@ jobs:
           path: irssi-*.tar.gz
           retention-days: 1
   install:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: dist
     steps:
       - name: fetch dist

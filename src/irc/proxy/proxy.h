@@ -19,6 +19,18 @@ typedef struct {
 
 } LISTEN_REC;
 
+enum {
+	PROXY_CAP_MESSAGE_TAGS = 1 << 0,
+	PROXY_CAP_SERVER_TIME = 1 << 1,
+	PROXY_CAP_MULTI_PREFIX = 1 << 2,
+	PROXY_CAP_EXTENDED_JOIN = 1 << 3,
+	PROXY_CAP_SETNAME = 1 << 4,
+	PROXY_CAP_INVITE_NOTIFY = 1 << 5,
+	PROXY_CAP_AWAY_NOTIFY = 1 << 6,
+	PROXY_CAP_CHGHOST = 1 << 7,
+	PROXY_CAP_ACCOUNT_NOTIFY = 1 << 8,
+};
+
 typedef struct {
 	char *nick, *addr;
 	NET_SENDBUF_REC *handle;
@@ -31,6 +43,8 @@ typedef struct {
 	unsigned int connected:1;
 	unsigned int want_ctcp:1;
 	unsigned int multiplex:1;
+	unsigned int cap_negotiating : 1;
+	unsigned int caps;
 } CLIENT_REC;
 
 #endif

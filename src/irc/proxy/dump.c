@@ -158,7 +158,21 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 	int first;
 	char *recoded;
 
-	proxy_outserver(client, "JOIN %s", channel->name);
+	if (client->caps & PROXY_CAP_EXTENDED_JOIN) {
+		NICK_REC *own = CHANNEL(channel)->ownnick;
+		const char *account = "*";
+		const char *realname = "";
+
+		if (own != NULL) {
+			if (own->account != NULL && *own->account != '\0')
+				account = own->account;
+			if (own->realname != NULL)
+				realname = own->realname;
+		}
+		proxy_outserver(client, "JOIN %s %s :%s", channel->name, account, realname);
+	} else {
+		proxy_outserver(client, "JOIN %s", channel->name);
+	}
 
 	str = g_string_new(NULL);
 	create_names_start(str, channel, client);
@@ -180,8 +194,11 @@ static void dump_join(IRC_CHANNEL_REC *channel, CLIENT_REC *client)
 		else
 			g_string_append_c(str, ' ');
 
-		if (nick->prefixes[0])
-                        g_string_append_c(str, nick->prefixes[0]);
+		if (client->caps & PROXY_CAP_MULTI_PREFIX) {
+			g_string_append(str, nick->prefixes);
+		} else if (nick->prefixes[0]) {
+			g_string_append_c(str, nick->prefixes[0]);
+		}
 		g_string_append(str, nick->nick);
 	}
 	g_slist_free(nicks);

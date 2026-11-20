@@ -27,6 +27,7 @@
 #include <irssi/src/core/misc.h>
 
 #include <irssi/src/irc/core/irc.h>
+#include <irssi/src/irc/core/irc-cap.h>
 #include <irssi/src/irc/core/irc-chatnets.h>
 #include <irssi/src/irc/core/irc-channels.h>
 
@@ -38,6 +39,7 @@ GSList *proxy_listens;
 GSList *proxy_clients;
 
 static GString *next_line;
+static GString *client_line;
 static int ignore_next;
 
 static int enabled = FALSE;
@@ -45,6 +47,15 @@ static int enabled = FALSE;
 static int is_all_digits(const char *s)
 {
 	return strspn(s, "0123456789") == strlen(s);
+}
+
+static const char *skip_token(const char *p)
+{
+	while (*p != '\0' && *p != ' ' && *p != '\r' && *p != '\n')
+		p++;
+	while (*p == ' ')
+		p++;
+	return p;
 }
 
 static GIOChannel *net_listen_unix(const char *path)
@@ -164,6 +175,175 @@ static void grab_who(CLIENT_REC *client, const char *channel)
 	g_string_free(arg, TRUE);
 }
 
+static const struct {
+	unsigned int flag;
+	const char *name;
+	const char *event;
+} proxy_caps[] = {
+	{ PROXY_CAP_MESSAGE_TAGS, CAP_MESSAGE_TAGS, "event tagmsg" },
+	{ PROXY_CAP_SERVER_TIME, CAP_SERVER_TIME, NULL },
+	{ PROXY_CAP_MULTI_PREFIX, CAP_MULTI_PREFIX, NULL },
+	{ PROXY_CAP_EXTENDED_JOIN, CAP_EXTENDED_JOIN, NULL },
+	{ PROXY_CAP_SETNAME, CAP_SETNAME, "event setname" },
+	{ PROXY_CAP_INVITE_NOTIFY, CAP_INVITE_NOTIFY, NULL },
+	{ PROXY_CAP_AWAY_NOTIFY, CAP_AWAY_NOTIFY, "event away" },
+	{ PROXY_CAP_CHGHOST, CAP_CHGHOST, "event chghost" },
+	{ PROXY_CAP_ACCOUNT_NOTIFY, CAP_ACCOUNT_NOTIFY, "event account" },
+};
+
+static unsigned int client_available_caps(CLIENT_REC *client)
+{
+	const char *password = settings_get_str("irssiproxy_password");
+	unsigned int caps = 0;
+	size_t i;
+
+	if ((*password != '\0' || client->multiplex) && !client->pass_sent)
+		return 0;
+
+	if (client->server == NULL || client->server->cap_active == NULL)
+		return 0;
+
+	for (i = 0; i < G_N_ELEMENTS(proxy_caps); i++) {
+		if (i_slist_find_string(client->server->cap_active, proxy_caps[i].name) != NULL)
+			caps |= proxy_caps[i].flag;
+	}
+	return caps;
+}
+
+static unsigned int find_proxy_cap(const char *name)
+{
+	size_t i;
+
+	for (i = 0; i < G_N_ELEMENTS(proxy_caps); i++) {
+		if (g_ascii_strcasecmp(name, proxy_caps[i].name) == 0)
+			return proxy_caps[i].flag;
+	}
+	return 0;
+}
+
+static void proxy_send_cap_list(CLIENT_REC *client, const char *subcmd, unsigned int caps)
+{
+	GString *list = g_string_new(NULL);
+	size_t i;
+
+	for (i = 0; i < G_N_ELEMENTS(proxy_caps); i++) {
+		if ((caps & proxy_caps[i].flag) == 0)
+			continue;
+		if (list->len > 0)
+			g_string_append_c(list, ' ');
+		g_string_append(list, proxy_caps[i].name);
+	}
+
+	proxy_outdata(client, ":%s CAP %s %s :%s\r\n", client->proxy_address,
+	              client->nick != NULL ? client->nick : "*", subcmd, list->str);
+	g_string_free(list, TRUE);
+}
+
+static void finish_client_connect(CLIENT_REC *client)
+{
+	const char *password;
+
+	if (client->connected || client->nick == NULL || !client->user_sent ||
+	    client->cap_negotiating)
+		return;
+
+	password = settings_get_str("irssiproxy_password");
+	if ((*password != '\0' || client->multiplex) && !client->pass_sent) {
+		/* client didn't send us PASS, kill it */
+		remove_client(client);
+		return;
+	}
+
+	signal_emit("proxy client connected", 1, client);
+	printtext(client->server, NULL, MSGLEVEL_CLIENTNOTICE, "Proxy: Client %s connected",
+	          client->addr);
+	client->connected = TRUE;
+	proxy_dump_data(client);
+}
+
+static void handle_client_cap(CLIENT_REC *client, const char *args)
+{
+	char *subcmd, *cap_args;
+	const char *target_nick;
+
+	while (*args == ' ')
+		args++;
+	subcmd = g_strdup(args);
+	cap_args = strchr(subcmd, ' ');
+	if (cap_args != NULL) {
+		*cap_args++ = '\0';
+		while (*cap_args == ' ')
+			cap_args++;
+	} else {
+		cap_args = "";
+	}
+	target_nick = client->nick != NULL ? client->nick : "*";
+
+	if (g_ascii_strcasecmp(subcmd, "LS") == 0) {
+		if (!client->connected)
+			client->cap_negotiating = TRUE;
+		proxy_send_cap_list(client, "LS", client_available_caps(client));
+	} else if (g_ascii_strcasecmp(subcmd, "REQ") == 0) {
+		char *req = cap_args;
+		char **tokens, **tok;
+		unsigned int avail, new_caps;
+		gboolean valid = TRUE;
+
+		if (!client->connected)
+			client->cap_negotiating = TRUE;
+
+		if (*req == ':')
+			req++;
+		g_strstrip(req);
+		if (*req == '\0') {
+			g_free(subcmd);
+			return;
+		}
+
+		avail = client_available_caps(client);
+		new_caps = client->caps;
+		tokens = g_strsplit(req, " ", -1);
+
+		for (tok = tokens; *tok != NULL; tok++) {
+			const char *name = *tok;
+			unsigned int flag;
+			gboolean disable = (*name == '-');
+
+			if (*name == '\0')
+				continue;
+
+			if (disable)
+				name++;
+
+			flag = find_proxy_cap(name);
+			if (flag == 0 || (!disable && (avail & flag) == 0)) {
+				valid = FALSE;
+				break;
+			}
+
+			new_caps = disable ? (new_caps & ~flag) : (new_caps | flag);
+		}
+		g_strfreev(tokens);
+
+		if (valid)
+			client->caps = new_caps;
+		proxy_outdata(client, ":%s CAP %s %s :%s\r\n", client->proxy_address, target_nick,
+		              valid ? "ACK" : "NAK", req);
+	} else if (g_ascii_strcasecmp(subcmd, "LIST") == 0) {
+		if (!client->connected)
+			client->cap_negotiating = TRUE;
+		proxy_send_cap_list(client, "LIST", client->caps);
+	} else if (g_ascii_strcasecmp(subcmd, "END") == 0) {
+		client->cap_negotiating = FALSE;
+		finish_client_connect(client);
+	} else {
+		proxy_outdata(client, ":%s 410 %s %s :Invalid CAP command\r\n",
+		              client->proxy_address, target_nick, *subcmd != '\0' ? subcmd : "*");
+	}
+
+	g_free(subcmd);
+}
+
 static void handle_client_connect_cmd(CLIENT_REC *client,
                                       const char *cmd, const char *args)
 {
@@ -215,21 +395,12 @@ static void handle_client_connect_cmd(CLIENT_REC *client,
 		client->nick = g_strdup(args);
 	} else if (g_strcmp0(cmd, "USER") == 0) {
 		client->user_sent = TRUE;
+	} else if (g_strcmp0(cmd, "CAP") == 0) {
+		handle_client_cap(client, args);
+		return;
 	}
 
-	if (client->nick != NULL && client->user_sent) {
-		if ((*password != '\0' || client->multiplex) && !client->pass_sent) {
-			/* client didn't send us PASS, kill it */
-			remove_client(client);
-		} else {
-			signal_emit("proxy client connected", 1, client);
-			printtext(client->server, NULL, MSGLEVEL_CLIENTNOTICE,
-			          "Proxy: Client %s connected",
-			          client->addr);
-			client->connected = TRUE;
-			proxy_dump_data(client);
-		}
-	}
+	finish_client_connect(client);
 }
 
 static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
@@ -238,6 +409,11 @@ static void handle_client_cmd(CLIENT_REC *client, char *cmd, char *args,
 	GSList *tmp;
 	if (!client->connected) {
 		handle_client_connect_cmd(client, cmd, args);
+		return;
+	}
+
+	if (g_strcmp0(cmd, "CAP") == 0) {
+		handle_client_cap(client, args);
 		return;
 	}
 
@@ -404,6 +580,8 @@ static void sig_listen_client(CLIENT_REC *client)
 	g_return_if_fail(client != NULL);
 
 	while (g_slist_find(proxy_clients, client) != NULL) {
+		const char *line;
+
 		ret = net_sendbuffer_receive_line(client->handle, &str, 1);
 		if (ret == -1) {
 			/* connection lost */
@@ -414,13 +592,23 @@ static void sig_listen_client(CLIENT_REC *client)
 		if (ret == 0)
 			break;
 
-		cmd = g_strdup(str);
+		line = (*str == '@') ? skip_token(str) : str;
+		if (*line == '\0')
+			continue;
+
+		cmd = g_strdup(line);
 		args = strchr(cmd, ' ');
 		if (args != NULL) *args++ = '\0'; else args = "";
 		if (*args == ':') args++;
 		ascii_strup(cmd);
 
-		handle_client_cmd(client, cmd, args, str);
+		if (g_strcmp0(cmd, "TAGMSG") == 0 && !(client->caps & PROXY_CAP_MESSAGE_TAGS)) {
+			g_free(cmd);
+			continue;
+		}
+
+		handle_client_cmd(client, cmd, args,
+		                  (client->caps & PROXY_CAP_MESSAGE_TAGS) ? str : line);
 
 		g_free(cmd);
 	}
@@ -489,6 +677,131 @@ static void sig_incoming(IRC_SERVER_REC *server, const char *line)
 	g_string_printf(next_line, "%s\r\n", line);
 }
 
+static gboolean proxy_client_wants_event(CLIENT_REC *rec, IRC_SERVER_REC *server, const char *event,
+                                         const char *args)
+{
+	size_t i;
+
+	for (i = 0; i < G_N_ELEMENTS(proxy_caps); i++) {
+		if (proxy_caps[i].event != NULL && g_strcmp0(event, proxy_caps[i].event) == 0)
+			return (rec->caps & proxy_caps[i].flag) != 0;
+	}
+
+	if (g_strcmp0(event, "event invite") == 0 && !(rec->caps & PROXY_CAP_INVITE_NOTIFY)) {
+		char *params, *invited;
+		gboolean self;
+
+		params = event_get_params(args, 1, &invited);
+		self = server->nick_comp_func(invited, server->nick) == 0;
+		g_free(params);
+		return self;
+	}
+	return TRUE;
+}
+
+static void proxy_send_server_line(CLIENT_REC *rec, IRC_SERVER_REC *server, const char *event,
+                                   const char *args, const char *line)
+{
+	const char *body = line, *tag_start = NULL, *join_end = NULL;
+	size_t tag_len = 0;
+	gboolean rewrite_353 = FALSE;
+
+	if (!proxy_client_wants_event(rec, server, event, args))
+		return;
+
+	if (*line == '@') {
+		const char *space = strchr(line, ' ');
+
+		if (space == NULL) {
+			if (!(rec->caps & PROXY_CAP_MESSAGE_TAGS))
+				return;
+		} else {
+			body = space + 1;
+			while (*body == ' ')
+				body++;
+
+			if (rec->caps & PROXY_CAP_MESSAGE_TAGS) {
+				tag_start = line + 1;
+				tag_len = space - tag_start;
+			} else if (rec->caps & PROXY_CAP_SERVER_TIME) {
+				const char *p, *end;
+
+				for (p = line + 1; p < space; p = end + 1) {
+					end = memchr(p, ';', space - p);
+					if (end == NULL)
+						end = space;
+					if ((end - p == 4 && strncmp(p, "time", 4) == 0) ||
+					    (end - p >= 5 && strncmp(p, "time=", 5) == 0)) {
+						tag_start = p;
+						tag_len = end - p;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (g_strcmp0(event, "event join") == 0 && !(rec->caps & PROXY_CAP_EXTENDED_JOIN) &&
+	    strchr(args, ' ') != NULL) {
+		const char *p = (*body == ':') ? skip_token(body) : body;
+
+		join_end = skip_token(p);
+		while (*join_end != '\0' && *join_end != ' ' && *join_end != '\r' &&
+		       *join_end != '\n') {
+			join_end++;
+		}
+	} else if (g_strcmp0(event, "event 353") == 0 && !(rec->caps & PROXY_CAP_MULTI_PREFIX)) {
+		rewrite_353 = TRUE;
+	}
+
+	if (join_end == NULL && !rewrite_353 &&
+	    (*line != '@' || (rec->caps & PROXY_CAP_MESSAGE_TAGS))) {
+		net_sendbuffer_send(rec->handle, line, strlen(line));
+		return;
+	}
+
+	g_string_truncate(client_line, 0);
+	if (tag_start != NULL && tag_len > 0) {
+		g_string_append_c(client_line, '@');
+		g_string_append_len(client_line, tag_start, tag_len);
+		g_string_append_c(client_line, ' ');
+	}
+
+	if (join_end != NULL) {
+		g_string_append_len(client_line, body, join_end - body);
+		g_string_append(client_line, "\r\n");
+	} else if (rewrite_353) {
+		const char *p = (*body == ':') ? skip_token(body) : body;
+		const char *names = strstr(p, " :");
+
+		if (names == NULL) {
+			g_string_append(client_line, body);
+		} else {
+			names += 2;
+			g_string_append_len(client_line, body, names - body);
+			p = names;
+			while (*p != '\0' && *p != '\r' && *p != '\n') {
+				if (*p == ' ') {
+					g_string_append_c(client_line, *p++);
+					continue;
+				}
+				g_string_append_c(client_line, *p++);
+				if (isnickflag(server, p[-1])) {
+					while (*p != '\0' && isnickflag(server, *p))
+						p++;
+				}
+				while (*p != '\0' && *p != ' ' && *p != '\r' && *p != '\n')
+					g_string_append_c(client_line, *p++);
+			}
+			g_string_append(client_line, p);
+		}
+	} else {
+		g_string_append(client_line, body);
+	}
+
+	net_sendbuffer_send(rec->handle, client_line->str, client_line->len);
+}
+
 static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 			     const char *nick, const char *address)
 {
@@ -523,7 +836,8 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 		if (sscanf(signal+6, "%p", &client) == 1) {
 			/* send it to specific client only */
 			if (g_slist_find(proxy_clients, client) != NULL)
-				net_sendbuffer_send(((CLIENT_REC *) client)->handle, next_line->str, next_line->len);
+				proxy_send_server_line((CLIENT_REC *) client, server, event, args,
+				                       next_line->str);
 			g_free(event);
                         signal_stop();
 			return;
@@ -540,8 +854,8 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 			if (rec->want_ctcp == 1) {
                         	/* only CTCP for the chatnet where client is connected to will be forwarded */
                         	if (strstr(rec->proxy_address, server->connrec->chatnet) != NULL) {
-					net_sendbuffer_send(rec->handle,
-							    next_line->str, next_line->len);
+					proxy_send_server_line(rec, server, event, args,
+					                       next_line->str);
 					signal_stop();
 				}
 			}
@@ -550,16 +864,23 @@ static void sig_server_event(IRC_SERVER_REC *server, const char *line,
 		return;
 	}
 
-	if (g_strcmp0(event, "event ping") == 0 ||
-	    g_strcmp0(event, "event pong") == 0) {
-		/* We want to answer ourself to PINGs and CTCPs.
+	if (g_strcmp0(event, "event ping") == 0 || g_strcmp0(event, "event pong") == 0 ||
+	    g_strcmp0(event, "event cap") == 0) {
+		/* We want to answer ourself to PINGs, CAPs and CTCPs.
 		   Also hide PONGs from clients. */
 		g_free(event);
 		return;
 	}
 
 	/* send the data to clients.. */
-        proxy_outdata_all(server, "%s", next_line->str);
+	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
+		CLIENT_REC *rec = tmp->data;
+
+		if (!rec->connected || rec->server != server)
+			continue;
+
+		proxy_send_server_line(rec, server, event, args, next_line->str);
+	}
 
 	g_free(event);
 }
@@ -616,11 +937,27 @@ static void sig_server_disconnected(IRC_SERVER_REC *server)
 	for (tmp = proxy_clients; tmp != NULL; tmp = tmp->next) {
 		CLIENT_REC *rec = tmp->data;
 
-		if (rec->connected && rec->server == server) {
-                        proxy_server_disconnected(rec, server);
+		if (rec->server == server) {
+			if (rec->connected)
+				proxy_server_disconnected(rec, server);
+			rec->caps = 0;
 			rec->server = NULL;
 		}
 	}
+}
+
+static void sig_waiting_cap_ls(IRC_SERVER_REC *server, const char *version)
+{
+	if (!IS_IRC_SERVER(server))
+		return;
+
+	irc_cap_toggle(server, (char *) CAP_MESSAGE_TAGS, TRUE);
+}
+
+static void event_tagmsg(IRC_SERVER_REC *server, const char *data, const char *nick,
+                         const char *addr)
+{
+	/* Swallow unhandled TAGMSG so default event doesn't print it */
 }
 
 static void event_nick(IRC_SERVER_REC *server, const char *data,
@@ -828,19 +1165,33 @@ static void sig_dump(CLIENT_REC *client, const char *data)
 
 void proxy_listen_init(void)
 {
+	GSList *tmp;
+
 	if (enabled) {
 		return;
 	}
 	enabled = TRUE;
 
 	next_line = g_string_new(NULL);
+	client_line = g_string_new(NULL);
 
 	proxy_clients = NULL;
 	proxy_listens = NULL;
 	read_settings();
 
+	for (tmp = servers; tmp != NULL; tmp = tmp->next) {
+		IRC_SERVER_REC *server = IRC_SERVER(tmp->data);
+
+		if (server != NULL && server->connected && server->cap_complete &&
+		    server->cap_supported != NULL) {
+			irc_cap_toggle(server, (char *) CAP_MESSAGE_TAGS, TRUE);
+		}
+	}
+
 	signal_add("server incoming", (SIGNAL_FUNC) sig_incoming);
 	signal_add("server event", (SIGNAL_FUNC) sig_server_event);
+	signal_add("server waiting cap ls", (SIGNAL_FUNC) sig_waiting_cap_ls);
+	signal_add("event tagmsg", (SIGNAL_FUNC) event_tagmsg);
 	signal_add("event connected", (SIGNAL_FUNC) event_connected);
 	signal_add("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_add_first("event nick", (SIGNAL_FUNC) event_nick);
@@ -862,9 +1213,12 @@ void proxy_listen_deinit(void)
 	while (proxy_listens != NULL)
 		remove_listen(proxy_listens->data);
 	g_string_free(next_line, TRUE);
+	g_string_free(client_line, TRUE);
 
 	signal_remove("server incoming", (SIGNAL_FUNC) sig_incoming);
 	signal_remove("server event", (SIGNAL_FUNC) sig_server_event);
+	signal_remove("server waiting cap ls", (SIGNAL_FUNC) sig_waiting_cap_ls);
+	signal_remove("event tagmsg", (SIGNAL_FUNC) event_tagmsg);
 	signal_remove("event connected", (SIGNAL_FUNC) event_connected);
 	signal_remove("server disconnected", (SIGNAL_FUNC) sig_server_disconnected);
 	signal_remove("event nick", (SIGNAL_FUNC) event_nick);
